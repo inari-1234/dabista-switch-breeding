@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch and build master JSON
+      - name: Fetch base lists
         run: |
           python - <<'PY'
-          import json, re, html
+          import json, re
           from html.parser import HTMLParser
           from urllib.request import Request, urlopen
           from pathlib import Path
@@ -61,8 +61,7 @@ jobs:
               return (int(m.group(1)),int(m.group(2))) if m else (0,0)
 
           stallion_url='https://ds.yublog.com/stallion_list.php'
-          rows=table(stallion_url)
-          stallions=[]
+          rows=table(stallion_url); stallions=[]
           for r in rows:
               if len(r)<15 or r[0] in ('種牡馬名',''): continue
               if r[0]=='Galileo': break
@@ -71,8 +70,7 @@ jobs:
           if len(stallions)<170: raise RuntimeError(f'stallions unexpectedly short: {len(stallions)}')
 
           mare_url='https://ds.yublog.com/breedmare_list.php'
-          rows=table(mare_url)
-          mares=[]
+          rows=table(mare_url); mares=[]
           for r in rows:
               if len(r)<11 or r[0] in ('繁殖牝馬名',''): continue
               mares.append({'name':r[0],'ver':r[1],'price':num(r[2]),'sp':num(r[3]),'st':num(r[4]),'pw':num(r[5]),'dirt':r[6] or '?','nsp':num(r[7]),'nst':num(r[8]),'npw':num(r[9]),'nstBook':num(r[10])})
@@ -82,16 +80,84 @@ jobs:
           stamp=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
           (out/'stallions.json').write_text(json.dumps({'schemaVersion':2,'source':stallion_url,'sourceNote':'Switch版の国内デフォルト種牡馬。Galileo以降の海外・特殊種牡馬は除外。','syncedAt':stamp,'count':len(stallions),'stallions':stallions},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           (out/'default-broodmares.json').write_text(json.dumps({'schemaVersion':1,'source':mare_url,'sourceNote':'Switch版デフォルト繁殖牝馬の基礎能力・価格・ニトロ。0値/?は出典表の未判明値をそのまま保持。','syncedAt':stamp,'count':len(mares),'broodmares':mares},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          print('stallions',len(stallions),'broodmares',len(mares))
+          print('base stallions',len(stallions),'broodmares',len(mares))
           PY
+
+      - name: Fetch official tool data source
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          url='https://ds.yublog.com/js/ds96_11.js?v26'
+          data=urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; DabistaFarmDB/1.0)'}),timeout=45).read().decode('utf-8','replace')
+          open('/tmp/ds96.js','w',encoding='utf-8').write(data)
+          print('ds96 bytes',len(data))
+          PY
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const code=fs.readFileSync('/tmp/ds96.js','utf8');
+          const context={console:{log:()=>{}}};
+          vm.createContext(context);
+          vm.runInContext(code+'\n;globalThis.__dabista = new Ds96(0);',context,{timeout:15000});
+          const d=context.__dabista;
+          fs.writeFileSync('/tmp/ds96-data.json',JSON.stringify({stallions:d.stallionObject,broodmares:d.broodmareObject}));
+          console.log('tool objects',d.stallionObject.length,d.broodmareObject.length);
+          NODE
+
+      - name: Build pedigree and theory masters
+        run: |
+          python - <<'PY'
+          import json, unicodedata
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          out=Path('data')
+          raw=json.loads(Path('/tmp/ds96-data.json').read_text(encoding='utf-8'))
+          base_st=json.loads((out/'stallions.json').read_text(encoding='utf-8'))['stallions']
+          base_bm=json.loads((out/'default-broodmares.json').read_text(encoding='utf-8'))['broodmares']
+          def n(s): return unicodedata.normalize('NFKC',str(s or '')).strip()
+          st_names={n(x['name']) for x in base_st}; bm_names={n(x['name']) for x in base_bm}
+          codes={'a':'Ec','b':'Ph','c':'Ns','d':'Ro','e':'Ne','f':'Na','g':'Fa','h':'To','i':'Te','j':'Sw','k':'Ha','l':'Hi','m':'St','n':'Ma','o':'He'}
+          code_names={'Ec':'エクリプス系','Ph':'ファラリス系','Ns':'ナスルーラ系','Ro':'ロイヤルチャージャー系','Ne':'ニアークティック系','Na':'ネイティヴダンサー系','Fa':'フェアウェイ系','To':'トムフール系','Te':'テディ系','Sw':'スインフォード系','Ha':'ハンプトン系','Hi':'ヒムヤー系','St':'セントサイモン系','Ma':'マッチェム系','He':'ヘロド系'}
+          def decode(s): return [codes[c] for c in str(s or '') if c in codes]
+          def entry(x,kind):
+              anc=[n(v) for v in (x.get('ancestor') or [])]
+              return {'name':n(x.get('name')),'kind':kind,'system':n(x.get('system')),'ancestor':anc,
+                      'sire':anc[0] if len(anc)>0 else '','sireSire':anc[1] if len(anc)>1 else '',
+                      'damSire':anc[2] if len(anc)>2 else '','sireDamSire':anc[4] if len(anc)>4 else '',
+                      'damDamSire':anc[6] if len(anc)>6 else '','omoshiro':x.get('omoshiro',''),
+                      'migoto':x.get('migoto',''),'omoshiroSystems':decode(x.get('omoshiro','')),
+                      'migotoSystems':decode(x.get('migoto',''))}
+          sts=[entry(x,'default-stallion') for x in raw['stallions'] if n(x.get('name')) in st_names]
+          bms=[entry(x,'default-broodmare') for x in raw['broodmares'] if n(x.get('name')) in bm_names]
+          if len(sts)<170: raise RuntimeError(f'theory stallions short: {len(sts)}')
+          if len(bms)<320: raise RuntimeError(f'theory broodmares short: {len(bms)}')
+          stamp=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+          theory={'schemaVersion':1,'source':'https://ds.yublog.com/js/ds96_11.js','sourceNote':'Switch版湯一路配合ツール内のゲームデータから、デフォルト馬の15祖先と面白・見事用系統を抽出。','syncedAt':stamp,'systemCodes':code_names,'stallionCount':len(sts),'broodmareCount':len(bms),'stallions':sts,'broodmares':bms}
+          (out/'theory-master.json').write_text(json.dumps(theory,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          p=out/'pedigree-master.json'
+          old=json.loads(p.read_text(encoding='utf-8')) if p.exists() else {'horses':[]}
+          by={n(x.get('name')):{**x,'name':n(x.get('name'))} for x in old.get('horses',[]) if x.get('name')}
+          for x in sts+bms:
+              cur=by.get(x['name'],{'name':x['name']})
+              for k in ('kind','system','ancestor','sire','sireSire','damSire','sireDamSire','damDamSire','omoshiro','migoto','omoshiroSystems','migotoSystems'):
+                  if x.get(k) not in ('',None,[]): cur[k]=x[k]
+              cur['source']='ds.yublog game master'
+              by[x['name']]=cur
+          horses=sorted(by.values(),key=lambda x:x['name'])
+          pedigree={'schemaVersion':3,'updatedAt':stamp,'note':'入力補完用。ゲーム内デフォルト種牡馬・繁殖牝馬は湯一路配合ツールの15祖先データを使用。自家製馬は牧場DBを優先。','count':len(horses),'horses':horses}
+          p.write_text(json.dumps(pedigree,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print('theory',len(sts),len(bms),'pedigree',len(horses))
+          PY
+
       - name: Commit updated data
         run: |
-          if git diff --quiet -- data/stallions.json data/default-broodmares.json; then
+          if git diff --quiet -- data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json; then
             echo 'No changes'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/stallions.json data/default-broodmares.json
-          git commit -m 'Sync default Dabista master data'
+          git add data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json
+          git commit -m 'Sync default Dabista pedigree and theory masters'
           git push
