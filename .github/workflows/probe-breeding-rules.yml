@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/probe-breeding-rules.yml'
+  workflow_dispatch:
 jobs:
   probe:
     runs-on: ubuntu-latest
@@ -12,24 +13,34 @@ jobs:
           python - <<'PY'
           from urllib.request import Request,urlopen
           from urllib.parse import urljoin
+          from urllib.error import HTTPError, URLError
           import re
           UA={'User-Agent':'Mozilla/5.0'}
-          def get(u): return urlopen(Request(u,headers=UA),timeout=40).read().decode('utf-8','replace')
+          def get(u):
+            try:
+              return urlopen(Request(u,headers=UA),timeout=40).read().decode('utf-8','replace')
+            except (HTTPError, URLError, TimeoutError) as e:
+              print('SKIP',u,repr(e))
+              return None
           for url in ['https://ds.yublog.com/blood_list.html','https://ds.yublog.com/kotta.php','https://ds.yublog.com/tool.html']:
             print('\nPAGE',url)
-            h=get(url); print('LEN',len(h))
+            h=get(url)
+            if h is None:
+              continue
+            print('LEN',len(h))
             srcs=re.findall(r'<script[^>]+src=["\']([^"\']+)',h,re.I); print('SRCS',srcs)
             for src in srcs:
               if any(x in src for x in ['google','jquery','bootstrap','popper','twitter','adsbygoogle','datatables','chosen']): continue
               full=urljoin(url,src)
-              try:
-                js=get(full); print('SCRIPT',full,'LEN',len(js))
-                for term in ['kotta','凝っ','kiken','危険','cross','クロス','inbreed','blood']:
-                  hits=[m.start() for m in re.finditer(term,js,re.I)]
-                  if hits:
-                    print(' TERM',term,'COUNT',len(hits))
-                    for p in hits[:4]: print(js[max(0,p-500):p+1800])
-              except Exception as e: print('ERR',full,e)
+              js=get(full)
+              if js is None:
+                continue
+              print('SCRIPT',full,'LEN',len(js))
+              for term in ['kotta','凝っ','kiken','危険','cross','クロス','inbreed','blood']:
+                hits=[m.start() for m in re.finditer(term,js,re.I)]
+                if hits:
+                  print(' TERM',term,'COUNT',len(hits))
+                  for p in hits[:4]: print(js[max(0,p-500):p+1800])
             for term in ['kotta','凝っ','kiken','危険','cross','クロス','inbreed']:
               hits=[m.start() for m in re.finditer(term,h,re.I)]
               if hits:
