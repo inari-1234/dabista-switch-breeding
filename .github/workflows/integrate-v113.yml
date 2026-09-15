@@ -1,0 +1,33 @@
+name: Integrate v1.13
+on:
+  push:
+    paths: ['.github/workflows/integrate-v113.yml']
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text().replace('1.12.0','1.13.0')
+          if 'v23.js' not in s: s=s.replace('</body>','<script src="v23.js?v=1.13.0"></script></body>')
+          p.write_text(s)
+          assert 'v23.js?v=1.13.0' in s
+          assert s.count('<section') == s.count('</section>')
+          assert s.count('<dialog') == s.count('</dialog>')
+          assert s.count('<form') == s.count('</form>')
+          PY
+          node --check v23.js
+          python -m json.tool data/training-jockey-master.json >/dev/null
+          python -m json.tool version.json >/dev/null
+      - run: |
+          rm .github/workflows/integrate-v113.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m 'Integrate and validate training and jockey UI v1.13'
+          git push
