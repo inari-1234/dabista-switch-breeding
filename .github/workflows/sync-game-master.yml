@@ -1,0 +1,97 @@
+name: Sync game master data
+
+on:
+  push:
+    paths:
+      - '.github/workflows/sync-game-master.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 19 * * 0'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch and build master JSON
+        run: |
+          python - <<'PY'
+          import json, re, html
+          from html.parser import HTMLParser
+          from urllib.request import Request, urlopen
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          class TableParser(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.tables=[]; self.table=None; self.row=None; self.cell=None
+              def handle_starttag(self, tag, attrs):
+                  if tag=='table':
+                      if self.table is None: self.table=[]
+                  elif self.table is not None and tag=='tr': self.row=[]
+                  elif self.row is not None and tag in ('td','th'): self.cell=[]
+                  elif self.cell is not None and tag=='br': self.cell.append(' ')
+              def handle_data(self, data):
+                  if self.cell is not None: self.cell.append(data)
+              def handle_endtag(self, tag):
+                  if tag in ('td','th') and self.cell is not None:
+                      self.row.append(' '.join(''.join(self.cell).split())); self.cell=None
+                  elif tag=='tr' and self.row is not None:
+                      if self.row: self.table.append(self.row)
+                      self.row=None
+                  elif tag=='table' and self.table is not None:
+                      self.tables.append(self.table); self.table=None
+
+          def fetch(url):
+              req=Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; DabistaFarmDB/1.0)'})
+              with urlopen(req,timeout=30) as r: return r.read().decode('utf-8','replace')
+          def table(url):
+              p=TableParser(); p.feed(fetch(url))
+              if not p.tables: raise RuntimeError(f'No table: {url}')
+              return max(p.tables,key=len)
+          def num(s):
+              s=str(s).replace(',','').strip()
+              try:return int(s)
+              except:return 0
+          def dist(s):
+              m=re.search(r'(\d+)\D+(\d+)',s)
+              return (int(m.group(1)),int(m.group(2))) if m else (0,0)
+
+          stallion_url='https://ds.yublog.com/stallion_list.php'
+          rows=table(stallion_url)
+          stallions=[]
+          for r in rows:
+              if len(r)<15 or r[0] in ('種牡馬名',''): continue
+              if r[0]=='Galileo': break
+              lo,hi=dist(r[3])
+              stallions.append({'name':r[0],'ver':r[1],'price':num(r[2]),'minD':lo,'maxD':hi,'growth':r[4],'dirt':r[5],'body':r[6],'temper':r[7],'record':r[8],'guts':r[9],'stable':r[10],'nsp':num(r[11]),'nst':num(r[12]),'npw':num(r[13]),'nstBook':num(r[14])})
+          if len(stallions)<170: raise RuntimeError(f'stallions unexpectedly short: {len(stallions)}')
+
+          mare_url='https://ds.yublog.com/breedmare_list.php'
+          rows=table(mare_url)
+          mares=[]
+          for r in rows:
+              if len(r)<11 or r[0] in ('繁殖牝馬名',''): continue
+              mares.append({'name':r[0],'ver':r[1],'price':num(r[2]),'sp':num(r[3]),'st':num(r[4]),'pw':num(r[5]),'dirt':r[6] or '?','nsp':num(r[7]),'nst':num(r[8]),'npw':num(r[9]),'nstBook':num(r[10])})
+          if len(mares)<320: raise RuntimeError(f'broodmares unexpectedly short: {len(mares)}')
+
+          out=Path('data'); out.mkdir(exist_ok=True)
+          stamp=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+          (out/'stallions.json').write_text(json.dumps({'schemaVersion':2,'source':stallion_url,'sourceNote':'Switch版の国内デフォルト種牡馬。Galileo以降の海外・特殊種牡馬は除外。','syncedAt':stamp,'count':len(stallions),'stallions':stallions},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          (out/'default-broodmares.json').write_text(json.dumps({'schemaVersion':1,'source':mare_url,'sourceNote':'Switch版デフォルト繁殖牝馬の基礎能力・価格・ニトロ。0値/?は出典表の未判明値をそのまま保持。','syncedAt':stamp,'count':len(mares),'broodmares':mares},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print('stallions',len(stallions),'broodmares',len(mares))
+          PY
+      - name: Commit updated data
+        run: |
+          if git diff --quiet -- data/stallions.json data/default-broodmares.json; then
+            echo 'No changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/stallions.json data/default-broodmares.json
+          git commit -m 'Sync default Dabista master data'
+          git push
