@@ -40,12 +40,13 @@ function installTheoryControls(){
   const target=$('#breedCandidates');if(target)new MutationObserver(()=>queueMicrotask(decorateBreedCards)).observe(target,{childList:true});
 }
 function updateTheoryStatus(){
-  const el=$('#theoryStatus');if(!el)return;
+  const el=$('#theoryStatus'),filter=$('#theoryFilter');if(!el)return;
   const h=db.horses.find(x=>x.id===$('#breedMare')?.value),m=mareTheory(h);
-  if(theoryStatus.status==='loading'){el.textContent='配合理論マスタを読み込み中…';return}
-  if(theoryStatus.status!=='ok'){el.textContent='配合理論マスタの読み込みに失敗しました。更新確認を試してください。';return}
-  if(!h){el.innerHTML=`デフォルト種牡馬 ${theoryStatus.stallions}頭・繁殖牝馬 ${theoryStatus.broodmares}頭の面白／見事系統を内蔵。繁殖牝馬を選ぶと成立判定します。`;return}
-  if(!m){el.innerHTML=`<b>${esc(h.name)}</b> は自家製繁殖牝馬のため、現時点では面白／見事を確定表示しません。祖先情報は補完に利用し、次段階で自家製馬の系統を連鎖計算します。`;return}
+  if(theoryStatus.status==='loading'){if(filter)filter.disabled=true;el.textContent='配合理論マスタを読み込み中…';return}
+  if(theoryStatus.status!=='ok'){if(filter)filter.disabled=true;el.textContent='配合理論マスタの読み込みに失敗しました。更新確認を試してください。';return}
+  if(!h){if(filter){filter.disabled=true;filter.value='all'}el.innerHTML=`デフォルト種牡馬 ${theoryStatus.stallions}頭・繁殖牝馬 ${theoryStatus.broodmares}頭の面白／見事系統を内蔵。繁殖牝馬を選ぶと成立判定します。`;return}
+  if(!m){if(filter){filter.disabled=true;filter.value='all'}el.innerHTML=`<b>${esc(h.name)}</b> は自家製繁殖牝馬のため、現時点では面白／見事を確定表示しません。祖先情報は補完に利用し、次段階で自家製馬の系統を連鎖計算します。`;return}
+  if(filter)filter.disabled=false;
   el.innerHTML=`<b>${esc(h.name)}</b> の面白用系統：${codeText(m.omoshiroSystems)}。候補種牡馬ごとに「面白」「見事」「完璧」をゲーム内系統データから判定します。完璧は面白＋見事の同時成立で、追加ボーナスはありません。`;
 }
 function candidateName(card){
@@ -75,6 +76,11 @@ function decorateBreedCards(){
   }finally{decorating=false}
 }
 
+function installPedigreeGuidance(){
+  const box=document.querySelector('.v15box');if(!box||$('#v18PedigreeGuide'))return;
+  const n=document.createElement('div');n.id='v18PedigreeGuide';n.className='master-pedigree-note';n.textContent='ゲーム内デフォルト繁殖牝馬は、配合理論に必要な15祖先を内蔵マスタから使います。父母・母母など女性祖先名は空欄でも配合理論判定に支障ありません。';
+  box.appendChild(n);
+}
 /* 全デフォルト血統マスタを登録画面へ反映 */
 function fillMasterPedigree(showNote=true){
   if($('#role')?.value!=='broodmare')return 0;
@@ -108,5 +114,5 @@ function installSupport(){
   setTimeout(()=>checkUpdate(false),800);setTimeout(()=>checkUpdate(false),1800);
 }
 
-installTheoryControls();installSupport();loadTheory();
+installTheoryControls();installPedigreeGuidance();installSupport();loadTheory();
 })();
