@@ -1,0 +1,35 @@
+name: One-time v1.12 HTML repair
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-v112-html.yml'
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair and verify HTML
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          bad='<input id="raceName" required><div><label>距離(m)</label>'
+          good='<input id="raceName" required></div><div><label>距離(m)</label>'
+          assert bad in s, 'expected v1.12 markup not found'
+          s=s.replace(bad,good,1)
+          assert s.count('id="raceName"')==1
+          assert s.count('id="raceDistance"')==1
+          assert 'v22.js?v=1.12.0' in s
+          p.write_text(s)
+          PY
+          rm .github/workflows/fix-v112-html.yml
+      - name: Commit repair
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html .github/workflows/fix-v112-html.yml
+          git commit -m 'Repair v1.12 race form markup and remove one-time workflow'
+          git push
