@@ -9,13 +9,14 @@ const css=`.theory-tools{margin-top:9px;padding:10px;border-radius:10px;backgrou
 const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
 let theory=null,theoryStatus={status:'loading',stallions:0,broodmares:0};
-const norm=s=>String(s||'').trim().replace(/[\s・･]/g,'').toLowerCase();
+const norm=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();
 const sortCodes=a=>[...(a||[])].sort().join('|');
 function mareTheory(h){
   if(!h||!theory)return null;
   const name=h.masterRef?.type==='default-broodmare'?h.masterRef.name:h.name;
   return theory.broodmares.find(x=>norm(x.name)===norm(name))||null;
 }
+function mareTheoryByName(name){return theory?.broodmares?.find(x=>norm(x.name)===norm(name))||null}
 function stallionTheory(name){return theory?.stallions?.find(x=>norm(x.name)===norm(name))||null}
 function pairTheory(m,s){
   if(!m||!s)return null;
@@ -36,11 +37,12 @@ function installTheoryControls(){
   $('#breedMare')?.addEventListener('change',()=>setTimeout(decorateBreedCards,0));
   $('#breedGoal')?.addEventListener('change',()=>setTimeout(decorateBreedCards,0));
   $('#stallionSearch')?.addEventListener('input',()=>setTimeout(decorateBreedCards,0));
-  const target=$('#breedCandidates');if(target)new MutationObserver(()=>queueMicrotask(decorateBreedCards)).observe(target,{childList:true,subtree:true});
+  const target=$('#breedCandidates');if(target)new MutationObserver(()=>queueMicrotask(decorateBreedCards)).observe(target,{childList:true});
 }
 function updateTheoryStatus(){
   const el=$('#theoryStatus');if(!el)return;
   const h=db.horses.find(x=>x.id===$('#breedMare')?.value),m=mareTheory(h);
+  if(theoryStatus.status==='loading'){el.textContent='配合理論マスタを読み込み中…';return}
   if(theoryStatus.status!=='ok'){el.textContent='配合理論マスタの読み込みに失敗しました。更新確認を試してください。';return}
   if(!h){el.innerHTML=`デフォルト種牡馬 ${theoryStatus.stallions}頭・繁殖牝馬 ${theoryStatus.broodmares}頭の面白／見事系統を内蔵。繁殖牝馬を選ぶと成立判定します。`;return}
   if(!m){el.innerHTML=`<b>${esc(h.name)}</b> は自家製繁殖牝馬のため、現時点では面白／見事を確定表示しません。祖先情報は補完に利用し、次段階で自家製馬の系統を連鎖計算します。`;return}
@@ -73,10 +75,11 @@ function decorateBreedCards(){
   }finally{decorating=false}
 }
 
-/* 新しい全デフォルト血統マスタを登録画面へ反映 */
+/* 全デフォルト血統マスタを登録画面へ反映 */
 function fillMasterPedigree(showNote=true){
   if($('#role')?.value!=='broodmare')return 0;
-  const h=window.findPedigreeHorse?.($('#name')?.value);if(!h)return 0;
+  const name=$('#name')?.value;
+  const h=mareTheoryByName(name)||window.findPedigreeHorse?.(name);if(!h)return 0;
   const pairs=[['sire',h.sire],['sireSire',h.sireSire],['damSire',h.damSire],['sireDamSire',h.sireDamSire],['damDamSire',h.damDamSire]];
   let n=0;pairs.forEach(([id,val])=>{const el=$('#'+id);if(el&&val&&!el.value.trim()){el.value=val;el.classList.add('auto-filled');setTimeout(()=>el.classList.remove('auto-filled'),1400);n++}});
   if(showNote&&n){let note=$('#masterPedigreeNote');if(!note){note=document.createElement('div');note.id='masterPedigreeNote';note.className='master-pedigree-note';document.querySelector('.v15box')?.prepend(note)}note.textContent=`ゲーム内マスタから血統 ${n}項目を補完しました（父・父父・母父・父母父・母母父）。`}
@@ -91,6 +94,7 @@ async function loadTheory(){
     const u=new URL('data/theory-master.json',location.href);u.searchParams.set('_',BUILD);
     const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);
     theory=await r.json();theoryStatus={status:'ok',stallions:theory.stallions?.length||0,broodmares:theory.broodmares?.length||0,syncedAt:theory.syncedAt||null};window.DABISTA_THEORY_MASTER=theory;window.DABISTA_THEORY_STATUS=theoryStatus;decorateBreedCards();
+    if($('#role')?.value==='broodmare'&&$('#name')?.value)fillMasterPedigree(false);
   }catch(e){theoryStatus={status:'failed',error:String(e),stallions:0,broodmares:0};window.DABISTA_THEORY_STATUS=theoryStatus;window.APP_ERRORS?.push({at:new Date().toISOString(),message:'theory-master: '+String(e)});updateTheoryStatus()}
 }
 
