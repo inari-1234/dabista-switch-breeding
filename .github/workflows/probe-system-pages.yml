@@ -14,14 +14,24 @@ jobs:
         run: |
           python - <<'PY'
           from urllib.request import Request,urlopen
+          from urllib.parse import urljoin
           import re
+          UA={'User-Agent':'Mozilla/5.0'}
+          def get(url):
+              return urlopen(Request(url,headers=UA),timeout=30).read().decode('utf-8','replace')
           for url in ['https://ds.yublog.com/system_search.html','https://ds.yublog.com/system_search2.html']:
               print('\nURL',url)
-              req=Request(url,headers={'User-Agent':'Mozilla/5.0'})
-              html=urlopen(req,timeout=30).read().decode('utf-8','replace')
+              html=get(url)
               print('len',len(html))
-              for pat in [r'<script[^>]+src=["\']([^"\']+)',r'\.js[^"\']*',r'<tbody[\s\S]{0,500}',r'ディープインパクト.{0,500}',r'アイオーティー.{0,500}']:
-                  m=re.search(pat,html,re.I)
-                  print('PAT',pat,'=>',m.group(0)[:1200] if m else 'NONE')
-              print('SYSTEM TOKENS',sorted(set(re.findall(r'\b(?:Ec|Ph|Ns|Ro|Ne|Na|Fa|To|Te|Sw|Ha|Hi|St|Ma|He)\b',html)))[:20])
+              srcs=re.findall(r'<script[^>]+src=["\']([^"\']+)',html,re.I)
+              print('SCRIPT SRCS',srcs)
+              for src in srcs:
+                  if 'google' in src or 'googletag' in src: continue
+                  full=urljoin(url,src)
+                  try:
+                      js=get(full)
+                      print('\nSCRIPT',full,'LEN',len(js),'Ds96',('Ds96' in js),'broodmareObject',('broodmareObject' in js),'stallionObject',('stallionObject' in js))
+                      if 'Ds96' in js or 'broodmareObject' in js or 'stallionObject' in js:
+                          print(js[:3000])
+                  except Exception as e: print('ERR',full,e)
           PY
