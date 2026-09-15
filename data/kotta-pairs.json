@@ -1,0 +1,3257 @@
+{
+  "schemaVersion": 1,
+  "source": "https://ds.yublog.com/kotta.php",
+  "sourceNote": "湯一路のゲーム内成立確認済み「凝った配合ペア一覧」を正規化。表にない組合せを推測追加しない。",
+  "syncedAt": "2026-09-15T21:36:18Z",
+  "count": 812,
+  "pairs": [
+    {
+      "a": "A.P. Indy",
+      "b": "Chieftain"
+    },
+    {
+      "a": "Aggressor",
+      "b": "Vaguely Noble"
+    },
+    {
+      "a": "Alleged",
+      "b": "Key to the Mint"
+    },
+    {
+      "a": "Alzao",
+      "b": "Ghadeer"
+    },
+    {
+      "a": "Alzao",
+      "b": "ダンシングブレーヴ"
+    },
+    {
+      "a": "American Post",
+      "b": "Bering"
+    },
+    {
+      "a": "Amerigo",
+      "b": "Armos"
+    },
+    {
+      "a": "Arch",
+      "b": "Caerleon"
+    },
+    {
+      "a": "Arch",
+      "b": "ハードスパン"
+    },
+    {
+      "a": "Armos",
+      "b": "Amerigo"
+    },
+    {
+      "a": "Awesome Again",
+      "b": "カジノドライヴ"
+    },
+    {
+      "a": "Awesome Again",
+      "b": "ストラヴィンスキー"
+    },
+    {
+      "a": "Awesome Again",
+      "b": "バゴ"
+    },
+    {
+      "a": "Awesome of Course",
+      "b": "Awesome Again"
+    },
+    {
+      "a": "Bahri",
+      "b": "Loup Sauvage"
+    },
+    {
+      "a": "Bahri",
+      "b": "Half a Year"
+    },
+    {
+      "a": "Bald Eagle",
+      "b": "Red God"
+    },
+    {
+      "a": "Barathea",
+      "b": "El Prado"
+    },
+    {
+      "a": "Barathea",
+      "b": "Poliglote"
+    },
+    {
+      "a": "Barathea",
+      "b": "Sholokhov"
+    },
+    {
+      "a": "Bates Motel",
+      "b": "Crocker Road"
+    },
+    {
+      "a": "Beau Genius",
+      "b": "Leo Castelli"
+    },
+    {
+      "a": "Believe It",
+      "b": "Tiznow"
+    },
+    {
+      "a": "Bertolini",
+      "b": "Marquetry"
+    },
+    {
+      "a": "Big Brown",
+      "b": "Boundary"
+    },
+    {
+      "a": "Big Brown",
+      "b": "Confidential Talk"
+    },
+    {
+      "a": "Big Brown",
+      "b": "Herat"
+    },
+    {
+      "a": "Big Brown",
+      "b": "Marlin"
+    },
+    {
+      "a": "Big Brown",
+      "b": "Medaglia d'Oro"
+    },
+    {
+      "a": "Big Brown",
+      "b": "キャプテンスティーヴ"
+    },
+    {
+      "a": "Big Brown",
+      "b": "Privately Held"
+    },
+    {
+      "a": "Blade",
+      "b": "Bold Bidder"
+    },
+    {
+      "a": "Blade",
+      "b": "Key to the Kingdom"
+    },
+    {
+      "a": "Blade",
+      "b": "Secretariat"
+    },
+    {
+      "a": "Blade",
+      "b": "ボールドラッド"
+    },
+    {
+      "a": "Bold Bidder",
+      "b": "Blade"
+    },
+    {
+      "a": "Bold Bidder",
+      "b": "Key to the Kingdom"
+    },
+    {
+      "a": "Bold Bidder",
+      "b": "Secretariat"
+    },
+    {
+      "a": "Bold Bidder",
+      "b": "ボールドラッド"
+    },
+    {
+      "a": "Caerleon",
+      "b": "Arch"
+    },
+    {
+      "a": "Caerleon",
+      "b": "The Prime Minister"
+    },
+    {
+      "a": "Canadian Frontier",
+      "b": "Lemon Drop Kid"
+    },
+    {
+      "a": "Canadian Frontier",
+      "b": "Mineshaft"
+    },
+    {
+      "a": "Canadian Frontier",
+      "b": "Pulpit"
+    },
+    {
+      "a": "Canadian Frontier",
+      "b": "エルコンドルパサー"
+    },
+    {
+      "a": "Canadian Frontier",
+      "b": "マジェスティックウォリアー"
+    },
+    {
+      "a": "Canadian Frontier",
+      "b": "Dubai Destination"
+    },
+    {
+      "a": "Canadian Frontier",
+      "b": "Crocker Road"
+    },
+    {
+      "a": "Candy Stripes",
+      "b": "アラジ"
+    },
+    {
+      "a": "Candy Stripes",
+      "b": "グルームダンサー"
+    },
+    {
+      "a": "Capote",
+      "b": "Naskra"
+    },
+    {
+      "a": "Capote",
+      "b": "Full Out"
+    },
+    {
+      "a": "Capote",
+      "b": "Chieftain"
+    },
+    {
+      "a": "Cat Thief",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "Cat Thief",
+      "b": "Speightstown"
+    },
+    {
+      "a": "Cat Thief",
+      "b": "Tale of the Cat"
+    },
+    {
+      "a": "Cat Thief",
+      "b": "Zafonic"
+    },
+    {
+      "a": "Cat Thief",
+      "b": "Zamindar"
+    },
+    {
+      "a": "Cat Thief",
+      "b": "Forest Wildcat"
+    },
+    {
+      "a": "Catienus",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "Catienus",
+      "b": "Mineshaft"
+    },
+    {
+      "a": "Catienus",
+      "b": "Speightstown"
+    },
+    {
+      "a": "Catienus",
+      "b": "Tale of the Cat"
+    },
+    {
+      "a": "Catienus",
+      "b": "Zafonic"
+    },
+    {
+      "a": "Catienus",
+      "b": "Zamindar"
+    },
+    {
+      "a": "Catienus",
+      "b": "Forest Wildcat"
+    },
+    {
+      "a": "Chieftain",
+      "b": "A.P. Indy"
+    },
+    {
+      "a": "Chieftain",
+      "b": "Naskra"
+    },
+    {
+      "a": "Chieftain",
+      "b": "Capote"
+    },
+    {
+      "a": "Chieftain",
+      "b": "Far North"
+    },
+    {
+      "a": "Chieftain",
+      "b": "Wajima"
+    },
+    {
+      "a": "Chieftain",
+      "b": "Lashkari"
+    },
+    {
+      "a": "Chieftain",
+      "b": "ラインゴールド"
+    },
+    {
+      "a": "Chieftain",
+      "b": "The Minstrel"
+    },
+    {
+      "a": "Cold Reception",
+      "b": "Bold Bidder"
+    },
+    {
+      "a": "Cold Reception",
+      "b": "Magesterial"
+    },
+    {
+      "a": "Cold Reception",
+      "b": "Mill Reef"
+    },
+    {
+      "a": "Cold Reception",
+      "b": "Oratorio"
+    },
+    {
+      "a": "Cold Reception",
+      "b": "Poker"
+    },
+    {
+      "a": "Cold Reception",
+      "b": "Riverman"
+    },
+    {
+      "a": "Cold Reception",
+      "b": "Secretariat"
+    },
+    {
+      "a": "Cold Reception",
+      "b": "Topsider"
+    },
+    {
+      "a": "Confidential Talk",
+      "b": "Private Account"
+    },
+    {
+      "a": "Congaree",
+      "b": "Awesome Again"
+    },
+    {
+      "a": "Congaree",
+      "b": "Awesome of Course"
+    },
+    {
+      "a": "Congaree",
+      "b": "Candy Stripes"
+    },
+    {
+      "a": "Congaree",
+      "b": "Giant's Causeway"
+    },
+    {
+      "a": "Congaree",
+      "b": "Kahyasi"
+    },
+    {
+      "a": "Congaree",
+      "b": "Sunriver"
+    },
+    {
+      "a": "Congaree",
+      "b": "アラジ"
+    },
+    {
+      "a": "Congaree",
+      "b": "バゴ"
+    },
+    {
+      "a": "Congaree",
+      "b": "グルームダンサー"
+    },
+    {
+      "a": "Congaree",
+      "b": "Gold Away"
+    },
+    {
+      "a": "Congaree",
+      "b": "Le Havre"
+    },
+    {
+      "a": "Congaree",
+      "b": "Noverre"
+    },
+    {
+      "a": "Congaree",
+      "b": "ラムタラ"
+    },
+    {
+      "a": "Congaree",
+      "b": "ストラヴィンスキー"
+    },
+    {
+      "a": "Congaree",
+      "b": "テイエムオペラオー"
+    },
+    {
+      "a": "Conquistador Cielo",
+      "b": "Gone West"
+    },
+    {
+      "a": "Crafty Prospector",
+      "b": "Golden Voyager"
+    },
+    {
+      "a": "Crocker Road",
+      "b": "Bates Motel"
+    },
+    {
+      "a": "Crocker Road",
+      "b": "Grand Lodge"
+    },
+    {
+      "a": "Crocker Road",
+      "b": "Marauding"
+    },
+    {
+      "a": "Crocker Road",
+      "b": "Canadian Frontier"
+    },
+    {
+      "a": "Cutlass",
+      "b": "Bailjumper"
+    },
+    {
+      "a": "Cutlass",
+      "b": "Confidential Talk"
+    },
+    {
+      "a": "Cutlass",
+      "b": "Desert Wine"
+    },
+    {
+      "a": "Cutlass",
+      "b": "Plugged Nickle"
+    },
+    {
+      "a": "Cutlass",
+      "b": "Private Account"
+    },
+    {
+      "a": "Cutlass",
+      "b": "Time for a Change"
+    },
+    {
+      "a": "Cutlass",
+      "b": "オジジアン"
+    },
+    {
+      "a": "Cutlass",
+      "b": "ジャッジャー"
+    },
+    {
+      "a": "Dancing Count",
+      "b": "Lyphard"
+    },
+    {
+      "a": "Danehill Dancer",
+      "b": "Kodiac"
+    },
+    {
+      "a": "Danehill Dancer",
+      "b": "Dylan Thomas"
+    },
+    {
+      "a": "Dare and Go",
+      "b": "Leo Castelli"
+    },
+    {
+      "a": "Dare and Go",
+      "b": "Magesterial"
+    },
+    {
+      "a": "Dare and Go",
+      "b": "セクレト"
+    },
+    {
+      "a": "Deploy",
+      "b": "Premiership"
+    },
+    {
+      "a": "Diesis",
+      "b": "Kris"
+    },
+    {
+      "a": "Diesis",
+      "b": "Presidium"
+    },
+    {
+      "a": "Distorted Humor",
+      "b": "エルナンド"
+    },
+    {
+      "a": "Distorted Humor",
+      "b": "エンドスウィープ"
+    },
+    {
+      "a": "Doyen",
+      "b": "In the Wings"
+    },
+    {
+      "a": "Drone",
+      "b": "Silver Buck"
+    },
+    {
+      "a": "Drone",
+      "b": "Sir Ivor"
+    },
+    {
+      "a": "Dubai Destination",
+      "b": "Lemon Drop Kid"
+    },
+    {
+      "a": "Dubai Destination",
+      "b": "Mineshaft"
+    },
+    {
+      "a": "Dubai Destination",
+      "b": "Canadian Frontier"
+    },
+    {
+      "a": "Dubai Millennium",
+      "b": "スターリングローズ"
+    },
+    {
+      "a": "Dubai Millennium",
+      "b": "ハンセル"
+    },
+    {
+      "a": "Dubai Millennium",
+      "b": "Rossini"
+    },
+    {
+      "a": "Dylan Thomas",
+      "b": "Kodiac"
+    },
+    {
+      "a": "Dylan Thomas",
+      "b": "Danehill Dancer"
+    },
+    {
+      "a": "Dynaformer",
+      "b": "サンシャインフォーエヴァー"
+    },
+    {
+      "a": "Dynaformer",
+      "b": "ブライアンズタイム"
+    },
+    {
+      "a": "El Gran Senor",
+      "b": "Shareef Dancer"
+    },
+    {
+      "a": "El Gran Senor",
+      "b": "トライマイベスト"
+    },
+    {
+      "a": "El Prado",
+      "b": "Barathea"
+    },
+    {
+      "a": "El Prado",
+      "b": "Poliglote"
+    },
+    {
+      "a": "El Prado",
+      "b": "Shareef Dancer"
+    },
+    {
+      "a": "El Prado",
+      "b": "Sholokhov"
+    },
+    {
+      "a": "Elusive Quality",
+      "b": "Grand Slam"
+    },
+    {
+      "a": "Elusive Quality",
+      "b": "Forest Wildcat"
+    },
+    {
+      "a": "Elusive Quality",
+      "b": "Cat Thief"
+    },
+    {
+      "a": "Elusive Quality",
+      "b": "Pure Prize"
+    },
+    {
+      "a": "Elusive Quality",
+      "b": "Rossini"
+    },
+    {
+      "a": "Elusive Quality",
+      "b": "Tale of the Cat"
+    },
+    {
+      "a": "Elusive Quality",
+      "b": "Zafonic"
+    },
+    {
+      "a": "Elusive Quality",
+      "b": "Zamindar"
+    },
+    {
+      "a": "Fabulous Dancer",
+      "b": "Northern Dancer"
+    },
+    {
+      "a": "Fairy King",
+      "b": "Hero's Honor"
+    },
+    {
+      "a": "Fairy King",
+      "b": "Magesterial"
+    },
+    {
+      "a": "Fairy King",
+      "b": "Nureyev"
+    },
+    {
+      "a": "Fairy King",
+      "b": "Sadler's Wells"
+    },
+    {
+      "a": "Fairy King",
+      "b": "Theatrical"
+    },
+    {
+      "a": "Fappiano",
+      "b": "Procida"
+    },
+    {
+      "a": "Far North",
+      "b": "Naskra"
+    },
+    {
+      "a": "Far North",
+      "b": "Full Out"
+    },
+    {
+      "a": "Far North",
+      "b": "Jefferson"
+    },
+    {
+      "a": "Far North",
+      "b": "Chieftain"
+    },
+    {
+      "a": "Fastnet Rock",
+      "b": "Redoute's Choice"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "Elusive City"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "Sahm"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "Distorted Humor"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "Galileo"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "Mamool"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "Motivator"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "Sea the Stars"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "アグネスデジタル"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "アスカクリチャン"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "ヴァーミリアン"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "エルコンドルパサー"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "シビルウォー"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "スターリングローズ"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "スピルバーグ"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "トーセンラー"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "ビッグアーサー"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "フォーティナイナーズサン"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "ルースリンド"
+    },
+    {
+      "a": "Flower Alley",
+      "b": "ワークフォース"
+    },
+    {
+      "a": "Fly So Free",
+      "b": "Our Emblem"
+    },
+    {
+      "a": "Forest Wildcat",
+      "b": "Zaminder"
+    },
+    {
+      "a": "Forest Wildcat",
+      "b": "Zafonic"
+    },
+    {
+      "a": "Forest Wildcat",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "Forest Wildcat",
+      "b": "Speightstown"
+    },
+    {
+      "a": "Forest Wildcat",
+      "b": "Tale of the Cat"
+    },
+    {
+      "a": "Forest Wildcat",
+      "b": "Catienus"
+    },
+    {
+      "a": "Forest Wildcat",
+      "b": "Grand Slam"
+    },
+    {
+      "a": "Forest Wildcat",
+      "b": "Cat Thief"
+    },
+    {
+      "a": "Full Out",
+      "b": "Naskra"
+    },
+    {
+      "a": "Full Out",
+      "b": "Capote"
+    },
+    {
+      "a": "Full Out",
+      "b": "Far North"
+    },
+    {
+      "a": "Full Out",
+      "b": "ラインゴールド"
+    },
+    {
+      "a": "Full Out",
+      "b": "Lashkari"
+    },
+    {
+      "a": "Full Out",
+      "b": "Wajima"
+    },
+    {
+      "a": "Full Out",
+      "b": "The Minstrel"
+    },
+    {
+      "a": "General Assembly",
+      "b": "Topsider"
+    },
+    {
+      "a": "Ghadeer",
+      "b": "Alzao"
+    },
+    {
+      "a": "Ghadeer",
+      "b": "ダンシングブレーヴ"
+    },
+    {
+      "a": "Gio Ponti",
+      "b": "Medicean"
+    },
+    {
+      "a": "Gio Ponti",
+      "b": "Catienus"
+    },
+    {
+      "a": "Gio Ponti",
+      "b": "Speightstown"
+    },
+    {
+      "a": "Gio Ponti",
+      "b": "Tele of the Cat"
+    },
+    {
+      "a": "Gio Ponti",
+      "b": "サンダーガルチ"
+    },
+    {
+      "a": "Glenstal",
+      "b": "Shareef Dancer"
+    },
+    {
+      "a": "Golden Voyager",
+      "b": "Sahm"
+    },
+    {
+      "a": "Gone West",
+      "b": "Conquistador Cielo"
+    },
+    {
+      "a": "Goofalik",
+      "b": "リィフォー"
+    },
+    {
+      "a": "Grand Lodge",
+      "b": "Crocker Road"
+    },
+    {
+      "a": "Grand Slam",
+      "b": "Tale of the Cat"
+    },
+    {
+      "a": "Grand Slam",
+      "b": "Zafonic"
+    },
+    {
+      "a": "Grand Slam",
+      "b": "Zamindar"
+    },
+    {
+      "a": "Grand Slam",
+      "b": "Pure Prize"
+    },
+    {
+      "a": "Grand Slam",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "Grand Slam",
+      "b": "Forest Wildcat"
+    },
+    {
+      "a": "Grape Tree Road",
+      "b": "Zabeel"
+    },
+    {
+      "a": "Green Tune",
+      "b": "Hawk Wing"
+    },
+    {
+      "a": "Half a Year",
+      "b": "Bahri"
+    },
+    {
+      "a": "Half a Year",
+      "b": "Loup Sauvage"
+    },
+    {
+      "a": "Hawk Wing",
+      "b": "Green Tune"
+    },
+    {
+      "a": "Hero's Honor",
+      "b": "Mari's Book"
+    },
+    {
+      "a": "Hero's Honor",
+      "b": "Fairy King"
+    },
+    {
+      "a": "Hero's Honor",
+      "b": "Magesterial"
+    },
+    {
+      "a": "Hero's Honor",
+      "b": "Nordico"
+    },
+    {
+      "a": "Hero's Honor",
+      "b": "Sadler's Wells"
+    },
+    {
+      "a": "Hurry Up Blue",
+      "b": "シンボリクリスエス"
+    },
+    {
+      "a": "Icecapade",
+      "b": "Northern Dancer"
+    },
+    {
+      "a": "Icecapade",
+      "b": "Wild Again"
+    },
+    {
+      "a": "Icecapade",
+      "b": "ノーザンテースト"
+    },
+    {
+      "a": "In Reality",
+      "b": "Intentionally"
+    },
+    {
+      "a": "In the Wings",
+      "b": "Doyen"
+    },
+    {
+      "a": "Jefferson",
+      "b": "Naskra"
+    },
+    {
+      "a": "Jefferson",
+      "b": "Far North"
+    },
+    {
+      "a": "Jefferson",
+      "b": "ターゴワイス"
+    },
+    {
+      "a": "Jefferson",
+      "b": "Lashkari"
+    },
+    {
+      "a": "Jefferson",
+      "b": "The Minstrel"
+    },
+    {
+      "a": "Jefferson",
+      "b": "Wajima"
+    },
+    {
+      "a": "Jeune Homme",
+      "b": "パントレセレブル"
+    },
+    {
+      "a": "Jeune Homme",
+      "b": "Peintre Celebre"
+    },
+    {
+      "a": "Jolie Jo",
+      "b": "アーティアス"
+    },
+    {
+      "a": "Kalaglow",
+      "b": "Kalamoun"
+    },
+    {
+      "a": "Kalamoun",
+      "b": "Kalaglow"
+    },
+    {
+      "a": "Key to the Kingdom",
+      "b": "Blade"
+    },
+    {
+      "a": "Key to the Kingdom",
+      "b": "Bold Bidder"
+    },
+    {
+      "a": "Key to the Kingdom",
+      "b": "Poker"
+    },
+    {
+      "a": "Key to the Kingdom",
+      "b": "Secretariat"
+    },
+    {
+      "a": "Key to the Kingdom",
+      "b": "ボールドラッド"
+    },
+    {
+      "a": "Key to the Mint",
+      "b": "Alleged"
+    },
+    {
+      "a": "Kingmambo",
+      "b": "Golden Voyager"
+    },
+    {
+      "a": "Kingmambo",
+      "b": "Lycius"
+    },
+    {
+      "a": "Kingmambo",
+      "b": "Sahm"
+    },
+    {
+      "a": "Kingmambo",
+      "b": "Souvenir Copy"
+    },
+    {
+      "a": "Kodiac",
+      "b": "Danehill Dancer"
+    },
+    {
+      "a": "Kodiac",
+      "b": "Dylan Thomas"
+    },
+    {
+      "a": "Kris",
+      "b": "Diesis"
+    },
+    {
+      "a": "Kris",
+      "b": "Presidium"
+    },
+    {
+      "a": "Lashkari",
+      "b": "Naskra"
+    },
+    {
+      "a": "Lashkari",
+      "b": "Full Out"
+    },
+    {
+      "a": "Lashkari",
+      "b": "Chieftain"
+    },
+    {
+      "a": "Lashkari",
+      "b": "Jefferson"
+    },
+    {
+      "a": "Lemon Drop Kid",
+      "b": "Canadian Frontier"
+    },
+    {
+      "a": "Lemon Drop Kid",
+      "b": "Dubai Destination"
+    },
+    {
+      "a": "Lemon Drop Kid",
+      "b": "エルコンドルパサー"
+    },
+    {
+      "a": "Leo Castelli",
+      "b": "Beau Genius"
+    },
+    {
+      "a": "Leo Castelli",
+      "b": "Dare and Go"
+    },
+    {
+      "a": "Leo Castelli",
+      "b": "Magesterial"
+    },
+    {
+      "a": "Lomond",
+      "b": "Topsider"
+    },
+    {
+      "a": "Loup Sauvage",
+      "b": "Bahri"
+    },
+    {
+      "a": "Loup Sauvage",
+      "b": "Half a Year"
+    },
+    {
+      "a": "Lycius",
+      "b": "Golden Voyager"
+    },
+    {
+      "a": "Lycius",
+      "b": "Kingmambo"
+    },
+    {
+      "a": "Lycius",
+      "b": "Sahm"
+    },
+    {
+      "a": "Lycius",
+      "b": "Souvenir Copy"
+    },
+    {
+      "a": "Lycius",
+      "b": "ジェイドハンター"
+    },
+    {
+      "a": "Lyphard",
+      "b": "Dancing Count"
+    },
+    {
+      "a": "Machiavellian",
+      "b": "Our Emblem"
+    },
+    {
+      "a": "Magesterial",
+      "b": "Cold Reception"
+    },
+    {
+      "a": "Magesterial",
+      "b": "Dare and Go"
+    },
+    {
+      "a": "Magesterial",
+      "b": "Fairy King"
+    },
+    {
+      "a": "Magesterial",
+      "b": "Hero's Honor"
+    },
+    {
+      "a": "Magesterial",
+      "b": "Leo Castelli"
+    },
+    {
+      "a": "Magesterial",
+      "b": "Sadler's Wells"
+    },
+    {
+      "a": "Magesterial",
+      "b": "セクレト"
+    },
+    {
+      "a": "Majestic Prince",
+      "b": "クラウンドプリンス"
+    },
+    {
+      "a": "Marauding",
+      "b": "ターゴワイス"
+    },
+    {
+      "a": "Marauding",
+      "b": "Crocker Road"
+    },
+    {
+      "a": "Mari's Book",
+      "b": "Hero's Honor"
+    },
+    {
+      "a": "Mari's Book",
+      "b": "Nordico"
+    },
+    {
+      "a": "Mari's Book",
+      "b": "フォーティナイナー"
+    },
+    {
+      "a": "Marju",
+      "b": "テンビー"
+    },
+    {
+      "a": "Marquetry",
+      "b": "Bertolini"
+    },
+    {
+      "a": "Medicean",
+      "b": "More Than Ready"
+    },
+    {
+      "a": "Medicean",
+      "b": "ストーミングホーム"
+    },
+    {
+      "a": "Medicean",
+      "b": "ゴールドヘイロー"
+    },
+    {
+      "a": "Mill Reef",
+      "b": "Oratorio"
+    },
+    {
+      "a": "Mineshaft",
+      "b": "Canadian Frontier"
+    },
+    {
+      "a": "Mineshaft",
+      "b": "Catienus"
+    },
+    {
+      "a": "Mineshaft",
+      "b": "Dubai Destination"
+    },
+    {
+      "a": "Mineshaft",
+      "b": "Pulpit"
+    },
+    {
+      "a": "Mineshaft",
+      "b": "マジェスティックウォリアー"
+    },
+    {
+      "a": "Miswaki",
+      "b": "Seeking the Gold"
+    },
+    {
+      "a": "Miswaki",
+      "b": "Woodman"
+    },
+    {
+      "a": "Miswaki",
+      "b": "アフリート"
+    },
+    {
+      "a": "Miswaki",
+      "b": "マイニング"
+    },
+    {
+      "a": "More Than Ready",
+      "b": "Medicean"
+    },
+    {
+      "a": "More Than Ready",
+      "b": "ゴールドヘイロー"
+    },
+    {
+      "a": "More Than Ready",
+      "b": "ストーミングホーム"
+    },
+    {
+      "a": "Mr.Greeley",
+      "b": "Dare and Go"
+    },
+    {
+      "a": "Mr.Greeley",
+      "b": "Gone West"
+    },
+    {
+      "a": "Mr.Greeley",
+      "b": "ロードアルティマ"
+    },
+    {
+      "a": "Naskra",
+      "b": "Capote"
+    },
+    {
+      "a": "Naskra",
+      "b": "The Minstrel"
+    },
+    {
+      "a": "Naskra",
+      "b": "Far North"
+    },
+    {
+      "a": "Naskra",
+      "b": "ラインゴールド"
+    },
+    {
+      "a": "Naskra",
+      "b": "Lashkari"
+    },
+    {
+      "a": "Naskra",
+      "b": "Wajima"
+    },
+    {
+      "a": "Naskra",
+      "b": "Full Out"
+    },
+    {
+      "a": "Naskra",
+      "b": "Jefferson"
+    },
+    {
+      "a": "Naskra",
+      "b": "Chieftain"
+    },
+    {
+      "a": "Nordico",
+      "b": "Hero's Honor"
+    },
+    {
+      "a": "Nordico",
+      "b": "Mari's Book"
+    },
+    {
+      "a": "Northern Dancer",
+      "b": "Fabulous Dancer"
+    },
+    {
+      "a": "Northern Dancer",
+      "b": "Icecapade"
+    },
+    {
+      "a": "Northern Dancer",
+      "b": "Wild Again"
+    },
+    {
+      "a": "Northern Dancer",
+      "b": "ノーザンテースト"
+    },
+    {
+      "a": "Noverre",
+      "b": "アラジ"
+    },
+    {
+      "a": "Nureyev",
+      "b": "Fairy King"
+    },
+    {
+      "a": "Nureyev",
+      "b": "Sadler's Wells"
+    },
+    {
+      "a": "Oratorio",
+      "b": "Cold Reception"
+    },
+    {
+      "a": "Oratorio",
+      "b": "Mill Reef"
+    },
+    {
+      "a": "Our Emblem",
+      "b": "Fly So Free"
+    },
+    {
+      "a": "Our Emblem",
+      "b": "Machiavellian"
+    },
+    {
+      "a": "Our Emblem",
+      "b": "アルデバランII"
+    },
+    {
+      "a": "Peintre Celebre",
+      "b": "Jeune Homme"
+    },
+    {
+      "a": "Peintre Celebre",
+      "b": "パントレセレブル"
+    },
+    {
+      "a": "Plugged Nickle",
+      "b": "Sauce Boat"
+    },
+    {
+      "a": "Poker",
+      "b": "Key to the Kingdom"
+    },
+    {
+      "a": "Poliglote",
+      "b": "Zabeel"
+    },
+    {
+      "a": "Poliglote",
+      "b": "Sholokhov"
+    },
+    {
+      "a": "Poliglote",
+      "b": "Barathea"
+    },
+    {
+      "a": "Poliglote",
+      "b": "El Prado"
+    },
+    {
+      "a": "Premiership",
+      "b": "Deploy"
+    },
+    {
+      "a": "Presidium",
+      "b": "Diesis"
+    },
+    {
+      "a": "Presidium",
+      "b": "Kris"
+    },
+    {
+      "a": "Private Account",
+      "b": "Confidential Talk"
+    },
+    {
+      "a": "Private Account",
+      "b": "Cutlass"
+    },
+    {
+      "a": "Private Account",
+      "b": "Time for a Change"
+    },
+    {
+      "a": "Procida",
+      "b": "Fappiano"
+    },
+    {
+      "a": "Proud Citizen",
+      "b": "ロードアルティマ"
+    },
+    {
+      "a": "Proud Citizen",
+      "b": "マイネルラヴ"
+    },
+    {
+      "a": "Pulpit",
+      "b": "Canadian Frontier"
+    },
+    {
+      "a": "Pulpit",
+      "b": "Mineshaft"
+    },
+    {
+      "a": "Pulpit",
+      "b": "マジェスティックウォリアー"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "Green Tune"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "Marlin"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "Rubiano"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "Speightstown"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "Sword Dance"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "Zafonic"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "Zamindar"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "エルナンド"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "Grand Slam"
+    },
+    {
+      "a": "Pure Prize",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "Rahy",
+      "b": "Rainbow Quest"
+    },
+    {
+      "a": "Rahy",
+      "b": "Sunriver"
+    },
+    {
+      "a": "Rainbow Quest",
+      "b": "Rahy"
+    },
+    {
+      "a": "Raise a Cup",
+      "b": "Ruthie's Native"
+    },
+    {
+      "a": "Raja Baba",
+      "b": "Tyrant"
+    },
+    {
+      "a": "Red God",
+      "b": "Bald Eagle"
+    },
+    {
+      "a": "Redoute's Choice",
+      "b": "Fastnet Rock"
+    },
+    {
+      "a": "Risen Star",
+      "b": "サウスアトランティック"
+    },
+    {
+      "a": "Risen Star",
+      "b": "ミルジョージ"
+    },
+    {
+      "a": "Riverman",
+      "b": "Cold Reception"
+    },
+    {
+      "a": "Rossini",
+      "b": "Dubai Millennium"
+    },
+    {
+      "a": "Rossini",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "Rossini",
+      "b": "スターリングローズ"
+    },
+    {
+      "a": "Rossini",
+      "b": "ハンセル"
+    },
+    {
+      "a": "Rubiano",
+      "b": "エンパイアメーカー"
+    },
+    {
+      "a": "Ruthie's Native",
+      "b": "Raise a Cup"
+    },
+    {
+      "a": "Sadler's Wells",
+      "b": "Fairy King"
+    },
+    {
+      "a": "Sadler's Wells",
+      "b": "Hero's Honor"
+    },
+    {
+      "a": "Sadler's Wells",
+      "b": "Magesterial"
+    },
+    {
+      "a": "Sadler's Wells",
+      "b": "Nureyev"
+    },
+    {
+      "a": "Sadler's Wells",
+      "b": "Theatrical"
+    },
+    {
+      "a": "Sahm",
+      "b": "Golden Voyager"
+    },
+    {
+      "a": "Sahm",
+      "b": "Kingmambo"
+    },
+    {
+      "a": "Sahm",
+      "b": "Lycius"
+    },
+    {
+      "a": "Sahm",
+      "b": "Souvenir Copy"
+    },
+    {
+      "a": "Salse",
+      "b": "Topsider"
+    },
+    {
+      "a": "Salse",
+      "b": "Caerleon"
+    },
+    {
+      "a": "Salse",
+      "b": "Upper Nile"
+    },
+    {
+      "a": "Sauce Boat",
+      "b": "Plugged Nickle"
+    },
+    {
+      "a": "Secretariat",
+      "b": "Blade"
+    },
+    {
+      "a": "Secretariat",
+      "b": "Bold Bidder"
+    },
+    {
+      "a": "Secretariat",
+      "b": "Key to the Kingdom"
+    },
+    {
+      "a": "Secretariat",
+      "b": "ボールドラッド"
+    },
+    {
+      "a": "Seeking the Gold",
+      "b": "Miswaki"
+    },
+    {
+      "a": "Seeking the Gold",
+      "b": "Woodman"
+    },
+    {
+      "a": "Seeking the Gold",
+      "b": "アフリート"
+    },
+    {
+      "a": "Seeking the Gold",
+      "b": "マイニング"
+    },
+    {
+      "a": "Shareef Dancer",
+      "b": "El Gran Senor"
+    },
+    {
+      "a": "Shareef Dancer",
+      "b": "El Prado"
+    },
+    {
+      "a": "Shareef Dancer",
+      "b": "Glenstal"
+    },
+    {
+      "a": "Shareef Dancer",
+      "b": "トライマイベスト"
+    },
+    {
+      "a": "Sholokhov",
+      "b": "Barathea"
+    },
+    {
+      "a": "Sholokhov",
+      "b": "El Prado"
+    },
+    {
+      "a": "Sholokhov",
+      "b": "Poliglote"
+    },
+    {
+      "a": "Silver Buck",
+      "b": "Drone"
+    },
+    {
+      "a": "Sir Ivor",
+      "b": "Drone"
+    },
+    {
+      "a": "Souvenir Copy",
+      "b": "Golden Voyager"
+    },
+    {
+      "a": "Souvenir Copy",
+      "b": "Sahm"
+    },
+    {
+      "a": "Speightstown",
+      "b": "Cat Thief"
+    },
+    {
+      "a": "Speightstown",
+      "b": "Catienus"
+    },
+    {
+      "a": "Speightstown",
+      "b": "Pure Prize"
+    },
+    {
+      "a": "Speightstown",
+      "b": "Tale of the Cat"
+    },
+    {
+      "a": "Speightstown",
+      "b": "Forest Wildcat"
+    },
+    {
+      "a": "Suave Dancer",
+      "b": "Zabeel"
+    },
+    {
+      "a": "Sunriver",
+      "b": "Rahy"
+    },
+    {
+      "a": "Sunriver",
+      "b": "シングスピール"
+    },
+    {
+      "a": "Tale of the Cat",
+      "b": "Cat Thief"
+    },
+    {
+      "a": "Tale of the Cat",
+      "b": "Catienus"
+    },
+    {
+      "a": "Tale of the Cat",
+      "b": "Grand Slam"
+    },
+    {
+      "a": "Tale of the Cat",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "Tale of the Cat",
+      "b": "Speightstown"
+    },
+    {
+      "a": "Tale of the Cat",
+      "b": "Zafonic"
+    },
+    {
+      "a": "Tale of the Cat",
+      "b": "Zamindar"
+    },
+    {
+      "a": "Tale of the Cat",
+      "b": "Forest Wildcat"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "Naskra"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "Far North"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "Wajima"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "Chieftain"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "Full Out"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "Jefferson"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "エルコンドルパサー"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "ファルブラヴ"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "エリシオ"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "Librettisit"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "Crocker Road"
+    },
+    {
+      "a": "The Minstrel",
+      "b": "Country Reel"
+    },
+    {
+      "a": "The Prime Minister",
+      "b": "Caerleon"
+    },
+    {
+      "a": "Theatrical",
+      "b": "Fairy King"
+    },
+    {
+      "a": "Theatrical",
+      "b": "Sadler's Wells"
+    },
+    {
+      "a": "Tim Tam",
+      "b": "Buckpasser"
+    },
+    {
+      "a": "Tim Tam",
+      "b": "Silver Saver"
+    },
+    {
+      "a": "Time for a Change",
+      "b": "Private Account"
+    },
+    {
+      "a": "Tiznow",
+      "b": "Believe It"
+    },
+    {
+      "a": "Topsider",
+      "b": "Lomond"
+    },
+    {
+      "a": "Topsider",
+      "b": "Oratorio"
+    },
+    {
+      "a": "Topsider",
+      "b": "Bold Bidder"
+    },
+    {
+      "a": "Topsider",
+      "b": "Poker"
+    },
+    {
+      "a": "Topsider",
+      "b": "Cold Reception"
+    },
+    {
+      "a": "Topsider",
+      "b": "General Assembly"
+    },
+    {
+      "a": "Topsider",
+      "b": "Secretariat"
+    },
+    {
+      "a": "Topsider",
+      "b": "Mill Reef"
+    },
+    {
+      "a": "Topsider",
+      "b": "Riverman"
+    },
+    {
+      "a": "Topsider",
+      "b": "Blade"
+    },
+    {
+      "a": "Topsider",
+      "b": "Red Sunset"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "Confidential Talk"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "Dubai Millennium"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "El Gran Senor"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "El Prado"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "Polish Precedent"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "Shareef Dancer"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "デインヒル"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "トライマイベスト"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "マルゼンスキー"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "ラシアンルーブル"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "ラストタイクーン"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "ロドリゴデトリアーノ"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "スターリングローズ"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "ピルサドスキー"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "ハンセル"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "Privately Held"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "Rossini"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "Polish Numbers"
+    },
+    {
+      "a": "Touch Gold",
+      "b": "ワージブ"
+    },
+    {
+      "a": "Tricky Creek",
+      "b": "Niniski"
+    },
+    {
+      "a": "Tyrant",
+      "b": "Raja Baba"
+    },
+    {
+      "a": "Unbridled",
+      "b": "エンパイアメーカー"
+    },
+    {
+      "a": "Vaguely Noble",
+      "b": "Aggressor"
+    },
+    {
+      "a": "Vettori",
+      "b": "スズカマンボ"
+    },
+    {
+      "a": "Wajima",
+      "b": "Naskra"
+    },
+    {
+      "a": "Wajima",
+      "b": "Full Out"
+    },
+    {
+      "a": "Wajima",
+      "b": "Chieftain"
+    },
+    {
+      "a": "Wajima",
+      "b": "Jefferson"
+    },
+    {
+      "a": "Wild Again",
+      "b": "Icecapade"
+    },
+    {
+      "a": "Wild Again",
+      "b": "Northern Dancer"
+    },
+    {
+      "a": "Wild Again",
+      "b": "ノーザンテースト"
+    },
+    {
+      "a": "Woodman",
+      "b": "Miswaki"
+    },
+    {
+      "a": "Woodman",
+      "b": "Seeking the Gold"
+    },
+    {
+      "a": "Woodman",
+      "b": "アフリート"
+    },
+    {
+      "a": "Woodman",
+      "b": "マイニング"
+    },
+    {
+      "a": "Zabeel",
+      "b": "Grape Tree Road"
+    },
+    {
+      "a": "Zabeel",
+      "b": "Poliglote"
+    },
+    {
+      "a": "Zabeel",
+      "b": "Suave Dancer"
+    },
+    {
+      "a": "Zafonic",
+      "b": "Grand Slam"
+    },
+    {
+      "a": "Zafonic",
+      "b": "Forest Wildcat"
+    },
+    {
+      "a": "Zafonic",
+      "b": "Cat Thief"
+    },
+    {
+      "a": "Zafonic",
+      "b": "Catienus"
+    },
+    {
+      "a": "Zafonic",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "Zafonic",
+      "b": "Pure Prize"
+    },
+    {
+      "a": "Zafonic",
+      "b": "Tale of the Cat"
+    },
+    {
+      "a": "Zafonic",
+      "b": "Zamindar"
+    },
+    {
+      "a": "Zamindar",
+      "b": "Grand Slam"
+    },
+    {
+      "a": "Zamindar",
+      "b": "Catienus"
+    },
+    {
+      "a": "Zamindar",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "Zamindar",
+      "b": "Pure Prize"
+    },
+    {
+      "a": "Zamindar",
+      "b": "Tale of the Cat"
+    },
+    {
+      "a": "Zamindar",
+      "b": "Zafonic"
+    },
+    {
+      "a": "Zaminder",
+      "b": "Forest Wildcat"
+    },
+    {
+      "a": "Zaminder",
+      "b": "Cat Thief"
+    },
+    {
+      "a": "アグネスデジタル",
+      "b": "フォーティナイナーズサン"
+    },
+    {
+      "a": "アドマイヤベガ",
+      "b": "ウインバリアシオン"
+    },
+    {
+      "a": "アフリート",
+      "b": "Miswaki"
+    },
+    {
+      "a": "アフリート",
+      "b": "Seeking the Gold"
+    },
+    {
+      "a": "アフリート",
+      "b": "Woodman"
+    },
+    {
+      "a": "アフリート",
+      "b": "マイニング"
+    },
+    {
+      "a": "アラジ",
+      "b": "Candy Stripes"
+    },
+    {
+      "a": "アラジ",
+      "b": "Noverre"
+    },
+    {
+      "a": "アラジ",
+      "b": "Zilzal"
+    },
+    {
+      "a": "アラジ",
+      "b": "ベリファ"
+    },
+    {
+      "a": "アラジ",
+      "b": "グルームダンサー"
+    },
+    {
+      "a": "アラジ",
+      "b": "Manila"
+    },
+    {
+      "a": "アルデバランII",
+      "b": "Our Emblem"
+    },
+    {
+      "a": "アーティアス",
+      "b": "Jolie Jo"
+    },
+    {
+      "a": "アーネストリー",
+      "b": "スクリーンヒーロー"
+    },
+    {
+      "a": "イスラボニータ",
+      "b": "ダノンシャンティ"
+    },
+    {
+      "a": "ウインバリアシオン",
+      "b": "アドマイヤベガ"
+    },
+    {
+      "a": "エイシンアポロン",
+      "b": "Giant's Causeway"
+    },
+    {
+      "a": "エスケンデレヤ",
+      "b": "スズカコーズウェイ"
+    },
+    {
+      "a": "エピファネイア",
+      "b": "ディーマジェスティ"
+    },
+    {
+      "a": "エリシオ",
+      "b": "ファルブラヴ"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "Jeune Homme"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "パントレセレブル"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "Northern Afleet"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "Peintre Celebre"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "Canadian Frontier"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "Iffraaj"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "Kingmambo"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "Lemon Drop Kid"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "ストラヴィンスキー"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "バゴ"
+    },
+    {
+      "a": "エルコンドルパサー",
+      "b": "Crocker Road"
+    },
+    {
+      "a": "エルナンド",
+      "b": "Distorted Humor"
+    },
+    {
+      "a": "エルナンド",
+      "b": "エンドスウィープ"
+    },
+    {
+      "a": "エルナンド",
+      "b": "Lycius"
+    },
+    {
+      "a": "エンドスウィープ",
+      "b": "Distorted Humor"
+    },
+    {
+      "a": "エンドスウィープ",
+      "b": "エルナンド"
+    },
+    {
+      "a": "エンパイアメーカー",
+      "b": "Rubiano"
+    },
+    {
+      "a": "エンパイアメーカー",
+      "b": "Unbridled"
+    },
+    {
+      "a": "オペラハウス",
+      "b": "モンジュー"
+    },
+    {
+      "a": "オリオンザサンクス",
+      "b": "Street Cry"
+    },
+    {
+      "a": "オリオンザサンクス",
+      "b": "シビルウォー"
+    },
+    {
+      "a": "オリオンザサンクス",
+      "b": "シャンハイ"
+    },
+    {
+      "a": "オリオンザサンクス",
+      "b": "ヘクタープロテクター"
+    },
+    {
+      "a": "オルフェーヴル",
+      "b": "ドリームジャーニー"
+    },
+    {
+      "a": "オンファイア",
+      "b": "ディープインパクト"
+    },
+    {
+      "a": "オンファイア",
+      "b": "ブラックタイド"
+    },
+    {
+      "a": "カジノドライヴ",
+      "b": "Awesome Again"
+    },
+    {
+      "a": "クラウンドプリンス",
+      "b": "Majestic Prince"
+    },
+    {
+      "a": "グルームダンサー",
+      "b": "アラジ"
+    },
+    {
+      "a": "グルームダンサー",
+      "b": "Candy Stripes"
+    },
+    {
+      "a": "コパノリチャード",
+      "b": "ザサンデーフサイチ"
+    },
+    {
+      "a": "コパノリチャード",
+      "b": "サムライハート"
+    },
+    {
+      "a": "ゴールドヘイロー",
+      "b": "More Than Ready"
+    },
+    {
+      "a": "ゴールドヘイロー",
+      "b": "Medicean"
+    },
+    {
+      "a": "ゴールドヘイロー",
+      "b": "ストーミングホーム"
+    },
+    {
+      "a": "サウスアトランティック",
+      "b": "Risen Star"
+    },
+    {
+      "a": "サウスアトランティック",
+      "b": "ミルジョージ"
+    },
+    {
+      "a": "サムライハート",
+      "b": "ザサンデーフサイチ"
+    },
+    {
+      "a": "サムライハート",
+      "b": "コパノリチャード"
+    },
+    {
+      "a": "サンシャインフォーエヴァー",
+      "b": "Dynaformer"
+    },
+    {
+      "a": "サンシャインフォーエヴァー",
+      "b": "ブライアンズタイム"
+    },
+    {
+      "a": "サンプリンス",
+      "b": "Blushing Groom"
+    },
+    {
+      "a": "ザサンデーフサイチ",
+      "b": "サムライハート"
+    },
+    {
+      "a": "ザサンデーフサイチ",
+      "b": "コパノリチャード"
+    },
+    {
+      "a": "シャンハイ",
+      "b": "ヘクタープロテクター"
+    },
+    {
+      "a": "シングスピール",
+      "b": "Sunriver"
+    },
+    {
+      "a": "ジェイドハンター",
+      "b": "Lycius"
+    },
+    {
+      "a": "ジャングルポケット",
+      "b": "ミラクルアドマイヤ"
+    },
+    {
+      "a": "スクリーンヒーロー",
+      "b": "アーネストリー"
+    },
+    {
+      "a": "スズカコーズウェイ",
+      "b": "エスケンデレヤ"
+    },
+    {
+      "a": "スズカマンボ",
+      "b": "Vettori"
+    },
+    {
+      "a": "スターリングローズ",
+      "b": "Dubai Millennium"
+    },
+    {
+      "a": "スターリングローズ",
+      "b": "Rossini"
+    },
+    {
+      "a": "ストラヴィンスキー",
+      "b": "Awesome Again"
+    },
+    {
+      "a": "ストラヴィンスキー",
+      "b": "バゴ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "スピルバーグ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ゼンノロブロイ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "トーセンラー"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Iffraaj"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "More Than Ready"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Awesome Again"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Catienus"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Distorted Humor"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Dubai Millennium"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Elusive Quality"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Galileo"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Golden Voyager"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Grand Slam"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Green Tune"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Kingmambo"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Lycius"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Machiavellian"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Mamool"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Marquetry"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Medicean"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Motivator"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Northern Afleet"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Pure Priz"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Pure Prize"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Rossini"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Rubiano"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Sahm"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Silver Deputy"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Smoke Glacken"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Souvenir Copy"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Street Cry"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Tale of the Cat"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Vettori"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Zafonic"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "Zamindar"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "アドマイヤムーン"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ヴァーミリアン"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ヴィクトワールピサ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "エルコンドルパサー"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "エルナンド"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "エンドスウィープ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "エンパイアメーカー"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "カネヒキリ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ゴールドヘイロー"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "サンダーガルチ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "シビルウォー"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "スウィフトカレント"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "スズカマンボ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "スターリングローズ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ストラヴィンスキー"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ストリートセンス"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "トゥザグローリー"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "トゥザワールド"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ドゥラメンテ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ノーザンリバー"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "バゴ"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ハンセル"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ベルシャザール"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "リーチザクラウン"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ローズキングダム"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ワークフォース"
+    },
+    {
+      "a": "ストーミングホーム",
+      "b": "ワイルドワンダー"
+    },
+    {
+      "a": "スピルバーグ",
+      "b": "ヴァーミリアン"
+    },
+    {
+      "a": "スピルバーグ",
+      "b": "トーセンラー"
+    },
+    {
+      "a": "スピルバーグ",
+      "b": "リオンディーズ"
+    },
+    {
+      "a": "セクレト",
+      "b": "Dare and Go"
+    },
+    {
+      "a": "セクレト",
+      "b": "Magesterial"
+    },
+    {
+      "a": "ターゴワイス",
+      "b": "Marauding"
+    },
+    {
+      "a": "ターゴワイス",
+      "b": "Jefferson"
+    },
+    {
+      "a": "ダノンシャンティ",
+      "b": "フジキセキ"
+    },
+    {
+      "a": "ダノンシャンティ",
+      "b": "イスラボニータ"
+    },
+    {
+      "a": "ダノンシャンティ",
+      "b": "カネヒキリ"
+    },
+    {
+      "a": "ダノンシャンティ",
+      "b": "キンシャサノキセキ"
+    },
+    {
+      "a": "ダノンシャンティ",
+      "b": "Noverre"
+    },
+    {
+      "a": "ダンシングブレーヴ",
+      "b": "Alzao"
+    },
+    {
+      "a": "ダンシングブレーヴ",
+      "b": "Ghadeer"
+    },
+    {
+      "a": "テンビー",
+      "b": "Marju"
+    },
+    {
+      "a": "ディープインパクト",
+      "b": "オンファイア"
+    },
+    {
+      "a": "ディープインパクト",
+      "b": "ブラックタイド"
+    },
+    {
+      "a": "ディーマジェスティ",
+      "b": "エピファネイア"
+    },
+    {
+      "a": "トゥザグローリー",
+      "b": "トゥザワールド"
+    },
+    {
+      "a": "トゥザグローリー",
+      "b": "ノーザンリバー"
+    },
+    {
+      "a": "トゥザワールド",
+      "b": "トゥザグローリー"
+    },
+    {
+      "a": "トゥザワールド",
+      "b": "ノーザンリバー"
+    },
+    {
+      "a": "トウショウボーイ",
+      "b": "Delta Judge"
+    },
+    {
+      "a": "トウショウボーイ",
+      "b": "T.V.Commercial"
+    },
+    {
+      "a": "トライマイベスト",
+      "b": "El Gran Senor"
+    },
+    {
+      "a": "トライマイベスト",
+      "b": "Shareef Dancer"
+    },
+    {
+      "a": "トーセンジョーダン",
+      "b": "ジャングルポケット"
+    },
+    {
+      "a": "トーセンラー",
+      "b": "ヴァーミリアン"
+    },
+    {
+      "a": "トーセンラー",
+      "b": "スピルバーグ"
+    },
+    {
+      "a": "トーセンラー",
+      "b": "リオンディーズ"
+    },
+    {
+      "a": "ドゥラメンテ",
+      "b": "ラブリーデイ"
+    },
+    {
+      "a": "ドリームジャーニー",
+      "b": "オルフェーヴル"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Be My Guest"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Clever Trick"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Dance Spell"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Dancing Count"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Danzig"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Dixieland Band"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "El Gran Senor"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Fabulous Dancer"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Fairy King"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Far North"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Fioravanti"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Herat"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Hero's Honor"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Icecapade"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Lomond"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Lyphard"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Majestic Prince"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Mari's Book"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Night Shift"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Nijinsky"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Northern Dancer"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Nureyev"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Sadler's Wells"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Shareef Dancer"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Ski Champ"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Storm Bird"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "The Minstrel"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Topsider"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Vice Regent"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "Wild Again"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "トライマイベスト"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "ナイスダンサー"
+    },
+    {
+      "a": "ノーザリー",
+      "b": "ノーザンテースト"
+    },
+    {
+      "a": "ノーザンテースト",
+      "b": "Icecapade"
+    },
+    {
+      "a": "ノーザンテースト",
+      "b": "Northern Dancer"
+    },
+    {
+      "a": "ノーザンテースト",
+      "b": "Wild Again"
+    },
+    {
+      "a": "ノーザンリバー",
+      "b": "トゥザワールド"
+    },
+    {
+      "a": "ノーザンリバー",
+      "b": "トゥザグローリー"
+    },
+    {
+      "a": "ハタノヴァンクール",
+      "b": "ワイルドワンダー"
+    },
+    {
+      "a": "ハンセル",
+      "b": "Dubai Millennium"
+    },
+    {
+      "a": "ハンセル",
+      "b": "スターリングローズ"
+    },
+    {
+      "a": "ハンセル",
+      "b": "Rossini"
+    },
+    {
+      "a": "ハードスパン",
+      "b": "Arch"
+    },
+    {
+      "a": "バゴ",
+      "b": "Awesome Again"
+    },
+    {
+      "a": "バゴ",
+      "b": "ストラヴィンスキー"
+    },
+    {
+      "a": "バーディバーディ",
+      "b": "ワイルドワンダー"
+    },
+    {
+      "a": "バーディバーディ",
+      "b": "フリオーソ"
+    },
+    {
+      "a": "パントレセレブル",
+      "b": "Peintre Celebre"
+    },
+    {
+      "a": "パントレセレブル",
+      "b": "Jeune Homme"
+    },
+    {
+      "a": "ビッグアーサー",
+      "b": "Flower Alley"
+    },
+    {
+      "a": "ビッグアーサー",
+      "b": "ヴァーミリアン"
+    },
+    {
+      "a": "ピルサドスキー",
+      "b": "ラストタイクーン"
+    },
+    {
+      "a": "ファルブラヴ",
+      "b": "エリシオ"
+    },
+    {
+      "a": "フォーティナイナー",
+      "b": "Mari's Book"
+    },
+    {
+      "a": "フォーティナイナーズサン",
+      "b": "アグネスデジタル"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Kings Lake"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Lomond"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Marju"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Suave Dancer"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Topsider"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Upper Nile"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "テンビー"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Zabeel"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Grape Tree Road"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Salse"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Boundary"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Caerleon"
+    },
+    {
+      "a": "フサイチコンコルド",
+      "b": "Goofalik"
+    },
+    {
+      "a": "フリオーソ",
+      "b": "ワイルドワンダー"
+    },
+    {
+      "a": "フリオーソ",
+      "b": "バーディバーディ"
+    },
+    {
+      "a": "ブライアンズタイム",
+      "b": "Dynaformer"
+    },
+    {
+      "a": "ブライアンズタイム",
+      "b": "サンシャインフォーエヴァー"
+    },
+    {
+      "a": "ブラックタイド",
+      "b": "オンファイア"
+    },
+    {
+      "a": "ブラックタイド",
+      "b": "ディープインパクト"
+    },
+    {
+      "a": "ヘクタープロテクター",
+      "b": "シャンハイ"
+    },
+    {
+      "a": "ボールドラッド",
+      "b": "Blade"
+    },
+    {
+      "a": "ボールドラッド",
+      "b": "Bold Bidder"
+    },
+    {
+      "a": "ボールドラッド",
+      "b": "Key to the Kingdom"
+    },
+    {
+      "a": "ボールドラッド",
+      "b": "Secretariat"
+    },
+    {
+      "a": "マイニング",
+      "b": "Miswaki"
+    },
+    {
+      "a": "マイニング",
+      "b": "Seeking the Gold"
+    },
+    {
+      "a": "マイニング",
+      "b": "Woodman"
+    },
+    {
+      "a": "マイニング",
+      "b": "アフリート"
+    },
+    {
+      "a": "マイネルラヴ",
+      "b": "ロードアルティマ"
+    },
+    {
+      "a": "マイネルラヴ",
+      "b": "Proud Citizen"
+    },
+    {
+      "a": "マジェスティックウォリアー",
+      "b": "Canadian Frontier"
+    },
+    {
+      "a": "マジェスティックウォリアー",
+      "b": "Mineshaft"
+    },
+    {
+      "a": "マジェスティックウォリアー",
+      "b": "Pulpit"
+    },
+    {
+      "a": "ミラクルアドマイヤ",
+      "b": "ジャングルポケット"
+    },
+    {
+      "a": "ミルジョージ",
+      "b": "Risen Star"
+    },
+    {
+      "a": "ミルジョージ",
+      "b": "サウスアトランティック"
+    },
+    {
+      "a": "モンジュー",
+      "b": "オペラハウス"
+    },
+    {
+      "a": "ラインゴールド",
+      "b": "Chieftain"
+    },
+    {
+      "a": "ラインゴールド",
+      "b": "Naskra"
+    },
+    {
+      "a": "ラインゴールド",
+      "b": "Full Out"
+    },
+    {
+      "a": "ラストタイクーン",
+      "b": "ピルサドスキー"
+    },
+    {
+      "a": "ラブリーデイ",
+      "b": "ラブリーデイ"
+    },
+    {
+      "a": "ラブリーデイ",
+      "b": "ドゥラメンテ"
+    },
+    {
+      "a": "リィフォー",
+      "b": "Goofalik"
+    },
+    {
+      "a": "リオンディーズ",
+      "b": "ヴァーミリアン"
+    },
+    {
+      "a": "リオンディーズ",
+      "b": "スピルバーグ"
+    },
+    {
+      "a": "リオンディーズ",
+      "b": "トーセンラー"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "Champs Elysees"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "Danehill Dancer"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "Dansili"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "Dylan Thomas"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "Forestry"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "Kodiac"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "Redoute's Choice"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "グラスワンダー"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "ストリートセンス"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "タイガーヒル"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "デインヒル"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "Fastnet Rock"
+    },
+    {
+      "a": "ロックオブジブラルタル",
+      "b": "タイトスポット"
+    },
+    {
+      "a": "ロードアルティマ",
+      "b": "マイネルラヴ"
+    },
+    {
+      "a": "ロードアルティマ",
+      "b": "Proud Citizen"
+    },
+    {
+      "a": "ワイルドワンダー",
+      "b": "ゴールドヘイロー"
+    },
+    {
+      "a": "ワイルドワンダー",
+      "b": "スウィフトカレント"
+    },
+    {
+      "a": "ワイルドワンダー",
+      "b": "スズカマンボ"
+    },
+    {
+      "a": "ワイルドワンダー",
+      "b": "ゼンノロブロイ"
+    },
+    {
+      "a": "ワイルドワンダー",
+      "b": "Machiavellian"
+    },
+    {
+      "a": "ワイルドワンダー",
+      "b": "More Than Ready"
+    },
+    {
+      "a": "ワイルドワンダー",
+      "b": "ハタノヴァンクール"
+    },
+    {
+      "a": "ワイルドワンダー",
+      "b": "フリオーソ"
+    },
+    {
+      "a": "ワイルドワンダー",
+      "b": "バーディバーディ"
+    },
+    {
+      "a": "ヴァーミリアン",
+      "b": "スピルバーグ"
+    },
+    {
+      "a": "ヴァーミリアン",
+      "b": "トーセンラー"
+    },
+    {
+      "a": "ヴァーミリアン",
+      "b": "ビッグアーサー"
+    },
+    {
+      "a": "ヴァーミリアン",
+      "b": "リオンディーズ"
+    }
+  ]
+}
