@@ -1,5 +1,5 @@
 (()=>{
-const V='1.14.0',BUILD='2026.09.18-31',db=window.db,$=s=>document.querySelector(s);
+const V='1.14.1',BUILD='2026.09.18-32',db=window.db,$=s=>document.querySelector(s);
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ver=$('#ver');if(ver)ver.textContent=`v${V} / Build ${BUILD}`;
@@ -115,5 +115,10 @@ async function load(){
   research=r;mares=m.broodmares||[];stallions=s.stallions||[];theory=t;window.DABISTA_REBUILD_RESEARCH=research;fillStarter();render()
  }catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'rebuild-research: '+String(e)});const st=$('#rebuildStatus');if(st)st.textContent='研究マスタの読み込みに失敗しました。更新確認を試してください。'}
 }
+function newer(a,b){const A=String(a).split('.').map(Number),B=String(b).split('.').map(Number);for(let i=0;i<3;i++){if((A[i]||0)!==(B[i]||0))return(A[i]||0)>(B[i]||0)}return false}
+async function checkUpdate(show=false){try{const u=new URL('version.json',location.href);u.searchParams.set('_',Date.now());const r=await fetch(u,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});if(!r.ok)throw Error('HTTP '+r.status);const v=await r.json();if(newer(v.version,V)||v.build!==BUILD){$('#updateText').textContent=`最新版 v${v.version} / ${v.build} があります`;$('#updatebar').classList.add('show')}else{$('#updatebar').classList.remove('show');if(show)alert(`最新版です\nv${V} / ${BUILD}`)}}catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'v1.14 update-check: '+String(e)});if(show)alert('更新確認に失敗しました。通信状態を確認してください。')}}
+async function forceUpdate(){try{if('serviceWorker'in navigator){for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}if('caches'in window){for(const k of await caches.keys())await caches.delete(k)}}catch{}const u=new URL(location.href);u.searchParams.set('update',Date.now());location.replace(u.href)}
+function installVersionSupport(){setTimeout(()=>{if($('#refreshBtn'))$('#refreshBtn').onclick=()=>checkUpdate(true);if($('#applyUpdate'))$('#applyUpdate').onclick=forceUpdate;checkUpdate(false)},3800)}
 setTimeout(load,900);
+installVersionSupport();
 })();
