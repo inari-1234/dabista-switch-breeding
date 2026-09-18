@@ -1,0 +1,76 @@
+name: Validate v1.14.1
+on:
+  push:
+    paths: ['.github/workflows/validate-v1141.yml']
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Static and regression validation
+        run: |
+          node --check v24.js
+          python -m json.tool data/rebuild-research.json >/dev/null
+          python -m json.tool version.json >/dev/null
+          test ! -f v23.js
+          test ! -f data/training-jockey-master.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          idx=Path('index.html').read_text()
+          js=Path('v24.js').read_text()
+          assert 'v24.js?v=1.14.1' in idx
+          assert 'v23.js' not in idx and '1.13.0' not in idx
+          assert idx.count('<section') == idx.count('</section>')
+          assert idx.count('<dialog') == idx.count('</dialog>')
+          assert "const V='1.14.1',BUILD='2026.09.18-32'" in js
+          assert "data-open-route" in js and "final" not in ""
+          assert "installVersionSupport" in js
+          research=json.load(open('data/rebuild-research.json'))
+          mares={x['name']:x for x in json.load(open('data/default-broodmares.json'))['broodmares']}
+          stallions={x['name']:x for x in json.load(open('data/stallions.json'))['stallions']}
+          expected={
+            'エイスト':(60,76,62,6,7,1),
+            'ミゼラブルウェイ':(64,58,58,9,2,0),
+            'ミニミニデート':(62,46,53,10,5,0),
+            'ラブアタック':(60,42,51,11,0,1),
+          }
+          for n,v in expected.items():
+            m=mares[n]
+            assert (m['sp'],m['st'],m['pw'],m['nsp'],m['nst'],m['npw'])==v,(n,m)
+          exp_s={
+            'ステイゴールド':(1800,2600,'A','A','C'),
+            'ダイワメジャー':(1400,1800,'A','B','A'),
+            'ワイルドラッシュ':(1400,1800,'B','B','A'),
+          }
+          for n,v in exp_s.items():
+            s=stallions[n]
+            assert (s['minD'],s['maxD'],s['record'],s['guts'],s['stable'])==v,(n,s)
+          assert {r['id'] for r in research['routes']}=={'arc-a','rebuild-b','bc-c1','bc-c2'}
+          assert research['constraints']=={
+            'platform':'Nintendo Switch版',
+            'foreignStallionsAvailable':False,
+            'springSweetsRequired':False,
+            'finalGoal':['凱旋門賞','BC級継続生産']
+          }
+          pair={r['id']:r['firstPairNitro'] for r in research['routes']}
+          assert (pair['arc-a']['sp'],pair['arc-a']['st'],pair['arc-a']['pw'])==(14,8,1)
+          assert (pair['rebuild-b']['sp'],pair['rebuild-b']['st'])==(16,3)
+          assert (pair['bc-c1']['sp'],pair['bc-c1']['st'],pair['bc-c1']['pw'])==(20,5,2)
+          assert (pair['bc-c2']['sp'],pair['bc-c2']['st'])==(16,6)
+          ver=json.load(open('version.json'))
+          assert ver['version']=='1.14.1' and ver['build']=='2026.09.18-32'
+          print('PASS: v1.14.1 rebuild planner regression checks')
+          PY
+      - name: Cleanup validation workflow
+        run: |
+          rm .github/workflows/validate-v1141.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Validate v1.14.1 rebuild planner and remove one-time workflow"
+          git push
