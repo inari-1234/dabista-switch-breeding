@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "title": "ダビスタSwitch 牧場再建・配合研究",
+  "updatedAt": "2026-09-18",
+  "constraints": {
+    "platform": "Nintendo Switch版",
+    "foreignStallionsAvailable": false,
+    "springSweetsRequired": false,
+    "finalGoal": [
+      "凱旋門賞",
+      "BC級継続生産"
+    ]
+  },
+  "principles": [
+    {
+      "kind": "research-conclusion",
+      "title": "繁殖能力とニトロを分離",
+      "text": "繁殖牝馬能力は平均値・当たり率、ニトロは到達可能な上限側の指標として扱う。高ニトロだけで優劣を決めない。"
+    },
+    {
+      "kind": "research-conclusion",
+      "title": "ニトロは累積しない",
+      "text": "世代を重ねれば自動的に増える値ではない。最終配合の有効血統内に残る因子から、その都度評価する。"
+    },
+    {
+      "kind": "operation",
+      "title": "最終締め基準",
+      "text": "途中世代の高ニトロではなく、締め種牡馬を付けた最終世代のSP/ST/PWニトロと母能力を同時に見る。"
+    },
+    {
+      "kind": "selection",
+      "title": "繁殖牝馬を選抜",
+      "text": "G1勝利数だけで残さず、同配合から複数牝馬を作り、同一種牡馬でSP/STコメント率・産駒能力・上振れ率を比較する。"
+    }
+  ],
+  "estimateModel": {
+    "status": "プレイヤー推定・公式式ではない",
+    "scope": "1000～1200m型の父を想定した基礎SP側のモデル",
+    "broodmareSpStShare": 0.6,
+    "baseSpCapAssumption": 80,
+    "thresholds": [
+      {
+        "condition": "凝った補正なし",
+        "spStApprox": 134
+      },
+      {
+        "condition": "凝った+5相当を仮定",
+        "spStApprox": 125
+      },
+      {
+        "condition": "凝った+10相当を仮定",
+        "spStApprox": 117
+      }
+    ]
+  },
+  "starters": [
+    "エイスト",
+    "ミゼラブルウェイ",
+    "ミニミニデート",
+    "ラブアタック"
+  ],
+  "routes": [
+    {
+      "id": "arc-a",
+      "goal": "arc",
+      "title": "A：凱旋門賞を最短で狙う",
+      "startMare": "エイスト",
+      "firstSire": "ステイゴールド",
+      "firstPairNitro": {
+        "sp": 14,
+        "st": 8,
+        "pw": 1
+      },
+      "theories": [
+        "凝った"
+      ],
+      "pairNitroStatus": "引き継ぎ研究値。親ニトロ単純加算ではない。",
+      "generations": [
+        {
+          "generation": 1,
+          "label": "エイスト × ステイゴールド",
+          "action": "高能力産駒を複数生産し、SP/STを優先して選抜。"
+        },
+        {
+          "generation": 2,
+          "label": "選抜産駒",
+          "action": "競走能力が十分なら直接凱旋門賞へ。牝馬なら繁殖能力を確認して次世代候補へ。"
+        },
+        {
+          "generation": 3,
+          "label": "締めは固定しない",
+          "action": "繁殖入りした個体の能力・15祖先・最終ニトロを再計算してから国内種牡馬を決定。"
+        }
+      ],
+      "caution": "SP14だけで切らない。母SP+ST136、父の実績A・底力A・安定C、1800～2600m、ST側の余力をまとめて評価する。"
+    },
+    {
+      "id": "rebuild-b",
+      "goal": "rebuild",
+      "title": "B：牧場平均能力を立て直す",
+      "startMare": "ミゼラブルウェイ",
+      "firstSire": "ダイワメジャー",
+      "firstPairNitro": {
+        "sp": 16,
+        "st": 3,
+        "pw": null
+      },
+      "theories": [
+        "凝った"
+      ],
+      "pairNitroStatus": "引き継ぎ研究値。PWはこの研究値では未確定。",
+      "generations": [
+        {
+          "generation": 1,
+          "label": "ミゼラブルウェイ × ダイワメジャー",
+          "action": "平均値を落としにくい高SP牝馬を複数確保。"
+        },
+        {
+          "generation": 2,
+          "label": "高SP・高ST牝馬のみ繁殖へ",
+          "action": "同じ締め種牡馬で産駒比較し、繁殖能力の高い母を残す。"
+        },
+        {
+          "generation": 3,
+          "label": "国内締めを再選択",
+          "action": "最終ニトロ、配合理論、父の実績・安定・底力を再計算して締める。"
+        }
+      ],
+      "caution": "SPニトロ16だけを理由に継続しない。母自身のSP64/ST58/PW58を維持できるかを選抜条件にする。"
+    },
+    {
+      "id": "bc-c1",
+      "goal": "bc",
+      "title": "C1：高ニトロ素材を作る",
+      "startMare": "ラブアタック",
+      "firstSire": "ワイルドラッシュ",
+      "firstPairNitro": {
+        "sp": 20,
+        "st": 5,
+        "pw": 2
+      },
+      "theories": [],
+      "pairNitroStatus": "引き継ぎ研究値。",
+      "generations": [
+        {
+          "generation": 1,
+          "label": "ラブアタック × ワイルドラッシュ",
+          "action": "高SP上限素材を作る。"
+        },
+        {
+          "generation": 2,
+          "label": "能力選抜した自家製牝馬／種牡馬",
+          "action": "途中ニトロ20を維持できる前提にしない。繁殖能力が低い個体は素材でも切る。"
+        },
+        {
+          "generation": 3,
+          "label": "A/B系統との合流候補",
+          "action": "自家製種牡馬を含め、最終血統表に必要因子が残る組み方を優先。"
+        }
+      ],
+      "caution": "母SP+ST102。直接凱旋門用というより長期素材。高ニトロで低母能力を帳消しにできるとは扱わない。"
+    },
+    {
+      "id": "bc-c2",
+      "goal": "bc",
+      "title": "C2：高ニトロ＋配合理論の素材",
+      "startMare": "ミニミニデート",
+      "firstSire": "ダイワメジャー",
+      "firstPairNitro": {
+        "sp": 16,
+        "st": 6,
+        "pw": null
+      },
+      "theories": [
+        "面白",
+        "凝った"
+      ],
+      "pairNitroStatus": "引き継ぎ研究値。PWはこの研究値では未確定。",
+      "generations": [
+        {
+          "generation": 1,
+          "label": "ミニミニデート × ダイワメジャー",
+          "action": "高ニトロと配合理論を両立した牝馬を選抜。"
+        },
+        {
+          "generation": 2,
+          "label": "国内種牡馬で能力維持",
+          "action": "外国種牡馬未解禁の間は、最終ニトロが落ちない国内ルートを個体ごとに再計算。"
+        },
+        {
+          "generation": 3,
+          "label": "将来の締め",
+          "action": "外国種牡馬解禁後の既存実績例は参考扱い。現在の牧場では前提にしない。"
+        }
+      ],
+      "caution": "母SP+ST108。ニトロは高いが母能力不足が残りやすいため、産駒能力による選抜を強くかける。"
+    }
+  ],
+  "selectionChecklist": [
+    "母自身のSP/ST/PW",
+    "最終締め時SP/ST/PWニトロ",
+    "凝った・面白・見事・完璧",
+    "クロスと危険条件",
+    "締め種牡馬の実績・底力・安定",
+    "距離適性",
+    "同配合複数頭でのSP/STコメント率と上振れ率"
+  ],
+  "sourceNote": "数値はSwitch版内蔵マスタと引き継ぎ研究を分離して扱う。推定式は公式確定仕様として表示しない。"
+}
