@@ -1,0 +1,82 @@
+6729:         if (omosiro && migoto){
+6730:             return true;
+6731:         }else{
+6732:             return false;
+6733:         }
+6734: 
+6735:     }
+6736: 
+6737:     //ニトロ計算
+6738:     check_nitro(inbreedObject){
+6739:       let temp,numtemp=0,nitrocnt=0;
+6740:       let ary = [],dupAry=[];
+6741: 
+6742:       this.broodmare.ancestor.forEach((bvalue,bindex)=>{
+6743: 
+6744:          //重複チェックも入れる
+6745:          if (!dupAry.includes(bvalue)){
+6746: 
+6747:             temp =  inbreedObject[bvalue];
+6748: 
+6749:             if (typeof temp !== "undefined"){
+6750: 
+6751:                ary = temp.split(',');
+6752: 
+6753:                //七光りスピード値
+6754:                this.nitro_speed += Number(ary[0])*2;
+6755:                this.nitro_stamina -= Number(ary[0]);
+6756:                this.nitro_speed += Number(ary[1]);
+6757: 
+6758:                //パワー値
+6759:                this.nitro_power += Number(ary[2]);
+6760: 
+6761:                //スタミナ値
+6762:                this.nitro_stamina += Number(ary[3]);
+6763:                this.nitro_stamina += Number(ary[4]);               
+6764: 
+6765:             }
+6766:             dupAry.push(bvalue);
+6767:          }//重複チェック終了
+6768:       });
+6769: 
+6770:       this.stallion.ancestor.forEach((svalue,sindex)=>{
+6771: 
+6772:          //重複チェックも入れる
+6773:          if (!dupAry.includes(svalue)){
+6774: 
+6775:             temp =  inbreedObject[svalue];
+6776:             if (typeof temp !== "undefined"){
+6777: 
+6778:                ary = temp.split(',');
+6779: 
+6780:                //七光りスピード値
+6781:                this.nitro_speed += Number(ary[0])*2;
+6782:                this.nitro_stamina -= Number(ary[0]);
+6783:                this.nitro_speed += Number(ary[1]);
+6784: 
+6785:                //パワー値
+6786:                this.nitro_power += Number(ary[2]);
+6787: 
+6788:                //スタミナ値
+6789:                this.nitro_stamina += Number(ary[3]);
+6790:                this.nitro_stamina += Number(ary[4]);
+6791: 
+6792:             }
+6793:             dupAry.push(svalue);
+6794:          }//重複チェック終了
+6795:       });
+6796: 
+6797:     }
+6798: 
+6799:     //インブリード判定
+6800:     check_inbreed(inbreedObject){
+6801:       let arycheck = [];
+6802:       let checkflag = [];
+6803:       let i=0,j=0,stop=0,stop2=0;
+6804:       let cnt=0;
+6805: 
+6806:       //配列でループ
+6807:       this.broodmare.ancestor.forEach((bvalue,bindex)=>{
+6808: 
+6809:          //console.log("->"+this.stallion.name+bvalue);
+6810:           //stallion.nameとも比較する必要がある。
