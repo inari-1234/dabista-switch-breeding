@@ -1,0 +1,111 @@
+name: Validate v1.15 exact nitro
+on:
+  push:
+    paths: ['.github/workflows/validate-v115.yml']
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Static and local regression
+        run: |
+          node --check v25.js
+          python -m json.tool data/nitro-effects.json >/dev/null
+          python -m json.tool data/rebuild-research.json >/dev/null
+          python -m json.tool version.json >/dev/null
+          python - <<'PY'
+          import json, unicodedata
+          from pathlib import Path
+          idx=Path('index.html').read_text()
+          js=Path('v25.js').read_text()
+          assert 'v25.js?v=1.15.0' in idx
+          assert 'v23.js' not in idx
+          assert "const V='1.15.0',BUILD='2026.09.18-33'" in js
+          assert 'deriveChild' in js and 'calcAncestors' in js and 'decorateBreed.busy' in js
+          assert idx.count('<section') == idx.count('</section>')
+          assert idx.count('<dialog') == idx.count('</dialog>')
+          T=json.load(open('data/theory-master.json'))
+          E=json.load(open('data/nitro-effects.json'))
+          R=json.load(open('data/rebuild-research.json'))
+          def n(s): return unicodedata.normalize('NFKC',str(s or '')).strip().replace(' ','').replace('・','').replace('･','').lower()
+          em={n(x['name']):x for x in E['effects']}
+          allh=T['stallions']+T['broodmares']
+          def H(name):
+              return next(x for x in allh if n(x['name'])==n(name))
+          def calc(a,b):
+              seen=set();sp=st=pw=0
+              for name in list(a)+list(b):
+                  k=n(name)
+                  if not k or k in seen: continue
+                  seen.add(k);e=em.get(k)
+                  if not e: continue
+                  sp += e.get('short',0)*2 + e.get('speed',0)
+                  st += e.get('guts',0) + e.get('long',0) - e.get('short',0)
+                  pw += e.get('power',0)
+              return sp,st,pw
+          def child(sire_name,sa,ma):
+              return [sire_name,sa[0],ma[0],sa[1],sa[2],ma[1],ma[2],sa[3],sa[4],sa[5],sa[6],ma[3],ma[4],ma[5],ma[6]]
+          cases=[
+              ('ステイゴールド','エイスト',(14,8,1)),
+              ('ダイワメジャー','ミゼラブルウェイ',(16,3,0)),
+              ('ワイルドラッシュ','ラブアタック',(19,5,2)),
+              ('ダイワメジャー','ミニミニデート',(17,6,0)),
+          ]
+          for s,m,exp in cases:
+              got=calc(H(s)['ancestor'],H(m)['ancestor'])
+              assert got==exp,(s,m,got,exp)
+          g1=child('ワイルドラッシュ',H('ワイルドラッシュ')['ancestor'],H('ラブアタック')['ancestor'])
+          assert calc(H('ステイゴールド')['ancestor'],g1)==(14,4,0)
+          m1=child('ダイワメジャー',H('ダイワメジャー')['ancestor'],H('ミゼラブルウェイ')['ancestor'])
+          assert calc(H('ストラヴィンスキー')['ancestor'],m1)==(16,6,0)
+          m2=child('ストラヴィンスキー',H('ストラヴィンスキー')['ancestor'],m1)
+          assert calc(H('ステイゴールド')['ancestor'],m2)==(13,5,0)
+          rp={x['id']:(x['firstPairNitro']['sp'],x['firstPairNitro']['st'],x['firstPairNitro']['pw']) for x in R['routes']}
+          assert rp=={'arc-a':(14,8,1),'rebuild-b':(16,3,0),'bc-c1':(19,5,2),'bc-c2':(17,6,0)}
+          v=json.load(open('version.json'))
+          assert (v['version'],v['build'])==('1.15.0','2026.09.18-33')
+          print('PASS local exact nitro and multi-generation regressions')
+          PY
+      - name: Verify against current upstream Switch tool
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          url='https://ds.yublog.com/js/ds96_11.js?v26'
+          data=urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; DabistaFarmDB/1.0)'}),timeout=45).read().decode('utf-8','replace')
+          open('/tmp/ds96.js','w',encoding='utf-8').write(data)
+          PY
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm'),code=fs.readFileSync('/tmp/ds96.js','utf8');
+          const ctx={console:{log:()=>{}}};vm.createContext(ctx);
+          vm.runInContext(code+'\n;globalThis.__seed=new Ds96(0,0);',ctx,{timeout:15000});
+          const d=ctx.__seed,n=s=>String(s||'').normalize('NFKC').replace(/[\s・･]/g,'');
+          function pair(sn,mn){
+            const si=d.stallionObject.findIndex(x=>n(x.name)===n(sn)),bi=d.broodmareObject.findIndex(x=>n(x.name)===n(mn));
+            if(si<0||bi<0)throw Error('pair not found '+sn+' / '+mn);
+            ctx.__si=si;ctx.__bi=bi;
+            return vm.runInContext('new Ds96(globalThis.__si,globalThis.__bi)',ctx,{timeout:15000});
+          }
+          const cases=[
+            ['ステイゴールド','エイスト',[14,8,1]],
+            ['ダイワメジャー','ミゼラブルウェイ',[16,3,0]],
+            ['ワイルドラッシュ','ラブアタック',[19,5,2]],
+            ['ダイワメジャー','ミニミニデート',[17,6,0]],
+          ];
+          for(const [s,m,exp] of cases){
+            const x=pair(s,m),got=[x.nitro_speed,x.nitro_stamina,x.nitro_power];
+            if(JSON.stringify(got)!==JSON.stringify(exp))throw Error(s+' x '+m+' got '+got+' expected '+exp);
+          }
+          console.log('PASS upstream Ds96 oracle');
+          NODE
+      - name: Cleanup probes and validation workflow
+        run: |
+          rm -f data/nitro-source-probe.json data/nitro-algorithm-probe.txt .github/workflows/validate-v115.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Validate v1.15 exact nitro engine and clean probes"
+          git push
