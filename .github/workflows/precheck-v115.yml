@@ -1,0 +1,39 @@
+name: Precheck v1.15 nitro engine
+on:
+  push:
+    paths: ['.github/workflows/precheck-v115.yml']
+permissions:
+  contents: write
+jobs:
+  precheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate before loading
+        run: |
+          node --check v25.js
+          python -m json.tool data/nitro-effects.json >/dev/null
+          python -m json.tool data/rebuild-research.json >/dev/null
+          python - <<'PY'
+          import json
+          e=json.load(open('data/nitro-effects.json'))
+          assert e['count'] >= 190
+          assert len(e['effects']) == e['count']
+          r=json.load(open('data/rebuild-research.json'))
+          p={x['id']:x['firstPairNitro'] for x in r['routes']}
+          assert (p['arc-a']['sp'],p['arc-a']['st'],p['arc-a']['pw'])==(14,8,1)
+          assert (p['rebuild-b']['sp'],p['rebuild-b']['st'],p['rebuild-b']['pw'])==(16,3,0)
+          assert (p['bc-c1']['sp'],p['bc-c1']['st'],p['bc-c1']['pw'])==(19,5,2)
+          assert (p['bc-c2']['sp'],p['bc-c2']['st'],p['bc-c2']['pw'])==(17,6,0)
+          print('PASS precheck')
+          PY
+      - name: Cleanup
+        run: |
+          rm .github/workflows/precheck-v115.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Precheck v1.15 nitro engine"
+          git push
