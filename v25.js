@@ -124,13 +124,14 @@ function syncSimulator(){
 }
 function renderSimulator(){
  const m=resolveMare($('#nitroStart')?.value);if(!m)return;
- let ma=m.ancestor;
+ let ma=m.ancestor,active=true;
  for(let i=1;i<=3;i++){
-   const sel=$('#nitroSire'+i),s=resolveSire(sel?.value),holder=$('#nitroResult'+i);
-   if(!holder)continue;
-   if(!s){holder.outerHTML=stageHtml(i,null,null);break}
+   const sel=$('#nitroSire'+i),holder=$('#nitroResult'+i);if(!holder)continue;
+   if(!active){holder.outerHTML=stageHtml(i,null,null);continue}
+   const s=resolveSire(sel?.value);
+   if(!s){holder.outerHTML=stageHtml(i,null,null);active=false;continue}
    const n=calcAncestors(s.ancestor,ma);holder.outerHTML=stageHtml(i,s,n);
-   ma=deriveChild(s.name,s.ancestor,ma);if(!ma)break
+   ma=deriveChild(s.name,s.ancestor,ma);if(!ma)active=false
  }
 }
 function expose(){
