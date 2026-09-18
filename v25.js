@@ -81,19 +81,25 @@ function installFilter(){
 }
 function candidateName(c){return c.querySelector('b')?.textContent.replace(/^\s*\d+\.\s*/,'').trim()||''}
 function decorateBreed(){
- if(!effectMap.size||!theory)return;installFilter();
- const h=db.horses.find(x=>x.id===$('#breedMare')?.value),ma=horseAnc(h),filter=$('#v25NitroFilter')?.value||'all';
- document.querySelectorAll('#breedCandidates>.card').forEach(c=>{
-   c.querySelector('.nitro-exact')?.remove();c.classList.remove('v25-hidden');
-   if(!ma)return;
-   const sm=master(candidateName(c));if(!sm?.ancestor?.length)return;
-   const n=calcAncestors(sm.ancestor,ma);if(!n)return;
-   const box=document.createElement('div');box.className='nitro-exact';
-   box.innerHTML=`<b>七光り（重複除外）</b>　SP <b>${n.sp}</b> / ST <b>${n.st}</b> / PW <b>${n.pw}</b><br><span>有効因子祖先 ${n.factorCount}種類。途中世代の親ニトロ単純加算ではなく、この配合の15祖先から再計算。</span>`;
-   c.appendChild(box);
-   const ok=filter==='all'||(filter==='sp15'&&n.sp>=15)||(filter==='sp18'&&n.sp>=18)||(filter==='st5'&&n.st>=5)||(filter==='bal'&&n.sp>=15&&n.st>=5);
-   if(!ok)c.classList.add('v25-hidden')
- })
+ if(!effectMap.size||!theory||decorateBreed.busy)return;decorateBreed.busy=true;
+ try{
+  installFilter();
+  const h=db.horses.find(x=>x.id===$('#breedMare')?.value),ma=horseAnc(h),filter=$('#v25NitroFilter')?.value||'all';
+  document.querySelectorAll('#breedCandidates>.card').forEach(c=>{
+    let box=c.querySelector('.nitro-exact');c.classList.remove('v25-hidden');
+    if(!ma){if(box)box.remove();return}
+    const sm=master(candidateName(c));if(!sm?.ancestor?.length){if(box)box.remove();return}
+    const n=calcAncestors(sm.ancestor,ma);if(!n)return;
+    const key=`${n.sp}|${n.st}|${n.pw}|${n.factorCount}`;
+    if(!box){box=document.createElement('div');box.className='nitro-exact';c.appendChild(box)}
+    if(box.dataset.nitroKey!==key){
+      box.dataset.nitroKey=key;
+      box.innerHTML=`<b>七光り（重複除外）</b>　SP <b>${n.sp}</b> / ST <b>${n.st}</b> / PW <b>${n.pw}</b><br><span>有効因子祖先 ${n.factorCount}種類。途中世代の親ニトロ単純加算ではなく、この配合の15祖先から再計算。</span>`
+    }
+    const ok=filter==='all'||(filter==='sp15'&&n.sp>=15)||(filter==='sp18'&&n.sp>=18)||(filter==='st5'&&n.st>=5)||(filter==='bal'&&n.sp>=15&&n.st>=5);
+    if(!ok)c.classList.add('v25-hidden')
+  })
+ }finally{decorateBreed.busy=false}
 }
 function stageHtml(num,sire,calc){
  if(!sire)return`<div id="nitroResult${num}" class="notice">種牡馬を選択すると、${num}代目配合のニトロを計算します。</div>`;
