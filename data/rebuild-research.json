@@ -74,7 +74,7 @@
       "theories": [
         "凝った"
       ],
-      "pairNitroStatus": "引き継ぎ研究値。親ニトロ単純加算ではない。",
+      "pairNitroStatus": "Switch版湯一路配合ツールの現行 check_nitro ロジックとクロス効果祖先マスタから再計算。重複祖先は1頭として集計。",
       "generations": [
         {
           "generation": 1,
@@ -103,12 +103,12 @@
       "firstPairNitro": {
         "sp": 16,
         "st": 3,
-        "pw": null
+        "pw": 0
       },
       "theories": [
         "凝った"
       ],
-      "pairNitroStatus": "引き継ぎ研究値。PWはこの研究値では未確定。",
+      "pairNitroStatus": "Switch版湯一路配合ツールの現行 check_nitro ロジックとクロス効果祖先マスタから再計算。重複祖先は1頭として集計。",
       "generations": [
         {
           "generation": 1,
@@ -135,12 +135,12 @@
       "startMare": "ラブアタック",
       "firstSire": "ワイルドラッシュ",
       "firstPairNitro": {
-        "sp": 20,
+        "sp": 19,
         "st": 5,
         "pw": 2
       },
       "theories": [],
-      "pairNitroStatus": "引き継ぎ研究値。",
+      "pairNitroStatus": "Switch版湯一路配合ツールの現行 check_nitro ロジックで再計算。旧研究値SP20をSP19へ訂正。",
       "generations": [
         {
           "generation": 1,
@@ -167,15 +167,15 @@
       "startMare": "ミニミニデート",
       "firstSire": "ダイワメジャー",
       "firstPairNitro": {
-        "sp": 16,
+        "sp": 17,
         "st": 6,
-        "pw": null
+        "pw": 0
       },
       "theories": [
         "面白",
         "凝った"
       ],
-      "pairNitroStatus": "引き継ぎ研究値。PWはこの研究値では未確定。",
+      "pairNitroStatus": "Switch版湯一路配合ツールの現行 check_nitro ロジックで再計算。旧研究値SP16をSP17へ訂正。",
       "generations": [
         {
           "generation": 1,
@@ -205,5 +205,5 @@
     "距離適性",
     "同配合複数頭でのSP/STコメント率と上振れ率"
   ],
-  "sourceNote": "数値はSwitch版内蔵マスタと引き継ぎ研究を分離して扱う。推定式は公式確定仕様として表示しない。"
+  "sourceNote": "Switch版内蔵マスタと研究値を分離。ニトロは現行ds.yublog Switch版配合ツールのcheck_nitro（両親15祖先を結合し重複祖先を1頭として集計）で再計算。推定式は公式確定仕様として表示しない。"
 }
