@@ -91,21 +91,21 @@ function previewBases(shortlists,maxEach=12){
  }
  return out
 }
-async function scan(iter,collector,summary,seq,label,keepAll=false){
+async function scan(iter,collector,summary,seq,label,goal,keepAll=false){
  const all=[];let n=0;
  for(const r of iter){
   if(seq!==diagSeq)throw Error('cancelled');
-  collector.push(r);advisor.addRoute(summary,r);if(keepAll)all.push(r);n++;
+  collector.push(r);advisor.addRoute(summary,r,goal);if(keepAll)all.push(r);n++;
   if(n%700===0){$('#generationAdvisorProgress').textContent=`${label}：安全ルート ${n.toLocaleString()}件を比較中…`;await yieldUi()}
  }
  return{count:n,all}
 }
 function bestFacts(result,goal){
- const route=advisor.routeForGoal(result,goal);
+ const route=result?.summary?.bestRoute||advisor.routeForGoal(result?.result||result,goal);
  return{route,facts:advisor.routeFacts(route)}
 }
 function generationCard(n,g,goal,recommended){
- const b=bestFacts(g.result,goal),f=b.facts,s=g.summary,label=n===1?'直仔':n+'代';
+ const b=bestFacts(g,goal),f=b.facts,s=g.summary,label=n===1?'直仔':n+'代';
  const method=n===3?'条件付きプレビュー':'全探索';
  return `<div class="generation-card ${recommended===n?'recommended':''}">
   <h5>${recommended===n?'★ ':''}${label} <small>${method}</small></h5>
@@ -126,12 +126,12 @@ async function runGenerationAdvisor(){
  $('#generationAdvisorProgress').textContent='直仔・2代・3代を同じ条件で比較します…';
  try{
   const c1=planner.createCollector({topN:3,poolN:24}),s1=advisor.emptySummary('exact-direct');
-  const a1=await scan(planner.iterateDirect(name),c1,s1,seq,'直仔',true),r1=c1.finish();
+  const a1=await scan(planner.iterateDirect(name),c1,s1,seq,'直仔',goal,true),r1=c1.finish();
   const c2=planner.createCollector({topN:3,poolN:24}),s2=advisor.emptySummary('exact-two');
-  await scan(planner.iterateTwo(name),c2,s2,seq,'2代',false);const r2=c2.finish();
+  await scan(planner.iterateTwo(name),c2,s2,seq,'2代',goal,false);const r2=c2.finish();
   const bases=previewBases(r2.shortlists,12);
   const c3=planner.createCollector({topN:3,poolN:18}),s3=advisor.emptySummary('preview-three');
-  await scan(planner.iterateThirdPreview(name,bases),c3,s3,seq,'3代プレビュー',false);const r3=c3.finish();
+  await scan(planner.iterateThirdPreview(name,bases),c3,s3,seq,'3代プレビュー',goal,false);const r3=c3.finish();
   if(seq!==diagSeq)return;
   $('#generationAdvisorProgress').textContent='自家製種牡馬の血統汎用性も世代別に比較中…';await yieldUi();
   const portfolios={
