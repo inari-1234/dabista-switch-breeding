@@ -70,11 +70,6 @@ function ensureHome(){
 }
 ensureHome();
 
-const obs=new MutationObserver(()=>{
- $$('.tab').forEach(b=>{if(labels[b.dataset.tab]&&b.textContent!==labels[b.dataset.tab])b.textContent=labels[b.dataset.tab]});
- ensureHome();
-});
-obs.observe(document.querySelector('.wrap')||document.body,{childList:true,subtree:true});
 
 window.addEventListener('load',()=>{
  ensureHome();
