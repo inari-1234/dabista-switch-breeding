@@ -1,0 +1,563 @@
+:root{
+  --ui-bg:#eef5f1;
+  --ui-surface:#ffffff;
+  --ui-surface-soft:#f7faf8;
+  --ui-ink:#173126;
+  --ui-muted:#6b7c74;
+  --ui-line:#dbe6e0;
+  --ui-green:#0f6b52;
+  --ui-green-2:#198867;
+  --ui-green-soft:#e3f1ea;
+  --ui-blue:#3e78b8;
+  --ui-blue-soft:#e8f0fa;
+  --ui-gold:#b4822d;
+  --ui-gold-soft:#fff1d8;
+  --ui-purple:#7155ad;
+  --ui-purple-soft:#eee9f8;
+  --ui-red:#aa4f43;
+  --ui-red-soft:#fff1ed;
+  --ui-shadow:0 10px 28px rgba(27,67,49,.08);
+  --ui-shadow-soft:0 3px 12px rgba(27,67,49,.06);
+}
+html{scroll-behavior:smooth;background:var(--ui-bg)}
+body.ui-refresh{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 85% 0%,rgba(117,177,146,.18),transparent 28rem),
+    linear-gradient(180deg,#f4f8f5 0,#edf4f0 190px,#f5f7f5 520px);
+  color:var(--ui-ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Yu Gothic",sans-serif;
+}
+body.ui-refresh header{
+  position:sticky;
+  top:0;
+  z-index:30;
+  padding:13px max(14px,env(safe-area-inset-left)) 12px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 88% 10%,rgba(255,255,255,.14),transparent 12rem),
+    linear-gradient(135deg,#0d3325,#0f6048 62%,#167457);
+  box-shadow:0 8px 28px rgba(15,68,49,.18);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+body.ui-refresh .headrow{align-items:flex-start;gap:10px}
+body.ui-refresh h1{font-size:19px;letter-spacing:-.035em;line-height:1.2}
+body.ui-refresh header h1:before{
+  content:"♞";
+  display:inline-grid;
+  place-items:center;
+  width:27px;height:27px;
+  margin-right:8px;
+  border-radius:9px;
+  background:rgba(255,255,255,.13);
+  vertical-align:-3px;
+  font-size:16px;
+}
+body.ui-refresh .ver{margin:5px 0 0 35px;font-size:9px;color:#cce0d7;letter-spacing:.02em}
+body.ui-refresh header .sub{
+  margin:7px 0 0 35px;
+  max-width:480px;
+  font-size:10px;
+  line-height:1.45;
+  color:#d8e8e1;
+}
+body.ui-refresh .headbtns{gap:5px}
+body.ui-refresh .headbtn{
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  border-radius:10px;
+  padding:7px 9px;
+  font-size:9px;
+  font-weight:700;
+  backdrop-filter:blur(8px);
+}
+body.ui-refresh .headbtn:active{transform:translateY(1px)}
+body.ui-refresh .updatebar{
+  position:relative;
+  z-index:25;
+  background:#fff5d8;
+  color:#6c540e;
+  border-bottom:1px solid #efdfae;
+  font-size:10px;
+  padding:8px 12px;
+}
+body.ui-refresh .wrap{
+  width:min(100%,760px);
+  max-width:760px;
+  margin:0 auto;
+  padding:12px 12px 122px;
+}
+body.ui-refresh .tabs{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+  margin:0 0 12px;
+  padding:4px;
+  border:1px solid var(--ui-line);
+  border-radius:15px;
+  background:rgba(255,255,255,.78);
+  box-shadow:var(--ui-shadow-soft);
+}
+body.ui-refresh .tab{
+  position:relative;
+  min-width:0;
+  border:0;
+  background:transparent;
+  color:#718078;
+  border-radius:11px;
+  padding:9px 4px 8px;
+  font-size:10px;
+  font-weight:800;
+  line-height:1.15;
+}
+body.ui-refresh .tab.on{
+  color:#fff;
+  background:linear-gradient(135deg,var(--ui-green),var(--ui-green-2));
+  box-shadow:0 5px 14px rgba(15,107,82,.2);
+}
+body.ui-refresh .tab:before{
+  display:block;
+  margin-bottom:3px;
+  font-size:15px;
+  line-height:1;
+  font-weight:400;
+}
+body.ui-refresh .tab[data-tab="horses"]:before{content:"⌂"}
+body.ui-refresh .tab[data-tab="races"]:before{content:"◎"}
+body.ui-refresh .tab[data-tab="breed"]:before{content:"◇"}
+body.ui-refresh .tab[data-tab="rebuild"]:before{content:"↗"}
+body.ui-refresh .tab[data-tab="backup"]:before{content:"▣"}
+
+body.ui-refresh .ui-home{
+  overflow:hidden;
+  margin-bottom:10px;
+  border:1px solid #cfe0d7;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 90% 16%,rgba(41,131,94,.13),transparent 9rem),
+    linear-gradient(145deg,#ffffff,#f1f7f4);
+  box-shadow:var(--ui-shadow);
+}
+body.ui-refresh .ui-home-hero{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:14px;
+  align-items:center;
+  padding:17px 16px 13px;
+}
+body.ui-refresh .ui-eyebrow{
+  display:block;
+  margin-bottom:4px;
+  color:var(--ui-green);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+body.ui-refresh .ui-home h2{
+  margin:0;
+  font-size:22px;
+  line-height:1.18;
+  letter-spacing:-.045em;
+}
+body.ui-refresh .ui-home p{
+  margin:7px 0 0;
+  max-width:420px;
+  color:var(--ui-muted);
+  font-size:10px;
+  line-height:1.65;
+}
+body.ui-refresh .ui-horse-mark{
+  width:68px;height:68px;
+  display:grid;place-items:center;
+  border-radius:22px;
+  color:var(--ui-green);
+  background:linear-gradient(145deg,#dcefe6,#f3f8f5);
+  box-shadow:inset 0 0 0 1px #cfe2d8;
+  font-size:37px;
+}
+body.ui-refresh .ui-home-actions{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:7px;
+  padding:0 12px 12px;
+}
+body.ui-refresh .ui-jump{
+  min-height:84px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:flex-end;
+  border:0;
+  border-radius:15px;
+  padding:11px;
+  color:#fff;
+  text-align:left;
+  box-shadow:0 6px 16px rgba(25,60,46,.11);
+}
+body.ui-refresh .ui-jump .ui-action-icon{font-size:20px;margin-bottom:auto}
+body.ui-refresh .ui-jump strong{font-size:12px}
+body.ui-refresh .ui-jump small{display:block;margin-top:3px;font-size:8px;opacity:.86;line-height:1.35}
+body.ui-refresh .ui-jump[data-go="breed"]{background:linear-gradient(145deg,#0f6b52,#178968)}
+body.ui-refresh .ui-jump[data-go="sale"]{background:linear-gradient(145deg,#3d72aa,#4f8dcc)}
+body.ui-refresh .ui-jump[data-go="rebuild"]{background:linear-gradient(145deg,#a9792c,#c39640)}
+body.ui-refresh .ui-jump[data-go="horses"]{background:linear-gradient(145deg,#6650a1,#826ac1)}
+
+body.ui-refresh .ui-section-intro{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:12px;
+  margin:18px 2px 9px;
+}
+body.ui-refresh .ui-section-intro h2{
+  margin:2px 0 0;
+  font-size:16px;
+  letter-spacing:-.025em;
+}
+body.ui-refresh .ui-section-intro small{color:var(--ui-muted);font-size:9px}
+
+body.ui-refresh .card{
+  border:1px solid var(--ui-line);
+  border-radius:17px;
+  padding:14px;
+  background:rgba(255,255,255,.96);
+  box-shadow:var(--ui-shadow-soft);
+  margin-bottom:9px;
+}
+body.ui-refresh .card:hover{border-color:#ccdcd4}
+body.ui-refresh .horse{cursor:pointer}
+body.ui-refresh .horse h2{font-size:17px;letter-spacing:-.02em}
+body.ui-refresh .row{gap:9px}
+body.ui-refresh .muted{color:var(--ui-muted);font-size:10px;line-height:1.55}
+body.ui-refresh .badge{
+  padding:4px 7px;
+  border-radius:999px;
+  background:#e8f1ec;
+  color:#3e6251;
+  font-size:9px;
+  font-weight:800;
+}
+body.ui-refresh .badge.gold{background:var(--ui-gold-soft);color:#7a5810}
+body.ui-refresh .warn{background:#fff2cf;color:#6d5310}
+body.ui-refresh .grid{gap:6px}
+body.ui-refresh .stat{
+  border:1px solid #edf2ef;
+  background:#f5f8f6;
+  border-radius:11px;
+  padding:8px;
+}
+body.ui-refresh .stat b{font-size:16px;color:#244b39}
+body.ui-refresh .stat small{font-size:9px}
+body.ui-refresh .score{color:var(--ui-gold);font-size:17px}
+
+body.ui-refresh .toolbar{
+  position:relative;
+  gap:6px;
+  margin-bottom:9px;
+}
+body.ui-refresh input,
+body.ui-refresh select,
+body.ui-refresh textarea{
+  border:1px solid var(--ui-line);
+  border-radius:11px;
+  background:#fff;
+  color:var(--ui-ink);
+  padding:10px 11px;
+  font-size:16px;
+  outline:none;
+}
+body.ui-refresh input:focus,
+body.ui-refresh select:focus,
+body.ui-refresh textarea:focus{
+  border-color:#70a990;
+  box-shadow:0 0 0 3px rgba(30,130,93,.1);
+}
+body.ui-refresh .toolbar input{background:#f9fbfa}
+body.ui-refresh .primary{
+  border:0;
+  border-radius:11px;
+  background:linear-gradient(135deg,var(--ui-green),var(--ui-green-2));
+  color:#fff;
+  padding:10px 13px;
+  font-weight:800;
+  box-shadow:0 4px 12px rgba(15,107,82,.14);
+}
+body.ui-refresh .secondary{
+  border:1px solid var(--ui-line);
+  border-radius:10px;
+  background:#fff;
+  color:#385146;
+}
+body.ui-refresh .primary:disabled{opacity:.45;box-shadow:none}
+body.ui-refresh .notice{
+  border:1px solid #e2e9e5;
+  border-radius:11px;
+  background:#f5f8f6;
+  color:var(--ui-muted);
+  padding:10px;
+  font-size:10px;
+  line-height:1.55;
+}
+body.ui-refresh .section-title{
+  color:var(--ui-ink);
+  font-size:15px;
+  letter-spacing:-.02em;
+}
+body.ui-refresh .field label,
+body.ui-refresh .form label,
+body.ui-refresh #salePlanner>label{
+  color:#60756b;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+body.ui-refresh .breed-controls{gap:8px}
+body.ui-refresh .breed-search{margin-top:8px}
+
+body.ui-refresh #breed>.card:first-child,
+body.ui-refresh #rebuild>.card:first-child{
+  border-color:#cfe0d7;
+  background:
+    radial-gradient(circle at 92% 0%,rgba(65,150,108,.11),transparent 13rem),
+    linear-gradient(145deg,#fff,#f5faf7);
+}
+body.ui-refresh #breedCandidates>.card{
+  position:relative;
+  overflow:hidden;
+}
+body.ui-refresh #breedCandidates>.card:before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:4px;
+  background:linear-gradient(var(--ui-green),#71ad8e);
+}
+body.ui-refresh .candidate-head{gap:10px}
+body.ui-refresh .theory-tools{
+  border-radius:13px!important;
+  background:#f7faf8!important;
+}
+
+body.ui-refresh .rebuild-grid{gap:6px!important}
+body.ui-refresh .rebuild-kpi{
+  border:1px solid #edf2ef;
+  background:#f6f9f7!important;
+  border-radius:11px!important;
+  padding:8px!important;
+}
+body.ui-refresh .rebuild-kpi b{font-size:17px!important;color:#24523d}
+body.ui-refresh .rebuild-kpi small{font-size:8px!important}
+body.ui-refresh .research-tag{
+  padding:4px 7px!important;
+  background:#e8f1ec!important;
+  color:#3d6551!important;
+  font-size:8px!important;
+  font-weight:800;
+}
+body.ui-refresh .research-tag.estimate{background:#fff0d2!important;color:#7b5a15!important}
+body.ui-refresh .research-tag.master{background:#e9eef8!important;color:#496087!important}
+body.ui-refresh .route-stage{
+  border-left:3px solid #85b49c!important;
+  border-radius:0 11px 11px 0!important;
+  background:#f5f9f7!important;
+  padding:9px 10px!important;
+}
+body.ui-refresh .route-stage b{font-size:11px!important}
+body.ui-refresh .route-stage small{font-size:9px!important}
+body.ui-refresh .route-actions button{min-width:0!important}
+
+body.ui-refresh #salePlanner{
+  border-color:#cbded4;
+  background:
+    radial-gradient(circle at 90% 0%,rgba(56,127,176,.08),transparent 13rem),
+    #fff;
+}
+body.ui-refresh .sale-head{gap:10px!important}
+body.ui-refresh .sale-head .section-title{font-size:16px}
+body.ui-refresh .sale-controls{gap:7px!important}
+body.ui-refresh .sale-mare-summary{
+  border:1px solid #dfe9e4;
+  border-radius:13px!important;
+  background:#f5f9f7!important;
+  padding:11px!important;
+}
+body.ui-refresh .sale-ability-grid{gap:5px!important}
+body.ui-refresh .sale-ability-grid>div{
+  border:1px solid #edf2ef;
+  border-radius:10px!important;
+  padding:8px 5px!important;
+}
+body.ui-refresh .sale-ability-grid b{color:#24523d;font-size:16px!important}
+body.ui-refresh .sale-seg{gap:5px!important}
+body.ui-refresh .sale-seg button{
+  border:1px solid var(--ui-line)!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#53675e!important;
+  padding:9px 6px!important;
+  font-size:10px!important;
+  font-weight:800;
+}
+body.ui-refresh .sale-seg button.on{
+  border-color:var(--ui-green)!important;
+  background:linear-gradient(135deg,var(--ui-green),var(--ui-green-2))!important;
+  color:#fff!important;
+  box-shadow:0 4px 12px rgba(15,107,82,.14);
+}
+body.ui-refresh .sale-profile{
+  border-left:0!important;
+  overflow:hidden;
+}
+body.ui-refresh .sale-profile:before{
+  content:"";
+  display:block;
+  height:4px;
+  margin:-14px -14px 12px;
+  background:linear-gradient(90deg,var(--ui-green),#71ad8e);
+}
+body.ui-refresh .sale-route{
+  border:1px solid var(--ui-line)!important;
+  border-radius:13px!important;
+  background:#f9fbfa!important;
+  padding:11px!important;
+}
+body.ui-refresh .sale-stage{
+  border:1px solid #e6ece8;
+  border-radius:11px!important;
+  background:#f3f7f5!important;
+  padding:9px!important;
+}
+body.ui-refresh .sale-stage .metrics>span{
+  border:1px solid #edf1ef;
+  border-radius:9px!important;
+}
+body.ui-refresh .sale-chip{
+  padding:3px 6px!important;
+  border-radius:999px!important;
+  font-size:8px!important;
+  font-weight:800;
+}
+body.ui-refresh .sale-chip.good{background:#dff0e7!important;color:#215f43!important}
+body.ui-refresh .sale-chip.warn{background:#fff0cf!important;color:#72550d!important}
+body.ui-refresh .sale-select{
+  border-left:3px solid var(--ui-gold)!important;
+  background:#fff8e8!important;
+  border-radius:0 9px 9px 0!important;
+}
+body.ui-refresh .sale-portfolio{border-radius:10px!important;background:#edf3f7!important}
+
+body.ui-refresh table{
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border:1px solid var(--ui-line);
+  border-radius:11px;
+  background:#fff;
+}
+body.ui-refresh th{
+  background:#f4f8f6;
+  color:#5e7167;
+  font-size:9px;
+  font-weight:800;
+}
+body.ui-refresh td{font-size:10px}
+body.ui-refresh th,body.ui-refresh td{padding:8px 4px}
+body.ui-refresh .mark{font-size:17px}
+body.ui-refresh .breaker{border-left:0}
+body.ui-refresh .breaker:before{
+  content:"高SP・ST候補";
+  display:inline-block;
+  margin-bottom:8px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:var(--ui-gold-soft);
+  color:#76550e;
+  font-size:8px;
+  font-weight:900;
+}
+
+body.ui-refresh #backup>.card{
+  border-color:#d7e1dc;
+  background:linear-gradient(145deg,#fff,#f8faf9);
+}
+body.ui-refresh .fab{
+  right:14px;
+  bottom:82px;
+  width:auto;
+  min-width:52px;
+  height:52px;
+  padding:0 17px;
+  border-radius:18px;
+  background:linear-gradient(135deg,var(--ui-green),var(--ui-green-2));
+  box-shadow:0 10px 26px rgba(15,85,62,.25);
+  font-size:0;
+}
+body.ui-refresh .fab:after{
+  content:"＋ 馬を登録";
+  font-size:11px;
+  font-weight:900;
+}
+body.ui-refresh dialog{
+  width:min(94vw,560px);
+  max-height:90vh;
+  overflow:auto;
+  border-radius:20px;
+  box-shadow:0 25px 80px rgba(0,0,0,.24);
+}
+body.ui-refresh dialog::backdrop{background:rgba(10,29,21,.55);backdrop-filter:blur(3px)}
+body.ui-refresh .form{padding:18px}
+body.ui-refresh .form h2{font-size:19px;letter-spacing:-.03em}
+
+@media(max-width:620px){
+  body.ui-refresh .wrap{padding:11px 10px calc(104px + env(safe-area-inset-bottom))}
+  body.ui-refresh .tabs{
+    position:fixed;
+    left:50%;
+    bottom:0;
+    z-index:45;
+    transform:translateX(-50%);
+    width:min(100%,520px);
+    margin:0;
+    padding:7px 6px calc(7px + env(safe-area-inset-bottom));
+    border:0;
+    border-top:1px solid var(--ui-line);
+    border-radius:0;
+    background:rgba(252,253,252,.95);
+    backdrop-filter:blur(18px);
+    box-shadow:0 -8px 28px rgba(28,61,47,.09);
+  }
+  body.ui-refresh .tab{
+    min-height:48px;
+    padding:5px 2px 4px;
+    border-radius:10px;
+    font-size:8px;
+  }
+  body.ui-refresh .tab.on{
+    background:#e3f1ea;
+    color:var(--ui-green);
+    box-shadow:none;
+  }
+  body.ui-refresh .tab:before{font-size:18px;margin-bottom:4px}
+  body.ui-refresh .fab{bottom:77px}
+  body.ui-refresh .two{grid-template-columns:1fr}
+  body.ui-refresh .three{grid-template-columns:repeat(3,1fr)}
+  body.ui-refresh .breed-controls{grid-template-columns:1fr}
+  body.ui-refresh .headbtns{flex-direction:row}
+  body.ui-refresh .headbtn{padding:7px 8px}
+}
+@media(max-width:390px){
+  body.ui-refresh .ui-home-hero{grid-template-columns:1fr 58px;padding:14px 13px 11px}
+  body.ui-refresh .ui-home h2{font-size:20px}
+  body.ui-refresh .ui-horse-mark{width:56px;height:56px;border-radius:18px;font-size:30px}
+  body.ui-refresh .ui-home-actions{padding:0 9px 9px;gap:6px}
+  body.ui-refresh .ui-jump{min-height:79px;padding:10px}
+  body.ui-refresh .sale-ability-grid{grid-template-columns:repeat(3,1fr)!important}
+  body.ui-refresh .rebuild-grid{grid-template-columns:repeat(3,1fr)!important}
+}
+@media(min-width:760px){
+  body.ui-refresh .wrap{max-width:960px}
+  body.ui-refresh .ui-home-actions{grid-template-columns:repeat(4,1fr)}
+  body.ui-refresh .ui-jump{min-height:102px}
+}
