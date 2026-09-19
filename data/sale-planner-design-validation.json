@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-20",
+  "scope": "セリ繁殖牝馬から凱旋門賞・自家製種牡馬を狙う設計機能の実装前検証",
+  "saleMares": {
+    "total": 331,
+    "knownAbility": 298,
+    "unknownAbility": 33,
+    "completePedigree15": 331,
+    "completeTheoryCode": 331,
+    "rule": "能力未判明33頭はSP/ST/PW=0として評価しない。血統・ニトロ・配合理論のみ計算し、繁殖能力込み総合評価は保留。"
+  },
+  "validatedEngines": {
+    "danger": {
+      "pairs": 58256,
+      "mismatch": 0,
+      "status": "PASS"
+    },
+    "childPedigree": {
+      "pairs": 58256,
+      "ancestorMismatch": 0,
+      "status": "PASS"
+    },
+    "childTheoryCodes": {
+      "pairs": 58256,
+      "omoshiroMismatch": 0,
+      "migotoMismatch": 0,
+      "status": "PASS"
+    },
+    "theoryFlags": {
+      "pairs": 58256,
+      "mismatch": 0,
+      "interesting": 3685,
+      "magnificent": 85,
+      "perfect": 2,
+      "status": "PASS"
+    },
+    "nitro": {
+      "status": "PASS in v1.15 regression",
+      "note": "15祖先から重複祖先を1頭として世代ごとに再計算"
+    }
+  },
+  "elaborate": {
+    "webPairMaster": 812,
+    "upstreamDirectExceptions": 33,
+    "domesticDirectExceptions": 18,
+    "knownDifference": 1,
+    "difference": "モンテロッソ×デイサイエンス。成立確認ペア側は凝った、上流JSは非成立。自動設計では根拠区分を保持し、成立確認データ優先候補とする。"
+  },
+  "successorPortfolioValidation": {
+    "referenceCohorts": {
+      "spst130": 22,
+      "spst120": 54,
+      "spst110": 106,
+      "allKnown": 298
+    },
+    "top10OverlapAgainstSpst120": {
+      "エイスト": {
+        "spst130": 6,
+        "spst110": 5,
+        "allKnown": 5,
+        "paretoCandidates": 10
+      },
+      "ミゼラブルウェイ": {
+        "spst130": 9,
+        "spst110": 9,
+        "allKnown": 7,
+        "paretoCandidates": 10
+      },
+      "ミニミニデート": {
+        "spst130": 9,
+        "spst110": 10,
+        "allKnown": 9,
+        "paretoCandidates": 8
+      },
+      "ラブアタック": {
+        "spst130": 7,
+        "spst110": 3,
+        "allKnown": 5,
+        "paretoCandidates": 7
+      },
+      "ミココロノママニ": {
+        "spst130": 9,
+        "spst110": 9,
+        "allKnown": 10,
+        "paretoCandidates": 8
+      }
+    },
+    "conclusion": "自家製種牡馬候補は単一スコア順位に固定しない。安全配合数、SP15/ST5以上成立数、SP17/ST5以上成立数、面白・見事・完璧・凝った成立数を並列表示し、Pareto候補を残す。"
+  },
+  "searchValidation": {
+    "twoGeneration": {
+      "typicalRoutesPerMare": "約30,000",
+      "conclusion": "全探索が現実的。ビームサーチ不要。"
+    },
+    "threeGeneration": {
+      "exampleMare": "ラブアタック",
+      "exactRoutes": 5296090,
+      "validationRuntimeMs": 97637,
+      "environment": "ChatGPT connector V8。iPhone実測ではない。",
+      "diversifiedBeamAfterGen2": {
+        "width80": {
+          "arcTop10Recall": 0.1,
+          "spTop10Recall": 0,
+          "balanceTop10Recall": 0.5,
+          "theoryTop10Recall": 0.3
+        },
+        "width120": {
+          "arcTop10Recall": 0.1,
+          "spTop10Recall": 0,
+          "balanceTop10Recall": 0.5,
+          "theoryTop10Recall": 0.4
+        },
+        "width160": {
+          "arcTop10Recall": 0.1,
+          "spTop10Recall": 0.1,
+          "balanceTop10Recall": 0.6,
+          "theoryTop10Recall": 0.5
+        },
+        "width240": {
+          "arcTop10Recall": 0.1,
+          "spTop10Recall": 0.1,
+          "balanceTop10Recall": 0.8,
+          "theoryTop10Recall": 0.6
+        }
+      },
+      "conclusion": "単純ビームサーチを『最適解』として出すのは不適切。3代目は出生前の完全最適化より、1～2代目を正確に設計し、実際に選抜した娘の能力を登録後に再設計する方式を基本とする。"
+    }
+  },
+  "recommendedArchitecture": [
+    "セリ牝馬を331頭マスタから選択",
+    "1代直行候補は176国内種牡馬を全探索",
+    "2代ルートは約3万配合を全探索して正確に比較",
+    "3代目は『仮プレビュー』扱い。実際の中間牝馬を選抜・登録後に再計算する",
+    "凱旋門賞向けはSP/ST/PWニトロ、父の実績・底力・安定・距離、配合理論を並列表示",
+    "種牡馬狙いは将来の相手牝馬群に対する安全性・高ニトロ成立数・配合理論成立数を並列表示",
+    "途中世代の繁殖能力を推定値で捏造しない"
+  ],
+  "releaseDecision": "まだユーザー向けUIへ反映しない。共通判定エンジンを先に統合してからセリ設計UIを実装する。"
+}
