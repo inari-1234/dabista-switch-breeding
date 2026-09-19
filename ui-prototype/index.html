@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f5a46">
+  <title>ダビスタSwitch 配合支援 UI Prototype</title>
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">ダビスタSwitch 配合研究</p>
+      <h1>配合支援アプリ</h1>
+    </div>
+    <span class="prototype">UI PROTOTYPE</span>
+  </header>
+
+  <main class="app-shell">
+    <section id="home" class="screen hero-screen">
+      <div class="intro">
+        <div>
+          <span class="kicker">現在の繁殖牝馬から考える</span>
+          <h2>次の1手と、3〜4世代先まで。</h2>
+          <p>配合理論・血統・ニトロ・能力データを分けて見ながら、将来の配合ルートを組み立てるための画面案です。</p>
+        </div>
+        <div class="horse-mark" aria-hidden="true">♞</div>
+      </div>
+
+      <div class="current-card">
+        <div class="section-label">現在の繁殖牝馬</div>
+        <div class="horse-title-row">
+          <div>
+            <strong>繁殖牝馬A</strong>
+            <span>自家製 / 3代目</span>
+          </div>
+          <button class="ghost" type="button">変更</button>
+        </div>
+        <div class="chip-row">
+          <span class="chip">父系を維持</span>
+          <span class="chip">SP重視</span>
+          <span class="chip">次代繁殖候補</span>
+        </div>
+      </div>
+
+      <div class="action-grid">
+        <a href="#search" class="action-card action-green">
+          <span class="icon">⌕</span>
+          <strong>相手を探す</strong>
+          <small>条件から種牡馬候補を絞る</small>
+        </a>
+        <a href="#route" class="action-card action-blue">
+          <span class="icon">↗</span>
+          <strong>3〜4世代を設計</strong>
+          <small>完成形から逆算する</small>
+        </a>
+        <a href="#stallions" class="action-card action-gold">
+          <span class="icon">♘</span>
+          <strong>種牡馬DB</strong>
+          <small>能力・系統・ニトロを見る</small>
+        </a>
+        <a href="#mares" class="action-card action-purple">
+          <span class="icon">♞</span>
+          <strong>繁殖牝馬DB</strong>
+          <small>価格・血統・攻略値を見る</small>
+        </a>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <span class="section-label">最近の配合案</span>
+          <h3>考察を続ける</h3>
+        </div>
+        <span class="muted">サンプル表示</span>
+      </div>
+      <div class="plan-list">
+        <article class="plan-row">
+          <div class="plan-icon">1</div>
+          <div><strong>繁殖牝馬A × 種牡馬候補A</strong><span>面白 ○ ・ 見事 ○ ・ 凝った ○</span></div>
+          <b>›</b>
+        </article>
+        <article class="plan-row">
+          <div class="plan-icon">2</div>
+          <div><strong>自家製牝馬B × 種牡馬候補B</strong><span>次代繁殖牝馬づくり</span></div>
+          <b>›</b>
+        </article>
+      </div>
+    </section>
+
+    <section id="search" class="screen">
+      <div class="section-head">
+        <div>
+          <span class="section-label">配合候補検索</span>
+          <h2>条件で相手を探す</h2>
+        </div>
+        <span class="step">02</span>
+      </div>
+
+      <div class="filter-panel">
+        <div class="segmented">
+          <span class="selected">牝馬 → 種牡馬</span>
+          <span>種牡馬 → 牝馬</span>
+        </div>
+        <div class="filter-group">
+          <span class="filter-title">配合理論</span>
+          <div class="toggle-row">
+            <span class="toggle on">面白</span>
+            <span class="toggle on">見事</span>
+            <span class="toggle">完璧</span>
+            <span class="toggle on">凝った</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-title">ニトロ / 種牡馬条件</span>
+          <div class="select-grid">
+            <div>NSP <b>8以上</b></div>
+            <div>NST <b>5以上</b></div>
+            <div>NPW <b>2以上</b></div>
+            <div>安定 <b>C以上</b></div>
+          </div>
+        </div>
+        <button class="primary wide" type="button">この条件で検索（UIのみ）</button>
+      </div>
+
+      <div class="result-card">
+        <div class="result-top">
+          <div>
+            <span class="rank">候補 01</span>
+            <h3>種牡馬候補A</h3>
+            <p>1600〜2400m / 普通 / 実績A・底力A・安定B</p>
+          </div>
+          <span class="star">☆</span>
+        </div>
+        <div class="theory-row">
+          <span class="theory green">面白 ○</span>
+          <span class="theory amber">見事 ○</span>
+          <span class="theory gray">完璧 —</span>
+          <span class="theory blue">凝った ○</span>
+        </div>
+        <div class="nitro">
+          <div><small>NSP</small><strong>8</strong></div>
+          <div><small>NST</small><strong>5</strong></div>
+          <div><small>NPW</small><strong>2</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="analysis" class="screen">
+      <div class="section-head">
+        <div>
+          <span class="section-label">配合考察</span>
+          <h2>「なぜ良いか」を分けて見る</h2>
+        </div>
+        <span class="step">03</span>
+      </div>
+
+      <div class="pair-card">
+        <div class="pair">
+          <div class="horse-box mare">
+            <small>繁殖牝馬</small><strong>繁殖牝馬A</strong><span>自家製 3代目</span>
+          </div>
+          <span class="cross">×</span>
+          <div class="horse-box sire">
+            <small>種牡馬</small><strong>種牡馬候補A</strong><span>実績A / 安定B</span>
+          </div>
+        </div>
+        <div class="theory-row large">
+          <span class="theory green">面白 ○</span>
+          <span class="theory amber">見事 ○</span>
+          <span class="theory gray">完璧 —</span>
+          <span class="theory blue">凝った ○</span>
+        </div>
+      </div>
+
+      <div class="tabs-static">
+        <span class="active">血統図</span><span>配合理論</span><span>能力</span><span>メモ</span>
+      </div>
+
+      <div class="pedigree">
+        <div class="ped-col">
+          <span class="ped-head">父</span>
+          <div class="ped-node n1">種牡馬候補A</div>
+        </div>
+        <div class="ped-col">
+          <span class="ped-head">2代前</span>
+          <div class="ped-node n2">父系A</div>
+          <div class="ped-node n3">母父系B</div>
+        </div>
+        <div class="ped-col">
+          <span class="ped-head">3代前</span>
+          <div class="ped-node n4">系統A</div>
+          <div class="ped-node n5">系統B</div>
+          <div class="ped-node n6">系統C</div>
+          <div class="ped-node n7">系統D</div>
+        </div>
+      </div>
+
+      <div class="notice warning">
+        <strong>危険度チェック</strong>
+        <span>クロスが強くなりすぎる箇所や気性面の注意を、ここに明示する想定です。</span>
+      </div>
+
+      <div class="comment-box">
+        <span class="section-label">この配合で何を狙う？</span>
+        <p>SPを維持しつつ、次世代で見事配合を成立させやすい繁殖牝馬を作る――というように、数値だけでなく狙いを文章で残します。</p>
+      </div>
+    </section>
+
+    <section id="route" class="screen">
+      <div class="section-head">
+        <div>
+          <span class="section-label">3〜4世代 配合設計</span>
+          <h2>完成形から逆算する</h2>
+        </div>
+        <span class="step">04</span>
+      </div>
+
+      <div class="route">
+        <article class="generation">
+          <span class="gen">1代目</span>
+          <div><strong>繁殖牝馬A</strong><p>現有牝馬。SPを落とさず次代へ。</p></div>
+          <div class="mini-nitro"><b>NSP 8</b><b>NST 5</b><b>NPW 2</b></div>
+        </article>
+        <div class="route-arrow">↓ 種牡馬候補A</div>
+        <article class="generation">
+          <span class="gen">2代目</span>
+          <div><strong>自家製繁殖牝馬B</strong><p>見事用系統を整える世代。</p></div>
+          <div class="mini-badges"><span>面白 ○</span><span>凝った ○</span></div>
+        </article>
+        <div class="route-arrow">↓ 種牡馬候補B</div>
+        <article class="generation">
+          <span class="gen">3代目</span>
+          <div><strong>自家製繁殖牝馬C</strong><p>最終配合の母になる候補。</p></div>
+          <div class="mini-badges"><span>見事 ○</span><span>完璧候補</span></div>
+        </article>
+        <div class="route-arrow">↓ 最終候補</div>
+        <article class="generation goal">
+          <span class="gen">完成</span>
+          <div><strong>狙いの配合</strong><p>配合理論・ニトロ・繁殖能力を分けて確認。</p></div>
+          <div class="mini-nitro"><b>NSP 9</b><b>NST 6</b><b>NPW 3</b></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="stallions" class="screen">
+      <div class="section-head">
+        <div>
+          <span class="section-label">種牡馬データ</span>
+          <h2>ゲーム内能力＋配合用情報</h2>
+        </div>
+        <span class="step">05</span>
+      </div>
+      <div class="searchbox">⌕ 種牡馬名で検索…</div>
+      <article class="db-card">
+        <div class="db-title"><div><strong>種牡馬サンプル</strong><span>系統 / Ver.情報</span></div><span>☆</span></div>
+        <div class="data-table">
+          <div><small>種付料</small><b>—</b></div><div><small>距離適性</small><b>1600〜2400</b></div>
+          <div><small>成長</small><b>普通</b></div><div><small>ダート</small><b>○</b></div>
+          <div><small>体質</small><b>B</b></div><div><small>気性</small><b>普通</b></div>
+          <div><small>実績</small><b>A</b></div><div><small>底力</small><b>A</b></div>
+          <div><small>安定</small><b>B</b></div><div><small>データ種別</small><b>サンプル</b></div>
+        </div>
+        <div class="db-sub">
+          <span>NSP <b>8</b></span><span>NST <b>5</b></span><span>NPW <b>2</b></span>
+        </div>
+        <div class="lineage">
+          <strong>配合用4系統</strong>
+          <p>面白用・見事用の系統を、通常の父系表示とは分けて確認できる設計。</p>
+        </div>
+      </article>
+    </section>
+
+    <section id="mares" class="screen">
+      <div class="section-head">
+        <div>
+          <span class="section-label">繁殖牝馬データ</span>
+          <h2>入手情報と攻略DBを分離</h2>
+        </div>
+        <span class="step">06</span>
+      </div>
+      <div class="searchbox">⌕ 牝馬名で検索…</div>
+      <article class="db-card">
+        <div class="db-title"><div><strong>繁殖牝馬サンプル</strong><span>セリ / 自家製 / 系統</span></div><span>☆</span></div>
+        <div class="data-table two-col">
+          <div><small>価格</small><b>—</b></div><div><small>入手</small><b>セリ</b></div>
+          <div><small>父</small><b>父馬</b></div><div><small>母父</small><b>母父馬</b></div>
+        </div>
+        <div class="source-head"><strong>攻略データ</strong><span>ゲーム画面では直接見えない値</span></div>
+        <div class="ability-bars">
+          <div><span>スピード</span><i style="--w:82%"></i><b>A</b></div>
+          <div><span>スタミナ</span><i style="--w:68%"></i><b>B</b></div>
+          <div><span>パワー</span><i style="--w:74%"></i><b>B+</b></div>
+          <div><span>ダート</span><i style="--w:52%"></i><b>C+</b></div>
+        </div>
+      </article>
+    </section>
+
+    <section id="data" class="screen">
+      <div class="section-head">
+        <div>
+          <span class="section-label">データ追加・検証メモ</span>
+          <h2>「何が根拠か」を残す</h2>
+        </div>
+        <span class="step">07</span>
+      </div>
+      <div class="source-grid">
+        <article><span class="src official">公式</span><strong>ゲーム内確認</strong><p>ゲーム画面で直接確認できる項目。</p></article>
+        <article><span class="src book">攻略本</span><strong>公式攻略本</strong><p>書籍由来の配合理論・データ。</p></article>
+        <article><span class="src web">攻略DB</span><strong>外部攻略データ</strong><p>サイト・検証DBの計算値。</p></article>
+        <article><span class="src personal">自分</span><strong>自分の検証</strong><p>牧場内で確認したメモや結果。</p></article>
+      </div>
+      <div class="memo-card">
+        <label>検証メモ</label>
+        <div class="fake-textarea">例：3世代目で見事を成立。中距離で安定してSP印を確認。</div>
+        <div class="status-row"><span>未確認</span><span class="active">確認済み</span></div>
+        <button class="primary wide" type="button">保存（UIのみ）</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="主要画面">
+    <a href="#home"><span>⌂</span>ホーム</a>
+    <a href="#search"><span>⌕</span>候補検索</a>
+    <a href="#analysis"><span>◇</span>配合考察</a>
+    <a href="#route"><span>↗</span>世代設計</a>
+    <a href="#data"><span>＋</span>データ</a>
+  </nav>
+
+  <footer class="prototype-note">
+    <strong>静的UIモック</strong>
+    <span>検索・保存・計算などの機能はまだ実装していません。表示値は画面設計確認用のサンプルです。</span>
+  </footer>
+</body>
+</html>
