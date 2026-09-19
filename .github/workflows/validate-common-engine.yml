@@ -21,6 +21,7 @@ on:
       - 'data/danger-engine-validation.json'
       - 'data/theory-flag-validation.json'
       - 'data/all-sire-pedigree-validation.json'
+      - 'data/sale-sire-coverage-validation.json'
       - 'data/sale-planner-design-validation.json'
       - '.github/workflows/validate-common-engine.yml'
   workflow_dispatch:
@@ -154,6 +155,35 @@ jobs:
           console.log(JSON.stringify({total,dangerMismatch,theoryMismatch,childMismatch,elaborateMismatch,knownDifference:only,directExceptions:D.count,domesticDirect:domesticDirect.length,allSires:allSire.count,foreignSires:C.foreignNames.length,pedigreeTotal:P.count,runtimeMs:Date.now()-started}));
           NODE
           node /tmp/check-common.js
+
+      - name: Browser loader API smoke
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),path=require('path');
+          global.window=globalThis;
+          global.db={horses:[]};
+          global.location={href:'https://example.test/'};
+          global.APP_ERRORS=[];
+          global.DABISTA_BREEDING_CORE=require(process.cwd()+'/breeding-core.js');
+          global.fetch=async input=>{
+            const u=new URL(String(input));
+            const rel=u.pathname.replace(/^\//,'');
+            const file=path.join(process.cwd(),rel);
+            return {ok:fs.existsSync(file),status:fs.existsSync(file)?200:404,json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))};
+          };
+          require(process.cwd()+'/breeding-engine.js');
+          (async()=>{
+            const e=await global.DABISTA_BREEDING_ENGINE.ready;
+            if(e.status!=='ready')throw Error('loader not ready');
+            if(e.domesticStallions().length!==176)throw Error('domestic candidates '+e.domesticStallions().length);
+            if(e.allPedigreeStallions().length!==214)throw Error('analysis sires '+e.allPedigreeStallions().length);
+            const g=e.master('Galileo');
+            if(!g||g.ancestor.length!==15||g.omoshiro.length!==4||g.migoto.length!==4||g.theorySource!=='pedigree-analysis-only')throw Error('Galileo analysis record invalid '+JSON.stringify(g));
+            if(e.stallionStats('Galileo')!==null)throw Error('Galileo leaked into domestic stallion stats');
+            if(e.domesticStallions().some(x=>e.core.key(x.name)===e.core.key('Galileo')))throw Error('Galileo leaked into breeding candidates');
+            console.log('PASS browser loader 176 domestic / 214 pedigree-analysis sires');
+          })().catch(e=>{console.error(e);process.exit(2)});
+          NODE
 
       - name: Nitro and multi-generation regression
         run: |
