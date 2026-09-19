@@ -91,7 +91,8 @@
   "searchValidation": {
     "twoGeneration": {
       "typicalRoutesPerMare": "約30,000",
-      "conclusion": "全探索が現実的。ビームサーチ不要。"
+      "conclusion": "全探索が現実的。ビームサーチ不要。",
+      "note": "2代目までは全探索を基本とする。1代目で早期枝刈りすると最終候補の取りこぼしが大きいことを確認。"
     },
     "threeGeneration": {
       "exampleMare": "ラブアタック",
@@ -124,7 +125,8 @@
           "theoryTop10Recall": 0.6
         }
       },
-      "conclusion": "単純ビームサーチを『最適解』として出すのは不適切。3代目は出生前の完全最適化より、1～2代目を正確に設計し、実際に選抜した娘の能力を登録後に再設計する方式を基本とする。"
+      "conclusion": "単純ビームサーチを『最適解』として出すのは不適切。3代目は出生前の完全最適化より、1～2代目を正確に設計し、実際に選抜した娘の能力を登録後に再設計する方式を基本とする。",
+      "additionalConclusion": "最終世代だけを最大化するビーム探索は中間世代の選抜思想とも相性が悪い。セリ起点では2代目まで正確に設計し、実馬の能力選抜後に再探索する方式を正式案とする。"
     }
   },
   "recommendedArchitecture": [
@@ -136,5 +138,28 @@
     "種牡馬狙いは将来の相手牝馬群に対する安全性・高ニトロ成立数・配合理論成立数を並列表示",
     "途中世代の繁殖能力を推定値で捏造しない"
   ],
-  "releaseDecision": "まだユーザー向けUIへ反映しない。共通判定エンジンを先に統合してからセリ設計UIを実装する。"
+  "releaseDecision": "まだユーザー向けUIへ反映しない。共通判定エンジンを先に統合してからセリ設計UIを実装する。",
+  "directArcCoverage": {
+    "exactDangerEngine": true,
+    "safeDomesticSiresPerMare": {
+      "min": 154,
+      "median": 175,
+      "max": 176
+    },
+    "recordAAnd2400mCoverage": {
+      "maresWithCandidate": 331,
+      "totalMares": 331
+    },
+    "strictNitroReference": {
+      "SP>=14_and_ST>=6": {
+        "maresWithCandidate": 39,
+        "withoutCandidate": 292
+      },
+      "SP>=15_and_ST>=5": {
+        "maresWithCandidate": 22,
+        "withoutCandidate": 309
+      }
+    },
+    "conclusion": "実績Aかつ2400m対応父は全331頭で確保できる。一方、固定ニトロ閾値を必須条件にすると大半のセリ牝馬を除外するため、閾値はフィルター/参考値として扱い、母能力・父能力・距離・配合理論との多軸比較にする。"
+  }
 }
