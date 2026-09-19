@@ -1,0 +1,103 @@
+name: Validate exact danger engine
+on:
+  push:
+    paths: ['.github/workflows/validate-danger-engine.yml']
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch current Switch oracle
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          url='https://ds.yublog.com/js/ds96_11.js?v26'
+          data=urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; DabistaFarmDB/1.0)'}),timeout=45).read().decode('utf-8','replace')
+          open('/tmp/ds96.js','w',encoding='utf-8').write(data)
+          PY
+      - name: Exhaustive 331 x 176 comparison
+        run: |
+          cat > /tmp/check.js <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
+          const S=JSON.parse(fs.readFileSync('data/stallions.json','utf8')).stallions;
+          const M=JSON.parse(fs.readFileSync('data/default-broodmares.json','utf8')).broodmares;
+          const code=fs.readFileSync('/tmp/ds96.js','utf8'),ctx={console:{log:()=>{}}};
+          vm.createContext(ctx);vm.runInContext(code+'\n;globalThis.__seed=new Ds96(0,0);',ctx,{timeout:15000});
+          const seed=ctx.__seed,n=s=>String(s||'').normalize('NFKC').replace(/[\s・･]/g,'');
+          const ts=new Map(T.stallions.map(x=>[n(x.name),x])),tm=new Map(T.broodmares.map(x=>[n(x.name),x]));
+          const si=new Map(seed.stallionObject.map((x,i)=>[n(x.name),i])),mi=new Map(seed.broodmareObject.map((x,i)=>[n(x.name),i]));
+          function locks(mother,father){
+            const out=[];
+            const add=(...a)=>out.push(...a);
+            if(father===0){
+              if(mother===0)add('1,1','3,3','4,4','7,7','8,8','9,9','10,10');
+              else if(mother===1)add('1,3','3,7','4,8');
+              else if(mother===2)add('1,5','3,11','4,12');
+              else if(mother===3)add('1,7'); else if(mother===4)add('1,9'); else if(mother===5)add('1,11'); else if(mother===6)add('1,13');
+            }else if(father===1){
+              if(mother===0)add('3,1','7,3','8,4');
+              else if(mother===1)add('3,3','7,7','8,8');
+              else if(mother===2)add('3,5','7,11','8,12');
+              else if(mother===3)add('3,7'); else if(mother===4)add('3,9'); else if(mother===5)add('3,11'); else if(mother===6)add('3,13');
+            }else if(father===2){
+              if(mother===0)add('5,1','11,3','12,4');
+              else if(mother===1)add('5,3','11,7','12,8');
+              else if(mother===2)add('5,5','11,11','12,12');
+              else if(mother===3)add('5,7'); else if(mother===4)add('5,9'); else if(mother===5)add('5,11'); else if(mother===6)add('5,13');
+            }else if(father===3){
+              if(mother<=6)add('7,'+(mother*2+1));
+            }else if(father===4){
+              if(mother<=6)add('9,'+(mother*2+1));
+            }else if(father===5){
+              if(mother<=6)add('11,'+(mother*2+1));
+            }else if(father===6){
+              if(mother<=6)add('13,'+(mother*2+1));
+            }
+            return out;
+          }
+          function ours(sire,mare){
+            const sa=sire.ancestor||[],ma=mare.ancestor||[],blocked=new Set();let cnt=0,tyokiken=false;
+            for(let i=0;i<ma.length;i++){
+              if(n(sire.name)===n(ma[i])){tyokiken=true;continue}
+              for(let j=0;j<sa.length;j++){
+                if(blocked.has(j+','+i))continue;
+                if(n(sa[j])===n(ma[i])){
+                  cnt++;if(i===0&&j===0)tyokiken=true;
+                  for(const x of locks(i,j))blocked.add(x);
+                }
+              }
+            }
+            return{inbreedcnt:cnt,kiken:cnt>6,tyokiken}
+          }
+          let total=0,mismatch=0,kiken=0,tyo=0,maxCnt=0;const samples=[];
+          for(const s of S){
+            const st=ts.get(n(s.name)),sidx=si.get(n(s.name)); if(!st||sidx==null)throw Error('missing sire '+s.name);
+            for(const m of M){
+              const mt=tm.get(n(m.name)),midx=mi.get(n(m.name)); if(!mt||midx==null)throw Error('missing mare '+m.name);
+              const a=ours(st,mt);ctx.__si=sidx;ctx.__mi=midx;
+              const o=vm.runInContext('new Ds96(globalThis.__si,globalThis.__mi)',ctx,{timeout:15000});
+              total++;if(a.kiken)kiken++;if(a.tyokiken)tyo++;if(a.inbreedcnt>maxCnt)maxCnt=a.inbreedcnt;
+              if(a.inbreedcnt!==o.inbreedcnt||a.kiken!==o.kiken||a.tyokiken!==o.tyokiken){
+                mismatch++;if(samples.length<20)samples.push({sire:s.name,mare:m.name,ours:a,oracle:{inbreedcnt:o.inbreedcnt,kiken:o.kiken,tyokiken:o.tyokiken}});
+              }
+            }
+          }
+          const report={total,mismatch,kiken,tyokiken:tyo,maxCnt,samples,passed:mismatch===0};
+          fs.writeFileSync('data/danger-engine-validation.json',JSON.stringify(report,null,2));
+          if(mismatch)throw Error('danger mismatches '+mismatch+' / '+total);
+          console.log(JSON.stringify(report));
+          NODE
+          node /tmp/check.js
+      - name: Commit report and cleanup
+        run: |
+          rm .github/workflows/validate-danger-engine.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/danger-engine-validation.json .github/workflows/validate-danger-engine.yml
+          git commit -m "Validate exact dangerous cross engine"
+          git push
