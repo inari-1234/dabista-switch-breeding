@@ -1,0 +1,101 @@
+{
+  "count": 214,
+  "complete": 214,
+  "incomplete": 0,
+  "bad": [],
+  "samples": [
+    {
+      "name": "Galileo",
+      "ancestor": [
+        "Sadler's Wells",
+        "Northern Dancer",
+        "Miswaki",
+        "Nearctic",
+        "Bold Reason",
+        "Mr.Prospector",
+        "Lombard",
+        "Nearco",
+        "Native Dancer",
+        "Hail to Reason",
+        "Forli",
+        "Raise a Native",
+        "Buckpasser",
+        "agio",
+        "Espresso"
+      ],
+      "omoshiro": "edfi",
+      "migoto": "fkhj",
+      "system": "ﾉｰｻﾞﾝﾀﾞﾝｻｰ"
+    },
+    {
+      "name": "Pivotal",
+      "ancestor": [
+        "Polar Falcon",
+        "Nureyev",
+        "Cozzene",
+        "Northern Dancer",
+        "Jefferson",
+        "Caro",
+        "Butino",
+        "Nearctic",
+        "Forli",
+        "Charlottesville",
+        "Blue Tom",
+        "ﾌｫﾙﾃｨﾉ",
+        "Prince John",
+        "Busted",
+        "Henry the Sevens"
+      ],
+      "omoshiro": "emcj",
+      "migoto": "khmk",
+      "system": "ﾉｰｻﾞﾝﾀﾞﾝｻｰ"
+    },
+    {
+      "name": "Kitten's Joy",
+      "ancestor": [
+        "El Prado",
+        "Sadler's Wells",
+        "Lear Fan",
+        "Northern Dancer",
+        "Sir Ivor",
+        "Roberto",
+        "L'Enjoleur",
+        "Nearctic",
+        "Bold Reason",
+        "Sir Gaylord",
+        "Tom Fool",
+        "Hail to Reason",
+        "Lt.Stevens",
+        "Buckpasser",
+        "Prince John"
+      ],
+      "omoshiro": "eddh",
+      "migoto": "dhcm",
+      "system": "ﾉｰｻﾞﾝﾀﾞﾝｻｰ"
+    },
+    {
+      "name": "War Front",
+      "ancestor": [
+        "Danzig",
+        "Northern Dancer",
+        "Rubiano",
+        "Nearctic",
+        "Admiral's Voyage",
+        "Fappiano",
+        "Forli",
+        "Nearco",
+        "Native Dancer",
+        "Crafty Admiral",
+        "Petition",
+        "Mr.Prospector",
+        "Nijinsky",
+        "Aristophanes",
+        "Round Table"
+      ],
+      "omoshiro": "eifk",
+      "migoto": "fgem",
+      "system": "ﾉｰｻﾞﾝﾀﾞﾝｻｰ"
+    }
+  ],
+  "passed": true
+}
