@@ -43,6 +43,7 @@ jobs:
           node --check v25.js
           python -m json.tool version.json >/dev/null
           python -m json.tool data/theory-master.json >/dev/null
+          python -m json.tool data/pedigree-master.json >/dev/null
           python -m json.tool data/nitro-effects.json >/dev/null
           python -m json.tool data/kotta-pairs.json >/dev/null
           python -m json.tool data/elaborate-direct-exceptions.json >/dev/null
@@ -55,10 +56,17 @@ jobs:
           v25=Path('v25.js').read_text(encoding='utf-8')
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
           direct=json.loads(Path('data/elaborate-direct-exceptions.json').read_text(encoding='utf-8'))
+          pedigree=json.loads(Path('data/pedigree-master.json').read_text(encoding='utf-8'))
           assert (v['version'],v['build']) == ('1.16.0','2026.09.20-34')
           assert direct['count'] == 33 and len(direct['pairs']) == 33
+          assert pedigree['schemaVersion'] == 4
+          assert pedigree['domesticStallionCount'] == 176
+          assert pedigree['pedigreeStallionCount'] == 214
+          assert pedigree['broodmareCount'] == 331
           assert 'breeding-core.js?v=1.16.0' in idx
           assert 'breeding-engine.js?v=1.16.0' in idx
+          assert "json('data/pedigree-master.json')" in Path('breeding-engine.js').read_text(encoding='utf-8')
+          assert 'allPedigreeStallions' in Path('breeding-engine.js').read_text(encoding='utf-8')
           assert idx.index('breeding-core.js?v=1.16.0') < idx.index('breeding-engine.js?v=1.16.0') < idx.index('v20.js?v=1.16.0')
           assert 'v23.js' not in idx
           assert 'buildSystemMap' not in v20 and 'deriveMare(' not in v20
@@ -95,6 +103,8 @@ jobs:
           const oldTheory=JSON.parse(fs.readFileSync('data/theory-flag-validation.json','utf8'));
           const allSire=JSON.parse(fs.readFileSync('data/all-sire-pedigree-validation.json','utf8'));
           const saleDesign=JSON.parse(fs.readFileSync('data/sale-planner-design-validation.json','utf8'));
+          const P=JSON.parse(fs.readFileSync('data/pedigree-master.json','utf8'));
+          const C=JSON.parse(fs.readFileSync('data/sale-sire-coverage-validation.json','utf8'));
           const knownDiff=(IV.samples||[]).filter(x=>x?.sire&&x?.mare&&x?.ours?.kc!==x?.oracle?.k).map(x=>({sire:x.sire,mare:x.mare}));
           const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D.pairs,elaborateKnownDifferences:knownDiff});
           const code=fs.readFileSync('/tmp/ds96.js','utf8'),ctx={console:{log:()=>{}}};
@@ -131,8 +141,17 @@ jobs:
           const domesticDirect=D.pairs.filter(x=>domesticS.has(core.key(x.sire))&&domesticM.has(core.key(x.mare)));
           if(domesticDirect.length!==18)throw Error('domestic direct exceptions '+domesticDirect.length);
           if(!allSire.passed||allSire.count!==214||allSire.complete!==214)throw Error('all sire pedigree validation invalid');
+          if(P.schemaVersion!==4||P.domesticStallionCount!==176||P.pedigreeStallionCount!==214||P.broodmareCount!==331)throw Error('pedigree master counts invalid');
+          const ph=new Map(P.horses.map(x=>[core.key(x.name),x]));
+          const domesticNames=new Set(S.map(x=>core.key(x.name)));
+          for(const name of C.foreignNames||[]){const x=ph.get(core.key(name));if(!x||x.kind!=='pedigree-stallion'||!Array.isArray(x.ancestor)||x.ancestor.length!==15||String(x.omoshiro||'').length!==4||String(x.migoto||'').length!==4)throw Error('foreign pedigree incomplete '+name);if(domesticNames.has(core.key(name)))throw Error('foreign sire leaked into domestic candidates '+name)}
+          if((C.foreignNames||[]).length!==38)throw Error('foreign sire count '+(C.foreignNames||[]).length);
+          const pivotal=ph.get(core.key('Pivotal')),shake=ph.get(core.key('シェイクロマン'));
+          if(!pivotal||!shake)throw Error('foreign sale-pair smoke records missing');
+          const child=engine.deriveChild(pivotal,shake,'sale-smoke');
+          if(!child||child.ancestor.length!==15||child.omoshiro!=='ecnk'||child.migoto!=='mjea')throw Error('foreign sale-pair inheritance mismatch '+JSON.stringify(child));
           if(saleDesign.saleMares.total!==331||saleDesign.saleMares.knownAbility!==298||saleDesign.saleMares.unknownAbility!==33||saleDesign.saleMares.completePedigree15!==331)throw Error('sale mare coverage invalid');
-          console.log(JSON.stringify({total,dangerMismatch,theoryMismatch,childMismatch,elaborateMismatch,knownDifference:only,directExceptions:D.count,domesticDirect:domesticDirect.length,allSires:allSire.count,runtimeMs:Date.now()-started}));
+          console.log(JSON.stringify({total,dangerMismatch,theoryMismatch,childMismatch,elaborateMismatch,knownDifference:only,directExceptions:D.count,domesticDirect:domesticDirect.length,allSires:allSire.count,foreignSires:C.foreignNames.length,pedigreeTotal:P.count,runtimeMs:Date.now()-started}));
           NODE
           node /tmp/check-common.js
 
