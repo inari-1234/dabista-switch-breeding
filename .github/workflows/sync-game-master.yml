@@ -141,10 +141,14 @@ jobs:
                       'damDamSire':anc[6] if len(anc)>6 else '','omoshiro':x.get('omoshiro',''),
                       'migoto':x.get('migoto',''),'omoshiroSystems':decode(x.get('omoshiro','')),
                       'migotoSystems':decode(x.get('migoto',''))}
-          sts=[entry(x,'default-stallion') for x in raw['stallions'] if n(x.get('name')) in st_names]
+          all_sts=[entry(x,'pedigree-stallion') for x in raw['stallions']]
+          sts=[{**x,'kind':'default-stallion'} for x in all_sts if n(x.get('name')) in st_names]
           bms=[entry(x,'default-broodmare') for x in raw['broodmares'] if n(x.get('name')) in bm_names]
-          if len(sts)<170: raise RuntimeError(f'theory stallions short: {len(sts)}')
-          if len(bms)<320: raise RuntimeError(f'theory broodmares short: {len(bms)}')
+          if len(all_sts)!=214: raise RuntimeError(f'all pedigree stallions expected 214, got {len(all_sts)}')
+          if any(len(x.get('ancestor') or [])!=15 or len(str(x.get('omoshiro') or ''))!=4 or len(str(x.get('migoto') or ''))!=4 for x in all_sts):
+              raise RuntimeError('all-sire pedigree completeness check failed')
+          if len(sts)!=176: raise RuntimeError(f'domestic theory stallions expected 176, got {len(sts)}')
+          if len(bms)!=331: raise RuntimeError(f'theory broodmares expected 331, got {len(bms)}')
           stamp=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
           theory={'schemaVersion':1,'source':'https://ds.yublog.com/js/ds96_11.js','sourceNote':'Switch版湯一路配合ツール内のゲームデータから、デフォルト馬の15祖先と面白・見事用系統を抽出。','syncedAt':stamp,'systemCodes':code_names,'stallionCount':len(sts),'broodmareCount':len(bms),'stallions':sts,'broodmares':bms}
           (out/'theory-master.json').write_text(json.dumps(theory,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
@@ -152,16 +156,22 @@ jobs:
           p=out/'pedigree-master.json'
           old=json.loads(p.read_text(encoding='utf-8')) if p.exists() else {'horses':[]}
           by={n(x.get('name')):{**x,'name':n(x.get('name'))} for x in old.get('horses',[]) if x.get('name')}
-          for x in sts+bms:
+          for x in all_sts+bms:
               cur=by.get(x['name'],{'name':x['name']})
               for k in ('kind','system','ancestor','sire','sireSire','damSire','sireDamSire','damDamSire','omoshiro','migoto','omoshiroSystems','migotoSystems'):
                   if x.get(k) not in ('',None,[]): cur[k]=x[k]
               cur['source']='ds.yublog game master'
               by[x['name']]=cur
+          # 国内176頭は「種付け候補」、残り38頭は「血統解析専用」と区別する。
+          for x in sts:
+              if x['name'] in by: by[x['name']]['kind']='default-stallion'
           horses=sorted(by.values(),key=lambda x:x['name'])
-          pedigree={'schemaVersion':3,'updatedAt':stamp,'note':'入力補完用。ゲーム内デフォルト種牡馬・繁殖牝馬は湯一路配合ツールの15祖先データを使用。自家製馬は牧場DBを優先。','count':len(horses),'horses':horses}
+          sire_names={x['name'] for x in all_sts}
+          pedigree_sires=[x for x in horses if x.get('name') in sire_names]
+          if len(pedigree_sires)!=214: raise RuntimeError(f'pedigree master sire coverage expected 214, got {len(pedigree_sires)}')
+          pedigree={'schemaVersion':4,'updatedAt':stamp,'note':'血統解析用マスタ。国内176頭は種付け候補、外国38頭は血統解析専用として保持。繁殖牝馬331頭と既存補完データも併存。自家製馬は牧場DBを優先。','domesticStallionCount':len(sts),'pedigreeStallionCount':len(pedigree_sires),'broodmareCount':len(bms),'count':len(horses),'horses':horses}
           p.write_text(json.dumps(pedigree,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          print('theory',len(sts),len(bms),'pedigree',len(horses))
+          print('theory domestic',len(sts),'all pedigree stallions',len(pedigree_sires),'broodmares',len(bms),'pedigree total',len(horses))
           PY
 
       - name: Commit updated data
