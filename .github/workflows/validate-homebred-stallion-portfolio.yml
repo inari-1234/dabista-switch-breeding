@@ -32,7 +32,8 @@ jobs:
           vm.createContext(ctx);vm.runInContext(code+'\n;globalThis.__seed=new Ds96(0,0);',ctx,{timeout:15000});
           const seed=ctx.__seed,canon=s=>String(s||'').normalize('NFKC').trim(),norm=s=>canon(s).replace(/[\s・･]/g,'').toLowerCase();
           const ts=new Map(T.stallions.map(x=>[norm(x.name),x])),tm=new Map(T.broodmares.map(x=>[norm(x.name),x]));
-          const si=new Map(seed.stallionObject.map((x,i)=>[norm(x.name),i])),mi=new Map(seed.broodmareObject.map((x,i)=>[norm(x.name),i]));\n          const rawS=new Map(seed.stallionObject.map(x=>[norm(x.name),x])),rawM=new Map(seed.broodmareObject.map(x=>[norm(x.name),x]));
+          const si=new Map(seed.stallionObject.map((x,i)=>[norm(x.name),i])),mi=new Map(seed.broodmareObject.map((x,i)=>[norm(x.name),i]));
+          const rawS=new Map(seed.stallionObject.map(x=>[norm(x.name),x])),rawM=new Map(seed.broodmareObject.map(x=>[norm(x.name),x]));
           const em=new Map(E.map(x=>[norm(x.name),x])),pairs=new Set(K.map(p=>norm(p.a)+'|'+norm(p.b)));
           const sourceElab=(()=>{const m=code.match(/const\s+elaborate_list\s*=\s*\[([\s\S]*?)\]\s*;/);return new Set([...(m?.[1]||'').matchAll(/"([^"]+)"/g)].map(x=>{const [a,b]=x[1].split(';');return canon(a)+'|'+canon(b)}))})();
           function child(s,m){return{name:s.name+'×'+m.name,system:s.system,ancestor:[s.name,s.ancestor[0],m.ancestor[0],s.ancestor[1],s.ancestor[2],m.ancestor[1],m.ancestor[2],s.ancestor[3],s.ancestor[4],s.ancestor[5],s.ancestor[6],m.ancestor[3],m.ancestor[4],m.ancestor[5],m.ancestor[6]],omoshiro:s.omoshiro[0]+s.omoshiro[2]+m.omoshiro[0]+m.omoshiro[2],migoto:s.omoshiro[1]+s.omoshiro[3]+m.omoshiro[1]+m.omoshiro[3],dirt:0,konjo:0,price:0,speed:0,stamina:0,power:0}}
