@@ -1,0 +1,10 @@
+{
+  "total": 58256,
+  "mismatch": 0,
+  "interesting": 3685,
+  "magnificent": 85,
+  "perfect": 2,
+  "runtimeMs": 148872,
+  "passed": true,
+  "samples": []
+}
