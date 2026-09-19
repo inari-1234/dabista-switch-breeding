@@ -1,0 +1,65 @@
+name: Validate theory flags
+on:
+  push:
+    paths: ['.github/workflows/validate-theory-flags.yml']
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch current Switch oracle
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          url='https://ds.yublog.com/js/ds96_11.js?v26'
+          data=urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; DabistaFarmDB/1.0)'}),timeout=45).read().decode('utf-8','replace')
+          open('/tmp/ds96.js','w',encoding='utf-8').write(data)
+          PY
+      - name: Exhaustive 331 x 176 theory comparison
+        run: |
+          cat > /tmp/check.js <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
+          const S=JSON.parse(fs.readFileSync('data/stallions.json','utf8')).stallions;
+          const M=JSON.parse(fs.readFileSync('data/default-broodmares.json','utf8')).broodmares;
+          const code=fs.readFileSync('/tmp/ds96.js','utf8'),ctx={console:{log:()=>{}}};
+          vm.createContext(ctx);
+          vm.runInContext(code+'\n;globalThis.__seed=new Ds96(0,0);globalThis.__flags=(si,mi)=>{const o=new Ds96(si,mi);return [o.omoshiro,o.migoto,o.kanpeki]}',ctx,{timeout:15000});
+          const seed=ctx.__seed,canon=s=>String(s||'').normalize('NFKC').trim();
+          const ts=new Map(T.stallions.map(x=>[canon(x.name),x])),tm=new Map(T.broodmares.map(x=>[canon(x.name),x]));
+          const si=new Map(seed.stallionObject.map((x,i)=>[canon(x.name),i])),mi=new Map(seed.broodmareObject.map((x,i)=>[canon(x.name),i]));
+          const uniq=s=>new Set(String(s||'').split('')).size;
+          const sorted=s=>String(s||'').split('').sort().join('');
+          function ours(st,mt){
+            const interesting=uniq(st.omoshiro+mt.omoshiro)>=7;
+            const magnificent=sorted(st.migoto)===sorted(mt.omoshiro);
+            return [interesting,magnificent,interesting&&magnificent];
+          }
+          let total=0,mismatch=0;const samples=[];let interesting=0,magnificent=0,perfect=0;const started=Date.now();
+          for(const s of S){
+            const st=ts.get(canon(s.name)),sidx=si.get(canon(s.name));if(!st||sidx==null)throw Error('missing '+s.name);
+            for(const m of M){
+              const mt=tm.get(canon(m.name)),midx=mi.get(canon(m.name));if(!mt||midx==null)throw Error('missing '+m.name);
+              const a=ours(st,mt),o=ctx.__flags(sidx,midx);total++;
+              if(a[0])interesting++;if(a[1])magnificent++;if(a[2])perfect++;
+              if(a[0]!==o[0]||a[1]!==o[1]||a[2]!==o[2]){mismatch++;if(samples.length<20)samples.push({sire:s.name,mare:m.name,ours:a,oracle:o,sm:st.migoto,so:st.omoshiro,mo:mt.omoshiro})}
+            }
+          }
+          const report={total,mismatch,interesting,magnificent,perfect,runtimeMs:Date.now()-started,passed:mismatch===0,samples};
+          fs.writeFileSync('data/theory-flag-validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+          if(mismatch)process.exitCode=2;
+          NODE
+          node /tmp/check.js
+      - name: Commit report and cleanup
+        if: success()
+        run: |
+          rm .github/workflows/validate-theory-flags.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Validate exact theory flag formulas"
+          git push
