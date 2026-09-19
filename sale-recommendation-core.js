@@ -9,7 +9,7 @@
   const grade=v=>v==='A'?3:v==='B'?2:v==='C'?1:0;
   const bool=v=>v?1:0;
   const known=s=>!!s&&!((val(s.sp)===0)&&(val(s.st)===0)&&(val(s.pw)===0));
-  const pct=(rank,total)=>total?Math.max(0,Math.min(100,Math.round(rank/total*100))):null;
+  const pct=(rank,total)=>total?Math.max(1,Math.min(100,Math.ceil(rank/total*100))):null;
 
   function create(config={}){
     const planner=config.planner;
@@ -87,7 +87,7 @@
       if(f.elaborate)summary.elaborate++;
       if(val(ss.maxD)>=2400)summary.long2400++;
       if(grade(ss.record)>=3)summary.recordA++;
-      if(sp>=15&&st>=5&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.balanceLongA++;
+      if(sp>=15&&st>=5&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.balanceLongA++;\n      if(sp>=14&&st>=6&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.arcReady++;
       summary.maxSp=Math.max(summary.maxSp,sp);
       summary.maxSt=Math.max(summary.maxSt,st);
       summary.maxPw=Math.max(summary.maxPw,pw);
@@ -168,7 +168,7 @@
       };
       const p=assessment.ranks,high=p.spst.topPercent<=25,mid=p.spst.topPercent<=50,spHigh=p.sp.topPercent<=25;
       return{
-        arc:summary.balanceLongA>0?(high?'直仔から有力':'配合次第で直仔候補'):(mid?'2代比較推奨':'代重ね・厳選前提'),
+        arc:summary.arcReady>0?(high?'直仔から有力':'配合次第で直仔候補'):(mid?'2代比較推奨':'代重ね・厳選前提'),
         bc:summary.sp17st5>0?(spHigh?'直仔から有力':'配合次第'):'2代以上を比較',
         rebuild:high?'母能力を守る側':mid?'再建の起点候補':'再建素材・厳選前提',
         stallion:'世代診断で血統汎用性を比較'
