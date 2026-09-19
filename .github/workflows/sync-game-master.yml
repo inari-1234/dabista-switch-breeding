@@ -113,7 +113,7 @@ jobs:
             sourceNote:'Switch版配合ツール kakutei_list の凝った配合・直接成立例外。812ペアの成立確認マスタとは根拠を分離して保持。',
             count:direct.length,
             pairs:direct
-          },null,2)+'\\n');
+          },null,2)+'\n');
           console.log('tool objects',d.stallionObject.length,d.broodmareObject.length,'direct elaborate exceptions',direct.length);
           NODE
 
