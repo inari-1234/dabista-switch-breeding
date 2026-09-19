@@ -1,0 +1,48 @@
+{
+  "total": 58256,
+  "runtimeMs": 113045,
+  "child": {
+    "ancestorMismatch": 0,
+    "omoshiroMismatch": 0,
+    "migotoMismatch": 0,
+    "passed": true
+  },
+  "elaborate": {
+    "sourceListCount": 830,
+    "webMasterCount": 812,
+    "specialCount": 33,
+    "domesticSpecialCount": 18,
+    "kCanonMismatch": 1,
+    "kAggrMismatch": 1,
+    "srcMissingCanon": [
+      "スターリングローズ;ハンセル"
+    ],
+    "kExtraCanon": [],
+    "srcMissingAggr": [
+      "スターリングローズ;ハンセル"
+    ],
+    "kExtraAggr": []
+  },
+  "samples": [
+    {
+      "sire": "モンテロッソ",
+      "mare": "デイサイエンス",
+      "oracle": {
+        "k": false,
+        "d": false,
+        "t": false,
+        "om": "feej",
+        "mg": "cidc"
+      },
+      "ours": {
+        "kc": true,
+        "ka": true,
+        "om": "feej",
+        "mg": "cidc"
+      },
+      "am": false,
+      "omM": false,
+      "mgM": false
+    }
+  ]
+}
