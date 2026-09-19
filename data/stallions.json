@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "source": "https://ds.yublog.com/stallion_list.php",
   "sourceNote": "Switch版の国内デフォルト種牡馬。Galileo以降の海外・特殊種牡馬は除外。",
-  "syncedAt": "2026-09-19T16:17:03Z",
+  "syncedAt": "2026-09-19T16:24:07Z",
   "count": 176,
   "stallions": [
     {
