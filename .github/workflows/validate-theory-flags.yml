@@ -33,7 +33,7 @@ jobs:
           const ts=new Map(T.stallions.map(x=>[canon(x.name),x])),tm=new Map(T.broodmares.map(x=>[canon(x.name),x]));
           const si=new Map(seed.stallionObject.map((x,i)=>[canon(x.name),i])),mi=new Map(seed.broodmareObject.map((x,i)=>[canon(x.name),i]));
           const uniq=s=>new Set(String(s||'').split('')).size;
-          const sorted=s=>String(s||'').split('').sort().join('');
+          const sorted=s=>[...new Set(String(s||'').split(''))].sort().join('');
           function ours(st,mt){
             const interesting=uniq(st.omoshiro+mt.omoshiro)>=7;
             const magnificent=sorted(st.migoto)===sorted(mt.omoshiro);
