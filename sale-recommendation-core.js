@@ -75,7 +75,7 @@
         long2400:0,recordA:0,balanceLongA:0,arcReady:0
       };
     }
-    function addRoute(summary,route){
+    function addRoute(summary,route,goal){
       const f=route?.final||{},t=f.theory||{},ss=f.sireStats||{};
       summary.count++;
       const sp=val(f.sp),st=val(f.st),pw=val(f.pw);
@@ -117,7 +117,7 @@
         interesting:bool(t.interesting),magnificent:bool(t.magnificent),perfect:bool(t.perfect),elaborate:bool(f.elaborate)
       };
     }
-    function materialUpgrade(prev,next,goal){
+    function materialUpgrade(prev,next,goal,assessment){
       if(!prev||!next)return!!next;
       const a=routeFacts(prev),b=routeFacts(next);
       if(goal==='bc'){
@@ -179,7 +179,7 @@
 
     function recommendGeneration({goal='arc',assessment,generations,portfolios}={}){
       const g1=generations?.[1],g2=generations?.[2],g3=generations?.[3];
-      const r1=routeForGoal(g1?.result,goal),r2=routeForGoal(g2?.result,goal),r3=routeForGoal(g3?.result,goal);
+      const r1=g1?.summary?.bestRoute||routeForGoal(g1?.result,goal),r2=g2?.summary?.bestRoute||routeForGoal(g2?.result,goal),r3=g3?.summary?.bestRoute||routeForGoal(g3?.result,goal);
       let recommended=1,reasons=[],conditional=false;
       if(goal==='stallion'){
         const p1=portfolios?.[1]?.routes?.[0]?.portfolio||null;
@@ -191,10 +191,10 @@
           recommended=3;conditional=true;reasons.push('3代目プレビューではさらに上積みが見えますが、全176³探索ではないため条件付き推奨です。');
         }
       }else{
-        if(materialUpgrade(r1,r2,goal)){recommended=2;reasons.push('2代目で、直仔より意味のあるニトロ・距離適性・配合理論の上積みが確認できます。')}
+        if(materialUpgrade(r1,r2,goal,assessment)){recommended=2;reasons.push('2代目で、直仔より意味のあるニトロ・距離適性・配合理論の上積みが確認できます。')}
         else reasons.push('2代へ進めても直仔に対する上積みが小さく、短い世代で締める価値があります。');
         const base=recommended===2?r2:r1;
-        if(materialUpgrade(base,r3,goal)){
+        if(materialUpgrade(base,r3,goal,assessment)){
           recommended=3;conditional=true;reasons.push('3代目プレビューで追加の上積みがあります。ただし3代目は条件付き探索なので、確定最適とは扱いません。');
         }
       }
@@ -211,7 +211,7 @@
 
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
-      mareAssessment,rankMetric,abilityTier,emptySummary,addRoute,summarize,
+      mareAssessment,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
       directUseLabels,routeForGoal,routeFacts,recommendGeneration,portfolioFacts,portfolioUpgrade
     };
   }
