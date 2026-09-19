@@ -1,5 +1,5 @@
 (()=>{
-const V='1.16.0',BUILD='2026.09.20-34',KEY='dabistaFarmV1';
+const V='1.17.0',BUILD='2026.09.20-35',KEY='dabistaFarmV1';
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 const db=window.db;
 if(!db||!Array.isArray(db.horses))return;

@@ -1,0 +1,259 @@
+(function(root,factory){
+  const api=factory();
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  if(root)root.DABISTA_SALE_PLANNER_CORE=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  'use strict';
+
+  const PROFILE_LABELS={
+    sp:'SP上限型',
+    st:'ST・2400m型',
+    balance:'バランス型',
+    sire:'自家製種牡馬・血統価値型'
+  };
+  const GOAL_LABELS={
+    arc:'凱旋門賞狙い',
+    stallion:'自家製種牡馬狙い',
+    rebuild:'繁殖牝馬再建',
+    bc:'BC長期狙い'
+  };
+  const GOAL_ORDER={
+    arc:['balance','st','sp','sire'],
+    stallion:['sire','sp','balance','st'],
+    rebuild:['balance','st','sp','sire'],
+    bc:['sp','balance','sire','st']
+  };
+  const PROFILE_CRITERIA={
+    sp:'最終配合のSPニトロ → ST → PW → 完璧/見事/面白/凝った → 最終父の実績',
+    st:'最終父の2400m対応 → STニトロ → SP → 実績/底力 → 配合理論',
+    balance:'SP15/ST5同時達成 → SP+ST → ST → SP → 2400m対応 → 実績',
+    sire:'高能力繁殖牝馬群への安全配合数・SP15/ST5・SP17/ST5・面白/見事/完璧/凝った・最大ニトロを合算せず並列比較'
+  };
+  const grade=v=>v==='A'?3:v==='B'?2:v==='C'?1:0;
+  const bool=v=>v?1:0;
+  const val=(x,d=0)=>Number.isFinite(+x)?+x:d;
+  const abilityKnown=s=>!!s&&!((val(s.sp)===0)&&(val(s.st)===0)&&(val(s.pw)===0));
+  const routeKey=r=>(r.sires||[]).join('>');
+
+  function cmpVec(a,b){
+    const n=Math.max(a.length,b.length);
+    for(let i=0;i<n;i++){const d=(b[i]||0)-(a[i]||0);if(d)return d}
+    return 0;
+  }
+  function finalVector(route,profile){
+    const f=route.final||{},s=f.sireStats||{},t=f.theory||{};
+    if(profile==='sp')return[val(f.sp),val(f.st),val(f.pw),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate),grade(s.record)];
+    if(profile==='st')return[bool(val(s.maxD)>=2400),val(f.st),val(f.sp),grade(s.record),grade(s.guts),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate)];
+    if(profile==='balance')return[bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.st),val(f.sp),bool(val(s.maxD)>=2400),grade(s.record),grade(s.guts)];
+    if(profile==='theory')return[bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate),val(f.sp)+val(f.st),val(f.sp),val(f.st)];
+    return[];
+  }
+  function compareProfile(profile){return(a,b)=>cmpVec(finalVector(a,profile),finalVector(b,profile))}
+
+  function insertTop(list,item,cmp,limit){
+    if(!item)return;
+    const k=routeKey(item),old=list.findIndex(x=>routeKey(x)===k);
+    if(old>=0)list.splice(old,1);
+    let i=0;while(i<list.length&&cmp(list[i],item)<=0)i++;
+    list.splice(i,0,item);
+    if(list.length>limit)list.length=limit;
+  }
+
+  function createCollector({topN=5,poolN=24}={}){
+    const lists={sp:[],st:[],balance:[],theory:[]};
+    let count=0;
+    return{
+      push(route){
+        count++;
+        for(const p of Object.keys(lists))insertTop(lists[p],route,compareProfile(p),poolN);
+      },
+      get count(){return count},
+      pool(){
+        const m=new Map();
+        for(const list of Object.values(lists))for(const r of list)m.set(routeKey(r),r);
+        return[...m.values()];
+      },
+      finish(){
+        return{
+          count,
+          profiles:{
+            sp:lists.sp.slice(0,topN),
+            st:lists.st.slice(0,topN),
+            balance:lists.balance.slice(0,topN)
+          },
+          shortlists:{
+            sp:[...lists.sp],st:[...lists.st],balance:[...lists.balance],theory:[...lists.theory]
+          },
+          pool:this.pool()
+        };
+      }
+    }
+  }
+
+  function create(config={}){
+    const engine=config.engine;
+    if(!engine||typeof engine.evaluate!=='function'||typeof engine.deriveChild!=='function')throw Error('sale planner requires common breeding engine');
+    const stallions=config.stallions||[];
+    const stallionStats=config.stallionStats||[];
+    const broodmares=config.broodmares||[];
+    const broodmareStats=config.broodmareStats||[];
+    const key=engine.key||((s)=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase());
+    const sireMap=new Map(stallions.map(x=>[key(x.name),x]));
+    const sireStatsMap=new Map(stallionStats.map(x=>[key(x.name),x]));
+    const mareMap=new Map(broodmares.map(x=>[key(x.name),x]));
+    const mareStatsMap=new Map(broodmareStats.map(x=>[key(x.name),x]));
+    const cohort120=broodmareStats.filter(abilityKnown).filter(x=>val(x.sp)+val(x.st)>=120).map(x=>mareMap.get(key(x.name))).filter(Boolean);
+    const cohort130=broodmareStats.filter(abilityKnown).filter(x=>val(x.sp)+val(x.st)>=130).map(x=>mareMap.get(key(x.name))).filter(Boolean);
+
+    function mare(name){return mareMap.get(key(name))||null}
+    function sire(name){return sireMap.get(key(name))||null}
+    function statsForSire(name){return sireStatsMap.get(key(name))||null}
+    function mareInfo(name){
+      const record=mare(name),stats=mareStatsMap.get(key(name))||null,known=abilityKnown(stats);
+      return{
+        record,stats,abilityKnown:known,
+        abilityStatus:known?'known':'unknown',
+        spst:known?val(stats.sp)+val(stats.st):null
+      };
+    }
+    function compactFinal(pair,sireRecord){
+      const n=pair.nitro||{},t=pair.theory||{},ss=statsForSire(sireRecord.name)||{};
+      return{
+        sp:val(n.sp),st:val(n.st),pw:val(n.pw),
+        theory:{interesting:!!t.interesting,magnificent:!!t.magnificent,perfect:!!t.perfect},
+        elaborate:!!pair.elaborate?.effective,
+        sireStats:{record:ss.record||'-',guts:ss.guts||'-',stable:ss.stable||'-',minD:val(ss.minD),maxD:val(ss.maxD),price:val(ss.price)}
+      };
+    }
+    function routeFrom(sires,pair,method='exact'){
+      return{
+        id:sires.map(x=>key(x)).join('__'),
+        sires:[...sires],
+        generation:sires.length,
+        method,
+        final:compactFinal(pair,sire(sires[sires.length-1])||{name:sires[sires.length-1]}),
+        finalChild:pair.child
+      };
+    }
+    function safe(pair){return !!pair&&!pair.danger?.kiken&&!pair.danger?.tyokiken}
+    function* iterateDirect(mareInput){
+      const m=typeof mareInput==='string'?mare(mareInput):mareInput;if(!m)return;
+      for(const s of stallions){
+        const p=engine.evaluate(s,m);if(!safe(p))continue;
+        yield routeFrom([s.name],p,'exact-direct');
+      }
+    }
+    function* iterateTwo(mareInput){
+      const m=typeof mareInput==='string'?mare(mareInput):mareInput;if(!m)return;
+      for(const s1 of stallions){
+        const p1=engine.evaluate(s1,m);if(!safe(p1)||!p1.child)continue;
+        for(const s2 of stallions){
+          const p2=engine.evaluate(s2,p1.child);if(!safe(p2)||!p2.child)continue;
+          yield routeFrom([s1.name,s2.name],p2,'exact-two-generation');
+        }
+      }
+    }
+    function replay(mareInput,sires){
+      let m=typeof mareInput==='string'?mare(mareInput):mareInput;if(!m)return null;
+      const stages=[];
+      for(let i=0;i<sires.length;i++){
+        const s=sire(sires[i]);if(!s)return null;
+        const p=engine.evaluate(s,m);if(!p)return null;
+        stages.push({generation:i+1,sire:s.name,pair:p,sireStats:statsForSire(s.name)||{}});
+        m=p.child;
+      }
+      return{stages,child:m};
+    }
+    function* iterateThirdPreview(mareInput,baseRoutes){
+      const m=typeof mareInput==='string'?mare(mareInput):mareInput;if(!m)return;
+      for(const base of baseRoutes||[]){
+        if(!base?.finalChild||base.sires?.length!==2)continue;
+        for(const s3 of stallions){
+          const p3=engine.evaluate(s3,base.finalChild);if(!safe(p3)||!p3.child)continue;
+          yield routeFrom([...base.sires,s3.name],p3,'conditional-three-generation-preview');
+        }
+      }
+    }
+    function selectionCondition(goal,generation){
+      const prefix=`${generation}代目産駒から`;
+      if(goal==='arc')return prefix+'高SP・高STの牝馬だけを選抜し、2000～2400mの印・距離対応を実馬で確認して次世代へ進む。';
+      if(goal==='stallion')return prefix+'能力上位の牝馬だけを残し、最終産駒を将来自家製種牡馬にした場合の血統汎用性を再計算してから次世代へ進む。';
+      if(goal==='rebuild')return prefix+'起点母の能力を下回らない上位牝馬を優先し、繁殖SP/ST/PWを実測できた個体だけ次世代へ進む。';
+      return prefix+'高SPを維持した能力上位牝馬だけを選抜し、実馬の能力確認後に次世代へ進む。';
+    }
+    function expandRoute(mareInput,route,goal='arc'){
+      const r=replay(mareInput,route.sires);if(!r)return null;
+      return{
+        ...route,
+        stages:r.stages.map((x,i)=>({
+          generation:x.generation,
+          sire:x.sire,
+          sireStats:x.sireStats,
+          nitro:x.pair.nitro,
+          theory:x.pair.theory,
+          elaborate:x.pair.elaborate,
+          danger:x.pair.danger,
+          crosses:x.pair.danger?.rawCrosses||[],
+          selection:i<r.stages.length-1?selectionCondition(goal,i+1):null
+        }))
+      };
+    }
+    function portfolio(child,cohort){
+      const out={population:cohort.length,safe:0,sp15st5:0,sp17st5:0,interesting:0,magnificent:0,perfect:0,elaborate:0,maxSp:0,maxSt:0,maxSpSt:0};
+      if(!child)return out;
+      for(const m of cohort){
+        const p=engine.evaluate(child,m);if(!safe(p))continue;
+        out.safe++;
+        const sp=val(p.nitro?.sp),st=val(p.nitro?.st);
+        if(sp>=15&&st>=5)out.sp15st5++;
+        if(sp>=17&&st>=5)out.sp17st5++;
+        if(p.theory?.interesting)out.interesting++;
+        if(p.theory?.magnificent)out.magnificent++;
+        if(p.theory?.perfect)out.perfect++;
+        if(p.elaborate?.effective)out.elaborate++;
+        out.maxSp=Math.max(out.maxSp,sp);out.maxSt=Math.max(out.maxSt,st);out.maxSpSt=Math.max(out.maxSpSt,sp+st);
+      }
+      return out;
+    }
+    function withPortfolio(route){
+      return{...route,portfolio:{spst120:portfolio(route.finalChild,cohort120),spst130:portfolio(route.finalChild,cohort130)}};
+    }
+    function portfolioVector(route){
+      const a=route.portfolio?.spst120||{},b=route.portfolio?.spst130||{};
+      return[val(a.safe),val(a.sp15st5),val(a.sp17st5),val(a.interesting),val(a.magnificent),val(a.perfect),val(a.elaborate),val(b.sp15st5),val(b.sp17st5),val(a.maxSp),val(a.maxSpSt)];
+    }
+    function dominates(a,b){
+      const A=portfolioVector(a),B=portfolioVector(b);
+      let better=false;
+      for(let i=0;i<A.length;i++){if(A[i]<B[i])return false;if(A[i]>B[i])better=true}
+      return better;
+    }
+    function portfolioPareto(routes,limit=5){
+      const enriched=(routes||[]).map(withPortfolio);
+      const front=enriched.filter((r,i)=>!enriched.some((x,j)=>j!==i&&dominates(x,r)));
+      front.sort((a,b)=>cmpVec([
+        val(a.portfolio.spst120.sp17st5),val(a.portfolio.spst120.sp15st5),val(a.portfolio.spst120.safe),
+        val(a.portfolio.spst130.sp17st5),val(a.portfolio.spst130.sp15st5),val(a.portfolio.spst120.maxSpSt),val(a.portfolio.spst120.maxSp)
+      ],[
+        val(b.portfolio.spst120.sp17st5),val(b.portfolio.spst120.sp15st5),val(b.portfolio.spst120.safe),
+        val(b.portfolio.spst130.sp17st5),val(b.portfolio.spst130.sp15st5),val(b.portfolio.spst120.maxSpSt),val(b.portfolio.spst120.maxSp)
+      ]));
+      return{population:enriched.length,paretoCount:front.length,routes:front.slice(0,limit)};
+    }
+    function diversifiedPool(collector){return collector.pool()}
+    function goalOrder(goal){return GOAL_ORDER[goal]||GOAL_ORDER.arc}
+
+    return{
+      version:1,stallionCount:stallions.length,broodmareCount:broodmares.length,
+      knownAbilityCount:broodmareStats.filter(abilityKnown).length,
+      unknownAbilityCount:broodmareStats.filter(x=>!abilityKnown(x)).length,
+      cohorts:{spst120:cohort120.length,spst130:cohort130.length},
+      mare,sire,mareInfo,statsForSire,iterateDirect,iterateTwo,iterateThirdPreview,
+      replay,expandRoute,createCollector,diversifiedPool,withPortfolio,portfolioPareto,
+      profileLabels:PROFILE_LABELS,profileCriteria:PROFILE_CRITERIA,goalLabels:GOAL_LABELS,goalOrder,
+      abilityKnown,routeKey,compareProfile
+    };
+  }
+
+  return{version:1,create,createCollector,abilityKnown,PROFILE_LABELS,PROFILE_CRITERIA,GOAL_LABELS,GOAL_ORDER};
+});

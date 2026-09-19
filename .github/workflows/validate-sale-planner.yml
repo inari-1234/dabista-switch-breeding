@@ -1,0 +1,133 @@
+name: Validate sale mare planner
+
+on:
+  push:
+    paths:
+      - 'sale-planner-core.js'
+      - 'v26.js'
+      - 'index.html'
+      - 'version.json'
+      - 'breeding-core.js'
+      - 'breeding-engine.js'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+      - '.github/workflows/validate-sale-planner.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Static syntax
+        run: |
+          node --check breeding-core.js
+          node --check sale-planner-core.js
+          node --check v26.js
+          python -m json.tool data/theory-master.json >/dev/null
+          python -m json.tool data/stallions.json >/dev/null
+          python -m json.tool data/default-broodmares.json >/dev/null
+          python -m json.tool version.json >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          idx=Path('index.html').read_text(encoding='utf-8')
+          app=Path('app.js').read_text(encoding='utf-8')
+          v26=Path('v26.js').read_text(encoding='utf-8')
+          v=json.loads(Path('version.json').read_text(encoding='utf-8'))
+          assert (v['version'],v['build'])==('1.17.0','2026.09.20-35')
+          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-35';" in app
+          assert "const V='1.17.0',BUILD='2026.09.20-35'" in v26
+          assert 'sale-planner-core.js?v=1.17.0' in idx and 'v26.js?v=1.17.0' in idx
+          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('v26.js?v=1.17.0')
+          assert 'v23.js' not in idx
+          assert '繁殖能力：未判明' in v26
+          assert '<summary><b>血統15祖先</b></summary>' in v26
+          assert '全176³の最適解とは表示しません' in v26
+          assert 'SP+ST≥120 / ≥130' in v26
+          print('PASS sale planner release wiring')
+          PY
+          echo "PASS sale planner static syntax"
+
+      - name: Planner regression
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const core=require(process.cwd()+'/breeding-core.js');
+          const sale=require(process.cwd()+'/sale-planner-core.js');
+          const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
+          const S=JSON.parse(fs.readFileSync('data/stallions.json','utf8')).stallions;
+          const M=JSON.parse(fs.readFileSync('data/default-broodmares.json','utf8')).broodmares;
+          const E=JSON.parse(fs.readFileSync('data/nitro-effects.json','utf8')).effects;
+          const K=JSON.parse(fs.readFileSync('data/kotta-pairs.json','utf8')).pairs;
+          const D=JSON.parse(fs.readFileSync('data/elaborate-direct-exceptions.json','utf8')).pairs;
+          const IV=JSON.parse(fs.readFileSync('data/planner-inheritance-validation.json','utf8'));
+          const knownDiff=(IV.samples||[]).filter(x=>x?.sire&&x?.mare&&x?.ours?.kc!==x?.oracle?.k).map(x=>({sire:x.sire,mare:x.mare}));
+          const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elaborateKnownDifferences:knownDiff});
+          const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
+
+          if(planner.stallionCount!==176||planner.broodmareCount!==331)throw Error('master counts '+planner.stallionCount+'/'+planner.broodmareCount);
+          if(planner.knownAbilityCount!==298||planner.unknownAbilityCount!==33)throw Error('ability counts '+planner.knownAbilityCount+'/'+planner.unknownAbilityCount);
+          if(planner.cohorts.spst120!==54||planner.cohorts.spst130!==22)throw Error('cohort counts '+JSON.stringify(planner.cohorts));
+          if(planner.sire('Pivotal')!==null)throw Error('foreign analysis sire leaked into domestic mating candidates');
+
+          const unknown=planner.mareInfo('アマリン');
+          if(!unknown.record||unknown.abilityKnown||unknown.spst!==null)throw Error('unknown ability handling '+JSON.stringify(unknown));
+          const unknownDirect=[...planner.iterateDirect('アマリン')];
+          if(!unknownDirect.length)throw Error('unknown mare cannot be designed from pedigree');
+
+          const eist=[...planner.iterateDirect('エイスト')];
+          const sg=eist.find(r=>r.sires.length===1&&core.key(r.sires[0])===core.key('ステイゴールド'));
+          if(!sg||JSON.stringify([sg.final.sp,sg.final.st,sg.final.pw])!==JSON.stringify([14,8,1]))throw Error('Eist x Stay Gold baseline '+JSON.stringify(sg));
+
+          const started=Date.now();
+          const col=planner.createCollector({topN:5,poolN:20});
+          let routeTarget=null;
+          for(const r of planner.iterateTwo('ミゼラブルウェイ')){
+            col.push(r);
+            if(core.key(r.sires[0])===core.key('ダイワメジャー')&&core.key(r.sires[1])===core.key('ストラヴィンスキー'))routeTarget=r;
+          }
+          if(col.count<25000)throw Error('two-generation safe route count unexpectedly low '+col.count);
+          if(!routeTarget||JSON.stringify([routeTarget.final.sp,routeTarget.final.st,routeTarget.final.pw])!==JSON.stringify([16,6,0]))throw Error('two-generation baseline '+JSON.stringify(routeTarget));
+          const base=col.finish();
+          if(base.profiles.sp.length!==5||base.profiles.st.length!==5||base.profiles.balance.length!==5||base.pool.length<10)throw Error('collector output invalid');
+
+          const portfolio=planner.portfolioPareto(base.pool,5);
+          if(!portfolio.routes.length||portfolio.routes.some(r=>!r.portfolio?.spst120||!r.portfolio?.spst130))throw Error('portfolio missing');
+          if(portfolio.routes.some(r=>r.portfolio.spst120.population!==54||r.portfolio.spst130.population!==22))throw Error('portfolio cohort mismatch');
+
+          const previewCol=planner.createCollector({topN:5,poolN:12});
+          let previewCount=0;
+          for(const r of planner.iterateThirdPreview('ミゼラブルウェイ',base.pool.slice(0,12))){
+            previewCol.push(r);previewCount++;
+          }
+          if(previewCount<1000)throw Error('three-generation preview too small '+previewCount);
+          const preview=previewCol.finish();
+          const sample=preview.profiles.balance[0];
+          if(!sample||sample.generation!==3||sample.method!=='conditional-three-generation-preview')throw Error('preview method not explicit '+JSON.stringify(sample));
+
+          const expanded=planner.expandRoute('ミゼラブルウェイ',routeTarget,'arc');
+          if(!expanded||expanded.stages.length!==2||!expanded.stages[0].selection||expanded.stages.some(x=>x.danger.kiken||x.danger.tyokiken))throw Error('expanded route invalid');
+
+          console.log(JSON.stringify({
+            passed:true,
+            counts:{stallions:planner.stallionCount,mares:planner.broodmareCount,known:planner.knownAbilityCount,unknown:planner.unknownAbilityCount},
+            cohorts:planner.cohorts,
+            unknownDirect:unknownDirect.length,
+            eistDirect:eist.length,
+            twoSafeRoutes:col.count,
+            twoPool:base.pool.length,
+            portfolioPareto:portfolio.paretoCount,
+            previewRoutes:previewCount,
+            runtimeMs:Date.now()-started
+          }));
+          NODE

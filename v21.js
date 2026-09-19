@@ -1,5 +1,5 @@
 (()=>{
-const V='1.16.0',BUILD='2026.09.20-34',db=window.db,$=s=>document.querySelector(s),esc=window.esc||String;if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
+const V='1.17.0',BUILD='2026.09.20-35',db=window.db,$=s=>document.querySelector(s),esc=window.esc||String;if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
 let engine=null,busy=false;
 function cardName(c){return c.querySelector('b')?.textContent.replace(/^\s*\d+\.\s*/,'').trim()||''}
 function controls(){if($('#v21Filter'))return;const box=$('.theory-tools');if(!box)return;const w=document.createElement('div');w.style.marginTop='8px';w.innerHTML='<label>公式配合理論・追加フィルター</label><select id="v21Filter"><option value="all">すべて</option><option value="elaborate">凝った配合</option><option value="cross">クロスあり</option><option value="safe">危険・超危険を除外</option></select><div style="font-size:10px;line-height:1.45;margin-top:5px;color:#66736c">危険判定は祖先内包クロスを除外した有効クロスで判定。凝った配合は812成立確認ペア＋直接例外を根拠別に判定します。</div>';box.appendChild(w);$('#v21Filter').onchange=()=>setTimeout(run,0)}

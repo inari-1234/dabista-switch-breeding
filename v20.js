@@ -1,5 +1,5 @@
 (()=>{
-const V='1.16.0',BUILD='2026.09.20-34',db=window.db,$=s=>document.querySelector(s),esc=window.esc||String;if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
+const V='1.17.0',BUILD='2026.09.20-35',db=window.db,$=s=>document.querySelector(s),esc=window.esc||String;if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
 function cardName(c){return c.querySelector('b')?.textContent.replace(/^\s*\d+\.\s*/,'').trim()||''}
 let engine=null,busy=false;
 function theorySourceLabel(x){return x==='switch-master'?'Switch版マスタ':x?.startsWith('parent-code-inheritance')?'親コードから正確に継承':x==='legacy-persisted-systems'?'旧版で保存済み系統':'コード未確定'}

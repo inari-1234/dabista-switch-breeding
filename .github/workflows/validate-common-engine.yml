@@ -1,5 +1,4 @@
 name: Validate common breeding engine
-# latest synced-main verification
 
 on:
   push:
@@ -13,6 +12,8 @@ on:
       - 'v24.js'
       - 'breeding-core.js'
       - 'breeding-engine.js'
+      - 'sale-planner-core.js'
+      - 'v26.js'
       - 'v20.js'
       - 'v21.js'
       - 'v25.js'
@@ -54,6 +55,8 @@ jobs:
           node --check v24.js
           node --check breeding-core.js
           node --check breeding-engine.js
+          node --check sale-planner-core.js
+          node --check v26.js
           node --check v20.js
           node --check v21.js
           node --check v25.js
@@ -68,27 +71,29 @@ jobs:
           from pathlib import Path
           idx=Path('index.html').read_text(encoding='utf-8')
           app=Path('app.js').read_text(encoding='utf-8')
-          legacy={p:Path(p).read_text(encoding='utf-8') for p in ['v15.js','v16.js','v18.js','v19.js','v22.js','v24.js']}
-          v20=Path('v20.js').read_text(encoding='utf-8')
-          v21=Path('v21.js').read_text(encoding='utf-8')
-          v25=Path('v25.js').read_text(encoding='utf-8')
+          versioned={p:Path(p).read_text(encoding='utf-8') for p in ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js']}
+          v20=versioned['v20.js']
+          v21=versioned['v21.js']
+          v25=versioned['v25.js']
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
           direct=json.loads(Path('data/elaborate-direct-exceptions.json').read_text(encoding='utf-8'))
           pedigree=json.loads(Path('data/pedigree-master.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build']) == ('1.16.0','2026.09.20-34')
-          assert "const APP_VERSION='1.16.0';" in app and "const APP_BUILD='2026.09.20-34';" in app
-          for p,s in legacy.items():
-              assert "const V='1.16.0',BUILD='2026.09.20-34'" in s, f'version skew: {p}'
+          assert (v['version'],v['build']) == ('1.17.0','2026.09.20-35')
+          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-35';" in app
+          for p,s in versioned.items():
+              assert "const V='1.17.0',BUILD='2026.09.20-35'" in s, f'version skew: {p}'
           assert direct['count'] == 33 and len(direct['pairs']) == 33
           assert pedigree['schemaVersion'] == 4
           assert pedigree['domesticStallionCount'] == 176
           assert pedigree['pedigreeStallionCount'] == 214
           assert pedigree['broodmareCount'] == 331
-          assert 'breeding-core.js?v=1.16.0' in idx
-          assert 'breeding-engine.js?v=1.16.0' in idx
+          assert 'breeding-core.js?v=1.17.0' in idx
+          assert 'breeding-engine.js?v=1.17.0' in idx
+          assert 'sale-planner-core.js?v=1.17.0' in idx
+          assert 'v26.js?v=1.17.0' in idx
           assert "json('data/pedigree-master.json')" in Path('breeding-engine.js').read_text(encoding='utf-8')
           assert 'allPedigreeStallions' in Path('breeding-engine.js').read_text(encoding='utf-8')
-          assert idx.index('breeding-core.js?v=1.16.0') < idx.index('breeding-engine.js?v=1.16.0') < idx.index('v20.js?v=1.16.0')
+          assert idx.index('breeding-core.js?v=1.17.0') < idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('v20.js?v=1.17.0') < idx.index('v26.js?v=1.17.0')
           assert 'v23.js' not in idx
           assert 'buildSystemMap' not in v20 and 'deriveMare(' not in v20
           assert 'sevenCandidate' not in v21
