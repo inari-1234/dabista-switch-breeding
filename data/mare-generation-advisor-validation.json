@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-09-20",
+  "purpose": "繁殖牝馬の相対評価と推奨配合世代診断の回帰基準。能力未判明値を0能力扱いせず、深い世代を自動的に高評価しない。",
+  "population": {
+    "broodmares": 331,
+    "knownAbility": 298,
+    "unknownAbility": 33,
+    "domesticStallions": 176
+  },
+  "rules": {
+    "mareRanking": "SP/ST/PW/SP+STを能力既知298頭内で別軸順位化。単一総合点に合算しない。",
+    "arcDirectFit": "高能力母を考慮し、SP14/ST6以上・最終父2400m対応・実績Aを直仔の凱旋門有力条件として別軸で確認。",
+    "generation": "直仔を基準に、2代・3代で意味のある上積みがある場合だけ深い世代を推奨。中間牝馬能力は仮定しない。",
+    "generation3": "2代目多軸候補からの条件付きプレビュー。全176^3最適解とは扱わない。"
+  },
+  "samples": [
+    {
+      "mare": "エイスト",
+      "ability": {
+        "tier": "最上位級",
+        "spRank": "62/298",
+        "stRank": "1/298",
+        "pwRank": "19/298",
+        "spstRank": "7/298"
+      },
+      "goal": "arc",
+      "recommendedGeneration": 1,
+      "label": "直仔推奨",
+      "representativeRoute": [
+        "ステイゴールド"
+      ],
+      "finalNitro": {
+        "sp": 14,
+        "st": 8,
+        "pw": 1
+      }
+    },
+    {
+      "mare": "ミゼラブルウェイ",
+      "ability": {
+        "tier": "上位級",
+        "spRank": "35/298",
+        "stRank": "59/298",
+        "pwRank": "39/298",
+        "spstRank": "36/298"
+      },
+      "goal": "rebuild",
+      "recommendedGeneration": 2,
+      "label": "2代推奨"
+    },
+    {
+      "mare": "ミニミニデート",
+      "ability": {
+        "tier": "中位",
+        "spstRank": "110/298"
+      },
+      "goal": "bc",
+      "recommendedGeneration": 1,
+      "label": "直仔推奨"
+    },
+    {
+      "mare": "ラブアタック",
+      "ability": {
+        "tier": "中位",
+        "spstRank": "138/298"
+      },
+      "goal": "bc",
+      "recommendedGeneration": 1,
+      "label": "直仔推奨"
+    },
+    {
+      "mare": "アマリン",
+      "ability": {
+        "known": false,
+        "tier": "未判明",
+        "ranks": null
+      },
+      "expectation": "能力順位を付けず、血統・ニトロ・配合理論の設計のみ継続"
+    }
+  ],
+  "existingRegression": {
+    "dangerEngine": {
+      "total": 58256,
+      "mismatch": 0,
+      "passed": true
+    },
+    "theoryFlags": {
+      "total": 58256,
+      "mismatch": 0,
+      "passed": true
+    },
+    "inheritance": {
+      "ancestorMismatch": 0,
+      "omoshiroMismatch": 0,
+      "migotoMismatch": 0,
+      "passed": true
+    },
+    "sireCoverage": {
+      "pageCount": 214,
+      "domesticCount": 176,
+      "foreignCount": 38,
+      "passed": true
+    }
+  },
+  "passed": true
+}
