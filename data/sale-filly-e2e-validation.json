@@ -1,0 +1,1918 @@
+{
+  "oracleHasSetBroodmare": true,
+  "cases": [
+    {
+      "salePair": [
+        "Pivotal",
+        "シェイクロマン"
+      ],
+      "childCheck": {
+        "ancestor": true,
+        "omoshiro": true,
+        "migoto": true
+      },
+      "child": {
+        "ancestor": [
+          "Pivotal",
+          "Polar Falcon",
+          "Selkirk",
+          "Nureyev",
+          "Cozzene",
+          "ｳｫｰﾆﾝｸﾞ",
+          "Surumu",
+          "Northern Dancer",
+          "Jefferson",
+          "Caro",
+          "Butino",
+          "Known Fact",
+          "Sadler's Wells",
+          "Literat",
+          "Pentathlon"
+        ],
+        "omoshiro": "ecnk",
+        "migoto": "mjea"
+      },
+      "future": {
+        "checked": 176,
+        "metricMismatch": 0,
+        "publicElaborateVsOracleMismatch": 0,
+        "samples": []
+      },
+      "paretoCandidates": [
+        {
+          "name": "ディープインパクト",
+          "n": {
+            "sp": 6,
+            "st": 7,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "A",
+          "stable": "A",
+          "range": [
+            1600,
+            2400
+          ]
+        },
+        {
+          "name": "ロードカナロア",
+          "n": {
+            "sp": 5,
+            "st": 6,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "A",
+          "stable": "A",
+          "range": [
+            1200,
+            1800
+          ]
+        },
+        {
+          "name": "エピファネイア",
+          "n": {
+            "sp": 6,
+            "st": 8,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "A",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "ドゥラメンテ",
+          "n": {
+            "sp": 7,
+            "st": 6,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1800,
+            2400
+          ]
+        },
+        {
+          "name": "モーリス",
+          "n": {
+            "sp": 8,
+            "st": 5,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            1400,
+            2000
+          ]
+        },
+        {
+          "name": "ステイゴールド",
+          "n": {
+            "sp": 9,
+            "st": 5,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "ダイワメジャー",
+          "n": {
+            "sp": 9,
+            "st": 4,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1400,
+            1800
+          ]
+        },
+        {
+          "name": "ジャスタウェイ",
+          "n": {
+            "sp": 8,
+            "st": 4,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            1400,
+            2000
+          ]
+        },
+        {
+          "name": "ハードスパン",
+          "n": {
+            "sp": 9,
+            "st": 8,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1200,
+            1600
+          ]
+        },
+        {
+          "name": "ドレフォン",
+          "n": {
+            "sp": 4,
+            "st": 6,
+            "pw": 4
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1400,
+            1800
+          ]
+        },
+        {
+          "name": "キンシャサノキセキ",
+          "n": {
+            "sp": 6,
+            "st": 10,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1200,
+            1800
+          ]
+        },
+        {
+          "name": "ワークフォース",
+          "n": {
+            "sp": 5,
+            "st": 5,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "C",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            2000,
+            2400
+          ]
+        },
+        {
+          "name": "リアルインパクト",
+          "n": {
+            "sp": 7,
+            "st": 7,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1400,
+            1800
+          ]
+        },
+        {
+          "name": "ヴィクトワールピサ",
+          "n": {
+            "sp": 7,
+            "st": 7,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1600,
+            2400
+          ]
+        },
+        {
+          "name": "イスラボニータ",
+          "n": {
+            "sp": 6,
+            "st": 11,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1400,
+            2000
+          ]
+        },
+        {
+          "name": "シルバーステート",
+          "n": {
+            "sp": 5,
+            "st": 9,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "A",
+          "range": [
+            1400,
+            2000
+          ]
+        },
+        {
+          "name": "スズカマンボ",
+          "n": {
+            "sp": 8,
+            "st": 9,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "スペシャルウィーク",
+          "n": {
+            "sp": 6,
+            "st": 12,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "ダンスインザダーク",
+          "n": {
+            "sp": 8,
+            "st": 9,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1800,
+            3000
+          ]
+        },
+        {
+          "name": "フリオーソ",
+          "n": {
+            "sp": 6,
+            "st": 10,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1600,
+            2400
+          ]
+        },
+        {
+          "name": "グランプリボス",
+          "n": {
+            "sp": 11,
+            "st": 5,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1400,
+            1600
+          ]
+        },
+        {
+          "name": "ワイルドラッシュ",
+          "n": {
+            "sp": 10,
+            "st": 8,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1400,
+            1800
+          ]
+        },
+        {
+          "name": "グラスワンダー",
+          "n": {
+            "sp": 8,
+            "st": 7,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            1800,
+            2200
+          ]
+        },
+        {
+          "name": "スピルバーグ",
+          "n": {
+            "sp": 7,
+            "st": 8,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1800,
+            2400
+          ]
+        },
+        {
+          "name": "ゼンノロブロイ",
+          "n": {
+            "sp": 10,
+            "st": 6,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            1800,
+            2400
+          ]
+        },
+        {
+          "name": "トーセンホマレボシ",
+          "n": {
+            "sp": 9,
+            "st": 7,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            2000,
+            2600
+          ]
+        },
+        {
+          "name": "フェノーメノ",
+          "n": {
+            "sp": 10,
+            "st": 4,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            2000,
+            3000
+          ]
+        },
+        {
+          "name": "メイショウサムソン",
+          "n": {
+            "sp": 5,
+            "st": 4,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1800,
+            2400
+          ]
+        },
+        {
+          "name": "リーチザクラウン",
+          "n": {
+            "sp": 7,
+            "st": 12,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            1600,
+            2400
+          ]
+        },
+        {
+          "name": "ローズキングダム",
+          "n": {
+            "sp": 7,
+            "st": 8,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "ロジユニヴァース",
+          "n": {
+            "sp": 9,
+            "st": 5,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1800,
+            2400
+          ]
+        },
+        {
+          "name": "エイシンアポロン",
+          "n": {
+            "sp": 5,
+            "st": 5,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "C",
+          "stable": "C",
+          "range": [
+            1400,
+            2000
+          ]
+        },
+        {
+          "name": "アンライバルド",
+          "n": {
+            "sp": 6,
+            "st": 6,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            1400,
+            2000
+          ]
+        },
+        {
+          "name": "ウインバリアシオン",
+          "n": {
+            "sp": 6,
+            "st": 6,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "C",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            2000,
+            2600
+          ]
+        },
+        {
+          "name": "キングヘイロー",
+          "n": {
+            "sp": 10,
+            "st": 4,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "C",
+          "stable": "A",
+          "range": [
+            1200,
+            2200
+          ]
+        },
+        {
+          "name": "ゴールドヘイロー",
+          "n": {
+            "sp": 9,
+            "st": 7,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "C",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1400,
+            2200
+          ]
+        },
+        {
+          "name": "スズカフェニックス",
+          "n": {
+            "sp": 7,
+            "st": 6,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1600,
+            2000
+          ]
+        },
+        {
+          "name": "タニノギムレット",
+          "n": {
+            "sp": 3,
+            "st": 10,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            1600,
+            2400
+          ]
+        },
+        {
+          "name": "ナカヤマフェスタ",
+          "n": {
+            "sp": 9,
+            "st": 6,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1800,
+            2400
+          ]
+        },
+        {
+          "name": "バーディバーディ",
+          "n": {
+            "sp": 6,
+            "st": 11,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "C",
+          "stable": "C",
+          "range": [
+            1400,
+            1800
+          ]
+        },
+        {
+          "name": "ルースリンド",
+          "n": {
+            "sp": 4,
+            "st": 7,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "C",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1800,
+            2200
+          ]
+        },
+        {
+          "name": "ロードアルティマ",
+          "n": {
+            "sp": 12,
+            "st": 5,
+            "pw": 0
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "C",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1200,
+            1600
+          ]
+        },
+        {
+          "name": "ローレルゲレイロ",
+          "n": {
+            "sp": 4,
+            "st": 8,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "C",
+          "guts": "C",
+          "stable": "C",
+          "range": [
+            1000,
+            1600
+          ]
+        },
+        {
+          "name": "ザサンデーフサイチ",
+          "n": {
+            "sp": 7,
+            "st": 10,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "C",
+          "guts": "C",
+          "stable": "C",
+          "range": [
+            1800,
+            2600
+          ]
+        }
+      ]
+    },
+    {
+      "salePair": [
+        "Galileo",
+        "トリトンプリンセス"
+      ],
+      "childCheck": {
+        "ancestor": true,
+        "omoshiro": true,
+        "migoto": true
+      },
+      "child": {
+        "ancestor": [
+          "Galileo",
+          "Sadler's Wells",
+          "Tiznow",
+          "Northern Dancer",
+          "Miswaki",
+          "Cee's Tizzy",
+          "Seeking the Gold",
+          "Nearctic",
+          "Bold Reason",
+          "Mr.Prospector",
+          "Lombard",
+          "Relaunch",
+          "Seattle Song",
+          "Mr.Prospector",
+          "Danzig"
+        ],
+        "omoshiro": "efnf",
+        "migoto": "dice"
+      },
+      "future": {
+        "checked": 176,
+        "metricMismatch": 0,
+        "publicElaborateVsOracleMismatch": 0,
+        "samples": []
+      },
+      "paretoCandidates": [
+        {
+          "name": "ディープインパクト",
+          "n": {
+            "sp": 9,
+            "st": 6,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "A",
+          "stable": "A",
+          "range": [
+            1600,
+            2400
+          ]
+        },
+        {
+          "name": "ロードカナロア",
+          "n": {
+            "sp": 8,
+            "st": 4,
+            "pw": 4
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "A",
+          "stable": "A",
+          "range": [
+            1200,
+            1800
+          ]
+        },
+        {
+          "name": "キングカメハメハ",
+          "n": {
+            "sp": 8,
+            "st": 5,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "A",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1600,
+            2000
+          ]
+        },
+        {
+          "name": "ハーツクライ",
+          "n": {
+            "sp": 9,
+            "st": 6,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1800,
+            3000
+          ]
+        },
+        {
+          "name": "エピファネイア",
+          "n": {
+            "sp": 9,
+            "st": 7,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "ドゥラメンテ",
+          "n": {
+            "sp": 10,
+            "st": 4,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1800,
+            2400
+          ]
+        },
+        {
+          "name": "ステイゴールド",
+          "n": {
+            "sp": 12,
+            "st": 4,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "A",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "ルーラーシップ",
+          "n": {
+            "sp": 8,
+            "st": 4,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "A",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "マンハッタンカフェ",
+          "n": {
+            "sp": 9,
+            "st": 6,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1600,
+            2200
+          ]
+        },
+        {
+          "name": "オルフェーヴル",
+          "n": {
+            "sp": 9,
+            "st": 5,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "A",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            2000,
+            3000
+          ]
+        },
+        {
+          "name": "ゴールドアリュール",
+          "n": {
+            "sp": 9,
+            "st": 8,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "A",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1400,
+            2200
+          ]
+        },
+        {
+          "name": "ドレフォン",
+          "n": {
+            "sp": 6,
+            "st": 4,
+            "pw": 5
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1400,
+            1800
+          ]
+        },
+        {
+          "name": "キンシャサノキセキ",
+          "n": {
+            "sp": 9,
+            "st": 9,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1200,
+            1800
+          ]
+        },
+        {
+          "name": "ミッキーアイル",
+          "n": {
+            "sp": 9,
+            "st": 6,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1200,
+            1600
+          ]
+        },
+        {
+          "name": "エイシンヒカリ",
+          "n": {
+            "sp": 10,
+            "st": 8,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "C",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1600,
+            2000
+          ]
+        },
+        {
+          "name": "リアルインパクト",
+          "n": {
+            "sp": 10,
+            "st": 6,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1400,
+            1800
+          ]
+        },
+        {
+          "name": "シルバーステート",
+          "n": {
+            "sp": 8,
+            "st": 8,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "A",
+          "range": [
+            1400,
+            2000
+          ]
+        },
+        {
+          "name": "シンボリクリスエス",
+          "n": {
+            "sp": 6,
+            "st": 7,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1600,
+            2600
+          ]
+        },
+        {
+          "name": "スズカマンボ",
+          "n": {
+            "sp": 11,
+            "st": 7,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "スペシャルウィーク",
+          "n": {
+            "sp": 9,
+            "st": 11,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "ダンスインザダーク",
+          "n": {
+            "sp": 10,
+            "st": 8,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "A",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1800,
+            3000
+          ]
+        },
+        {
+          "name": "フリオーソ",
+          "n": {
+            "sp": 9,
+            "st": 8,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1600,
+            2400
+          ]
+        },
+        {
+          "name": "ディープブリランテ",
+          "n": {
+            "sp": 10,
+            "st": 6,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "B",
+          "range": [
+            1600,
+            2400
+          ]
+        },
+        {
+          "name": "グランプリボス",
+          "n": {
+            "sp": 14,
+            "st": 4,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1400,
+            1600
+          ]
+        },
+        {
+          "name": "ワイルドラッシュ",
+          "n": {
+            "sp": 12,
+            "st": 7,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "B",
+          "stable": "A",
+          "range": [
+            1400,
+            1800
+          ]
+        },
+        {
+          "name": "ヴァーミリアン",
+          "n": {
+            "sp": 10,
+            "st": 5,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            1800,
+            2400
+          ]
+        },
+        {
+          "name": "トーセンホマレボシ",
+          "n": {
+            "sp": 10,
+            "st": 5,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            2000,
+            2600
+          ]
+        },
+        {
+          "name": "ローズキングダム",
+          "n": {
+            "sp": 10,
+            "st": 6,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "アーネストリー",
+          "n": {
+            "sp": 5,
+            "st": 7,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "C",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            2000,
+            2400
+          ]
+        },
+        {
+          "name": "アドマイヤコジーン",
+          "n": {
+            "sp": 10,
+            "st": 6,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            1000,
+            1800
+          ]
+        },
+        {
+          "name": "ヴァンセンヌ",
+          "n": {
+            "sp": 13,
+            "st": 3,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "C",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1400,
+            1800
+          ]
+        },
+        {
+          "name": "ウインバリアシオン",
+          "n": {
+            "sp": 8,
+            "st": 5,
+            "pw": 4
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "C",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            2000,
+            2600
+          ]
+        },
+        {
+          "name": "オウケンブルースリ",
+          "n": {
+            "sp": 5,
+            "st": 5,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "C",
+          "guts": "B",
+          "stable": "B",
+          "range": [
+            2200,
+            3000
+          ]
+        },
+        {
+          "name": "オーシャンブルー",
+          "n": {
+            "sp": 11,
+            "st": 4,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "C",
+          "guts": "C",
+          "stable": "C",
+          "range": [
+            1800,
+            2400
+          ]
+        },
+        {
+          "name": "キングヘイロー",
+          "n": {
+            "sp": 12,
+            "st": 3,
+            "pw": 4
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "C",
+          "stable": "A",
+          "range": [
+            1200,
+            2200
+          ]
+        },
+        {
+          "name": "コパノリチャード",
+          "n": {
+            "sp": 8,
+            "st": 9,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1200,
+            1600
+          ]
+        },
+        {
+          "name": "ジャングルポケット",
+          "n": {
+            "sp": 7,
+            "st": 6,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            1800,
+            2600
+          ]
+        },
+        {
+          "name": "タニノギムレット",
+          "n": {
+            "sp": 6,
+            "st": 10,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            1600,
+            2400
+          ]
+        },
+        {
+          "name": "トゥザワールド",
+          "n": {
+            "sp": 10,
+            "st": 4,
+            "pw": 3
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "B",
+          "guts": "A",
+          "stable": "C",
+          "range": [
+            2000,
+            2400
+          ]
+        },
+        {
+          "name": "ローレルゲレイロ",
+          "n": {
+            "sp": 7,
+            "st": 7,
+            "pw": 4
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "C",
+          "guts": "C",
+          "stable": "C",
+          "range": [
+            1000,
+            1600
+          ]
+        },
+        {
+          "name": "アッミラーレ",
+          "n": {
+            "sp": 10,
+            "st": 5,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": true,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "C",
+          "stable": "B",
+          "range": [
+            1600,
+            2200
+          ]
+        },
+        {
+          "name": "サクラプレジデント",
+          "n": {
+            "sp": 11,
+            "st": 8,
+            "pw": 1
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": false,
+          "record": "B",
+          "guts": "B",
+          "stable": "C",
+          "range": [
+            1200,
+            1800
+          ]
+        },
+        {
+          "name": "ザサンデーフサイチ",
+          "n": {
+            "sp": 10,
+            "st": 9,
+            "pw": 2
+          },
+          "theory": {
+            "interesting": false,
+            "magnificent": false,
+            "perfect": false
+          },
+          "elaborate": true,
+          "record": "C",
+          "guts": "C",
+          "stable": "C",
+          "range": [
+            1800,
+            2600
+          ]
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "futurePairs": 352,
+    "metricMismatch": 0,
+    "publicElaborateVsOracleMismatch": 0
+  },
+  "passed": true
+}
