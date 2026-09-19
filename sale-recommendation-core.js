@@ -43,6 +43,7 @@
       if(!ranks)return'繁殖能力未判明';
       const sp=ranks.sp.topPercent,st=ranks.st.topPercent,pw=ranks.pw.topPercent,sum=ranks.spst.topPercent;
       if(sum<=10&&st<=20)return'高能力・中長距離母';
+      if(sum<=25&&sp<=25&&st<=25)return'高能力バランス母';
       if(sp<=20&&st>45)return'SP寄り母';
       if(st<=20&&sp>35)return'ST寄り母';
       if(pw<=20&&sum<=35)return'パワー兼備型';
@@ -71,7 +72,7 @@
         method,count:0,sp15st5:0,sp17st5:0,sp18st5:0,
         interesting:0,magnificent:0,perfect:0,elaborate:0,
         maxSp:0,maxSt:0,maxPw:0,maxSpSt:0,
-        long2400:0,recordA:0,balanceLongA:0
+        long2400:0,recordA:0,balanceLongA:0,arcReady:0
       };
     }
     function addRoute(summary,route){
@@ -87,7 +88,8 @@
       if(f.elaborate)summary.elaborate++;
       if(val(ss.maxD)>=2400)summary.long2400++;
       if(grade(ss.record)>=3)summary.recordA++;
-      if(sp>=15&&st>=5&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.balanceLongA++;\n      if(sp>=14&&st>=6&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.arcReady++;
+      if(sp>=15&&st>=5&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.balanceLongA++;
+      if(sp>=14&&st>=6&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.arcReady++;
       summary.maxSp=Math.max(summary.maxSp,sp);
       summary.maxSt=Math.max(summary.maxSt,st);
       summary.maxPw=Math.max(summary.maxPw,pw);
