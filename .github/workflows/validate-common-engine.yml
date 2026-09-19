@@ -112,7 +112,7 @@ jobs:
               const a=engine.evaluate(st,mt),o=ctx.__pair(sidx,midx);total++;
               const dm=a.danger.inbreedCount!==o.cnt||a.danger.kiken!==o.k||a.danger.tyokiken!==o.t;
               const tmismatch=a.theory.interesting!==o.om||a.theory.magnificent!==o.mg||a.theory.perfect!==o.p;
-              const cm=JSON.stringify(a.child.ancestor)!==JSON.stringify(o.a)||a.child.omoshiro!==String(o.com).normalize('NFKC').trim()||a.child.migoto!==String(o.cmg).normalize('NFKC').trim();
+              const cm=JSON.stringify(a.child.ancestor.map(core.key))!==JSON.stringify(o.a.map(core.key))||a.child.omoshiro!==String(o.com).normalize('NFKC').trim()||a.child.migoto!==String(o.cmg).normalize('NFKC').trim();
               const em=a.elaborate.effective!==o.el;
               if(dm)dangerMismatch++;if(tmismatch)theoryMismatch++;if(cm)childMismatch++;
               if(em){elaborateMismatch++;elabDiffs.push({sire:s.name,mare:m.name,ours:a.elaborate.effective,oracle:o.el,known:a.elaborate.knownDifference});}
