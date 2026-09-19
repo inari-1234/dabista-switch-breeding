@@ -67,12 +67,27 @@
       };
     }
 
+
+    function goalVector(route,goal){
+      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
+      const long=val(ss.maxD)>=2400,recA=grade(ss.record)>=3,arcReady=sp>=14&&st>=6&&long&&recA;
+      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
+      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
+      if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
+      return[sp,sp+st,st,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
+    }
+    function betterGoalRoute(a,b,goal){
+      if(!a)return b;if(!b)return a;
+      const A=goalVector(a,goal),B=goalVector(b,goal);
+      for(let i=0;i<Math.max(A.length,B.length);i++){const x=A[i]||0,y=B[i]||0;if(x!==y)return y>x?b:a}
+      return a;
+    }
     function emptySummary(method=''){
       return{
         method,count:0,sp15st5:0,sp17st5:0,sp18st5:0,
         interesting:0,magnificent:0,perfect:0,elaborate:0,
         maxSp:0,maxSt:0,maxPw:0,maxSpSt:0,
-        long2400:0,recordA:0,balanceLongA:0,arcReady:0
+        long2400:0,recordA:0,balanceLongA:0,arcReady:0,bestRoute:null,bestGoal:''
       };
     }
     function addRoute(summary,route,goal){
@@ -94,6 +109,7 @@
       summary.maxSt=Math.max(summary.maxSt,st);
       summary.maxPw=Math.max(summary.maxPw,pw);
       summary.maxSpSt=Math.max(summary.maxSpSt,sp+st);
+      if(goal){summary.bestGoal=goal;summary.bestRoute=betterGoalRoute(summary.bestRoute,route,goal)}
       return summary;
     }
     function summarize(routes,method=''){
@@ -127,9 +143,13 @@
         return false;
       }
       if(goal==='arc'){
-        const ta=a.sp>=15&&a.st>=5&&a.long2400, tb=b.sp>=15&&b.st>=5&&b.long2400;
+        const ta=a.sp>=14&&a.st>=6&&a.long2400&&a.recordA, tb=b.sp>=14&&b.st>=6&&b.long2400&&b.recordA;
         if(!ta&&tb)return true;
-        if(b.spst>=a.spst+3&&b.st>=a.st-1)return true;
+        const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
+        if(ta&&highMother){
+          if(b.sp>=a.sp+2&&b.st>=a.st&&tb)return true;
+          if(b.spst>=a.spst+4&&b.st>=a.st-1&&tb)return true;
+        }else if(b.spst>=a.spst+3&&b.st>=a.st-1)return true;
         if(!a.perfect&&b.perfect&&b.spst>=a.spst-1)return true;
         return false;
       }
