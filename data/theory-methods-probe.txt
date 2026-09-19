@@ -1,0 +1,221 @@
+--- check_omoshiro(father,mother){ L6667 ---
+6665: 
+6666:     //面白配合判定
+6667:     check_omoshiro(father,mother){
+6668:         let omoshiro = father+mother;
+6669:         let target = "";
+6670: 
+6671:         //重複する文字を削る処理
+6672:         while(omoshiro.length){
+6673:             target += omoshiro.substring(0,1);
+6674:             omoshiro = omoshiro.replace(new RegExp(omoshiro.substring(0,1), 'g'), '');
+6675:         }
+6676: 
+6677:         //7文字以上あれば面白判定
+6678:         if (target.length >= 7){
+6679:             return true;
+6680:         }else{
+6681:             return false;
+6682:         }
+6683:     }
+6684: 
+6685:     //見事判定
+6686:     check_migoto(father,mother){
+6687:          let target = "";
+6688: 
+6689: 
+6690:         //重複する文字を削る処理
+6691:         while(father.length){
+6692:          target += father.substring(0,1);
+6693:          
+6694: 
+6695:          father = father.replace(new RegExp(father.substring(0,1), 'g'), '');
+6696:          }
+6697:          father = target;
+6698:          target = "";
+6699: 
+6700:         //重複する文字を削る処理
+6701:         while(mother.length){
+6702:          target += mother.substring(0,1);
+6703:          mother = mother.replace(new RegExp(mother.substring(0,1), 'g'), '');
+6704:          }
+6705:          mother = target;
+6706: 
+6707: 
+6708:         //abc順並べ替え
+6709:         let tsort = father.split('');
+6710:         tsort = tsort.sort();
+6711:         father = tsort.join(''); 
+6712:         
+6713:         tsort = mother.split('');
+6714:         tsort = tsort.sort();
+6715:         mother = tsort.join(''); 
+6716: 
+6717: 
+6718:         //文字列が同じなら見事判定
+6719:         if (mother == father){
+6720:             return true;
+6721:         }else{
+6722:             return false;
+6723:         }
+6724: 
+6725:     }
+6726: 
+6727:     //完璧な配合
+6728:     check_kanpeki(omosiro,migoto){
+6729:         if (omosiro && migoto){
+6730:             return true;
+6731:         }else{
+6732:             return false;
+6733:         }
+6734: 
+6735:     }
+6736: 
+
+--- check_migoto(father,mother){ L6686 ---
+6684: 
+6685:     //見事判定
+6686:     check_migoto(father,mother){
+6687:          let target = "";
+6688: 
+6689: 
+6690:         //重複する文字を削る処理
+6691:         while(father.length){
+6692:          target += father.substring(0,1);
+6693:          
+6694: 
+6695:          father = father.replace(new RegExp(father.substring(0,1), 'g'), '');
+6696:          }
+6697:          father = target;
+6698:          target = "";
+6699: 
+6700:         //重複する文字を削る処理
+6701:         while(mother.length){
+6702:          target += mother.substring(0,1);
+6703:          mother = mother.replace(new RegExp(mother.substring(0,1), 'g'), '');
+6704:          }
+6705:          mother = target;
+6706: 
+6707: 
+6708:         //abc順並べ替え
+6709:         let tsort = father.split('');
+6710:         tsort = tsort.sort();
+6711:         father = tsort.join(''); 
+6712:         
+6713:         tsort = mother.split('');
+6714:         tsort = tsort.sort();
+6715:         mother = tsort.join(''); 
+6716: 
+6717: 
+6718:         //文字列が同じなら見事判定
+6719:         if (mother == father){
+6720:             return true;
+6721:         }else{
+6722:             return false;
+6723:         }
+6724: 
+6725:     }
+6726: 
+6727:     //完璧な配合
+6728:     check_kanpeki(omosiro,migoto){
+6729:         if (omosiro && migoto){
+6730:             return true;
+6731:         }else{
+6732:             return false;
+6733:         }
+6734: 
+6735:     }
+6736: 
+6737:     //ニトロ計算
+6738:     check_nitro(inbreedObject){
+6739:       let temp,numtemp=0,nitrocnt=0;
+6740:       let ary = [],dupAry=[];
+6741: 
+6742:       this.broodmare.ancestor.forEach((bvalue,bindex)=>{
+6743: 
+6744:          //重複チェックも入れる
+6745:          if (!dupAry.includes(bvalue)){
+6746: 
+6747:             temp =  inbreedObject[bvalue];
+6748: 
+6749:             if (typeof temp !== "undefined"){
+6750: 
+6751:                ary = temp.split(',');
+6752: 
+6753:                //七光りスピード値
+6754:                this.nitro_speed += Number(ary[0])*2;
+6755:                this.nitro_stamina -= Number(ary[0]);
+
+--- check_kanpeki(omosiro,migoto){ L6728 ---
+6726: 
+6727:     //完璧な配合
+6728:     check_kanpeki(omosiro,migoto){
+6729:         if (omosiro && migoto){
+6730:             return true;
+6731:         }else{
+6732:             return false;
+6733:         }
+6734: 
+6735:     }
+6736: 
+6737:     //ニトロ計算
+6738:     check_nitro(inbreedObject){
+6739:       let temp,numtemp=0,nitrocnt=0;
+6740:       let ary = [],dupAry=[];
+6741: 
+6742:       this.broodmare.ancestor.forEach((bvalue,bindex)=>{
+6743: 
+6744:          //重複チェックも入れる
+6745:          if (!dupAry.includes(bvalue)){
+6746: 
+6747:             temp =  inbreedObject[bvalue];
+6748: 
+6749:             if (typeof temp !== "undefined"){
+6750: 
+6751:                ary = temp.split(',');
+6752: 
+6753:                //七光りスピード値
+6754:                this.nitro_speed += Number(ary[0])*2;
+6755:                this.nitro_stamina -= Number(ary[0]);
+6756:                this.nitro_speed += Number(ary[1]);
+6757: 
+6758:                //パワー値
+6759:                this.nitro_power += Number(ary[2]);
+6760: 
+6761:                //スタミナ値
+6762:                this.nitro_stamina += Number(ary[3]);
+6763:                this.nitro_stamina += Number(ary[4]);               
+6764: 
+6765:             }
+6766:             dupAry.push(bvalue);
+6767:          }//重複チェック終了
+6768:       });
+6769: 
+6770:       this.stallion.ancestor.forEach((svalue,sindex)=>{
+6771: 
+6772:          //重複チェックも入れる
+6773:          if (!dupAry.includes(svalue)){
+6774: 
+6775:             temp =  inbreedObject[svalue];
+6776:             if (typeof temp !== "undefined"){
+6777: 
+6778:                ary = temp.split(',');
+6779: 
+6780:                //七光りスピード値
+6781:                this.nitro_speed += Number(ary[0])*2;
+6782:                this.nitro_stamina -= Number(ary[0]);
+6783:                this.nitro_speed += Number(ary[1]);
+6784: 
+6785:                //パワー値
+6786:                this.nitro_power += Number(ary[2]);
+6787: 
+6788:                //スタミナ値
+6789:                this.nitro_stamina += Number(ary[3]);
+6790:                this.nitro_stamina += Number(ary[4]);
+6791: 
+6792:             }
+6793:             dupAry.push(svalue);
+6794:          }//重複チェック終了
+6795:       });
+6796: 
+6797:     }
