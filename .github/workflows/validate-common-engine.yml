@@ -1,0 +1,161 @@
+name: Validate common breeding engine
+
+on:
+  push:
+    paths:
+      - 'breeding-core.js'
+      - 'breeding-engine.js'
+      - 'v20.js'
+      - 'v21.js'
+      - 'v25.js'
+      - 'index.html'
+      - 'version.json'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/pedigree-master.json'
+      - 'data/planner-inheritance-validation.json'
+      - 'data/danger-engine-validation.json'
+      - 'data/theory-flag-validation.json'
+      - 'data/all-sire-pedigree-validation.json'
+      - 'data/sale-planner-design-validation.json'
+      - '.github/workflows/validate-common-engine.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Static syntax and release wiring
+        run: |
+          node --check breeding-core.js
+          node --check breeding-engine.js
+          node --check v20.js
+          node --check v21.js
+          node --check v25.js
+          python -m json.tool version.json >/dev/null
+          python -m json.tool data/theory-master.json >/dev/null
+          python -m json.tool data/nitro-effects.json >/dev/null
+          python -m json.tool data/kotta-pairs.json >/dev/null
+          python -m json.tool data/elaborate-direct-exceptions.json >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          idx=Path('index.html').read_text(encoding='utf-8')
+          v20=Path('v20.js').read_text(encoding='utf-8')
+          v21=Path('v21.js').read_text(encoding='utf-8')
+          v25=Path('v25.js').read_text(encoding='utf-8')
+          v=json.loads(Path('version.json').read_text(encoding='utf-8'))
+          direct=json.loads(Path('data/elaborate-direct-exceptions.json').read_text(encoding='utf-8'))
+          assert (v['version'],v['build']) == ('1.16.0','2026.09.20-34')
+          assert direct['count'] == 33 and len(direct['pairs']) == 33
+          assert 'breeding-core.js?v=1.16.0' in idx
+          assert 'breeding-engine.js?v=1.16.0' in idx
+          assert idx.index('breeding-core.js?v=1.16.0') < idx.index('breeding-engine.js?v=1.16.0') < idx.index('v20.js?v=1.16.0')
+          assert 'v23.js' not in idx
+          assert 'buildSystemMap' not in v20 and 'deriveMare(' not in v20
+          assert 'sevenCandidate' not in v21
+          assert "source:'common-breeding-engine'" in v25
+          assert idx.count('<section') == idx.count('</section>')
+          assert idx.count('<dialog') == idx.count('</dialog>')
+          print('PASS static release wiring')
+          PY
+
+      - name: Fetch current Switch oracle
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          url='https://ds.yublog.com/js/ds96_11.js?v26'
+          data=urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; DabistaFarmDB/1.0)'}),timeout=45).read().decode('utf-8','replace')
+          open('/tmp/ds96.js','w',encoding='utf-8').write(data)
+          print('oracle bytes',len(data))
+          PY
+
+      - name: Exhaustive 331 x 176 exact regression
+        run: |
+          cat > /tmp/check-common.js <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const core=require(process.cwd()+'/breeding-core.js');
+          const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
+          const S=JSON.parse(fs.readFileSync('data/stallions.json','utf8')).stallions;
+          const M=JSON.parse(fs.readFileSync('data/default-broodmares.json','utf8')).broodmares;
+          const E=JSON.parse(fs.readFileSync('data/nitro-effects.json','utf8')).effects;
+          const K=JSON.parse(fs.readFileSync('data/kotta-pairs.json','utf8')).pairs;
+          const D=JSON.parse(fs.readFileSync('data/elaborate-direct-exceptions.json','utf8'));
+          const IV=JSON.parse(fs.readFileSync('data/planner-inheritance-validation.json','utf8'));
+          const oldDanger=JSON.parse(fs.readFileSync('data/danger-engine-validation.json','utf8'));
+          const oldTheory=JSON.parse(fs.readFileSync('data/theory-flag-validation.json','utf8'));
+          const allSire=JSON.parse(fs.readFileSync('data/all-sire-pedigree-validation.json','utf8'));
+          const saleDesign=JSON.parse(fs.readFileSync('data/sale-planner-design-validation.json','utf8'));
+          const knownDiff=(IV.samples||[]).filter(x=>x?.sire&&x?.mare&&x?.ours?.kc!==x?.oracle?.k).map(x=>({sire:x.sire,mare:x.mare}));
+          const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D.pairs,elaborateKnownDifferences:knownDiff});
+          const code=fs.readFileSync('/tmp/ds96.js','utf8'),ctx={console:{log:()=>{}}};
+          vm.createContext(ctx);
+          vm.runInContext(code+'\n;globalThis.__seed=new Ds96(0,0);globalThis.__pair=(si,mi)=>{const o=new Ds96(si,mi);return {cnt:o.inbreedcnt,k:o.kiken,t:o.tyokiken,om:o.omoshiro,mg:o.migoto,p:o.kanpeki,el:o.kotta,a:o.child.ancestor,com:o.child.omoshiro,cmg:o.child.migoto}}',ctx,{timeout:15000});
+          const seed=ctx.__seed;
+          const ts=new Map(T.stallions.map(x=>[core.key(x.name),x])),tm=new Map(T.broodmares.map(x=>[core.key(x.name),x]));
+          const si=new Map(seed.stallionObject.map((x,i)=>[core.key(x.name),i])),mi=new Map(seed.broodmareObject.map((x,i)=>[core.key(x.name),i]));
+          let total=0,dangerMismatch=0,theoryMismatch=0,childMismatch=0,elaborateMismatch=0;
+          const elabDiffs=[],samples=[];const started=Date.now();
+          for(const s of S){
+            const st=ts.get(core.key(s.name)),sidx=si.get(core.key(s.name));if(!st||sidx==null)throw Error('missing sire '+s.name);
+            for(const m of M){
+              const mt=tm.get(core.key(m.name)),midx=mi.get(core.key(m.name));if(!mt||midx==null)throw Error('missing mare '+m.name);
+              const a=engine.evaluate(st,mt),o=ctx.__pair(sidx,midx);total++;
+              const dm=a.danger.inbreedCount!==o.cnt||a.danger.kiken!==o.k||a.danger.tyokiken!==o.t;
+              const tmismatch=a.theory.interesting!==o.om||a.theory.magnificent!==o.mg||a.theory.perfect!==o.p;
+              const cm=JSON.stringify(a.child.ancestor)!==JSON.stringify(o.a)||a.child.omoshiro!==String(o.com).normalize('NFKC').trim()||a.child.migoto!==String(o.cmg).normalize('NFKC').trim();
+              const em=a.elaborate.effective!==o.el;
+              if(dm)dangerMismatch++;if(tmismatch)theoryMismatch++;if(cm)childMismatch++;
+              if(em){elaborateMismatch++;elabDiffs.push({sire:s.name,mare:m.name,ours:a.elaborate.effective,oracle:o.el,known:a.elaborate.knownDifference});}
+              if(samples.length<10&&(dm||tmismatch||cm))samples.push({sire:s.name,mare:m.name,dm,tmismatch,cm,ours:a,oracle:o});
+            }
+          }
+          if(total!==58256)throw Error('pair total '+total);
+          if(dangerMismatch||theoryMismatch||childMismatch)throw Error('exact mismatch '+JSON.stringify({dangerMismatch,theoryMismatch,childMismatch,samples}));
+          if(elaborateMismatch!==1)throw Error('elaborate mismatch count '+elaborateMismatch+' '+JSON.stringify(elabDiffs.slice(0,10)));
+          const only=elabDiffs[0];
+          if(core.key(only.sire)!==core.key('モンテロッソ')||core.key(only.mare)!==core.key('デイサイエンス')||only.ours!==true||only.oracle!==false||only.known!==true)throw Error('unexpected elaborate known difference '+JSON.stringify(only));
+          if(!oldDanger.passed||oldDanger.total!==58256||oldDanger.mismatch!==0)throw Error('stored danger validation invalid');
+          if(!oldTheory.passed||oldTheory.total!==58256||oldTheory.mismatch!==0)throw Error('stored theory validation invalid');
+          if(D.count!==33)throw Error('direct exceptions '+D.count);
+          const domesticS=new Set(S.map(x=>core.key(x.name))),domesticM=new Set(M.map(x=>core.key(x.name)));
+          const domesticDirect=D.pairs.filter(x=>domesticS.has(core.key(x.sire))&&domesticM.has(core.key(x.mare)));
+          if(domesticDirect.length!==18)throw Error('domestic direct exceptions '+domesticDirect.length);
+          if(!allSire.passed||allSire.count!==214||allSire.complete!==214)throw Error('all sire pedigree validation invalid');
+          if(saleDesign.saleMares.total!==331||saleDesign.saleMares.knownAbility!==298||saleDesign.saleMares.unknownAbility!==33||saleDesign.saleMares.completePedigree15!==331)throw Error('sale mare coverage invalid');
+          console.log(JSON.stringify({total,dangerMismatch,theoryMismatch,childMismatch,elaborateMismatch,knownDifference:only,directExceptions:D.count,domesticDirect:domesticDirect.length,allSires:allSire.count,runtimeMs:Date.now()-started}));
+          NODE
+          node /tmp/check-common.js
+
+      - name: Nitro and multi-generation regression
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),core=require(process.cwd()+'/breeding-core.js');
+          const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
+          const E=JSON.parse(fs.readFileSync('data/nitro-effects.json','utf8')).effects;
+          const engine=core.create({effects:E});
+          const all=[...T.stallions,...T.broodmares],H=name=>all.find(x=>core.key(x.name)===core.key(name));
+          const cases=[
+            ['ステイゴールド','エイスト',[14,8,1]],
+            ['ダイワメジャー','ミゼラブルウェイ',[16,3,0]],
+            ['ワイルドラッシュ','ラブアタック',[19,5,2]],
+            ['ダイワメジャー','ミニミニデート',[17,6,0]],
+          ];
+          for(const [s,m,exp] of cases){const n=engine.calcNitro(H(s).ancestor,H(m).ancestor),got=[n.sp,n.st,n.pw];if(JSON.stringify(got)!==JSON.stringify(exp))throw Error(s+' x '+m+' '+got+' expected '+exp)}
+          const g1=engine.deriveChild(H('ワイルドラッシュ'),H('ラブアタック'),'g1');
+          let n=engine.calcNitro(H('ステイゴールド').ancestor,g1.ancestor);if(JSON.stringify([n.sp,n.st,n.pw])!==JSON.stringify([14,4,0]))throw Error('route g1');
+          const m1=engine.deriveChild(H('ダイワメジャー'),H('ミゼラブルウェイ'),'m1');
+          n=engine.calcNitro(H('ストラヴィンスキー').ancestor,m1.ancestor);if(JSON.stringify([n.sp,n.st,n.pw])!==JSON.stringify([16,6,0]))throw Error('route m1');
+          const m2=engine.deriveChild(H('ストラヴィンスキー'),m1,'m2');
+          n=engine.calcNitro(H('ステイゴールド').ancestor,m2.ancestor);if(JSON.stringify([n.sp,n.st,n.pw])!==JSON.stringify([13,5,0]))throw Error('route m2');
+          console.log('PASS nitro baselines and multi-generation inheritance');
+          NODE
