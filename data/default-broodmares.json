@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "https://ds.yublog.com/breedmare_list.php",
   "sourceNote": "Switch版デフォルト繁殖牝馬の基礎能力・価格・ニトロ。0値/?は出典表の未判明値をそのまま保持。",
-  "syncedAt": "2026-09-15T11:22:46Z",
+  "syncedAt": "2026-09-19T16:17:03Z",
   "count": 331,
   "broodmares": [
     {

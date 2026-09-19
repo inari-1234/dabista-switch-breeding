@@ -1,5 +1,5 @@
 (()=>{
-const V='1.12.0',BUILD='2026.09.16-28',db=window.db,$=s=>document.querySelector(s),norm=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
+const V='1.16.0',BUILD='2026.09.20-34',db=window.db,$=s=>document.querySelector(s),norm=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
 const KNOWN={
  'イナリシャトル':{screenType:'pedigree-cross',sire:'バゴ',dam:'イナリワルツ',damSire:'ワイルドラッシュ',ancestor15:['バゴ','Nashwan','ワイルドラッシュ','Blushing Groom','Nureyev','Wild Again','マンハッタンカフェ','Red God','Bustino','Northern Dancer','Mr. Prospector','Icecapade','Plugged Nickle','サンデーサイレンス','Storm Cat'],crosses:[{name:'Nearctic',sireGen:5,mareGen:5},{name:'Halo',sireGen:5,mareGen:5}],source:'image-confirmed-2026-09-16'}
 };
