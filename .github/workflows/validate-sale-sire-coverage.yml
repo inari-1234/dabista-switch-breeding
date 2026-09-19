@@ -1,0 +1,68 @@
+name: Validate sale sire coverage
+on:
+  push:
+    paths: ['.github/workflows/validate-sale-sire-coverage.yml']
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build sale sire coverage report
+        run: |
+          python - <<'PY'
+          import json, re
+          from html.parser import HTMLParser
+          from urllib.request import Request,urlopen
+          class T(HTMLParser):
+              def __init__(self): super().__init__(); self.tables=[]; self.table=None; self.row=None; self.cell=None
+              def handle_starttag(self,tag,attrs):
+                  if tag=='table' and self.table is None:self.table=[]
+                  elif self.table is not None and tag=='tr':self.row=[]
+                  elif self.row is not None and tag in ('td','th'):self.cell=[]
+                  elif self.cell is not None and tag=='br':self.cell.append(' ')
+              def handle_data(self,d):
+                  if self.cell is not None:self.cell.append(d)
+              def handle_endtag(self,tag):
+                  if tag in ('td','th') and self.cell is not None:self.row.append(' '.join(''.join(self.cell).split()));self.cell=None
+                  elif tag=='tr' and self.row is not None:
+                      if self.row:self.table.append(self.row)
+                      self.row=None
+                  elif tag=='table' and self.table is not None:self.tables.append(self.table);self.table=None
+          def fetch(url):
+              return urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; DabistaFarmDB/1.0)'}),timeout=45).read().decode('utf-8','replace')
+          p=T();p.feed(fetch('https://ds.yublog.com/stallion_list.php'));rows=max(p.tables,key=len)
+          names=[r[0] for r in rows if len(r)>=15 and r[0] not in ('種牡馬名','')]
+          gi=names.index('Galileo')
+          open('/tmp/page.json','w',encoding='utf-8').write(json.dumps({'names':names,'domestic':names[:gi],'foreign':names[gi:]},ensure_ascii=False))
+          open('/tmp/ds96.js','w',encoding='utf-8').write(fetch('https://ds.yublog.com/js/ds96_11.js?v26'))
+          PY
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const page=JSON.parse(fs.readFileSync('/tmp/page.json','utf8'));
+          const code=fs.readFileSync('/tmp/ds96.js','utf8'),ctx={console:{log:()=>{}}};vm.createContext(ctx);
+          vm.runInContext(code+'\n;globalThis.__d=new Ds96(0,0);',ctx,{timeout:15000});
+          const n=s=>String(s||'').normalize('NFKC').trim(),raw=ctx.__d.stallionObject.map(x=>n(x.name)),set=new Set(raw);
+          const missing=page.names.filter(x=>!set.has(n(x))),extra=raw.filter(x=>!page.names.map(n).includes(x));
+          const report={
+            pageCount:page.names.length,domesticCount:page.domestic.length,foreignCount:page.foreign.length,
+            ds96Count:raw.length,missingFromDs96:missing,extraInDs96:extra,
+            foreignNames:page.foreign,passed:missing.length===0 && raw.length>=page.names.length,
+            note:'Current production master intentionally stops before Galileo; 2-year sale pedigrees can use foreign sires, so a separate all-sire pedigree master is required.'
+          };
+          fs.writeFileSync('data/sale-sire-coverage-validation.json',JSON.stringify(report,null,2));
+          console.log(JSON.stringify(report));
+          if(!report.passed)process.exitCode=2;
+          NODE
+      - name: Commit report and cleanup
+        if: success()
+        run: |
+          rm .github/workflows/validate-sale-sire-coverage.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Validate 2-year sale sire pedigree coverage"
+          git push
