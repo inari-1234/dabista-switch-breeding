@@ -5,10 +5,6 @@ const $$=s=>[...document.querySelectorAll(s)];
 if(document.body.classList.contains('ui-refresh'))return;
 document.body.classList.add('ui-refresh');
 
-const css=document.createElement('link');
-css.rel='stylesheet';
-css.href='ui-refresh.css?v=2026.09.20-1';
-document.head.appendChild(css);
 
 const title=$('header h1');
 if(title)title.textContent='ダビスタSwitch 配合支援';
