@@ -100,7 +100,21 @@ jobs:
           vm.runInContext(code+'\n;globalThis.__dabista = new Ds96(0);',context,{timeout:15000});
           const d=context.__dabista;
           fs.writeFileSync('/tmp/ds96-data.json',JSON.stringify({stallions:d.stallionObject,broodmares:d.broodmareObject}));
-          console.log('tool objects',d.stallionObject.length,d.broodmareObject.length);
+          function extractList(varName){
+            const re=new RegExp('const\\s+'+varName+'\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*;');
+            const m=code.match(re);if(!m)throw Error('missing '+varName);
+            return [...m[1].matchAll(/"([^"]+)"/g)].map(x=>x[1]);
+          }
+          const special=extractList('kakutei_list');
+          const direct=special.map(raw=>{const [sire,mare]=raw.split(';');return{sire:String(sire||'').normalize('NFKC').trim(),mare:String(mare||'').normalize('NFKC').trim(),raw}});
+          fs.writeFileSync('data/elaborate-direct-exceptions.json',JSON.stringify({
+            schemaVersion:1,
+            source:'https://ds.yublog.com/js/ds96_11.js?v26',
+            sourceNote:'Switch版配合ツール kakutei_list の凝った配合・直接成立例外。812ペアの成立確認マスタとは根拠を分離して保持。',
+            count:direct.length,
+            pairs:direct
+          },null,2)+'\\n');
+          console.log('tool objects',d.stallionObject.length,d.broodmareObject.length,'direct elaborate exceptions',direct.length);
           NODE
 
       - name: Build pedigree and theory masters
@@ -152,12 +166,12 @@ jobs:
 
       - name: Commit updated data
         run: |
-          if git diff --quiet -- data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json; then
+          if git diff --quiet -- data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json data/elaborate-direct-exceptions.json; then
             echo 'No changes'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json
+          git add data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json data/elaborate-direct-exceptions.json
           git commit -m 'Sync default Dabista pedigree and theory masters'
           git push
