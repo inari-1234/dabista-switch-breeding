@@ -1,0 +1,36 @@
+name: Probe theory methods
+on:
+  push:
+    paths: ['.github/workflows/probe-theory-methods.yml']
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch and extract methods
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          url='https://ds.yublog.com/js/ds96_11.js?v26'
+          data=urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; DabistaFarmDB/1.0)'}),timeout=45).read().decode('utf-8','replace')
+          lines=data.splitlines()
+          keys=('check_omoshiro(','check_migoto(','check_kanpeki(')
+          out=[]
+          for i,line in enumerate(lines):
+              if any(k in line for k in keys) and i+1>6600:
+                  a=max(0,i-2);b=min(len(lines),i+70)
+                  out.append('--- %s L%d ---\n%s'%(line.strip(),i+1,'\n'.join(f'{j+1}: {lines[j]}' for j in range(a,b))))
+          open('data/theory-methods-probe.txt','w',encoding='utf-8').write('\n\n'.join(out))
+          PY
+      - name: Commit probe and cleanup
+        run: |
+          rm .github/workflows/probe-theory-methods.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Probe exact theory methods"
+          git push
