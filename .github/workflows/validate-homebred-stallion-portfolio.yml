@@ -1,0 +1,83 @@
+name: Validate homebred stallion portfolio
+on:
+  push:
+    paths: ['.github/workflows/validate-homebred-stallion-portfolio.yml']
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch current Switch oracle
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          url='https://ds.yublog.com/js/ds96_11.js?v26'
+          data=urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; DabistaFarmDB/1.0)'}),timeout=45).read().decode('utf-8','replace')
+          open('/tmp/ds96.js','w',encoding='utf-8').write(data)
+          PY
+      - name: Validate future homebred stallion bloodline compatibility
+        run: |
+          cat > /tmp/check.js <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
+          const S=JSON.parse(fs.readFileSync('data/stallions.json','utf8')).stallions;
+          const M=JSON.parse(fs.readFileSync('data/default-broodmares.json','utf8')).broodmares;
+          const E=JSON.parse(fs.readFileSync('data/nitro-effects.json','utf8')).effects;
+          const K=JSON.parse(fs.readFileSync('data/kotta-pairs.json','utf8')).pairs;
+          const code=fs.readFileSync('/tmp/ds96.js','utf8'),ctx={console:{log:()=>{}}};
+          vm.createContext(ctx);vm.runInContext(code+'\n;globalThis.__seed=new Ds96(0,0);',ctx,{timeout:15000});
+          const seed=ctx.__seed,canon=s=>String(s||'').normalize('NFKC').trim(),norm=s=>canon(s).replace(/[\s・･]/g,'').toLowerCase();
+          const ts=new Map(T.stallions.map(x=>[norm(x.name),x])),tm=new Map(T.broodmares.map(x=>[norm(x.name),x]));
+          const si=new Map(seed.stallionObject.map((x,i)=>[norm(x.name),i])),mi=new Map(seed.broodmareObject.map((x,i)=>[norm(x.name),i]));
+          const em=new Map(E.map(x=>[norm(x.name),x])),pairs=new Set(K.map(p=>norm(p.a)+'|'+norm(p.b)));
+          const sourceElab=(()=>{const m=code.match(/const\s+elaborate_list\s*=\s*\[([\s\S]*?)\]\s*;/);return new Set([...(m?.[1]||'').matchAll(/"([^"]+)"/g)].map(x=>{const [a,b]=x[1].split(';');return canon(a)+'|'+canon(b)}))})();
+          function child(s,m){return{name:s.name+'×'+m.name,system:s.system,ancestor:[s.name,s.ancestor[0],m.ancestor[0],s.ancestor[1],s.ancestor[2],m.ancestor[1],m.ancestor[2],s.ancestor[3],s.ancestor[4],s.ancestor[5],s.ancestor[6],m.ancestor[3],m.ancestor[4],m.ancestor[5],m.ancestor[6]],omoshiro:s.omoshiro[0]+s.omoshiro[2]+m.omoshiro[0]+m.omoshiro[2],migoto:s.omoshiro[1]+s.omoshiro[3]+m.omoshiro[1]+m.omoshiro[3],dirt:0,konjo:0,price:0,speed:0,stamina:0,power:0}}
+          function uniq(s){let o='';for(const ch of String(s||''))if(!o.includes(ch))o+=ch;return o}
+          function theory(s,m){const om=uniq(s.omoshiro+m.omoshiro).length>=7,mg=[...uniq(s.migoto)].sort().join('')===[...uniq(m.omoshiro)].sort().join('');return{om,mg,pk:om&&mg}}
+          function nitro(s,m){const seen=new Set();let sp=0,st=0,pw=0;for(const x of [...m.ancestor,...s.ancestor]){const k=norm(x);if(!k||seen.has(k))continue;seen.add(k);const e=em.get(k);if(!e)continue;sp+=(e.short||0)*2+(e.speed||0);st+=(e.guts||0)+(e.long||0)-(e.short||0);pw+=(e.power||0)}return{sp,st,pw}}
+          function locks(mother,father){const o=[],a=(...x)=>o.push(...x);
+            if(father===0){if(mother===0)a('1,1','3,3','4,4','7,7','8,8','9,9','10,10');else if(mother===1)a('1,3','3,7','4,8');else if(mother===2)a('1,5','3,11','4,12');else if(mother<=6)a('1,'+(mother*2+1))}
+            else if(father===1){if(mother===0)a('3,1','7,3','8,4');else if(mother===1)a('3,3','7,7','8,8');else if(mother===2)a('3,5','7,11','8,12');else if(mother<=6)a('3,'+(mother*2+1))}
+            else if(father===2){if(mother===0)a('5,1','11,3','12,4');else if(mother===1)a('5,3','11,7','12,8');else if(mother===2)a('5,5','11,11','12,12');else if(mother<=6)a('5,'+(mother*2+1))}
+            else if(father===3&&mother<=6)a('7,'+(mother*2+1));else if(father===4&&mother<=6)a('9,'+(mother*2+1));else if(father===5&&mother<=6)a('11,'+(mother*2+1));else if(father===6&&mother<=6)a('13,'+(mother*2+1));return o}
+          function danger(s,m){const b=new Set();let cnt=0,t=false,stop2=false;for(let i=0;i<15;i++){if(canon(s.name)===canon(m.ancestor[i])){t=true;stop2=true}if(stop2)continue;for(let j=0;j<15;j++){if(b.has(j+','+i))continue;if(canon(s.ancestor[j])===canon(m.ancestor[i])){cnt++;if(i===0&&j===0)t=true;for(const x of locks(i,j))b.add(x)}}}return{cnt,k:cnt>6,t}}
+          function elabSource(s,m,d){if(d.k||d.t)return false;for(let i=0;i<7;i++)for(let j=0;j<7;j++)if(sourceElab.has(canon(s.ancestor[i])+'|'+canon(m.ancestor[j])))return true;return false}
+          function elabPublic(s,m,d){if(d.k||d.t)return false;for(let i=0;i<7;i++)for(let j=0;j<7;j++)if(pairs.has(norm(s.ancestor[i])+'|'+norm(m.ancestor[j])))return true;return false}
+          const designs=[['ステイゴールド','エイスト'],['ダイワメジャー','ミニミニデート']];
+          const knownM=new Map(M.map(x=>[norm(x.name),x]));
+          const report={oracleHasSetStallion:typeof seed.set_stallion==='function',designs:[],totals:{checked:0,metricMismatch:0,publicElaborateVsOracleMismatch:0}};
+          for(const [sn,mn] of designs){
+            const s=ts.get(norm(sn)),m=tm.get(norm(mn)),home=child(s,m);
+            const d={source:[sn,mn],homebred:{name:home.name,system:home.system,ancestor:home.ancestor,omoshiro:home.omoshiro,migoto:home.migoto},future:{checked:0,metricMismatch:0,publicElaborateVsOracleMismatch:0,samples:[]},portfolio:{all:{safe:0,sp15st5:0,interesting:0,magnificent:0,perfect:0,elaborate:0},highAbilityKnown:{population:0,safe:0,sp15st5:0,interesting:0,magnificent:0,perfect:0,elaborate:0,maxSp:0,maxSt:0,maxSpSt:0}}};
+            for(const mare0 of M){
+              const mt=tm.get(norm(mare0.name)),midx=mi.get(norm(mare0.name));if(!mt||midx==null)continue;
+              const dg=danger(home,mt),n=nitro(home,mt),th=theory(home,mt),es=elabSource(home,mt,dg),ep=elabPublic(home,mt,dg);
+              ctx.__midx=midx;ctx.__home=home;
+              const o=vm.runInContext('(()=>{const x=new Ds96(0,globalThis.__midx);x.set_stallion(globalThis.__home);return {cnt:x.inbreedcnt,k:x.kiken,t:x.tyokiken,sp:x.nitro_speed,st:x.nitro_stamina,pw:x.nitro_power,om:x.omoshiro,mg:x.migoto,pk:x.kanpeki,el:x.kotta}})()',ctx,{timeout:15000});
+              const mm=dg.cnt!==o.cnt||dg.k!==o.k||dg.t!==o.t||n.sp!==o.sp||n.st!==o.st||n.pw!==o.pw||th.om!==o.om||th.mg!==o.mg||th.pk!==o.pk||es!==o.el;
+              d.future.checked++;report.totals.checked++;if(mm){d.future.metricMismatch++;report.totals.metricMismatch++;if(d.future.samples.length<8)d.future.samples.push({mare:mare0.name,ours:{dg,n,th,es},oracle:o})}
+              if(ep!==o.el){d.future.publicElaborateVsOracleMismatch++;report.totals.publicElaborateVsOracleMismatch++}
+              if(!dg.k&&!dg.t){const p=d.portfolio.all;p.safe++;if(n.sp>=15&&n.st>=5)p.sp15st5++;if(th.om)p.interesting++;if(th.mg)p.magnificent++;if(th.pk)p.perfect++;if(ep)p.elaborate++}
+              const hi=mare0.sp>0&&mare0.st>0&&mare0.sp+mare0.st>=120;
+              if(hi){const p=d.portfolio.highAbilityKnown;p.population++;if(!dg.k&&!dg.t){p.safe++;if(n.sp>=15&&n.st>=5)p.sp15st5++;if(th.om)p.interesting++;if(th.mg)p.magnificent++;if(th.pk)p.perfect++;if(ep)p.elaborate++;p.maxSp=Math.max(p.maxSp,n.sp);p.maxSt=Math.max(p.maxSt,n.st);p.maxSpSt=Math.max(p.maxSpSt,n.sp+n.st)}}
+            }
+            report.designs.push(d)
+          }
+          report.passed=report.oracleHasSetStallion&&report.totals.metricMismatch===0;
+          fs.writeFileSync('data/homebred-stallion-portfolio-validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+          if(!report.passed)process.exitCode=2;
+          NODE
+          node /tmp/check.js
+      - name: Commit report and cleanup
+        if: success()
+        run: |
+          rm .github/workflows/validate-homebred-stallion-portfolio.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Validate homebred stallion bloodline portfolio"
+          git push
