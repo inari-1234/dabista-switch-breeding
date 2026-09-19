@@ -1,0 +1,125 @@
+{
+  "oracleHasSetStallion": true,
+  "designs": [
+    {
+      "source": [
+        "ステイゴールド",
+        "エイスト"
+      ],
+      "homebred": {
+        "name": "ｽﾃｲｺﾞｰﾙﾄﾞ×ｴｲｽﾄ",
+        "system": "ﾍｲﾙﾄｩﾘｰｽﾞﾝ",
+        "ancestor": [
+          "ｽﾃｲｺﾞｰﾙﾄﾞ",
+          "ｻﾝﾃﾞｰｻｲﾚﾝｽ",
+          "Sadler's Wells",
+          "Halo",
+          "ﾃﾞｨｸﾀｽ",
+          "Northern Dancer",
+          "Irish River",
+          "Hail to Reason",
+          "Understangind",
+          "Sanctus",
+          "ﾉｰｻﾞﾝﾃｰｽﾄ",
+          "Nearctic",
+          "Bold Reason",
+          "Riverman",
+          "Raise a Native"
+        ],
+        "omoshiro": "dkec",
+        "migoto": "iedf"
+      },
+      "future": {
+        "checked": 331,
+        "metricMismatch": 0,
+        "publicElaborateVsOracleMismatch": 0,
+        "samples": []
+      },
+      "portfolio": {
+        "all": {
+          "safe": 331,
+          "sp15st5": 3,
+          "interesting": 17,
+          "magnificent": 0,
+          "perfect": 0,
+          "elaborate": 78
+        },
+        "highAbilityKnown": {
+          "population": 54,
+          "safe": 54,
+          "sp15st5": 0,
+          "interesting": 1,
+          "magnificent": 0,
+          "perfect": 0,
+          "elaborate": 13,
+          "maxSp": 14,
+          "maxSt": 13,
+          "maxSpSt": 23
+        }
+      }
+    },
+    {
+      "source": [
+        "ダイワメジャー",
+        "ミニミニデート"
+      ],
+      "homebred": {
+        "name": "ﾀﾞｲﾜﾒｼﾞｬｰ×ﾐﾆﾐﾆﾃﾞｰﾄ",
+        "system": "ﾍｲﾙﾄｩﾘｰｽﾞﾝ",
+        "ancestor": [
+          "ﾀﾞｲﾜﾒｼﾞｬｰ",
+          "ｻﾝﾃﾞｰｻｲﾚﾝｽ",
+          "Woodman",
+          "Halo",
+          "ﾉｰｻﾞﾝﾃｰｽﾄ",
+          "Mr.Prospector",
+          "Nureyev",
+          "Hail to Reason",
+          "Understangind",
+          "Northern Dancer",
+          "Crimson Stan",
+          "Raise a Native",
+          "Buckpasser",
+          "Northern Dancer",
+          "Big Spruce"
+        ],
+        "omoshiro": "defe",
+        "migoto": "ilhk"
+      },
+      "future": {
+        "checked": 331,
+        "metricMismatch": 0,
+        "publicElaborateVsOracleMismatch": 0,
+        "samples": []
+      },
+      "portfolio": {
+        "all": {
+          "safe": 325,
+          "sp15st5": 4,
+          "interesting": 1,
+          "magnificent": 0,
+          "perfect": 0,
+          "elaborate": 115
+        },
+        "highAbilityKnown": {
+          "population": 54,
+          "safe": 51,
+          "sp15st5": 0,
+          "interesting": 1,
+          "magnificent": 0,
+          "perfect": 0,
+          "elaborate": 25,
+          "maxSp": 14,
+          "maxSt": 12,
+          "maxSpSt": 23
+        }
+      }
+    }
+  ],
+  "totals": {
+    "checked": 662,
+    "metricMismatch": 0,
+    "publicElaborateVsOracleMismatch": 0
+  },
+  "passed": true
+}
