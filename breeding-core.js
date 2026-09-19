@@ -13,7 +13,7 @@
   const validCode=s=>typeof s==='string'&&s.length===4;
   const decodeCode=s=>validCode(s)?[...s].map(c=>SYSTEM_BY_CHAR[c]||c):[];
   const encodeSystems=a=>Array.isArray(a)&&a.length===4?a.map(x=>CHAR_BY_SYSTEM[x]||'').join(''):'';
-  const sortedCode=s=>String(s||'').split('').sort().join('');
+  const sortedCode=s=>[...new Set(String(s||'').split(''))].sort().join('');
   const uniqueCode=s=>new Set(String(s||'').split('').filter(Boolean)).size;
 
   function descendantLocks(mother,father){
