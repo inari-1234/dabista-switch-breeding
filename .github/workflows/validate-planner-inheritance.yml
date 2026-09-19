@@ -61,7 +61,7 @@ jobs:
               const mt=tm.get(canon(m.name)),midx=mi.get(canon(m.name));if(!mt||midx==null)throw Error('missing mare '+m.name);
               const o=ctx.__pair(sidx,midx),a=child(st,mt),om=childOm(st,mt),mg=childMg(st,mt);
               total++;
-              const am=JSON.stringify(a)!==JSON.stringify(o.a),omM=om!==canon(o.om),mgM=mg!==canon(o.mg);
+              const am=a.length!==o.a.length||a.some((x,i)=>canon(x)!==canon(o.a[i])),omM=om!==canon(o.om),mgM=mg!==canon(o.mg);
               if(am)ancMismatch++;if(omM)omMismatch++;if(mgM)mgMismatch++;
               const kc=(o.d||o.t)?false:elab(st,mt,kCanon,spCanon,canon);
               const ka=(o.d||o.t)?false:elab(st,mt,kAggr,spAggr,aggr);
