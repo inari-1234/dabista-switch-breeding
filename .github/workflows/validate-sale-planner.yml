@@ -56,14 +56,14 @@ jobs:
           v26=Path('v26.js').read_text(encoding='utf-8')
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
           assert (v['version'],v['build'])==('1.17.0','2026.09.20-37')
-          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-36';" in app
-          assert "const V='1.17.0',BUILD='2026.09.20-36'" in v26
+          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-37';" in app
+          assert "const V='1.17.0',BUILD='2026.09.20-37'" in v26
           assert 'sale-planner-core.js?v=1.17.0' in idx
           assert 'sale-recommendation-core.js?v=1.17.0-b37' in idx
           assert 'v26.js?v=1.17.0-b37' in idx
           assert 'v27.js?v=1.17.0-b37' in idx
           assert 'ui-refresh.css?v=2026.09.20-2' in idx
-          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b36') < idx.index('v26.js?v=1.17.0-b36') < idx.index('v27.js?v=1.17.0-b36')
+          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b37') < idx.index('v26.js?v=1.17.0-b37') < idx.index('v27.js?v=1.17.0-b37')
           assert 'v23.js' not in idx
           assert '繁殖能力：未判明' in v26
           assert '<summary><b>血統15祖先</b></summary>' in v26
