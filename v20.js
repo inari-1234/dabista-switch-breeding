@@ -1,12 +1,13 @@
 (()=>{
-const V='1.17.0',BUILD='2026.09.20-35',db=window.db,$=s=>document.querySelector(s),esc=window.esc||String;if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
+const V=window.APP_VERSION||'1.17.0',BUILD=window.APP_BUILD||'2026.09.20-38',db=window.db,$=s=>document.querySelector(s),esc=window.esc||String;if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
+const breedHorseById=id=>window.getBreedHorseById?.(id)||db.horses.find(x=>x.id===id)||null
 function cardName(c){return c.querySelector('b')?.textContent.replace(/^\s*\d+\.\s*/,'').trim()||''}
 let engine=null,busy=false;
 function theorySourceLabel(x){return x==='switch-master'?'Switch版マスタ':x?.startsWith('parent-code-inheritance')?'親コードから正確に継承':x==='legacy-persisted-systems'?'旧版で保存済み系統':'コード未確定'}
 function apply(){
  if(!engine||busy)return;busy=true;
  try{
-  const h=db.horses.find(x=>x.id===$('#breedMare')?.value),m=engine.resolveHorse(h),filter=$('#theoryFilter');
+  const h=breedHorseById($('#breedMare')?.value),m=engine.resolveHorse(h),filter=$('#theoryFilter');
   document.querySelectorAll('.v20-theory').forEach(x=>x.remove());document.querySelectorAll('#breedCandidates>.card').forEach(c=>c.classList.remove('theory-hidden'));
   if(!h||!m)return;
   const hasMareCode=String(m.omoshiro||'').length===4;if(filter)filter.disabled=!hasMareCode;
