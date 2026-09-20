@@ -67,6 +67,12 @@ function style(){
  .sale-select{margin-top:7px;padding:7px;border-left:3px solid #d6b566;background:#fff9e7;border-radius:0 7px 7px 0}
  .sale-portfolio{font-size:10px;line-height:1.55;background:#eef2f6;border-radius:8px;padding:7px;margin-top:7px}
  .sale-progress{font-size:11px;line-height:1.5;margin-top:8px}
+ .production-quality{margin-top:7px;padding:8px;border-radius:9px;border:1px solid #dbe5df;background:#f7faf8;font-size:9px;line-height:1.55}
+ .production-quality b{font-size:10px}
+ .production-quality.ceiling{background:#edf7f2;border-color:#bcd8ca}
+ .production-quality.upside{background:#eef3fa;border-color:#cad8eb}
+ .production-quality.selection-dependent,.production-quality.low-ceiling,.production-quality.tradeoff{background:#fff7df;border-color:#e7ca75}
+ .production-warning{display:block;margin-top:3px;color:#7a5610}
  .sale-method{font-size:10px;line-height:1.5;color:#66736c}
  .sale-generation-state{margin:-4px 0 9px;font-size:9px;line-height:1.45;color:#66736c}
  @media(max-width:520px){.sale-controls{grid-template-columns:1fr}.sale-seg{grid-template-columns:1fr 1fr}}
@@ -193,7 +199,7 @@ function renderNotice(){
 }
 const yieldUi=()=>new Promise(r=>setTimeout(r,0));
 function previewBases(shortlists,maxEach=12){
- const out=[],seen=new Set(),keys=['sp','speedCross','st','balance','theory'];
+ const out=[],seen=new Set(),keys=['sp','speedCross','production','st','balance','theory'];
  for(let i=0;i<maxEach;i++)for(const k of keys){
   const r=shortlists?.[k]?.[i];if(!r)continue;const id=planner.routeKey(r);if(!seen.has(id)){seen.add(id);out.push(r)}
  }
@@ -253,13 +259,20 @@ function portfolioHtml(r){
  const line=(label,x)=>`<b>${label}</b>：安全 ${x.safe}/${x.population}・SP15/ST5 ${x.sp15st5}・SP17/ST5 ${x.sp17st5}・面白 ${x.interesting}・見事 ${x.magnificent}・完璧 ${x.perfect}・凝った ${x.elaborate}・最大SP ${x.maxSp}・最大SP+ST ${x.maxSpSt}`;
  return `<div class="sale-portfolio">${line('母SP+ST≥120',p.spst120)}<br>${line('母SP+ST≥130',p.spst130)}<br>※自家製種牡馬の実績・安定・底力は出生前に仮定せず、血統汎用性だけを比較。</div>`
 }
+function productionHtml(route){
+ const assessment=recommendationAdvisor?.mareAssessment?.(db.salePlanner.mare)||null;
+ const q=recommendationAdvisor?.productionQuality?.(route,assessment);if(!q)return'';
+ const notes=(q.notes||[]).slice(0,2).map(x=>esc(x)).join(' / ');
+ const warnings=(q.warnings||[]).slice(0,3).map(x=>'<span class="production-warning">⚠ '+esc(x)+'</span>').join('');
+ return '<div class="production-quality '+esc(q.key)+'"><b>強馬生産条件：'+esc(q.label)+'｜実績'+esc(q.record)+'・安定'+esc(q.stable)+'</b>'+(notes?'<div>'+notes+'</div>':'')+warnings+'</div>';
+}
 function routeHtml(route,index,goal,profile){
  const x=planner.expandRoute(db.salePlanner.mare,route,goal);if(!x)return'';
  const f=route.final||{},sx=f.speedCross||{},method=route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'この表示範囲は全探索結果';
  const speedBadge=sx.has?'<span class="sale-chip cross-speed-ok">SP系クロス '+fmt(sx.count)+'祖先</span>':'<span class="sale-chip cross-speed-missing">SP系クロスなし</span>';
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
- return '<div class="sale-route"><div class="sale-route-title"><b>候補 '+(index+1)+'</b><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span></div><div style="margin-top:4px">'+speedBadge+'</div><div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div><div class="sale-method">'+method+'。途中世代の繁殖SP/ST/PWは仮定していません。</div>'+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'')+'<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
+ return '<div class="sale-route"><div class="sale-route-title"><b>候補 '+(index+1)+'</b><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span></div><div style="margin-top:4px">'+speedBadge+'</div><div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div><div class="sale-method">'+method+'。途中世代の繁殖SP/ST/PWは仮定していません。</div>'+productionHtml(route)+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'')+'<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
 }
 function bridgeStageHtml(st){
  const n=st.nitro||{},ss=st.sireStats||{};
@@ -349,7 +362,11 @@ function profileHtml(profile,routes,goal,scope){
    :'条件を満たす候補を取得できませんでした。';
   return`<div class="card sale-profile"><h3>${esc(label)}</h3><p class="muted">${esc(empty)}</p></div>`
  }
- const crossNote=profile==='speedCross'?'<div class="notice">速力または短距離の有効クロスを持つ候補だけを表示します。SPニトロ単独ではなく、最終配合での直接的なスピード補強も比較する軸です。</div>':'';
+ const crossNote=profile==='speedCross'
+  ?'<div class="notice">速力または短距離の有効クロスを持つ候補だけを表示する<b>血統上限側の軸</b>です。ここで1位でも強馬生産の確度1位とは限りません。最終父の実績・安定と中間牝馬の選抜条件も確認してください。</div>'
+  :profile==='production'
+   ?'<div class="notice"><b>強馬生産型：</b>SP15/ST5を最低線に、最終父の実績を早い段階で評価します。多世代では安定C/B/Aを「上振れ幅の違い」として比較し、安定Aは高能力の中間牝馬を実際に選抜できた場合に向く条件として扱います。</div>'
+   :'';
  return `<div class="card sale-profile"><h3>${esc(label)}</h3><div class="sale-method">並び順：${esc(criteria)}</div>${crossNote}${profile==='sire'?`<div class="sale-method">評価範囲：${esc(scope)}</div>`:''}${routes.map((r,i)=>routeHtml(r,i,goal,profile)).join('')}</div>`
 }
 function renderResults(result){
@@ -358,7 +375,7 @@ function renderResults(result){
  const method=gen===1?`直仔176頭を全探索（安全ルート ${result.safeCount.toLocaleString()}件）`:gen===2?`2代の安全ルート ${result.safeCount.toLocaleString()}件を全探索`:`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索後、${result.previewBaseCount}本の多軸候補から3代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`;
  const caution=!info.abilityKnown?'<div class="notice"><b>繁殖能力未判明：</b>母能力を含む総合評価は保留。血統・ニトロ・配合理論だけで候補を表示しています。</div>':'';
  const profiles={...result.base.profiles,sire:result.portfolio.routes};
- $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice">5軸は合算して総合1位を作りません。SP上限型とSPクロス補強型は別物として比較します。最終締め時の血統を重視し、実際に生産した中間牝馬の能力を確認して次世代へ進めてください。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
+ $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice">6軸は合算して総合1位を作りません。<b>強馬生産型</b>は最終父の実績・安定とSP/ST最低線を重視し、SP上限型・SPクロス補強型は血統上限側として別に残します。実際に生産した中間牝馬の能力を確認して次世代へ進めてください。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
 }
 async function runDesign(){
  if(!planner)return;
