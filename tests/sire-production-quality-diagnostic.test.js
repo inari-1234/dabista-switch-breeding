@@ -2,6 +2,7 @@
 const fs=require('fs');
 const core=require('../breeding-core.js');
 const sale=require('../sale-planner-core.js');
+const reco=require('../sale-recommendation-core.js');
 
 const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
 const S=JSON.parse(fs.readFileSync('data/stallions.json','utf8')).stallions;
@@ -13,6 +14,7 @@ const IV=JSON.parse(fs.readFileSync('data/planner-inheritance-validation.json','
 const knownDiff=(IV.samples||[]).filter(x=>x?.sire&&x?.mare&&x?.ours?.kc!==x?.oracle?.k).map(x=>({sire:x.sire,mare:x.mare}));
 const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elaborateKnownDifferences:knownDiff});
 const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
+const advisor=reco.create({planner,broodmareStats:M});
 
 const sireByName=new Map(S.map(x=>[x.name,x]));
 const known=M.filter(x=>+x.sp||+x.st||+x.pw).sort((a,b)=>(b.sp+b.st)-(a.sp+a.st));
@@ -35,6 +37,7 @@ function brief(route){
 }
 
 const output=[];
+let miniSpeedRoute=null,miniProductionRoute=null,fitProductionRoute=null;
 const groupFocus=new Set(['A/A','A/B','A/C','B/A','B/B','B/C','C/A','C/B','C/C']);
 for(const mare of names){
   const all=planner.createCollector({topN:5,poolN:24});
@@ -84,6 +87,8 @@ for(const mare of names){
   if(mare==='スプリングスイーツ'){
     if(productionTop?.final?.sireStats?.record!=='A')throw Error('Spring production profile should prefer record A inside viability floor');
   }
+  if(mare==='ミニミニデート'){miniSpeedRoute=a.profiles.speedCross?.[0]||null;miniProductionRoute=productionTop}
+  if(mare==='フィットレオタード')fitProductionRoute=productionTop;
   output.push({
     mare,
     mareStats:M.find(x=>x.name===mare),
@@ -100,4 +105,32 @@ for(const mare of names){
     recordABalance:brief(ra.profiles.balance?.[0])
   });
 }
-console.log(JSON.stringify({passed:true,names,bottom,output},null,2));
+const miniAssessment=advisor.mareAssessment('ミニミニデート');
+const miniSpeedQuality=advisor.productionQuality(miniSpeedRoute,miniAssessment);
+const miniProdQuality=advisor.productionQuality(miniProductionRoute,miniAssessment);
+if(miniSpeedQuality.key!=='selection-dependent')throw Error('MiniMini B/A no-material route must be selection-dependent');
+if(!miniSpeedQuality.requiresSelectedMare)throw Error('MiniMini B/A route must require selected high-quality intermediate mare');
+if(!miniSpeedQuality.warnings.some(x=>x.includes('途中SP系クロス補強がなく')))throw Error('MiniMini B/A route must explain missing material SP-cross support');
+if(miniProdQuality.key!=='upside')throw Error('MiniMini B/C production route must be described as upside-oriented');
+
+const fitQuality=advisor.productionQuality(fitProductionRoute,advisor.mareAssessment('フィットレオタード'));
+if(fitQuality.key!=='ceiling'||fitQuality.record!=='A')throw Error('Fit production route should expose record-A ceiling condition');
+
+const directAA={
+  sires:['ダイワメジャー'],
+  final:{sp:15,st:5,pw:0,speedCross:{has:true,count:1},sireStats:{record:'A',stable:'A',guts:'B'},theory:{},elaborate:false},
+  materialSpeedCross:{has:false,stages:0}
+};
+const highDirect=advisor.productionQuality(directAA,advisor.mareAssessment('スプリングスイーツ'));
+if(highDirect.key!=='ceiling')throw Error('record-A/stable-A direct route on a high mare must not be penalized');
+if(!highDirect.notes.some(x=>x.includes('高能力の起点牝馬')))throw Error('stable A must be contextualized positively for a known high mare');
+
+console.log(JSON.stringify({
+  passed:true,names,bottom,output,
+  qualityChecks:{
+    miniSpeed:{key:miniSpeedQuality.key,label:miniSpeedQuality.label,warnings:miniSpeedQuality.warnings},
+    miniProduction:{key:miniProdQuality.key,label:miniProdQuality.label},
+    fitProduction:{key:fitQuality.key,label:fitQuality.label},
+    highDirect:{key:highDirect.key,label:highDirect.label,notes:highDirect.notes}
+  }
+},null,2));
