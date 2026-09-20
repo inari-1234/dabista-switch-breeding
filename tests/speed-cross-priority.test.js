@@ -23,7 +23,9 @@ assert.strictEqual(planner.profileLabels.speedCross,'SPクロス補強型');
 assert.ok(planner.profileCriteria.speedCross.includes('速力/短距離'));
 assert.ok(planner.profileCriteria.speedCross.includes('完璧/見事'));
 assert.ok(planner.goalOrder('arc').includes('speedCross'));
-assert.strictEqual(planner.goalOrder('bc')[0],'speedCross');
+assert.strictEqual(planner.goalOrder('arc')[0],'production','Arc should show strong-horse production conditions before pedigree-only axes');
+assert.strictEqual(planner.goalOrder('bc')[0],'production','BC should show strong-horse production conditions before SP-cross pedigree axis');
+assert.strictEqual(planner.goalOrder('bc')[1],'speedCross','SP-cross axis must remain available separately');
 
 let coverage=0,invalid=0,pureSpNoCross=0,lossSum=0,lossN=0,within2=0;
 const topByMare={},missingDirect=[];
