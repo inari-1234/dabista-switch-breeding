@@ -89,11 +89,10 @@ function finishGeneration(mare){
   return{rec:advisor.recommendGeneration({goal:'arc',assessment,generations}),generations,bases};
 }
 const fitGeneration=finishGeneration('フィットレオタード');
-assert.ok([1,2,3].includes(fitGeneration.rec.generation));
-if(fitGeneration.rec.generation===3){
-  assert.strictEqual(fitGeneration.rec.label,'3代候補（条件付き）');
-  assert.strictEqual(fitGeneration.rec.conditional,true);
-}
+assert.strictEqual(fitGeneration.rec.generation,2,'Fit Leotard Arc diagnosis must stop at generation 2');
+assert.strictEqual(fitGeneration.rec.label,'2代推奨');
+assert.ok(fitGeneration.rec.reasons.some(x=>x.includes('凱旋門向け基準')),'generation 2 must be justified by Arc readiness');
+assert.ok(!fitGeneration.rec.reasons.some(x=>x.startsWith('2代→3代')),'generation 3 must not be selected only for an intermediate SP cross');
 assert.ok(fitGeneration.bases.some(r=>r.final?.speedCross?.has),'3-generation preview bases must include the SP-cross axis');
 
 const v26=fs.readFileSync('v26.js','utf8');
