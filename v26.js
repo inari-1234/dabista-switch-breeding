@@ -145,6 +145,7 @@ function fillMares(){
  const q=String($('#saleMareSearch')?.value||'').normalize('NFKC').toLowerCase();
  const stats=engine.mareData.broodmares||[],names=stats.filter(x=>!q||x.name.normalize('NFKC').toLowerCase().includes(q)).map(x=>x.name);
  const sel=$('#saleMareSelect');if(!sel)return;
+ const previousUiMare=sel.value;
  const keep=db.salePlanner.mare||'エイスト';
  if(!names.length){
   sel.innerHTML='<option value="">該当なし</option>';
@@ -154,8 +155,10 @@ function fillMares(){
   return;
  }
  sel.innerHTML=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
- if(names.includes(keep))sel.value=keep;
- else{sel.value=names[0];setPlannerMare(sel.value,'search-auto')}
+ if(names.includes(keep)){
+  sel.value=keep;
+  if(previousUiMare!==keep)signalMareContext('search-restore',keep);
+ }else{sel.value=names[0];setPlannerMare(sel.value,'search-auto')}
  if($('#runSalePlanner'))$('#runSalePlanner').disabled=false;
  renderMare()
 }
