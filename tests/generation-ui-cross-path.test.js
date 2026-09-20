@@ -126,10 +126,12 @@ assert.ok(v27.includes('母の補強方針'),'mare strategy wording must not be 
 assert.ok(v27.includes('正式な推奨世代'),'pre-diagnosis note must distinguish itself from the formal generation diagnosis');
 assert.ok(v26.includes("signalMareContext('search-empty','')"),'empty search must invalidate mare/generation context');
 assert.ok(v26.includes("setPlannerMare(sel.value,'search-auto')"),'search-driven mare replacement must reset generation state');
+assert.ok(v26.includes("signalMareContext('search-restore',keep)"),'mare advice must refresh when a previously empty search is cleared');
 assert.ok(v26.includes("setPlannerMare(n,'rebuild-sync')"),'rebuild starter sync must reset generation state');
 assert.ok(v26.includes("q.value=''"),'rebuild starter sync must clear a conflicting mare search filter');
 assert.ok(v27.includes("generationSection.insertAdjacentElement('beforebegin',gen)"),'formal generation diagnosis must appear before manual generation buttons');
 assert.ok(v27.includes('この繁殖牝馬の基礎評価'),'mare card must not use recommendation wording for a pre-diagnosis assessment');
+assert.ok(v27.includes('「基礎評価」は母能力と直仔の血統到達性を分けて判定しています。'),'pre-diagnosis note must consistently use evaluation wording');
 assert.ok(v27.includes('目的別の直仔・母評価（事前）'),'purpose cards must be explicitly marked as pre-diagnosis evaluation');
 assert.ok(v27.includes("if(!name){box.innerHTML='<div class=\"muted\">検索条件に一致する繁殖牝馬がありません。</div>';return}"),'empty mare search must clear stale mare advice');
 
