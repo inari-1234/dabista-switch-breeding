@@ -90,6 +90,7 @@ function inject(){
  `;
  const intro=$('#rebuild .card');intro?.insertAdjacentElement('afterend',card);
  const results=document.createElement('div');results.id='salePlannerResults';card.insertAdjacentElement('afterend',results);
+ results.addEventListener('click',e=>{const b=e.target.closest('[data-route-breed]');if(b)openRouteInBreed(b.dataset.routeBreed)});
  $('#saleMareSearch').oninput=()=>{invalidateResults('検索条件を変更しました。');fillMares()};
  $('#saleMareSelect').onchange=()=>{db.salePlanner.mare=$('#saleMareSelect').value;save();renderMare();invalidateResults()};
  $('#saleGoalButtons').onclick=e=>{const b=e.target.closest('[data-sale-goal]');if(!b)return;db.salePlanner.goal=b.dataset.saleGoal;save();paintButtons();renderNotice();invalidateResults()};
@@ -198,7 +199,36 @@ function portfolioHtml(r){
 function routeHtml(route,index,goal,profile){
  const x=planner.expandRoute(db.salePlanner.mare,route,goal);if(!x)return'';
  const f=route.final||{},method=route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'この表示範囲は全探索結果';
- return `<div class="sale-route"><div class="sale-route-title"><b>候補 ${index+1}</b><span class="badge">SP ${f.sp} / ST ${f.st} / PW ${f.pw}</span></div><div class="sale-path">${route.sires.map(esc).join(' → ')}</div><div class="sale-method">${method}。途中世代の繁殖SP/ST/PWは仮定していません。</div>${x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')}${profile==='sire'?portfolioHtml(route):''}</div>`
+ const ctxId='route-'+(++routeContextSeq);
+ routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
+ return '<div class="sale-route"><div class="sale-route-title"><b>候補 '+(index+1)+'</b><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span></div><div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div><div class="sale-method">'+method+'。途中世代の繁殖SP/ST/PWは仮定していません。</div>'+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'')+'<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
+}
+function bridgeStageHtml(st){
+ const n=st.nitro||{},ss=st.sireStats||{};
+ return '<div class="route-bridge-stage"><b>'+st.generation+'代目：'+esc(st.sire)+'</b><br>SP '+fmt(n.sp)+' / ST '+fmt(n.st)+' / PW '+fmt(n.pw)+'　・　'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m　・　実績'+esc(ss.record||'-')+' / 底力'+esc(ss.guts||'-')+' / 安定'+esc(ss.stable||'-')+'<div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</div>';
+}
+function renderRouteBreedBridge(ctx){
+ const sec=$('#breed');if(!sec||!ctx)return;
+ let card=$('#saleRouteBreedBridge');
+ if(!card){card=document.createElement('div');card.id='saleRouteBreedBridge';card.className='card sale-route-bridge';sec.insertBefore(card,sec.firstChild)}
+ card.innerHTML='<div class="row"><div><span class="badge gold">セリ設計から連携</span><h3 class="section-title" style="margin-top:7px">'+esc(ctx.mare)+'｜'+esc(planner.goalLabels[ctx.goal]||ctx.goal)+'</h3></div><button type="button" class="secondary" id="closeRouteBridge">閉じる</button></div><div class="route-bridge-path">'+ctx.route.sires.map(esc).join(' → ')+'</div><div class="sale-method">セリ設計で選んだルートの判定を、そのまま配合カテゴリへ引き継いでいます。</div>'+ctx.x.stages.map(bridgeStageHtml).join('')+'<button type="button" class="secondary route-breed-link" id="filterFinalSire">最終父を下の候補欄で確認</button>';
+ $('#closeRouteBridge').onclick=()=>card.remove();
+ $('#filterFinalSire').onclick=()=>{
+  const q=$('#stallionSearch');if(!q)return;
+  q.value=ctx.route.sires[ctx.route.sires.length-1]||'';
+  q.dispatchEvent(new Event('input',{bubbles:true}));
+  q.scrollIntoView({behavior:'smooth',block:'center'});
+ };
+ card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function openRouteInBreed(id){
+ const ctx=routeContexts.get(id);if(!ctx)return;
+ window.DABISTA_SELECTED_SALE_ROUTE=ctx;
+ const goalMap={arc:'breaker',bc:'breaker',rebuild:'rebuild',stallion:'successor'};
+ const goal=$('#breedGoal');
+ if(goal&&goalMap[ctx.goal]){goal.value=goalMap[ctx.goal];goal.dispatchEvent(new Event('change',{bubbles:true}))}
+ $('.tab[data-tab="breed"]')?.click();
+ setTimeout(()=>renderRouteBreedBridge(ctx),30);
 }
 function profileHtml(profile,routes,goal,scope){
  const label=planner.profileLabels[profile],criteria=planner.profileCriteria[profile];
@@ -206,6 +236,7 @@ function profileHtml(profile,routes,goal,scope){
  return `<div class="card sale-profile"><h3>${esc(label)}</h3><div class="sale-method">並び順：${esc(criteria)}</div>${profile==='sire'?`<div class="sale-method">評価範囲：${esc(scope)}</div>`:''}${routes.map((r,i)=>routeHtml(r,i,goal,profile)).join('')}</div>`
 }
 function renderResults(result){
+ routeContexts.clear();routeContextSeq=0;
  const goal=db.salePlanner.goal,order=planner.goalOrder(goal),gen=+db.salePlanner.generation,info=planner.mareInfo(db.salePlanner.mare);
  const method=gen===1?`直仔176頭を全探索（安全ルート ${result.safeCount.toLocaleString()}件）`:gen===2?`2代の安全ルート ${result.safeCount.toLocaleString()}件を全探索`:`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索後、${result.previewBaseCount}本の多軸候補から3代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`;
  const caution=!info.abilityKnown?'<div class="notice"><b>繁殖能力未判明：</b>母能力を含む総合評価は保留。血統・ニトロ・配合理論だけで候補を表示しています。</div>':'';
@@ -263,7 +294,7 @@ async function load(){
    recommendationAdvisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({planner,broodmareStats:engine.mareData.broodmares||[]});
   }
   inject();fillMares();paintButtons();renderNotice();
-  window.DABISTA_SALE_PLANNER={version:1,planner,run:runDesign};
+  window.DABISTA_SALE_PLANNER={version:1,planner,run:runDesign,openRouteInBreed,routeContexts};
  }catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'sale-planner-load: '+String(e)})}
 }
 function newer(a,b){const A=String(a).split('.').map(Number),B=String(b).split('.').map(Number);for(let i=0;i<3;i++){if((A[i]||0)!==(B[i]||0))return(A[i]||0)>(B[i]||0)}return false}
