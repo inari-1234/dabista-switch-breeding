@@ -1,0 +1,87 @@
+'use strict';
+const fs=require('fs'),assert=require('assert');
+const core=require('../breeding-core.js');
+const sale=require('../sale-planner-core.js');
+const reco=require('../sale-recommendation-core.js');
+
+const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
+const S=JSON.parse(fs.readFileSync('data/stallions.json','utf8')).stallions;
+const M=JSON.parse(fs.readFileSync('data/default-broodmares.json','utf8')).broodmares;
+const E=JSON.parse(fs.readFileSync('data/nitro-effects.json','utf8')).effects;
+const K=JSON.parse(fs.readFileSync('data/kotta-pairs.json','utf8')).pairs;
+const D=JSON.parse(fs.readFileSync('data/elaborate-direct-exceptions.json','utf8')).pairs;
+const IV=JSON.parse(fs.readFileSync('data/planner-inheritance-validation.json','utf8'));
+const knownDiff=(IV.samples||[]).filter(x=>x?.sire&&x?.mare&&x?.ours?.kc!==x?.oracle?.k).map(x=>({sire:x.sire,mare:x.mare}));
+
+const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elaborateKnownDifferences:knownDiff});
+const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
+const advisor=reco.create({planner,broodmareStats:M});
+
+const fit=advisor.mareAssessment('フィットレオタード');
+assert.ok(fit?.abilityKnown,'Fit Leotard ability must be known');
+assert.strictEqual(fit.stats.sp,52);
+assert.strictEqual(fit.stats.st,50);
+assert.strictEqual(fit.stats.pw,48);
+assert.ok(fit.ranks.sp.topPercent>45,'screenshot mare is on SP-support side');
+
+const direct=advisor.emptySummary('direct');
+for(const r of planner.iterateDirect('フィットレオタード'))advisor.addRoute(direct,r,'arc');
+const use=advisor.directUseLabels(fit,direct);
+assert.strictEqual(use.arc,'2代以上を比較','pre-diagnosis label must not claim a 2-generation recommendation');
+assert.ok(!use.arc.includes('推奨'),'only the generation advisor may publish a generation recommendation');
+
+function fakeRoute(materialStages){
+  return{
+    final:{
+      sp:15,st:6,pw:1,
+      speedCross:{has:false,count:0,effect:0,short:0,speed:0},
+      theory:{interesting:false,magnificent:false,perfect:false},
+      elaborate:false,
+      sireStats:{record:'B',guts:'B',stable:'B',minD:1600,maxD:2200}
+    },
+    materialSpeedCross:{has:materialStages>0,stages:materialStages,count:materialStages,short:0,speed:materialStages,effect:materialStages}
+  };
+}
+const lowReasons=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',fit);
+assert.ok(lowReasons.some(x=>x.includes('中間世代で速力/短距離クロス')),'low-SP mare should value an intermediate SP-cross opportunity when final SP/ST are maintained');
+
+const elite=advisor.mareAssessment('スプリングスイーツ');
+const eliteReasons=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',elite);
+assert.ok(!eliteReasons.some(x=>x.includes('中間世代で速力/短距離クロス')),'elite mare must not extend generations only for an intermediate SP cross');
+
+let materialRoute=null;
+for(const r of planner.iterateTwo('フィットレオタード')){
+  if(r.materialSpeedCross?.has){materialRoute=r;break}
+}
+assert.ok(materialRoute,'two-generation route with an intermediate SP cross should exist');
+assert.strictEqual(materialRoute.speedCrossPath.length,2);
+assert.ok(materialRoute.speedCrossPath[0].has,'material cross must belong to generation 1');
+assert.ok(materialRoute.materialSpeedCross.stages>=1);
+
+const expanded=planner.expandRoute('フィットレオタード',materialRoute,'arc');
+assert.strictEqual(expanded.stages.length,2);
+assert.ok(expanded.stages[0].speedCross?.has,'expanded route must expose stage SP-cross information');
+const advice=advisor.selectionAdvice('フィットレオタード','arc',expanded.stages[0],2);
+assert.ok(advice.body.includes('選抜機会'),'intermediate cross must be described as a selection opportunity');
+assert.ok(advice.body.includes('出生前の繁殖SPには加算しません')||advice.body.includes('実馬でSTを確認'),'must not invent intermediate broodmare ability');
+
+const v26=fs.readFileSync('v26.js','utf8');
+const v27=fs.readFileSync('v27.js','utf8');
+assert.ok(v26.includes('saleGoalSection'),'goal section must be an explicit UI block');
+assert.ok(v26.includes("generationSource='unset'"),'generation selection must start neutral');
+assert.ok(v26.includes("setGeneration(rec.generation")===false,'v26 must not invent advisor result');
+assert.ok(v27.includes("keys=['sp','speedCross','st','balance','theory']"),'3-generation advisor must retain the SP-cross axis');
+assert.ok(v27.includes("setGeneration?.(rec.generation,'diagnosis')"),'diagnosis must synchronize the selected generation');
+assert.ok(v27.includes('母の補強方針'),'mare strategy wording must not be confused with the selected goal');
+assert.ok(v27.includes('正式な推奨世代'),'pre-diagnosis note must distinguish itself from the formal generation diagnosis');
+
+console.log(JSON.stringify({
+  passed:true,
+  mare:'フィットレオタード',
+  ranks:{sp:fit.ranks.sp,st:fit.ranks.st,pw:fit.ranks.pw,spst:fit.ranks.spst},
+  preDiagnosisArc:use.arc,
+  lowMaterialReason:lowReasons,
+  eliteMaterialReason:eliteReasons,
+  sampleMaterialRoute:materialRoute.sires,
+  sampleMaterialCross:materialRoute.materialSpeedCross
+},null,2));
