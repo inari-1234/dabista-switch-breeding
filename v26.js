@@ -89,7 +89,7 @@ function inject(){
   </div>
   <div id="saleMareSummary" class="sale-mare-summary">繁殖牝馬マスタを読み込み中…</div>
   <div id="saleGoalSection"><label>目的</label><div class="sale-seg" id="saleGoalButtons">${goalButtons()}</div></div>
-  <div id="saleGenerationSection"><label>詳しく設計する世代</label><div class="sale-seg gens" id="saleGenButtons">${genButtons()}</div><div id="saleGenerationState" class="sale-generation-state"></div></div>
+  <div id="saleGenerationSection"><label>診断結果／比較する世代</label><div class="sale-seg gens" id="saleGenButtons">${genButtons()}</div><div id="saleGenerationState" class="sale-generation-state"></div></div>
   <div id="salePlannerNotice" class="notice">直仔は176頭全探索、2代は安全な1代目から約3万ルートを全探索します。3代は2代目まで全探索した候補を起点に条件付きプレビューします。</div>
   <div class="actions"><button class="primary" id="runSalePlanner">この条件で設計</button></div>
   <div id="salePlannerProgress" class="sale-progress"></div>
@@ -98,14 +98,32 @@ function inject(){
  const results=document.createElement('div');results.id='salePlannerResults';card.insertAdjacentElement('afterend',results);
  results.addEventListener('click',e=>{const b=e.target.closest('[data-route-breed]');if(b)openRouteInBreed(b.dataset.routeBreed)});
  $('#saleMareSearch').oninput=()=>{invalidateResults('検索条件を変更しました。');fillMares()};
- $('#saleMareSelect').onchange=()=>{db.salePlanner.mare=$('#saleMareSelect').value;resetGenerationSelection();save();renderMare();invalidateResults()};
+ $('#saleMareSelect').onchange=()=>{setPlannerMare($('#saleMareSelect').value,'select');invalidateResults()};
  $('#saleGoalButtons').onclick=e=>{const b=e.target.closest('[data-sale-goal]');if(!b)return;db.salePlanner.goal=b.dataset.saleGoal;resetGenerationSelection();save();paintButtons();renderNotice();invalidateResults()};
  $('#saleGenButtons').onclick=e=>{const b=e.target.closest('[data-sale-gen]');if(!b)return;setGeneration(+b.dataset.saleGen,'manual');invalidateResults('手動で世代を選択しました。「選択した世代を詳しく設計」で確認できます。')};
  $('#runSalePlanner').onclick=runDesign;
- $('#rebuildStarter')?.addEventListener('change',()=>{const n=$('#rebuildStarter').value;if(planner?.mare(n)){db.salePlanner.mare=n;save();fillMares();renderMare();invalidateResults('起点牝馬を同期しました。')}});
+ $('#rebuildStarter')?.addEventListener('change',()=>{
+  const n=$('#rebuildStarter').value;if(!planner?.mare(n))return;
+  const q=$('#saleMareSearch');if(q)q.value='';
+  fillMares();
+  const sel=$('#saleMareSelect');if(sel)sel.value=n;
+  setPlannerMare(n,'rebuild-sync');
+  invalidateResults('起点牝馬を同期しました。');
+ });
 }
 function resetGenerationSelection(){
  db.salePlanner.generation=0;db.salePlanner.generationSource='unset';paintButtons();renderNotice();
+}
+function signalMareContext(reason,name=db.salePlanner.mare){
+ window.dispatchEvent(new CustomEvent('dabista:sale-mare-context',{detail:{name,reason}}));
+}
+function setPlannerMare(name,reason='select'){
+ if(!name)return false;
+ const changed=db.salePlanner.mare!==name;
+ db.salePlanner.mare=name;
+ if(changed){resetGenerationSelection();save();signalMareContext(reason,name)}
+ renderMare();
+ return changed;
 }
 function setGeneration(n,source='manual'){
  db.salePlanner.generation=[1,2,3].includes(+n)?+n:0;
@@ -117,7 +135,7 @@ function paintButtons(){
  document.querySelectorAll('[data-sale-gen]').forEach(b=>b.classList.toggle('on',+b.dataset.saleGen===+db.salePlanner.generation));
  const st=$('#saleGenerationState');
  if(st){
-  if(!db.salePlanner.generation)st.textContent='未選択：下の世代診断を実行するか、比較したい世代を手動で選択してください。';
+  if(!db.salePlanner.generation)st.textContent='未選択：「おすすめ配合世代を診断」を実行するか、比較したい世代を手動で選択してください。';
   else if(db.salePlanner.generationSource==='diagnosis')st.textContent='世代診断の推奨を選択中です。';
   else st.textContent='手動選択中です。世代診断の推奨とは別に比較できます。';
  }
@@ -131,11 +149,13 @@ function fillMares(){
  if(!names.length){
   sel.innerHTML='<option value="">該当なし</option>';
   $('#saleMareSummary').textContent='検索条件に一致する繁殖牝馬がありません。';
+  resetGenerationSelection();signalMareContext('search-empty','');
   if($('#runSalePlanner'))$('#runSalePlanner').disabled=true;
   return;
  }
  sel.innerHTML=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
- if(names.includes(keep))sel.value=keep;else{sel.value=names[0];db.salePlanner.mare=sel.value;save()}
+ if(names.includes(keep))sel.value=keep;
+ else{sel.value=names[0];setPlannerMare(sel.value,'search-auto')}
  if($('#runSalePlanner'))$('#runSalePlanner').disabled=false;
  renderMare()
 }
@@ -156,7 +176,7 @@ function renderMare(){
 }
 function renderNotice(){
  const n=+db.salePlanner.generation,el=$('#salePlannerNotice');if(!el)return;
- if(!n){el.innerHTML='<b>世代未選択：</b>正式な推奨は下の「おすすめ配合世代を診断」で決定します。手動で選ぶこともできます。';return}
+ if(!n){el.innerHTML='<b>世代未選択：</b>正式な推奨は「おすすめ配合世代を診断」で決定します。手動で比較することもできます。';return}
  if(n===1)el.innerHTML='<b>直仔：</b>国内176種牡馬を全探索。危険・超危険を除外し、複数軸で候補を表示します。';
  else if(n===2)el.innerHTML='<b>2代：</b>安全な1代目から国内176頭を掛け合わせ、約3万ルートを全探索します。中間牝馬の繁殖能力は出生前に仮定しません。';
  else el.innerHTML='<b>3代：</b>2代目までは全探索。3代目はSP上限/SPクロス補強/ST/バランス/配合理論の多軸候補を起点に条件付き探索する仮プレビューです。全176³の最適解とは表示しません。';
