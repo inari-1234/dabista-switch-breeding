@@ -82,7 +82,8 @@ assert.ok(unknownMaterialRoute,'unknown mare should still be able to use an inte
 const unknownExpanded=planner.expandRoute('アマリン',unknownMaterialRoute,'arc');
 const unknownAdvice=advisor.selectionAdvice('アマリン','arc',unknownExpanded.stages[0],2);
 assert.ok(unknownAdvice.body.includes('能力は未判明'),'unknown mare guidance must preserve unknown status');
-assert.ok(!unknownAdvice.body.includes('SP不足'),'unknown mare guidance must not claim SP deficiency');
+assert.ok(unknownAdvice.body.includes('SP不足とは決めつけず'),'unknown mare guidance must explicitly avoid assuming SP deficiency');
+assert.ok(!unknownAdvice.body.includes('SP不足を補う'),'unknown mare guidance must not claim SP deficiency');
 
 function finishGeneration(mare){
   const c1=planner.createCollector({topN:3,poolN:24}),s1=advisor.emptySummary('exact-direct');
