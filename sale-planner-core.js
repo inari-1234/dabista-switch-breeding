@@ -47,7 +47,7 @@
     if(profile==='sp')return[val(f.sp),val(f.st),val(f.pw),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate),grade(s.record)];
     if(profile==='speedCross'){
       const x=f.speedCross||{};
-      return[bool(x.has),val(f.sp),val(f.st),bool(t.perfect),bool(t.magnificent),val(x.count),val(x.effect),val(f.pw),bool(f.elaborate),grade(s.record)];
+      return[bool(x.has),val(f.sp),val(f.st),bool(t.perfect),bool(t.magnificent),val(route.materialSpeedCross?.stages),val(x.count),val(x.effect),val(f.pw),bool(f.elaborate),grade(s.record)];
     }
     if(profile==='st')return[bool(val(s.maxD)>=2400),val(f.st),val(f.sp),grade(s.record),grade(s.guts),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate)];
     if(profile==='balance')return[bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.st),val(f.sp),bool(val(s.maxD)>=2400),grade(s.record),grade(s.guts)];
@@ -139,6 +139,24 @@
       }
       return{has:names.length>0,count:names.length,short,speed,effect,names};
     }
+    function compactCrossPath(items){
+      const path=(items||[]).map((x,i)=>{
+        const s=x?.danger?speedCrossSummary(x):x||{};
+        return{generation:i+1,has:!!s.has,count:val(s.count),short:val(s.short),speed:val(s.speed),effect:val(s.effect),names:[...(s.names||[])]};
+      });
+      const material=path.slice(0,-1),active=material.filter(x=>x.has);
+      return{
+        path,
+        material:{
+          has:active.length>0,
+          stages:active.length,
+          count:active.reduce((n,x)=>n+x.count,0),
+          short:active.reduce((n,x)=>n+x.short,0),
+          speed:active.reduce((n,x)=>n+x.speed,0),
+          effect:active.reduce((n,x)=>n+x.effect,0)
+        }
+      };
+    }
     function compactFinal(pair,sireRecord){
       const n=pair.nitro||{},t=pair.theory||{},ss=statsForSire(sireRecord.name)||{};
       return{
@@ -149,13 +167,16 @@
         sireStats:{record:ss.record||'-',guts:ss.guts||'-',stable:ss.stable||'-',minD:val(ss.minD),maxD:val(ss.maxD),price:val(ss.price)}
       };
     }
-    function routeFrom(sires,pair,method='exact'){
+    function routeFrom(sires,pair,method='exact',stageCrossItems=[]){
+      const crossPath=compactCrossPath(stageCrossItems.length?stageCrossItems:[pair]);
       return{
         id:sires.map(x=>key(x)).join('__'),
         sires:[...sires],
         generation:sires.length,
         method,
         final:compactFinal(pair,sire(sires[sires.length-1])||{name:sires[sires.length-1]}),
+        speedCrossPath:crossPath.path,
+        materialSpeedCross:crossPath.material,
         finalChild:pair.child
       };
     }
@@ -164,7 +185,7 @@
       const m=typeof mareInput==='string'?mare(mareInput):mareInput;if(!m)return;
       for(const s of stallions){
         const p=engine.evaluate(s,m);if(!safe(p))continue;
-        yield routeFrom([s.name],p,'exact-direct');
+        yield routeFrom([s.name],p,'exact-direct',[p]);
       }
     }
     function* iterateTwo(mareInput){
@@ -173,7 +194,7 @@
         const p1=engine.evaluate(s1,m);if(!safe(p1)||!p1.child)continue;
         for(const s2 of stallions){
           const p2=engine.evaluate(s2,p1.child);if(!safe(p2)||!p2.child)continue;
-          yield routeFrom([s1.name,s2.name],p2,'exact-two-generation');
+          yield routeFrom([s1.name,s2.name],p2,'exact-two-generation',[p1,p2]);
         }
       }
     }
@@ -194,7 +215,7 @@
         if(!base?.finalChild||base.sires?.length!==2)continue;
         for(const s3 of stallions){
           const p3=engine.evaluate(s3,base.finalChild);if(!safe(p3)||!p3.child)continue;
-          yield routeFrom([...base.sires,s3.name],p3,'conditional-three-generation-preview');
+          yield routeFrom([...base.sires,s3.name],p3,'conditional-three-generation-preview',[...(base.speedCrossPath||[]),p3]);
         }
       }
     }
@@ -218,6 +239,7 @@
           elaborate:x.pair.elaborate,
           danger:x.pair.danger,
           crosses:x.pair.danger?.rawCrosses||[],
+          speedCross:speedCrossSummary(x.pair),
           selection:i<r.stages.length-1?selectionCondition(goal,i+1):null
         }))
       };
