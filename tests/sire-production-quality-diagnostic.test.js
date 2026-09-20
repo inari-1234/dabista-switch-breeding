@@ -69,6 +69,21 @@ for(const mare of names){
     if(ss.record==='A'&&ss.stable==='C')recAC.push(r);
   }
   const a=all.finish(),ra=recA.finish(),rac=recAC.finish();
+  const productionTop=a.profiles.production?.[0]||null;
+  if(mare==='ミニミニデート'){
+    const speedTop=a.profiles.speedCross?.[0];
+    if(speedTop?.final?.sireStats?.record!=='B'||speedTop?.final?.sireStats?.stable!=='A')throw Error('MiniMini speed-cross baseline must remain B/A');
+    if(speedTop?.speedCrossPath?.[0]?.has)throw Error('MiniMini speed-cross baseline must have no first-stage SP cross');
+    if(productionTop?.final?.sireStats?.record!=='B'||productionTop?.final?.sireStats?.stable!=='C')throw Error('MiniMini production profile must prefer B/C within viable pedigree range');
+    if((productionTop?.final?.sp||0)<17||(productionTop?.final?.st||0)<5)throw Error('MiniMini production profile must retain BC-level SP/ST');
+  }
+  if(mare==='フィットレオタード'){
+    if(productionTop?.final?.sireStats?.record!=='A')throw Error('Fit production profile should find viable record-A closure');
+    if((productionTop?.final?.sp||0)<15||(productionTop?.final?.st||0)<5)throw Error('Fit production record-A route must keep SP15/ST5 floor');
+  }
+  if(mare==='スプリングスイーツ'){
+    if(productionTop?.final?.sireStats?.record!=='A')throw Error('Spring production profile should prefer record A inside viability floor');
+  }
   output.push({
     mare,
     mareStats:M.find(x=>x.name===mare),
@@ -77,6 +92,7 @@ for(const mare of names){
     finalCrossSireCombos:Object.fromEntries(Object.entries(combos).sort((a,b)=>b[1]-a[1])),
     bestSpeedCrossBySireGroup:Object.fromEntries([...groupFocus].map(k=>[k,brief(bestByGroup[k])]).filter(([,v])=>v)),
     currentTopSpeedCross:brief(a.profiles.speedCross?.[0]),
+    currentTopProduction:brief(a.profiles.production?.[0]),
     currentTopSpeedCrossSet:(a.profiles.speedCross||[]).map(brief),
     bestRecordASpeedCross:brief(ra.profiles.speedCross?.[0]),
     bestRecordAStableCSpeedCross:brief(rac.profiles.speedCross?.[0]),
