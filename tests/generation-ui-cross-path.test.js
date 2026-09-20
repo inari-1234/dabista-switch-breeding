@@ -30,10 +30,10 @@ const use=advisor.directUseLabels(fit,direct);
 assert.strictEqual(use.arc,'2代以上を比較','pre-diagnosis label must not claim a 2-generation recommendation');
 assert.ok(!use.arc.includes('推奨'),'only the generation advisor may publish a generation recommendation');
 
-function fakeRoute(materialStages){
+function fakeRoute(materialStages,sp=15,st=6){
   return{
     final:{
-      sp:15,st:6,pw:1,
+      sp,st,pw:1,
       speedCross:{has:false,count:0,effect:0,short:0,speed:0},
       theory:{interesting:false,magnificent:false,perfect:false},
       elaborate:false,
@@ -48,6 +48,15 @@ assert.ok(lowReasons.some(x=>x.includes('中間世代で速力/短距離クロ�
 const elite=advisor.mareAssessment('スプリングスイーツ');
 const eliteReasons=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',elite);
 assert.ok(!eliteReasons.some(x=>x.includes('中間世代で速力/短距離クロス')),'elite mare must not extend generations only for an intermediate SP cross');
+
+const lowSpDrop=advisor.materialUpgradeReasons(fakeRoute(0,15,6),fakeRoute(1,13,6),'arc',fit);
+assert.ok(!lowSpDrop.some(x=>x.includes('中間世代で速力/短距離クロス')),'intermediate SP cross must not justify generation extension after a 2-point SP drop');
+const lowStDrop=advisor.materialUpgradeReasons(fakeRoute(0,15,6),fakeRoute(1,15,4),'arc',fit);
+assert.ok(!lowStDrop.some(x=>x.includes('中間世代で速力/短距離クロス')),'intermediate SP cross must not justify generation extension after a 2-point ST drop');
+
+const unknownAssessment=advisor.mareAssessment('アマリン');
+const unknownUpgrade=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',unknownAssessment);
+assert.ok(!unknownUpgrade.some(x=>x.includes('中間世代で速力/短距離クロス')),'unknown mare must not be treated as SP-deficient when recommending a deeper generation');
 
 let materialRoute=null;
 for(const r of planner.iterateTwo('フィットレオタード')){
@@ -64,6 +73,16 @@ assert.ok(expanded.stages[0].speedCross?.has,'expanded route must expose stage S
 const advice=advisor.selectionAdvice('フィットレオタード','arc',expanded.stages[0],2);
 assert.ok(advice.body.includes('選抜機会'),'intermediate cross must be described as a selection opportunity');
 assert.ok(advice.body.includes('出生前の繁殖SPには加算しません')||advice.body.includes('実馬でSTを確認'),'must not invent intermediate broodmare ability');
+
+let unknownMaterialRoute=null;
+for(const r of planner.iterateTwo('アマリン')){
+  if(r.materialSpeedCross?.has){unknownMaterialRoute=r;break}
+}
+assert.ok(unknownMaterialRoute,'unknown mare should still be able to use an intermediate SP cross as bloodline design material');
+const unknownExpanded=planner.expandRoute('アマリン',unknownMaterialRoute,'arc');
+const unknownAdvice=advisor.selectionAdvice('アマリン','arc',unknownExpanded.stages[0],2);
+assert.ok(unknownAdvice.body.includes('能力は未判明'),'unknown mare guidance must preserve unknown status');
+assert.ok(!unknownAdvice.body.includes('SP不足'),'unknown mare guidance must not claim SP deficiency');
 
 function finishGeneration(mare){
   const c1=planner.createCollector({topN:3,poolN:24}),s1=advisor.emptySummary('exact-direct');
@@ -104,6 +123,13 @@ assert.ok(v27.includes("keys=['sp','speedCross','st','balance','theory']"),'3-ge
 assert.ok(v27.includes("setGeneration?.(rec.generation,'diagnosis')"),'diagnosis must synchronize the selected generation');
 assert.ok(v27.includes('母の補強方針'),'mare strategy wording must not be confused with the selected goal');
 assert.ok(v27.includes('正式な推奨世代'),'pre-diagnosis note must distinguish itself from the formal generation diagnosis');
+assert.ok(v26.includes("signalMareContext('search-empty','')"),'empty search must invalidate mare/generation context');
+assert.ok(v26.includes("setPlannerMare(sel.value,'search-auto')"),'search-driven mare replacement must reset generation state');
+assert.ok(v26.includes("setPlannerMare(n,'rebuild-sync')"),'rebuild starter sync must reset generation state');
+assert.ok(v26.includes("q.value=''"),'rebuild starter sync must clear a conflicting mare search filter');
+assert.ok(v27.includes("generationSection.insertAdjacentElement('beforebegin',gen)"),'formal generation diagnosis must appear before manual generation buttons');
+assert.ok(v27.includes('この繁殖牝馬の基礎評価'),'mare card must not use recommendation wording for a pre-diagnosis assessment');
+assert.ok(v27.includes('目的別の直仔・母評価（事前）'),'purpose cards must be explicitly marked as pre-diagnosis evaluation');
 
 console.log(JSON.stringify({
   passed:true,
