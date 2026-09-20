@@ -18,6 +18,15 @@ function clickTab(name){
  const b=$('.tab[data-tab="'+name+'"]');
  if(b)b.click();
 }
+function ensureInlineAdd(){
+ const toolbar=document.querySelector('#horses .toolbar');
+ if(!toolbar||document.querySelector('#addInlineBtn'))return;
+ const b=document.createElement('button');
+ b.type='button';b.id='addInlineBtn';b.className='primary ui-inline-add';b.textContent='＋ 馬を登録';
+ b.addEventListener('click',()=>document.querySelector('#addBtn')?.click());
+ const photo=document.querySelector('#photoBtn');
+ if(photo)toolbar.insertBefore(b,photo);else toolbar.appendChild(b);
+}
 function ensureHome(){
  const sec=$('#horses');
  if(!sec||$('#uiHomeIntro'))return;
@@ -65,6 +74,7 @@ function ensureHome(){
  });
 }
 ensureHome();
+ensureInlineAdd();
 
 
 window.addEventListener('load',()=>{
