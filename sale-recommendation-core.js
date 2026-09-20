@@ -191,6 +191,30 @@
       };
     }
 
+    function crossInsights(stage){
+      const danger=stage?.danger||{},nitro=stage?.nitro||{};
+      const effective=danger.effectiveCrosses||[],raw=danger.rawCrosses||[];
+      const norm=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();
+      const factors=new Map((nitro.factors||[]).map(x=>[norm(x.name),x]));
+      const items=effective.map(x=>{
+        const f=factors.get(norm(x.name))||null;
+        const dsp=val(f?.dsp),dst=val(f?.dst),dp=val(f?.dp);
+        const impact=Math.abs(dsp)+Math.abs(dst)+Math.abs(dp);
+        return{
+          name:x.name,sireGen:x.sireGen,mareGen:x.mareGen,
+          factor:f?{sp:dsp,st:dst,pw:dp}:null,
+          impact,
+          priority:impact>=3?'high':impact>=1?'medium':'standard'
+        };
+      }).sort((a,b)=>b.impact-a.impact||(a.sireGen+a.mareGen)-(b.sireGen+b.mareGen));
+      return{
+        rawCount:raw.length,
+        effectiveCount:effective.length,
+        suppressedCount:Math.max(0,raw.length-effective.length),
+        items
+      };
+    }
+
     function goalVector(route,goal){
       const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
       const long=val(ss.maxD)>=2400,recA=grade(ss.record)>=3,arcReady=sp>=14&&st>=6&&long&&recA;
@@ -354,7 +378,7 @@
 
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
-      mareAssessment,mareStrategy,selectionAdvice,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
+      mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
       directUseLabels,routeForGoal,routeFacts,recommendGeneration,portfolioFacts,portfolioUpgrade
     };
   }
