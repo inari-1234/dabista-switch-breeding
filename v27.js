@@ -99,7 +99,7 @@ function invalidateGeneration(message='条件を変更したため、世代診�
 }
 const yieldUi=()=>new Promise(r=>setTimeout(r,0));
 function previewBases(shortlists,maxEach=12){
- const out=[],seen=new Set(),keys=['sp','speedCross','st','balance','theory'];
+ const out=[],seen=new Set(),keys=['sp','speedCross','production','st','balance','theory'];
  for(let i=0;i<maxEach;i++)for(const k of keys){
   const r=shortlists?.[k]?.[i];if(!r)continue;
   const id=planner.routeKey(r);if(!seen.has(id)){seen.add(id);out.push(r)}
@@ -121,6 +121,8 @@ function bestFacts(result,goal){
 }
 function generationCard(n,g,goal,recommended){
  const b=bestFacts(g,goal),f=b.facts,s=g.summary,label=n===1?'直仔':n+'代';
+ const assessment=advisor.mareAssessment($('#saleMareSelect')?.value||'');
+ const pq=advisor.productionQuality?.(b.route,assessment);
  const method=n===3?'条件付きプレビュー':'全探索';
  return `<div class="generation-card ${recommended===n?'recommended':''}">
   <h5>${recommended===n?'★ ':''}${label} <small>${method}</small></h5>
@@ -129,6 +131,8 @@ function generationCard(n,g,goal,recommended){
   <div class="gmetric"><span>最大SP+ST</span><b>${s.maxSpSt}</b></div>
   <div class="gmetric"><span>SP15/ST5</span><b>${s.sp15st5}</b></div>
   <div class="gmetric"><span>SP17/ST5</span><b>${s.sp17st5}</b></div>
+  <div class="gmetric"><span>締め父</span><b>${esc(f.record||'?')}/${esc(f.stable||'?')}</b></div>
+  ${pq?`<div class="gmetric"><span>強馬生産条件</span><b>${esc(pq.label)}</b></div>`:''}
   ${n>1?`<div class="gmetric"><span>途中SPクロス</span><b>${f.materialSpeedCrossStages||0}世代</b></div>`:''}
   <small>安全ルート ${s.count.toLocaleString()}件 / 見事 ${s.magnificent} / 完璧 ${s.perfect} / 凝った ${s.elaborate}</small>
  </div>`
@@ -142,7 +146,7 @@ function recommendationDetail(name,goal,rec){
  const dSp=b.sp-a.sp,dSt=b.st-a.st,dSum=b.spst-a.spst;
  const signed=n=>n>0?'+'+n:String(n);
  const goalRule=goal==='arc'?'凱旋門では最終父の2400m対応・実績A・SP/STバランスを優先します。'
-  :goal==='bc'?'BCではSP上限を優先しつつ、STを極端に落とさないルートを選びます。'
+  :goal==='bc'?'BCではSP17/ST5を満たした後、最終父の実績と多世代時の安定特性を先に比較し、その範囲でSP/ST・SPクロスを見ます。'
   :goal==='rebuild'?'繁殖再建では一頭の最大値より、次代に残しやすいSP/STバランスを優先します。'
   :'自家製種牡馬では高能力繁殖牝馬群への血統汎用性を優先します。';
  const steps=expanded.stages.map(st=>{
@@ -199,7 +203,7 @@ async function runGenerationAdvisor(){
     ${recommendationDetail(name,goal,rec)}
     <ul class="generation-reasons">${rec.reasons.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>
     <button class="primary generation-action" type="button" id="applyRecommendedGeneration">${rec.generation===1?'直仔':rec.generation+'代'}で詳しく設計する</button>
-    <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、距離適性、配合理論、血統汎用性と、代重ねに必要な実馬選抜回数を比較した設計判断です。3代は2代目多軸候補からの条件付きプレビューで、全176³最適解とは表示しません。</div>
+    <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、SPクロス、最終父の実績・安定、距離適性、配合理論と、代重ねに必要な実馬選抜回数を分けて比較した設計判断です。3代は2代目6軸候補からの条件付きプレビューで、全176³最適解とは表示しません。</div>
    </div>`;
   $('#applyRecommendedGeneration').onclick=()=>{
     window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
