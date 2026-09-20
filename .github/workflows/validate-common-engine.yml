@@ -20,6 +20,7 @@ on:
       - 'tests/mare-aware-selection-guidance.test.js'
       - 'tests/route-explainability.test.js'
       - 'tests/transient-sale-mare-wiring.test.js'
+      - 'tests/sp-cross-aware-planner.test.js'
       - 'v20.js'
       - 'v21.js'
       - 'v25.js'
@@ -41,6 +42,7 @@ on:
       - 'data/sale-sire-coverage-validation.json'
       - 'data/sale-planner-design-validation.json'
       - 'data/mare-generation-advisor-validation.json'
+      - 'data/sp-cross-planner-validation.json'
       - '.github/workflows/validate-common-engine.yml'
   workflow_dispatch:
 
@@ -73,6 +75,7 @@ jobs:
           node --check tests/mare-aware-selection-guidance.test.js
           node --check tests/route-explainability.test.js
           node --check tests/transient-sale-mare-wiring.test.js
+          node --check tests/sp-cross-aware-planner.test.js
           node --check v20.js
           node --check v21.js
           node --check v25.js
@@ -83,6 +86,7 @@ jobs:
           python -m json.tool data/kotta-pairs.json >/dev/null
           python -m json.tool data/elaborate-direct-exceptions.json >/dev/null
           python -m json.tool data/mare-generation-advisor-validation.json >/dev/null
+          python -m json.tool data/sp-cross-planner-validation.json >/dev/null
           python - <<'PY'
           import json
           from pathlib import Path
@@ -95,9 +99,9 @@ jobs:
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
           direct=json.loads(Path('data/elaborate-direct-exceptions.json').read_text(encoding='utf-8'))
           pedigree=json.loads(Path('data/pedigree-master.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build']) == ('1.17.0','2026.09.20-38')
-          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-38';" in app
-          assert "BUILD=window.APP_BUILD||'2026.09.20-38'" in versioned['v26.js']
+          assert (v['version'],v['build']) == ('1.17.0','2026.09.20-39')
+          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-39';" in app
+          assert "BUILD=window.APP_BUILD||'2026.09.20-39'" in versioned['v26.js']
           assert direct['count'] == 33 and len(direct['pairs']) == 33
           assert pedigree['schemaVersion'] == 4
           assert pedigree['domesticStallionCount'] == 176
@@ -105,15 +109,15 @@ jobs:
           assert pedigree['broodmareCount'] == 331
           assert 'breeding-core.js?v=1.17.0' in idx
           assert 'breeding-engine.js?v=1.17.0' in idx
-          assert 'sale-planner-core.js?v=1.17.0' in idx
-          assert 'sale-recommendation-core.js?v=1.17.0-b37' in idx
-          assert 'v26.js?v=1.17.0-b38' in idx
-          assert 'v27.js?v=1.17.0-b37' in idx
+          assert 'sale-planner-core.js?v=1.17.0-b39' in idx
+          assert 'sale-recommendation-core.js?v=1.17.0-b39' in idx
+          assert 'v26.js?v=1.17.0-b39' in idx
+          assert 'v27.js?v=1.17.0-b39' in idx
           assert 'ui-refresh.css?v=2026.09.20-b37' in idx
           assert 'ui-refresh.js?v=2026.09.20-b37' in idx
           assert "json('data/pedigree-master.json')" in Path('breeding-engine.js').read_text(encoding='utf-8')
           assert 'allPedigreeStallions' in Path('breeding-engine.js').read_text(encoding='utf-8')
-          assert idx.index('breeding-core.js?v=1.17.0') < idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b37') < idx.index('v20.js?v=1.17.0-b38') < idx.index('v26.js?v=1.17.0-b38') < idx.index('v27.js?v=1.17.0-b37')
+          assert idx.index('breeding-core.js?v=1.17.0') < idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0-b39') < idx.index('sale-recommendation-core.js?v=1.17.0-b39') < idx.index('v20.js?v=1.17.0-b39') < idx.index('v26.js?v=1.17.0-b39') < idx.index('v27.js?v=1.17.0-b39')
           assert 'v23.js' not in idx
           assert 'buildSystemMap' not in v20 and 'deriveMare(' not in v20
           assert 'sevenCandidate' not in v21
@@ -131,6 +135,10 @@ jobs:
       - name: Transient sale mare wiring regression
         run: |
           node tests/transient-sale-mare-wiring.test.js
+
+      - name: SP cross-aware planner regression
+        run: |
+          node tests/sp-cross-aware-planner.test.js
 
       - name: Fetch current Switch oracle
         run: |
