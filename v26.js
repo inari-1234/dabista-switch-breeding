@@ -4,7 +4,7 @@ const V='1.17.0',BUILD='2026.09.20-36',db=window.db,$=s=>document.querySelector(
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
-let engine=null,planner=null,recommendationAdvisor=null,runSeq=0;
+let engine=null,planner=null,recommendationAdvisor=null,runSeq=0,routeContextSeq=0;const routeContexts=new Map();
 db.salePlanner=db.salePlanner||{mare:'エイスト',goal:'arc',generation:1};
 
 function save(){window.saveFarm?.()}
@@ -37,6 +37,26 @@ function style(){
  .sale-stage .metrics>span{background:#fff;border-radius:7px;padding:5px;text-align:center}
  .sale-chip{display:inline-block;border-radius:999px;padding:2px 6px;margin:2px 3px 2px 0;background:#e8eee9;font-size:9px}
  .sale-chip.good{background:#dcefe3;color:#1b5a35}.sale-chip.warn{background:#fff0c9;color:#6f5200}
+
+ .sale-chip.theory-perfect{background:#fff0c9;color:#725109;border:1px solid #e2bf63;font-weight:800}
+ .sale-chip.theory-migoto{background:#e8eff9;color:#365f8a;border:1px solid #c8d7ed;font-weight:800}
+ .sale-chip.theory-interesting{background:#e3f1ea;color:#1c694b;border:1px solid #c5dfd1;font-weight:800}
+ .sale-chip.theory-elaborate{background:#eee8f7;color:#664f91;border:1px solid #d7ccec;font-weight:800}
+ .sale-effect-block{margin-top:7px;padding:8px;border-radius:10px;background:#fff;border:1px solid #e1e8e4}
+ .sale-effect-title{font-size:9px;font-weight:800;color:#50665b;margin-right:5px}
+ .cross-list{display:grid;gap:5px;margin-top:6px}
+ .cross-item{padding:6px 7px;border-radius:8px;background:#f4f7f5;border:1px solid #e5ebe8}
+ .cross-item.high{background:#fff7df;border-color:#e7ca75}
+ .cross-item.medium{background:#edf6f1;border-color:#cfe2d8}
+ .cross-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
+ .cross-head b{font-size:10px}
+ .cross-priority{font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;background:#e9eeeb;color:#52655c}
+ .cross-item.high .cross-priority{background:#f4d98b;color:#725109}
+ .cross-factor{font-size:8px;color:#65766e;margin-top:3px}
+ .route-breed-link{width:100%;margin-top:8px}
+ .sale-route-bridge{border-color:#bcd8ca!important;background:linear-gradient(145deg,#fff,#f2f8f5)!important}
+ .route-bridge-path{font-weight:800;font-size:12px;line-height:1.55;margin:6px 0}
+ .route-bridge-stage{padding:8px;border-radius:9px;background:#fff;border:1px solid #e0e8e4;margin-top:6px;font-size:10px;line-height:1.5}
  .sale-select{margin-top:7px;padding:7px;border-left:3px solid #d6b566;background:#fff9e7;border-radius:0 7px 7px 0}
  .sale-portfolio{font-size:10px;line-height:1.55;background:#eef2f6;border-radius:8px;padding:7px;margin-top:7px}
  .sale-progress{font-size:11px;line-height:1.5;margin-top:8px}
@@ -137,7 +157,30 @@ async function scanIterator(iter,collector,seq,label){
  return n
 }
 function theoryChips(t,e){
- let x='';if(t?.perfect)x+='<span class="sale-chip good">完璧</span>';else{x+=t?.interesting?'<span class="sale-chip">面白</span>':'';x+=t?.magnificent?'<span class="sale-chip">見事</span>':''}if(e?.effective)x+='<span class="sale-chip good">凝った</span>';return x||'<span class="sale-chip">追加理論なし</span>'
+ let x='';
+ if(t?.perfect)x+='<span class="sale-chip theory-perfect">完璧＝面白＋見事</span>';
+ else{
+  if(t?.interesting)x+='<span class="sale-chip theory-interesting">面白</span>';
+  if(t?.magnificent)x+='<span class="sale-chip theory-migoto">見事</span>';
+ }
+ if(e?.effective)x+='<span class="sale-chip theory-elaborate">凝った</span>';
+ return x||'<span class="sale-chip">追加理論なし</span>'
+}
+const signed=n=>n>0?'+'+n:String(n||0);
+function crossHtml(st){
+ const insight=recommendationAdvisor?.crossInsights?.(st);
+ if(!insight)return '<div class="sale-effect-block"><span class="sale-effect-title">クロス</span><span class="muted">判定情報なし</span></div>';
+ if(!insight.rawCount)return '<div class="sale-effect-block"><span class="sale-effect-title">クロス</span><span class="muted">なし</span></div>';
+ let items='';
+ for(const x of insight.items){
+  const factor=x.factor?'祖先因子寄与 SP'+signed(x.factor.sp)+' / ST'+signed(x.factor.st)+' / PW'+signed(x.factor.pw):'祖先因子寄与なし';
+  const priority=x.priority==='high'?'注目':'有効';
+  items+='<div class="cross-item '+x.priority+'"><div class="cross-head"><b>'+esc(x.name)+' '+x.sireGen+'×'+x.mareGen+'</b><span class="cross-priority">'+priority+'</span></div><div class="cross-factor">'+factor+'</div></div>';
+ }
+ const note=insight.suppressedCount
+  ?'生クロス '+insight.rawCount+'件 / 祖先内包を除く有効クロス '+insight.effectiveCount+'件 / 除外 '+insight.suppressedCount+'件'
+  :'有効クロス '+insight.effectiveCount+'件。因子寄与はニトロ側の表示で、クロス効果そのものとは分けて扱います。';
+ return '<div class="sale-effect-block"><span class="sale-effect-title">有効クロス</span>'+(items?'<div class="cross-list">'+items+'</div>':'<span class="muted">有効クロスなし</span>')+'<div class="sale-method">'+note+'</div></div>';
 }
 function stageHtml(st,totalStages,goal){
  const advice=recommendationAdvisor?.selectionAdvice?.(db.salePlanner.mare,goal,st,totalStages)||null;
@@ -145,7 +188,7 @@ function stageHtml(st,totalStages,goal){
  const dist=ss.minD&&ss.maxD?`${ss.minD}–${ss.maxD}m`:'距離不明';
  const cross=crosses.length?crosses.slice(0,5).map(x=>`${esc(x.name)} ${x.sireGen}×${x.mareGen}`).join(' / ')+(crosses.length>5?' ほか':''):'なし';
  const ev=st.elaborate?.evidence?.length?st.elaborate.evidence.slice(0,2).map(x=>x.kind==='direct-exception'?'直接成立例外':`${esc(x.a)}×${esc(x.b)}`).join(' / '):'';
- return `<div class="sale-stage"><b>${st.generation}代目父：${esc(st.sire)}</b><div>${dist} / 実績${esc(ss.record||'-')}・底力${esc(ss.guts||'-')}・安定${esc(ss.stable||'-')}</div><div class="metrics"><span><b>${fmt(n.sp)}</b><br>SPニトロ</span><span><b>${fmt(n.st)}</b><br>STニトロ</span><span><b>${fmt(n.pw)}</b><br>PWニトロ</span></div><div>${theoryChips(st.theory,st.elaborate)} <span class="sale-chip good">危険判定：安全</span></div><div>クロス：${cross}</div>${ev?`<div>凝った根拠：${ev}</div>`:''}${advice&&st.generation<totalStages?`<div class="sale-select"><b>${esc(advice.phase)}｜${esc(advice.headline)}</b><br>${esc(advice.body)}<div class="sale-method" style="margin-top:4px">${esc(advice.routeNote)} / 起点母：${esc(advice.strategy.label)}</div></div>`:(st.selection?`<div class="sale-select"><b>次世代へ進む条件</b><br>${esc(st.selection)}</div>`:'')}</div>`
+ return `<div class="sale-stage"><b>${st.generation}代目父：${esc(st.sire)}</b><div>${dist} / 実績${esc(ss.record||'-')}・底力${esc(ss.guts||'-')}・安定${esc(ss.stable||'-')}</div><div class="metrics"><span><b>${fmt(n.sp)}</b><br>SPニトロ</span><span><b>${fmt(n.st)}</b><br>STニトロ</span><span><b>${fmt(n.pw)}</b><br>PWニトロ</span></div><div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>${theoryChips(st.theory,st.elaborate)}</div>${crossHtml(st)}<div><span class="sale-chip good">危険判定：安全</span></div>${ev?`<div>凝った根拠：${ev}</div>`:''}${advice&&st.generation<totalStages?`<div class="sale-select"><b>${esc(advice.phase)}｜${esc(advice.headline)}</b><br>${esc(advice.body)}<div class="sale-method" style="margin-top:4px">${esc(advice.routeNote)} / 起点母：${esc(advice.strategy.label)}</div></div>`:(st.selection?`<div class="sale-select"><b>次世代へ進む条件</b><br>${esc(st.selection)}</div>`:'')}</div>`
 }
 function portfolioHtml(r){
  const p=r.portfolio;if(!p)return'';
