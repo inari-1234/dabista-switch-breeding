@@ -1,5 +1,5 @@
 (()=>{
-const V='1.17.0',BUILD='2026.09.20-35';
+const V=window.APP_VERSION||'1.17.0',BUILD=window.APP_BUILD||'2026.09.20-38';
 const $=s=>document.querySelector(s),db=window.db,esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
@@ -11,6 +11,7 @@ const st=document.createElement('style');st.textContent=css;document.head.append
 let theory=null,theoryStatus={status:'loading',stallions:0,broodmares:0};
 const norm=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();
 const sortCodes=a=>[...(a||[])].sort().join('|');
+function breedHorseById(id){return window.getBreedHorseById?.(id)||db.horses.find(x=>x.id===id)||null}
 function mareTheory(h){
   if(!h||!theory)return null;
   const name=h.masterRef?.type==='default-broodmare'?h.masterRef.name:h.name;
@@ -41,7 +42,7 @@ function installTheoryControls(){
 }
 function updateTheoryStatus(){
   const el=$('#theoryStatus'),filter=$('#theoryFilter');if(!el)return;
-  const h=db.horses.find(x=>x.id===$('#breedMare')?.value),m=mareTheory(h);
+  const h=breedHorseById($('#breedMare')?.value),m=mareTheory(h);
   if(theoryStatus.status==='loading'){if(filter)filter.disabled=true;el.textContent='配合理論マスタを読み込み中…';return}
   if(theoryStatus.status!=='ok'){if(filter)filter.disabled=true;el.textContent='配合理論マスタの読み込みに失敗しました。更新確認を試してください。';return}
   if(!h){if(filter){filter.disabled=true;filter.value='all'}el.innerHTML=`デフォルト種牡馬 ${theoryStatus.stallions}頭・繁殖牝馬 ${theoryStatus.broodmares}頭の面白／見事系統を内蔵。繁殖牝馬を選ぶと成立判定します。`;return}
@@ -58,7 +59,7 @@ function decorateBreedCards(){
   if(decorating)return;decorating=true;
   try{
     updateTheoryStatus();
-    const h=db.horses.find(x=>x.id===$('#breedMare')?.value),m=mareTheory(h),filter=$('#theoryFilter')?.value||'all';
+    const h=breedHorseById($('#breedMare')?.value),m=mareTheory(h),filter=$('#theoryFilter')?.value||'all';
     document.querySelectorAll('#breedCandidates>.card').forEach(card=>{
       card.querySelectorAll('.theory-chips,.pair-theory-note').forEach(x=>x.remove());
       card.classList.remove('theory-hidden');
