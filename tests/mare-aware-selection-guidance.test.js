@@ -89,6 +89,22 @@ assert.strictEqual(u1.phase,'能力確認を兼ねた素材づくり');
 assert.ok(u1.body.includes('特定距離の印を最初から必須にしません'));
 
 const generic='高SP・高STの牝馬だけを選抜し、2000～2400mの印・距離対応を実馬で確認して次世代へ進む。';
+let allMaresChecked=0,unknownChecked=0;
+for(const mare of mareData.broodmares){
+  const first=planner.iterateDirect(mare.name).next();
+  assert.strictEqual(first.done,false,mare.name+' direct route exists');
+  const expanded=planner.expandRoute(mare.name,first.value,'arc');
+  const adv=advisor.selectionAdvice(mare.name,'arc',expanded.stages[0],3);
+  assert.ok(adv&&adv.body,mare.name+' stage advice exists');
+  assert.notStrictEqual(adv.body,generic,mare.name+' must not use old generic selection text');
+  allMaresChecked++;
+  if(advisor.mareStrategy(mare.name).id==='unknown'){
+    unknownChecked++;
+    assert.strictEqual(adv.headline,'まず母系の実力を把握する',mare.name+' unknown mare guidance');
+  }
+}
+assert.strictEqual(allMaresChecked,331);
+assert.strictEqual(unknownChecked,33);
 for(const name of Object.keys(cases)){
   const r=firstThree(name);
   for(const st of r.stages.slice(0,-1)){
@@ -100,5 +116,7 @@ for(const name of Object.keys(cases)){
 console.log(JSON.stringify({
   passed:true,
   spring:{spstRank:spring.ranks.spst.rank,stage1:a1.headline,stage2:a2.headline,final:a3.headline},
-  strategies:cases
+  strategies:cases,
+  allMaresChecked,
+  unknownChecked
 },null,2));
