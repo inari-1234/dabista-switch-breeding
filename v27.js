@@ -83,7 +83,7 @@ function renderMareAdvice(){
     <div><b>繁殖再建</b><span>${esc(use.rebuild)}</span></div>
     <div><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
    </div>
-   <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / SP17・ST5以上 ${direct.sp17st5}件 / 2400m対応父 ${direct.long2400}件 / 最大SPニトロ ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
+   <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP系クロスあり ${direct.speedCrossRoutes}件 / SP17・ST5＋SP系クロス ${direct.sp17st5SpeedCross}件 / SP系クロスあり最大SP ${direct.maxSpWithSpeedCross} / 最大SPニトロ ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
    <div class="advisor-note">${esc(a.note)} 「おすすめ」は母能力と直仔の血統到達性を分けて判定しています。</div>`;
 }
 function invalidateGeneration(message='条件を変更したため、世代診断を更新してください。'){
@@ -125,7 +125,7 @@ function generationCard(n,g,goal,recommended){
   <div class="gmetric"><span>最大SP+ST</span><b>${s.maxSpSt}</b></div>
   <div class="gmetric"><span>SP15/ST5</span><b>${s.sp15st5}</b></div>
   <div class="gmetric"><span>SP17/ST5</span><b>${s.sp17st5}</b></div>
-  <small>安全ルート ${s.count.toLocaleString()}件 / 見事 ${s.magnificent} / 完璧 ${s.perfect} / 凝った ${s.elaborate}</small>
+  <small>安全ルート ${s.count.toLocaleString()}件 / SP系クロス ${s.speedCrossRoutes}件 / SP17/ST5＋SP系クロス ${s.sp17st5SpeedCross}件 / 見事 ${s.magnificent} / 完璧 ${s.perfect} / 凝った ${s.elaborate}</small>
  </div>`
 }
 function recommendationDetail(name,goal,rec){
@@ -137,16 +137,16 @@ function recommendationDetail(name,goal,rec){
  const dSp=b.sp-a.sp,dSt=b.st-a.st,dSum=b.spst-a.spst;
  const signed=n=>n>0?'+'+n:String(n);
  const goalRule=goal==='arc'?'凱旋門では最終父の2400m対応・実績A・SP/STバランスを優先します。'
-  :goal==='bc'?'BCではSP上限を優先しつつ、STを極端に落とさないルートを選びます。'
+  :goal==='bc'?'BCではSP上限に加えて、速力/短距離の有効クロス有無も比較します。STを極端に落とさないルートを優先します。'
   :goal==='rebuild'?'繁殖再建では一頭の最大値より、次代に残しやすいSP/STバランスを優先します。'
   :'自家製種牡馬では高能力繁殖牝馬群への血統汎用性を優先します。';
+ const label=rec.generation===1?'直仔':rec.generation+'代';
  const speedNote='SP系クロス：直仔代表 '+(a.speedCrossHas?'あり（+'+a.speedCrossEffect+'）':'なし')+' → '+label+'代表 '+(b.speedCrossHas?'あり（+'+b.speedCrossEffect+'）':'なし')+'。';
  const steps=expanded.stages.map(st=>{
    const adv=advisor.selectionAdvice(name,goal,st,expanded.stages.length);
    if(!adv)return'';
    return '<div class="generation-step"><b>'+st.generation+'代目｜'+esc(adv.phase)+'</b><span>'+esc(adv.headline)+'。'+esc(adv.body)+'</span></div>';
  }).join('');
- const label=rec.generation===1?'直仔':rec.generation+'代';
  const transition=rec.generation===3?rec.transitions?.to3:rec.generation===2?rec.transitions?.to2:null;
  const decisionReasons=transition?.reasons||[];
  const fromLabel=transition?.from===2?'2代':'直仔';
