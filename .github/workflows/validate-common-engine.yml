@@ -13,7 +13,10 @@ on:
       - 'breeding-core.js'
       - 'breeding-engine.js'
       - 'sale-planner-core.js'
+      - 'sale-recommendation-core.js'
       - 'v26.js'
+      - 'v27.js'
+      - 'tests/mare-aware-selection-guidance.test.js'
       - 'v20.js'
       - 'v21.js'
       - 'v25.js'
@@ -32,6 +35,7 @@ on:
       - 'data/all-sire-pedigree-validation.json'
       - 'data/sale-sire-coverage-validation.json'
       - 'data/sale-planner-design-validation.json'
+      - 'data/mare-generation-advisor-validation.json'
       - '.github/workflows/validate-common-engine.yml'
   workflow_dispatch:
 
@@ -56,7 +60,10 @@ jobs:
           node --check breeding-core.js
           node --check breeding-engine.js
           node --check sale-planner-core.js
+          node --check sale-recommendation-core.js
           node --check v26.js
+          node --check v27.js
+          node --check tests/mare-aware-selection-guidance.test.js
           node --check v20.js
           node --check v21.js
           node --check v25.js
@@ -66,6 +73,7 @@ jobs:
           python -m json.tool data/nitro-effects.json >/dev/null
           python -m json.tool data/kotta-pairs.json >/dev/null
           python -m json.tool data/elaborate-direct-exceptions.json >/dev/null
+          python -m json.tool data/mare-generation-advisor-validation.json >/dev/null
           python - <<'PY'
           import json
           from pathlib import Path
@@ -78,10 +86,9 @@ jobs:
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
           direct=json.loads(Path('data/elaborate-direct-exceptions.json').read_text(encoding='utf-8'))
           pedigree=json.loads(Path('data/pedigree-master.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build']) == ('1.17.0','2026.09.20-35')
-          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-35';" in app
-          for p,s in versioned.items():
-              assert "const V='1.17.0',BUILD='2026.09.20-35'" in s, f'version skew: {p}'
+          assert (v['version'],v['build']) == ('1.17.0','2026.09.20-36')
+          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-36';" in app
+          assert "const V='1.17.0',BUILD='2026.09.20-36'" in versioned['v26.js']
           assert direct['count'] == 33 and len(direct['pairs']) == 33
           assert pedigree['schemaVersion'] == 4
           assert pedigree['domesticStallionCount'] == 176
@@ -90,10 +97,12 @@ jobs:
           assert 'breeding-core.js?v=1.17.0' in idx
           assert 'breeding-engine.js?v=1.17.0' in idx
           assert 'sale-planner-core.js?v=1.17.0' in idx
-          assert 'v26.js?v=1.17.0' in idx
+          assert 'sale-recommendation-core.js?v=1.17.0-b36' in idx
+          assert 'v26.js?v=1.17.0-b36' in idx
+          assert 'v27.js?v=1.17.0-b36' in idx
           assert "json('data/pedigree-master.json')" in Path('breeding-engine.js').read_text(encoding='utf-8')
           assert 'allPedigreeStallions' in Path('breeding-engine.js').read_text(encoding='utf-8')
-          assert idx.index('breeding-core.js?v=1.17.0') < idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('v20.js?v=1.17.0') < idx.index('v26.js?v=1.17.0')
+          assert idx.index('breeding-core.js?v=1.17.0') < idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b36') < idx.index('v20.js?v=1.17.0') < idx.index('v26.js?v=1.17.0-b36') < idx.index('v27.js?v=1.17.0-b36')
           assert 'v23.js' not in idx
           assert 'buildSystemMap' not in v20 and 'deriveMare(' not in v20
           assert 'sevenCandidate' not in v21
@@ -233,3 +242,7 @@ jobs:
           n=engine.calcNitro(H('ステイゴールド').ancestor,m2.ancestor);if(JSON.stringify([n.sp,n.st,n.pw])!==JSON.stringify([13,5,0]))throw Error('route m2');
           console.log('PASS nitro baselines and multi-generation inheritance');
           NODE
+
+      - name: Mare-aware selection regression
+        run: |
+          node tests/mare-aware-selection-guidance.test.js
