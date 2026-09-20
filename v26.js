@@ -230,11 +230,17 @@ function renderRouteBreedBridge(ctx,syncedHorse){
 }
 function cleanupLegacySaleSync(){
  const races=db.races||[];
+ const keySafe=x=>engine?.core?.key?.(x)||String(x||'').normalize('NFKC').trim().toLowerCase();
  const before=db.horses.length;
  db.horses=db.horses.filter(h=>!(
    h?.salePlannerSync===true&&
    h.generation==='セリ牝馬（配合確認用）'&&
    h.note==='セリ牝馬設計から配合確認用に同期'&&
+   h.masterRef?.type==='default-broodmare'&&
+   keySafe(h.name)===keySafe(h.masterRef.name)&&
+   (h.role===undefined||h.role==='broodmare')&&
+   (h.record||'-')==='-'&&(h.guts||'-')==='-'&&(h.stable||'-')==='-'&&
+   !String(h.starts||'').trim()&&!String(h.g1||'').trim()&&
    !races.some(r=>r.horseId===h.id)
  ));
  if(db.horses.length!==before){save();window.renderHorses?.();window.renderBreed?.()}
