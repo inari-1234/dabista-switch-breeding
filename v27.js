@@ -15,7 +15,8 @@ function style(){
  .mare-ranks{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}
  .mare-rank{background:#f2f6f3;border-radius:8px;padding:7px 4px;text-align:center}
  .mare-rank b{display:block;font-size:13px}.mare-rank small{display:block;font-size:8px;color:#66736c;line-height:1.35}
- .mare-use{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px}
+ .mare-use-title{margin-top:8px;font-size:9px;font-weight:800;color:#405048}
+ .mare-use{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:5px}
  .mare-use>div{border:1px solid #e1e8e4;border-radius:8px;padding:7px;background:#fff}
  .mare-use>div.selected{border-color:#77ad91;background:#eef7f2;box-shadow:0 0 0 1px #77ad91 inset}
  .mare-use b{display:block;font-size:9px;color:#405048}.mare-use span{display:block;margin-top:2px;font-size:10px;font-weight:700}
@@ -73,18 +74,19 @@ function renderMareAdvice(){
    '<div class="advisor-note"><b>繁殖能力：未判明</b><br>能力既知298頭の順位には含めません。0を低能力として扱いません。</div>';
  box.innerHTML=`
    <div class="mare-advice-head">
-    <div><h4>この繁殖牝馬のおすすめ具合</h4><small>${esc(a.archetype)} / 能力既知 ${advisor.knownAbilityCount}頭で比較</small></div>
+    <div><h4>この繁殖牝馬の基礎評価</h4><small>${esc(a.archetype)} / 能力既知 ${advisor.knownAbilityCount}頭で比較</small></div>
     <span class="mare-tier${tierClass}">${esc(a.tier)}</span>
    </div>
    ${rankHtml}
    ${strategy?`<div class="advisor-note"><b>母の補強方針：${esc(strategy.label)}</b><br>${esc(strategy.priority)}<br><span style="display:block;margin-top:3px">維持したい能力：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / 補強したい能力：${strategy.improve.length?esc(strategy.improve.join('・')):'—'}</span></div>`:''}
+   <div class="mare-use-title">目的別の直仔・母評価（事前）</div>
    <div class="mare-use">
     <div class="${goal==='arc'?'selected':''}"><b>凱旋門賞</b><span>${esc(use.arc)}</span></div>
     <div class="${goal==='bc'?'selected':''}"><b>BC長期</b><span>${esc(use.bc)}</span></div>
     <div class="${goal==='rebuild'?'selected':''}"><b>繁殖再建</b><span>${esc(use.rebuild)}</span></div>
     <div class="${goal==='stallion'?'selected':''}"><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
    </div>
-   <div class="advisor-note">ここは直仔の到達性と母能力から見た事前メモです。正式な推奨世代は下の「おすすめ配合世代を診断」で決定します。</div>
+   <div class="advisor-note">ここは直仔の到達性と母能力から見た事前メモです。正式な推奨世代は「おすすめ配合世代を診断」で決定します。</div>
    <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / SP17・ST5以上 ${direct.sp17st5}件 / 2400m対応父 ${direct.long2400}件 / 最大SPニトロ ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
    <div class="advisor-note">${esc(a.note)} 「おすすめ」は母能力と直仔の血統到達性を分けて判定しています。</div>`;
 }
@@ -216,12 +218,12 @@ function inject(){
  const mareBox=document.createElement('div');mareBox.id='saleMareRecommendation';mareBox.className='mare-advice';
  const goalSection=$('#saleGoalSection');
  if(goalSection)goalSection.insertAdjacentElement('afterend',mareBox);else summary?.insertAdjacentElement('afterend',mareBox);
- const notice=$('#salePlannerNotice');
+ const notice=$('#salePlannerNotice'),generationSection=$('#saleGenerationSection');
  const gen=document.createElement('div');gen.id='saleGenerationAdvisor';gen.className='generation-advisor';
  gen.innerHTML=`<h4>おすすめ配合世代を診断</h4><p>直仔・2代・3代を横断して、「どこで締めるのが妥当か」を比較します。深い世代を自動的に高評価にはしません。</p><button type="button" class="secondary" id="runGenerationAdvisor">直仔・2代・3代を比較</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
- notice?.insertAdjacentElement('afterend',gen);
+ if(generationSection)generationSection.insertAdjacentElement('beforebegin',gen);else notice?.insertAdjacentElement('beforebegin',gen);
  const run=$('#runSalePlanner');if(run)run.textContent='選択した世代を詳しく設計';
- $('#saleMareSelect')?.addEventListener('change',()=>{setTimeout(renderMareAdvice,0);invalidateGeneration()});
+ window.addEventListener('dabista:sale-mare-context',()=>{setTimeout(renderMareAdvice,0);invalidateGeneration('繁殖牝馬を変更したため、世代診断を更新してください。')});
  $('#saleGoalButtons')?.addEventListener('click',e=>{if(e.target.closest('[data-sale-goal]'))setTimeout(()=>{renderMareAdvice();invalidateGeneration('目的を変更したため、世代診断を更新してください。')},0)});
  $('#saleGenButtons')?.addEventListener('click',e=>{if(!e.target.closest('[data-sale-gen]'))return;setTimeout(()=>{if($('#generationAdvisorResult')?.innerHTML)$('#generationAdvisorProgress').textContent='手動で別世代を選択中です。診断結果は比較基準として残しています。'},0)});
  $('#runGenerationAdvisor').onclick=runGenerationAdvisor;
