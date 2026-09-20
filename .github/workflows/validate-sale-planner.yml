@@ -4,7 +4,11 @@ on:
   push:
     paths:
       - 'sale-planner-core.js'
+      - 'sale-recommendation-core.js'
       - 'v26.js'
+      - 'v27.js'
+      - 'tests/mare-aware-selection-guidance.test.js'
+      - 'data/mare-generation-advisor-validation.json'
       - 'index.html'
       - 'version.json'
       - 'breeding-core.js'
@@ -32,11 +36,15 @@ jobs:
         run: |
           node --check breeding-core.js
           node --check sale-planner-core.js
+          node --check sale-recommendation-core.js
           node --check v26.js
+          node --check v27.js
+          node --check tests/mare-aware-selection-guidance.test.js
           python -m json.tool data/theory-master.json >/dev/null
           python -m json.tool data/stallions.json >/dev/null
           python -m json.tool data/default-broodmares.json >/dev/null
           python -m json.tool version.json >/dev/null
+          python -m json.tool data/mare-generation-advisor-validation.json >/dev/null
           python - <<'PY'
           import json
           from pathlib import Path
@@ -44,11 +52,14 @@ jobs:
           app=Path('app.js').read_text(encoding='utf-8')
           v26=Path('v26.js').read_text(encoding='utf-8')
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build'])==('1.17.0','2026.09.20-35')
-          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-35';" in app
-          assert "const V='1.17.0',BUILD='2026.09.20-35'" in v26
-          assert 'sale-planner-core.js?v=1.17.0' in idx and 'v26.js?v=1.17.0' in idx
-          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('v26.js?v=1.17.0')
+          assert (v['version'],v['build'])==('1.17.0','2026.09.20-36')
+          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-36';" in app
+          assert "const V='1.17.0',BUILD='2026.09.20-36'" in v26
+          assert 'sale-planner-core.js?v=1.17.0' in idx
+          assert 'sale-recommendation-core.js?v=1.17.0-b36' in idx
+          assert 'v26.js?v=1.17.0-b36' in idx
+          assert 'v27.js?v=1.17.0-b36' in idx
+          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b36') < idx.index('v26.js?v=1.17.0-b36') < idx.index('v27.js?v=1.17.0-b36')
           assert 'v23.js' not in idx
           assert '繁殖能力：未判明' in v26
           assert '<summary><b>血統15祖先</b></summary>' in v26
@@ -131,3 +142,7 @@ jobs:
             runtimeMs:Date.now()-started
           }));
           NODE
+
+      - name: Mare-aware selection regression
+        run: |
+          node tests/mare-aware-selection-guidance.test.js
