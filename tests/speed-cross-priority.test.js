@@ -24,7 +24,7 @@ assert.ok(planner.goalOrder('arc').includes('speedCross'));
 assert.strictEqual(planner.goalOrder('bc')[0],'speedCross');
 
 let coverage=0,invalid=0,pureSpNoCross=0,lossSum=0,lossN=0,within2=0;
-const topByMare={};
+const topByMare={},missingDirect=[];
 for(const mare of T.broodmares){
   const col=planner.createCollector({topN:3,poolN:24});
   for(const r of planner.iterateDirect(mare.name))col.push(r);
@@ -43,7 +43,7 @@ for(const mare of T.broodmares){
       lossSum+=loss;lossN++;
       if(loss<=2)within2++;
     }
-  }
+  }else missingDirect.push(mare.name);
   if(['スプリングスイーツ','エイスト','ミゼラブルウェイ','ミニミニデート','ラブアタック'].includes(mare.name)){
     topByMare[mare.name]={sp,sx};
   }
@@ -53,6 +53,22 @@ assert.strictEqual(invalid,0,'SP-cross profile must never contain a no-cross rou
 assert.strictEqual(pureSpNoCross,292,'pure SP profile diagnostic baseline');
 assert.strictEqual(within2,256,'SP-cross route should stay within NSP 2 for validated majority');
 assert.ok(lossSum/lossN<1.3,'average NSP tradeoff should stay small');
+
+assert.deepStrictEqual(missingDirect,[
+  'セルン','ピアニー','ベルリンブルー','ロズウェルリポート',
+  'ワイルドストロベリー','ジョアニナ','ツインコーラス','シリアルホールド'
+],'direct SP-cross exceptions must stay explicit');
+const recoveredTwo={};
+for(const name of missingDirect){
+  let found=null,checked=0;
+  for(const r of planner.iterateTwo(name)){
+    checked++;
+    if(r.final.speedCross?.has){found=r;break}
+  }
+  assert.ok(found,name+' must be able to form an SP cross by generation 2');
+  assert.strictEqual(found.method,'exact-two-generation',name+' generation-2 method');
+  recoveredTwo[name]={checked,sires:found.sires,sp:found.final.sp,st:found.final.st,cross:found.final.speedCross};
+}
 
 function top(name,type){return topByMare[name][type]}
 assert.strictEqual(top('スプリングスイーツ','sx').sires[0],'グランプリボス');
@@ -93,6 +109,8 @@ console.log(JSON.stringify({
   pureSpNoCross,
   avgSpLoss:+(lossSum/lossN).toFixed(2),
   within2,
+  missingDirect,
+  recoveredTwo,
   examples:{
     spring:{sire:top('スプリングスイーツ','sx').sires[0],sp:top('スプリングスイーツ','sx').final.sp,st:top('スプリングスイーツ','sx').final.st,cross:top('スプリングスイーツ','sx').final.speedCross},
     eist:{sire:top('エイスト','sx').sires[0],sp:top('エイスト','sx').final.sp,st:top('エイスト','sx').final.st,cross:top('エイスト','sx').final.speedCross},
