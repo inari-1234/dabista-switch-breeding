@@ -128,7 +128,9 @@
         if(theory.interesting)theoryNames.push('面白');
       }
       if(elaborate)theoryNames.push('凝った');
-      const routeNote=`血統側：SP${sp}/ST${st}/PW${pw}ニトロ${theoryNames.length?'・'+theoryNames.join('＋'):''}`;
+      let routeNote=`血統側：SP${sp}/ST${st}/PW${pw}ニトロ${theoryNames.length?'・'+theoryNames.join('＋'):''}`;
+      const sx=stage.speedCross||{},materialStage=remaining>0&&!!sx.has;
+      const needsSpSupport=strategy.id==='rebuild'||strategy.id==='st-sp-repair'||strategy.id==='unknown'||strategy.improve.includes('SP');
 
       let phase='素材づくり',headline='',body='';
       if(strategy.id==='unknown'){
@@ -210,6 +212,16 @@
         body='最終世代ではじめて目的距離・最終ニトロ・配合理論・父の実績/底力/安定を厳しく評価します。';
       }
 
+      if(materialStage){
+        routeNote+=`・SP系クロス ${val(sx.count)}祖先`;
+        if(needsSpSupport){
+          body+=(val(sx.short)>0
+            ?' この段階の短距離クロスはSP改善を狙う選抜機会になりますが、ST低下側の作用もあるため、実馬でSTを確認して残します。'
+            :' この段階の速力クロスはSP不足を補う中間牝馬の選抜機会として利用します。ただし出生前の繁殖SPには加算しません。');
+        }else{
+          body+=' この段階のSP系クロスは補助材料として使い、母系の強みやSTを崩さない実馬を優先して残します。';
+        }
+      }
       return{
         strategy,phase,headline,body,routeNote,
         preserve:[...strategy.preserve],improve:[...strategy.improve],
@@ -257,11 +269,11 @@
 
     function goalVector(route,goal){
       const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
-      const long=val(ss.maxD)>=2400,recA=grade(ss.record)>=3,arcReady=sp>=14&&st>=6&&long&&recA,hasSpeed=bool(x.has),crossCount=val(x.count);
-      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,hasSpeed,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
-      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,hasSpeed,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
-      if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
-      return[sp,sp+st,st,hasSpeed,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
+      const long=val(ss.maxD)>=2400,recA=grade(ss.record)>=3,arcReady=sp>=14&&st>=6&&long&&recA,hasSpeed=bool(x.has),crossCount=val(x.count),materialStages=val(route?.materialSpeedCross?.stages);
+      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
+      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
+      if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
+      return[sp,sp+st,st,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
     }
     function betterGoalRoute(a,b,goal){
       if(!a)return b;if(!b)return a;
@@ -318,10 +330,11 @@
       return result.profiles?.speedCross?.[0]||result.profiles?.sp?.[0]||result.profiles?.balance?.[0]||null;
     }
     function routeFacts(route){
-      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{};
+      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},mx=route?.materialSpeedCross||{};
       return{
         sp:val(f.sp),st:val(f.st),pw:val(f.pw),spst:val(f.sp)+val(f.st),
         speedCross:bool(x.has),speedCrossCount:val(x.count),speedCrossEffect:val(x.effect),shortCross:val(x.short),speedOnlyCross:val(x.speed),
+        materialSpeedCross:bool(mx.has),materialSpeedCrossStages:val(mx.stages),materialSpeedCrossCount:val(mx.count),
         long2400:val(ss.maxD)>=2400,recordA:grade(ss.record)>=3,gutsA:grade(ss.guts)>=3,
         interesting:bool(t.interesting),magnificent:bool(t.magnificent),perfect:bool(t.perfect),elaborate:bool(f.elaborate)
       };
@@ -329,11 +342,19 @@
     function materialUpgradeReasons(prev,next,goal,assessment){
       if(!prev||!next)return next?['比較対象となる次世代候補が成立']: [];
       const a=routeFacts(prev),b=routeFacts(next),reasons=[];
+      const spNeedsSupport=!!assessment?.abilityKnown&&(assessment?.ranks?.sp?.topPercent>45||assessment?.ranks?.spst?.topPercent>60);
+      const materialCrossGain=b.materialSpeedCrossStages>a.materialSpeedCrossStages;
+      const addMaterialSupport=()=>{
+        if(spNeedsSupport&&materialCrossGain&&b.sp>=a.sp-1&&b.st>=a.st-1){
+          reasons.push('SP不足側の母に対し、中間世代で速力/短距離クロスを使える工程が増え、最終SP/STも大きく落とさない');
+        }
+      };
       if(goal==='bc'){
         if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SPニトロもほぼ維持');
         if(a.sp<17&&b.sp>=17&&b.st>=5)reasons.push('SP17/ST5ラインへ新たに到達');
         if(b.sp>=a.sp+2&&b.st>=Math.max(3,a.st-1))reasons.push(`SPを${a.sp}→${b.sp}へ伸ばし、ST低下を抑制`);
         if(!a.perfect&&b.perfect&&b.sp>=a.sp-1)reasons.push('完璧配合を新たに成立させつつSPを維持');
+        addMaterialSupport();
         return reasons;
       }
       if(goal==='arc'){
@@ -348,6 +369,7 @@
           reasons.push(`SP+STを${a.spst}→${b.spst}へ改善し、ST低下を抑制`);
         }
         if(!a.perfect&&b.perfect&&b.spst>=a.spst-1)reasons.push('完璧配合が新たに成立し、SP+STもほぼ維持');
+        addMaterialSupport();
         return reasons;
       }
       if(goal==='rebuild'){
@@ -356,12 +378,14 @@
         if(!ta&&tb)reasons.push('再建目安のSP15/ST5ラインへ新たに到達');
         if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
         if((!a.magnificent&&!a.perfect)&&(b.magnificent||b.perfect)&&b.spst>=a.spst-1)reasons.push(b.perfect?'完璧配合を新たに成立':'見事配合を新たに成立');
+        addMaterialSupport();
         return reasons;
       }
       if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('速力/短距離クロスを新たに成立');
       if(b.sp>=a.sp+2)reasons.push(`SPを${a.sp}→${b.sp}へ上積み`);
       if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
       if(!a.perfect&&b.perfect)reasons.push('完璧配合を新たに成立');
+      addMaterialSupport();
       return reasons;
     }
     function materialUpgrade(prev,next,goal,assessment){
@@ -398,7 +422,7 @@
       };
       const p=assessment.ranks,high=p.spst.topPercent<=25,mid=p.spst.topPercent<=50,spHigh=p.sp.topPercent<=25;
       return{
-        arc:summary.arcReady>0?(high?'直仔から有力':'配合次第で直仔候補'):(mid?'2代比較推奨':'代重ね・厳選前提'),
+        arc:summary.arcReady>0?(high?'直仔から有力':'配合次第で直仔候補'):(mid?'2代以上を比較':'代重ね・厳選前提'),
         bc:summary.sp17st5>0?(spHigh?'直仔から有力':'配合次第'):'2代以上を比較',
         rebuild:high?'母能力を守る側':mid?'再建の起点候補':'再建素材・厳選前提',
         stallion:'世代診断で血統汎用性を比較'
@@ -440,7 +464,7 @@
       if(assessment&&!assessment.abilityKnown)reasons.push('起点牝馬の繁殖能力が未判明なので、母能力を含む総合判断は保留です。');
       return{
         generation:recommended,
-        label:recommended===1?'直仔推奨':recommended===2?'2代推奨':'3代推奨候補',
+        label:recommended===1?'直仔推奨':recommended===2?'2代推奨':'3代候補（条件付き）',
         conditional,
         reasons,
         transitions,
