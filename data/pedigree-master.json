@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "updatedAt": "2026-09-19T16:24:09Z",
+  "updatedAt": "2026-09-20T21:32:09Z",
   "note": "血統解析用マスタ。国内176頭は種付け候補、外国38頭は血統解析専用として保持。繁殖牝馬331頭と既存補完データも併存。自家製馬は牧場DBを優先。",
   "domesticStallionCount": 176,
   "pedigreeStallionCount": 214,
