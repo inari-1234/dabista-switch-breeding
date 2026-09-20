@@ -51,7 +51,7 @@ function renderMareAdvice(){
  if(!box||!name||!advisor)return;
  const a=advisor.mareAssessment(name);
  if(!a){box.innerHTML='<div class="muted">牝馬評価を取得できませんでした。</div>';return}
- const direct=directSnapshot(name),use=advisor.directUseLabels(a,direct);
+ const direct=directSnapshot(name),use=advisor.directUseLabels(a,direct),strategy=advisor.mareStrategy(name);
  const tierClass=a.abilityKnown?'':' unknown';
  const rankHtml=a.abilityKnown?
    `<div class="mare-ranks">
@@ -67,6 +67,7 @@ function renderMareAdvice(){
     <span class="mare-tier${tierClass}">${esc(a.tier)}</span>
    </div>
    ${rankHtml}
+   ${strategy?`<div class="advisor-note"><b>配合方針：${esc(strategy.label)}</b><br>${esc(strategy.priority)}<br><span style="display:block;margin-top:3px">維持したい能力：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / 補強したい能力：${strategy.improve.length?esc(strategy.improve.join('・')):'—'}</span></div>`:''}
    <div class="mare-use">
     <div><b>凱旋門賞</b><span>${esc(use.arc)}</span></div>
     <div><b>BC長期</b><span>${esc(use.bc)}</span></div>
