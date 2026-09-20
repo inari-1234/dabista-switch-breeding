@@ -21,6 +21,7 @@ on:
       - 'tests/mare-aware-selection-guidance.test.js'
       - 'tests/route-explainability.test.js'
       - 'tests/transient-sale-mare-wiring.test.js'
+      - 'tests/speed-cross-priority.test.js'
       - 'data/mare-generation-advisor-validation.json'
       - 'index.html'
       - 'ui-refresh.css'
@@ -69,6 +70,7 @@ jobs:
           node --check tests/mare-aware-selection-guidance.test.js
           node --check tests/route-explainability.test.js
           node --check tests/transient-sale-mare-wiring.test.js
+          node --check tests/speed-cross-priority.test.js
           python -m json.tool data/theory-master.json >/dev/null
           python -m json.tool data/stallions.json >/dev/null
           python -m json.tool data/default-broodmares.json >/dev/null
@@ -81,21 +83,25 @@ jobs:
           app=Path('app.js').read_text(encoding='utf-8')
           v26=Path('v26.js').read_text(encoding='utf-8')
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build'])==('1.17.0','2026.09.20-38')
-          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-38';" in app
+          assert (v['version'],v['build'])==('1.17.0','2026.09.20-39')
+          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-39';" in app
           assert "BUILD=window.APP_BUILD||'2026.09.20-38'" in v26
-          assert 'sale-planner-core.js?v=1.17.0' in idx
-          assert 'sale-recommendation-core.js?v=1.17.0-b37' in idx
-          assert 'v26.js?v=1.17.0-b38' in idx
+          assert 'sale-planner-core.js?v=1.17.0-b39' in idx
+          assert 'sale-recommendation-core.js?v=1.17.0-b39' in idx
+          assert 'v26.js?v=1.17.0-b39' in idx
           assert 'v27.js?v=1.17.0-b37' in idx
           assert 'ui-refresh.css?v=2026.09.20-b37' in idx
           assert 'ui-refresh.js?v=2026.09.20-b37' in idx
-          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b37') < idx.index('v26.js?v=1.17.0-b38') < idx.index('v27.js?v=1.17.0-b37')
+          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0-b39') < idx.index('sale-recommendation-core.js?v=1.17.0-b39') < idx.index('v26.js?v=1.17.0-b39') < idx.index('v27.js?v=1.17.0-b37')
           assert 'v23.js' not in idx
           assert '繁殖能力：未判明' in v26
           assert '<summary><b>血統15祖先</b></summary>' in v26
           assert '全176³の最適解とは表示しません' in v26
           assert 'SP+ST≥120 / ≥130' in v26
+          sale_core=Path('sale-planner-core.js').read_text(encoding='utf-8')
+          assert 'SPクロス補強型' in sale_core
+          assert 'speedCross' in sale_core
+          assert '5軸は合算' in v26
           ui_js=Path('ui-refresh.js').read_text(encoding='utf-8')
           ui_css=Path('ui-refresh.css').read_text(encoding='utf-8')
           assert 'addInlineBtn' in ui_js, 'inline mobile add action missing'
@@ -108,6 +114,10 @@ jobs:
       - name: Transient sale mare wiring regression
         run: |
           node tests/transient-sale-mare-wiring.test.js
+
+      - name: SP-cross priority regression
+        run: |
+          node tests/speed-cross-priority.test.js
 
       - name: Planner regression
         run: |
