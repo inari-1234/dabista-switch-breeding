@@ -258,10 +258,10 @@
     function goalVector(route,goal){
       const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
       const long=val(ss.maxD)>=2400,recA=grade(ss.record)>=3,arcReady=sp>=14&&st>=6&&long&&recA,hasSpeed=bool(x.has),crossCount=val(x.count);
-      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),hasSpeed,sp+st,st,sp,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
-      if(goal==='bc')return[bool(sp>=17&&st>=5),hasSpeed,sp,st,crossCount,pw,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
-      if(goal==='rebuild')return[bool(sp>=15&&st>=5),hasSpeed,sp+st,st,sp,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
-      return[hasSpeed,sp,sp+st,st,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
+      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,hasSpeed,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
+      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,hasSpeed,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
+      if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
+      return[sp,sp+st,st,hasSpeed,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
     }
     function betterGoalRoute(a,b,goal){
       if(!a)return b;if(!b)return a;
