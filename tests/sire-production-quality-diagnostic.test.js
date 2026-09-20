@@ -17,7 +17,7 @@ const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmar
 const sireByName=new Map(S.map(x=>[x.name,x]));
 const known=M.filter(x=>+x.sp||+x.st||+x.pw).sort((a,b)=>(b.sp+b.st)-(a.sp+a.st));
 const bottom=[...known].sort((a,b)=>(a.sp+a.st)-(b.sp+b.st)).slice(0,3).map(x=>x.name);
-const names=[...new Set(['スプリングスイーツ','フィットレオタード','エイスト','ミゼラブルウェイ','ミニミニデート','ラブアタック',...bottom])];
+const names=[...new Set(['スプリングスイーツ','フィットレオタード','エイスト',bottom[0]])];
 
 function brief(route){
   if(!route)return null;
@@ -36,9 +36,9 @@ function brief(route){
 
 const output=[];
 for(const mare of names){
-  const all=planner.createCollector({topN:10,poolN:40});
-  const recA=planner.createCollector({topN:10,poolN:40});
-  const recAC=planner.createCollector({topN:10,poolN:40});
+  const all=planner.createCollector({topN:5,poolN:24});
+  const recA=planner.createCollector({topN:5,poolN:24});
+  const recAC=planner.createCollector({topN:5,poolN:24});
   let total=0,noFirstThenFinal=0,noFirstThenFinalBA=0,finalCrossRecA=0,finalCrossRecB=0;
   const combos={};
   for(const r of planner.iterateTwo(mare)){
@@ -64,7 +64,7 @@ for(const mare of names){
     finalCrossRecA,finalCrossRecB,noFirstThenFinal,noFirstThenFinalBA,
     finalCrossSireCombos:Object.fromEntries(Object.entries(combos).sort((a,b)=>b[1]-a[1])),
     currentTopSpeedCross:brief(a.profiles.speedCross?.[0]),
-    currentTop10SpeedCross:(a.profiles.speedCross||[]).map(brief),
+    currentTopSpeedCrossSet:(a.profiles.speedCross||[]).map(brief),
     bestRecordASpeedCross:brief(ra.profiles.speedCross?.[0]),
     bestRecordAStableCSpeedCross:brief(rac.profiles.speedCross?.[0]),
     currentBalance:brief(a.profiles.balance?.[0]),
