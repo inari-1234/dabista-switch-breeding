@@ -23,6 +23,7 @@ on:
       - 'v25.js'
       - 'index.html'
       - 'ui-refresh.css'
+      - 'ui-refresh.js'
       - 'version.json'
       - 'data/theory-master.json'
       - 'data/stallions.json'
@@ -65,6 +66,7 @@ jobs:
           node --check sale-recommendation-core.js
           node --check v26.js
           node --check v27.js
+          node --check ui-refresh.js
           node --check tests/mare-aware-selection-guidance.test.js
           node --check tests/route-explainability.test.js
           node --check v20.js
@@ -103,7 +105,8 @@ jobs:
           assert 'sale-recommendation-core.js?v=1.17.0-b37' in idx
           assert 'v26.js?v=1.17.0-b37' in idx
           assert 'v27.js?v=1.17.0-b37' in idx
-          assert 'ui-refresh.css?v=2026.09.20-2' in idx
+          assert 'ui-refresh.css?v=2026.09.20-b37' in idx
+          assert 'ui-refresh.js?v=2026.09.20-b37' in idx
           assert "json('data/pedigree-master.json')" in Path('breeding-engine.js').read_text(encoding='utf-8')
           assert 'allPedigreeStallions' in Path('breeding-engine.js').read_text(encoding='utf-8')
           assert idx.index('breeding-core.js?v=1.17.0') < idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b37') < idx.index('v20.js?v=1.17.0') < idx.index('v26.js?v=1.17.0-b37') < idx.index('v27.js?v=1.17.0-b37')
@@ -112,6 +115,11 @@ jobs:
           assert 'sevenCandidate' not in v21
           assert "source:'common-breeding-engine'" in v25
           assert idx.count('<section') == idx.count('</section>')
+          ui_js=Path('ui-refresh.js').read_text(encoding='utf-8')
+          ui_css=Path('ui-refresh.css').read_text(encoding='utf-8')
+          assert 'addInlineBtn' in ui_js, 'inline mobile add action missing'
+          assert 'body.ui-refresh .fab{display:none!important}' in ui_css, 'mobile FAB must be hidden'
+          assert '#horses>.toolbar{display:grid' in ui_css, 'mobile horse toolbar layout missing'
           assert idx.count('<dialog') == idx.count('</dialog>')
           print('PASS static release wiring')
           PY
