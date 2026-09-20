@@ -8,8 +8,10 @@ on:
       - 'v26.js'
       - 'v27.js'
       - 'tests/mare-aware-selection-guidance.test.js'
+      - 'tests/route-explainability.test.js'
       - 'data/mare-generation-advisor-validation.json'
       - 'index.html'
+      - 'ui-refresh.css'
       - 'version.json'
       - 'breeding-core.js'
       - 'breeding-engine.js'
@@ -40,6 +42,7 @@ jobs:
           node --check v26.js
           node --check v27.js
           node --check tests/mare-aware-selection-guidance.test.js
+          node --check tests/route-explainability.test.js
           python -m json.tool data/theory-master.json >/dev/null
           python -m json.tool data/stallions.json >/dev/null
           python -m json.tool data/default-broodmares.json >/dev/null
@@ -52,13 +55,14 @@ jobs:
           app=Path('app.js').read_text(encoding='utf-8')
           v26=Path('v26.js').read_text(encoding='utf-8')
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build'])==('1.17.0','2026.09.20-36')
+          assert (v['version'],v['build'])==('1.17.0','2026.09.20-37')
           assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-36';" in app
           assert "const V='1.17.0',BUILD='2026.09.20-36'" in v26
           assert 'sale-planner-core.js?v=1.17.0' in idx
-          assert 'sale-recommendation-core.js?v=1.17.0-b36' in idx
-          assert 'v26.js?v=1.17.0-b36' in idx
-          assert 'v27.js?v=1.17.0-b36' in idx
+          assert 'sale-recommendation-core.js?v=1.17.0-b37' in idx
+          assert 'v26.js?v=1.17.0-b37' in idx
+          assert 'v27.js?v=1.17.0-b37' in idx
+          assert 'ui-refresh.css?v=2026.09.20-2' in idx
           assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b36') < idx.index('v26.js?v=1.17.0-b36') < idx.index('v27.js?v=1.17.0-b36')
           assert 'v23.js' not in idx
           assert '繁殖能力：未判明' in v26
@@ -146,3 +150,7 @@ jobs:
       - name: Mare-aware selection regression
         run: |
           node tests/mare-aware-selection-guidance.test.js
+
+      - name: Route explainability regression
+        run: |
+          node tests/route-explainability.test.js
