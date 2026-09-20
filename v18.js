@@ -112,7 +112,7 @@ async function forceUpdate(){try{if('serviceWorker'in navigator){for(const r of 
 function installSupport(){
   if($('#refreshBtn'))$('#refreshBtn').onclick=()=>checkUpdate(true);if($('#applyUpdate'))$('#applyUpdate').onclick=forceUpdate;
   if($('#diagBtn'))$('#diagBtn').onclick=()=>downloadJSON({diagnostic:true,generatedAt:new Date().toISOString(),app:{version:V,build:BUILD,url:location.href,standalone:matchMedia('(display-mode: standalone)').matches||navigator.standalone===true},remoteVersion:remote,masters:window.DABISTA_MASTER_STATUS||null,theory:theoryStatus,device:{userAgent:navigator.userAgent,language:navigator.language,online:navigator.onLine},storage:{horseCount:db.horses.length,broodmareCount:db.horses.filter(h=>h.role==='broodmare').length,defaultMareImportedCount:db.horses.filter(h=>h.masterRef?.type==='default-broodmare').length,raceCount:db.races?.length||0,bytes:new Blob([JSON.stringify(db)]).size},errors:window.APP_ERRORS||[],data:db},`dabista-diagnostic-v${V}.json`);
-  setTimeout(()=>checkUpdate(false),800);setTimeout(()=>checkUpdate(false),1800);
+  ;
 }
 
 installTheoryControls();installPedigreeGuidance();installSupport();loadTheory();
