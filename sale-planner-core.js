@@ -8,6 +8,7 @@
   const PROFILE_LABELS={
     sp:'SP上限型',
     speedCross:'SPクロス補強型',
+    production:'強馬生産型',
     st:'ST・2400m型',
     balance:'バランス型',
     sire:'自家製種牡馬・血統価値型'
@@ -19,14 +20,15 @@
     bc:'BC長期狙い'
   };
   const GOAL_ORDER={
-    arc:['balance','speedCross','st','sp','sire'],
+    arc:['production','balance','speedCross','st','sp','sire'],
     stallion:['sire','speedCross','sp','balance','st'],
     rebuild:['balance','speedCross','st','sp','sire'],
-    bc:['speedCross','sp','balance','sire','st']
+    bc:['production','speedCross','sp','balance','sire','st']
   };
   const PROFILE_CRITERIA={
     sp:'最終配合のSPニトロ → ST → PW → 完璧/見事/面白/凝った → 最終父の実績',
     speedCross:'最終配合に速力/短距離の有効クロスを最低1本確保 → SPニトロ → ST → 完璧/見事 → SP系クロス祖先数 → PW/その他配合理論',
+    production:'SP15/ST5最低線 → 最終父の実績 → SP17/ST5 → 多世代では安定C/B/Aを上振れ幅の違いとして比較 → SP → ST → SP系クロス → 底力/配合理論',
     st:'最終父の2400m対応 → STニトロ → SP → 実績/底力 → 配合理論',
     balance:'SP15/ST5同時達成 → SP+ST → ST → SP → 2400m対応 → 実績',
     sire:'高能力繁殖牝馬群への安全配合数・SP15/ST5・SP17/ST5・面白/見事/完璧/凝った・最大ニトロを合算せず並列比較'
@@ -49,6 +51,20 @@
       const x=f.speedCross||{};
       return[bool(x.has),val(f.sp),val(f.st),bool(t.perfect),bool(t.magnificent),val(route.materialSpeedCross?.stages),val(x.count),val(x.effect),val(f.pw),bool(f.elaborate),grade(s.record)];
     }
+    if(profile==='production'){
+      const x=f.speedCross||{},multi=(route.sires||[]).length>1;
+      const stableUpside=multi?(s.stable==='C'?3:s.stable==='B'?2:s.stable==='A'?1:0):0;
+      return[
+        bool(val(f.sp)>=15&&val(f.st)>=5),
+        grade(s.record),
+        bool(val(f.sp)>=17&&val(f.st)>=5),
+        stableUpside,
+        val(f.sp),val(f.st),
+        bool(x.has),val(x.count),
+        grade(s.guts),val(f.pw),
+        bool(t.perfect),bool(t.magnificent),bool(f.elaborate)
+      ];
+    }
     if(profile==='st')return[bool(val(s.maxD)>=2400),val(f.st),val(f.sp),grade(s.record),grade(s.guts),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate)];
     if(profile==='balance')return[bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.st),val(f.sp),bool(val(s.maxD)>=2400),grade(s.record),grade(s.guts)];
     if(profile==='theory')return[bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate),val(f.sp)+val(f.st),val(f.sp),val(f.st)];
@@ -66,7 +82,7 @@
   }
 
   function createCollector({topN=5,poolN=24}={}){
-    const lists={sp:[],speedCross:[],st:[],balance:[],theory:[]};
+    const lists={sp:[],speedCross:[],production:[],st:[],balance:[],theory:[]};
     let count=0;
     return{
       push(route){
@@ -88,11 +104,12 @@
           profiles:{
             sp:lists.sp.slice(0,topN),
             speedCross:lists.speedCross.slice(0,topN),
+            production:lists.production.slice(0,topN),
             st:lists.st.slice(0,topN),
             balance:lists.balance.slice(0,topN)
           },
           shortlists:{
-            sp:[...lists.sp],speedCross:[...lists.speedCross],st:[...lists.st],balance:[...lists.balance],theory:[...lists.theory]
+            sp:[...lists.sp],speedCross:[...lists.speedCross],production:[...lists.production],st:[...lists.st],balance:[...lists.balance],theory:[...lists.theory]
           },
           pool:this.pool()
         };
