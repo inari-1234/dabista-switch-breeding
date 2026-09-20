@@ -12,7 +12,9 @@
     "mareRanking": "SP/ST/PW/SP+STを能力既知298頭内で別軸順位化。単一総合点に合算しない。",
     "arcDirectFit": "高能力母を考慮し、SP14/ST6以上・最終父2400m対応・実績Aを直仔の凱旋門有力条件として別軸で確認。",
     "generation": "直仔を基準に、2代・3代で意味のある上積みがある場合だけ深い世代を推奨。中間牝馬能力は仮定しない。",
-    "generation3": "2代目多軸候補からの条件付きプレビュー。全176^3最適解とは扱わない。"
+    "generation3": "2代目多軸候補からの条件付きプレビュー。全176^3最適解とは扱わない。",
+    "mareStrategy": "起点牝馬を超高能力維持・高能力バランス・SP先行/ST補強・ST先行/SP補強・バランス改善・能力再建・能力未判明に分類し、世代選抜条件を変える。",
+    "stageSelection": "素材づくり→締め前の方向付け→締め、の段階で要求水準を上げる。序盤から2400m印を必須にしない。"
   },
   "samples": [
     {
@@ -103,5 +105,58 @@
       "passed": true
     }
   },
-  "passed": true
+  "passed": true,
+  "strategyDistribution": {
+    "elite-preserve": 18,
+    "high-balanced": 33,
+    "sp-st-repair": 14,
+    "st-sp-repair": 21,
+    "balanced-build": 93,
+    "rebuild": 119,
+    "unknown": 33
+  },
+  "mareAwareSamples": [
+    {
+      "mare": "スプリングスイーツ",
+      "stats": {
+        "sp": 68,
+        "st": 76,
+        "pw": 67,
+        "spst": 144
+      },
+      "ranks": {
+        "sp": "18/298",
+        "st": "1/298",
+        "pw": "3/298",
+        "spst": "2/298"
+      },
+      "strategy": "超高能力維持型",
+      "stage1": "母の高能力を崩さないことを最優先",
+      "stage2": "能力維持に加えて、締めで2400mへ伸ばせる血統を残す",
+      "final": "2400m対応・SP/ST・父能力をここで完成"
+    },
+    {
+      "mare": "ミゼラブルウェイ",
+      "strategy": "高能力バランス型"
+    },
+    {
+      "mare": "ミニミニデート",
+      "strategy": "SP先行・ST補強型",
+      "stage1": "SPを残しながらST改善の兆候を拾う",
+      "stage2": "締め前にST不足を解消する"
+    },
+    {
+      "mare": "アルムナイ",
+      "strategy": "ST先行・SP補強型"
+    },
+    {
+      "mare": "アオイツキアカリ",
+      "strategy": "能力再建型"
+    },
+    {
+      "mare": "アマリン",
+      "strategy": "能力未判明型",
+      "stage1": "まず母系の実力を把握する"
+    }
+  ]
 }
