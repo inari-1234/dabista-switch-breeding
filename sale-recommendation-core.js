@@ -256,12 +256,12 @@
     }
 
     function goalVector(route,goal){
-      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
-      const long=val(ss.maxD)>=2400,recA=grade(ss.record)>=3,arcReady=sp>=14&&st>=6&&long&&recA;
-      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
-      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
-      if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
-      return[sp,sp+st,st,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
+      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
+      const long=val(ss.maxD)>=2400,recA=grade(ss.record)>=3,arcReady=sp>=14&&st>=6&&long&&recA,hasSpeed=bool(x.has),crossCount=val(x.count);
+      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),hasSpeed,sp+st,st,sp,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
+      if(goal==='bc')return[bool(sp>=17&&st>=5),hasSpeed,sp,st,crossCount,pw,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
+      if(goal==='rebuild')return[bool(sp>=15&&st>=5),hasSpeed,sp+st,st,sp,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
+      return[hasSpeed,sp,sp+st,st,crossCount,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
     }
     function betterGoalRoute(a,b,goal){
       if(!a)return b;if(!b)return a;
@@ -274,13 +274,18 @@
         method,count:0,sp15st5:0,sp17st5:0,sp18st5:0,
         interesting:0,magnificent:0,perfect:0,elaborate:0,
         maxSp:0,maxSt:0,maxPw:0,maxSpSt:0,
+        speedCross:0,shortCross:0,speedOnlyCross:0,maxSpeedCrossEffect:0,
         long2400:0,recordA:0,balanceLongA:0,arcReady:0,bestRoute:null,bestGoal:''
       };
     }
     function addRoute(summary,route,goal){
       const f=route?.final||{},t=f.theory||{},ss=f.sireStats||{};
       summary.count++;
-      const sp=val(f.sp),st=val(f.st),pw=val(f.pw);
+      const sp=val(f.sp),st=val(f.st),pw=val(f.pw),x=f.speedCross||{};
+      if(x.has)summary.speedCross++;
+      if(val(x.short)>0)summary.shortCross++;
+      if(val(x.speed)>0)summary.speedOnlyCross++;
+      summary.maxSpeedCrossEffect=Math.max(summary.maxSpeedCrossEffect,val(x.effect));
       if(sp>=15&&st>=5)summary.sp15st5++;
       if(sp>=17&&st>=5)summary.sp17st5++;
       if(sp>=18&&st>=5)summary.sp18st5++;
@@ -307,15 +312,16 @@
 
     function routeForGoal(result,goal){
       if(!result)return null;
-      if(goal==='bc')return result.profiles?.sp?.[0]||result.profiles?.balance?.[0]||null;
-      if(goal==='arc')return result.profiles?.balance?.[0]||result.profiles?.st?.[0]||result.profiles?.sp?.[0]||null;
-      if(goal==='rebuild')return result.profiles?.balance?.[0]||result.profiles?.st?.[0]||null;
-      return result.profiles?.sp?.[0]||result.profiles?.balance?.[0]||null;
+      if(goal==='bc')return result.profiles?.speedCross?.[0]||result.profiles?.sp?.[0]||result.profiles?.balance?.[0]||null;
+      if(goal==='arc')return result.profiles?.balance?.[0]||result.profiles?.speedCross?.[0]||result.profiles?.st?.[0]||result.profiles?.sp?.[0]||null;
+      if(goal==='rebuild')return result.profiles?.balance?.[0]||result.profiles?.speedCross?.[0]||result.profiles?.st?.[0]||null;
+      return result.profiles?.speedCross?.[0]||result.profiles?.sp?.[0]||result.profiles?.balance?.[0]||null;
     }
     function routeFacts(route){
-      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{};
+      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{};
       return{
         sp:val(f.sp),st:val(f.st),pw:val(f.pw),spst:val(f.sp)+val(f.st),
+        speedCross:bool(x.has),speedCrossCount:val(x.count),speedCrossEffect:val(x.effect),shortCross:val(x.short),speedOnlyCross:val(x.speed),
         long2400:val(ss.maxD)>=2400,recordA:grade(ss.record)>=3,gutsA:grade(ss.guts)>=3,
         interesting:bool(t.interesting),magnificent:bool(t.magnificent),perfect:bool(t.perfect),elaborate:bool(f.elaborate)
       };
@@ -324,6 +330,7 @@
       if(!prev||!next)return next?['比較対象となる次世代候補が成立']: [];
       const a=routeFacts(prev),b=routeFacts(next),reasons=[];
       if(goal==='bc'){
+        if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SPニトロもほぼ維持');
         if(a.sp<17&&b.sp>=17&&b.st>=5)reasons.push('SP17/ST5ラインへ新たに到達');
         if(b.sp>=a.sp+2&&b.st>=Math.max(3,a.st-1))reasons.push(`SPを${a.sp}→${b.sp}へ伸ばし、ST低下を抑制`);
         if(!a.perfect&&b.perfect&&b.sp>=a.sp-1)reasons.push('完璧配合を新たに成立させつつSPを維持');
@@ -331,6 +338,7 @@
       }
       if(goal==='arc'){
         const ta=a.sp>=14&&a.st>=6&&a.long2400&&a.recordA, tb=b.sp>=14&&b.st>=6&&b.long2400&&b.recordA;
+        if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-2&&b.st>=a.st-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SP/STを大きく落とさない');
         if(!ta&&tb)reasons.push('凱旋門向け基準（SP14/ST6・2400m対応父・実績A）へ新たに到達');
         const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
         if(ta&&highMother){
@@ -344,11 +352,13 @@
       }
       if(goal==='rebuild'){
         const ta=a.sp>=15&&a.st>=5, tb=b.sp>=15&&b.st>=5;
+        if(!a.speedCross&&b.speedCross&&b.spst>=a.spst-2)reasons.push('速力/短距離クロスを新たに成立させ、母系のSP補強手段を確保');
         if(!ta&&tb)reasons.push('再建目安のSP15/ST5ラインへ新たに到達');
         if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
         if((!a.magnificent&&!a.perfect)&&(b.magnificent||b.perfect)&&b.spst>=a.spst-1)reasons.push(b.perfect?'完璧配合を新たに成立':'見事配合を新たに成立');
         return reasons;
       }
+      if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('速力/短距離クロスを新たに成立');
       if(b.sp>=a.sp+2)reasons.push(`SPを${a.sp}→${b.sp}へ上積み`);
       if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
       if(!a.perfect&&b.perfect)reasons.push('完璧配合を新たに成立');
