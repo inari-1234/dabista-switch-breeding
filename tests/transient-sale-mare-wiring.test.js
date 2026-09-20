@@ -15,12 +15,12 @@ const idx=read('index.html');
 const version=JSON.parse(read('version.json'));
 
 assert.strictEqual(version.version,'1.17.0');
-assert.strictEqual(version.build,'2026.09.20-38');
-assert.ok(app.includes("const APP_BUILD='2026.09.20-38';"));
+assert.strictEqual(version.build,'2026.09.20-39');
+assert.ok(app.includes("const APP_BUILD='2026.09.20-39';"));
 assert.ok(app.includes('window.DABISTA_TRANSIENT_BREED_MARE=null'));
 assert.ok(app.includes('window.getBreedHorseById=id=>'));
 assert.strictEqual((app.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,1,'automatic update check must be centralized in app.js');
-for(const p of ['v15.js','v16.js','v18.js']){
+for(const p of ['v15.js','v16.js','v18.js','v26.js']){
   const legacy=read(p);
   assert.strictEqual((legacy.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,0,p+' must not auto-check updates');
 }
@@ -55,9 +55,13 @@ for(const [p,c] of [['v15.js',v15],['v18.js',v18],['v19.js',v19],['v20.js',v20],
 assert.ok(v15.includes('15祖先内蔵'));
 assert.ok(v15.includes('馬DB・バックアップJSONには保存されません'));
 
-for(const p of ['app.js','breed-helper.js','v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js']){
+for(const p of ['breed-helper.js','v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js']){
   assert.ok(idx.includes(p+'?v=1.17.0-b38'),p+' cache key');
 }
+assert.ok(idx.includes('app.js?v=1.17.0-b39'),'app cache key');
+assert.ok(idx.includes('sale-planner-core.js?v=1.17.0-b39'),'sale planner core cache key');
+assert.ok(idx.includes('sale-recommendation-core.js?v=1.17.0-b39'),'sale recommendation core cache key');
+assert.ok(idx.includes('v26.js?v=1.17.0-b39'),'v26 cache key');
 
 console.log(JSON.stringify({
   passed:true,
