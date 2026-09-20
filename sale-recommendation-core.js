@@ -222,15 +222,29 @@
       const effective=danger.effectiveCrosses||[],raw=danger.rawCrosses||[];
       const norm=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();
       const factors=new Map((nitro.factors||[]).map(x=>[norm(x.name),x]));
+      const effectLabels=f=>{
+        if(!f)return[];
+        const out=[];
+        if(val(f.short))out.push({key:'short',label:'短距離',detail:'SP+2 / ST-1',tradeoff:true});
+        if(val(f.speed))out.push({key:'speed',label:'速力',detail:'SP+1',tradeoff:false});
+        if(val(f.power))out.push({key:'power',label:'パワー',detail:'PW+1',tradeoff:false});
+        if(val(f.guts))out.push({key:'guts',label:'底力',detail:'ST+1',tradeoff:false});
+        if(val(f.long))out.push({key:'long',label:'長距離',detail:'ST+1',tradeoff:false});
+        return out;
+      };
       const items=effective.map(x=>{
         const f=factors.get(norm(x.name))||null;
         const dsp=val(f?.dsp),dst=val(f?.dst),dp=val(f?.dp);
         const impact=Math.abs(dsp)+Math.abs(dst)+Math.abs(dp);
+        const effects=effectLabels(f);
         return{
           name:x.name,sireGen:x.sireGen,mareGen:x.mareGen,
           factor:f?{sp:dsp,st:dst,pw:dp}:null,
+          effects,
           impact,
-          priority:impact>=3?'high':impact>=1?'medium':'standard'
+          hasTradeoff:effects.some(e=>e.tradeoff)||dsp<0||dst<0||dp<0,
+          priority:impact>=3?'high':impact>=1?'medium':'standard',
+          priorityLabel:impact>=3?'因子影響 大':impact>=1?'因子影響 あり':'クロス成立'
         };
       }).sort((a,b)=>b.impact-a.impact||(a.sireGen+a.mareGen)-(b.sireGen+b.mareGen));
       return{
@@ -306,34 +320,42 @@
         interesting:bool(t.interesting),magnificent:bool(t.magnificent),perfect:bool(t.perfect),elaborate:bool(f.elaborate)
       };
     }
-    function materialUpgrade(prev,next,goal,assessment){
-      if(!prev||!next)return!!next;
-      const a=routeFacts(prev),b=routeFacts(next);
+    function materialUpgradeReasons(prev,next,goal,assessment){
+      if(!prev||!next)return next?['比較対象となる次世代候補が成立']: [];
+      const a=routeFacts(prev),b=routeFacts(next),reasons=[];
       if(goal==='bc'){
-        if(a.sp<17&&b.sp>=17&&b.st>=5)return true;
-        if(b.sp>=a.sp+2&&b.st>=Math.max(3,a.st-1))return true;
-        if(!a.perfect&&b.perfect&&b.sp>=a.sp-1)return true;
-        return false;
+        if(a.sp<17&&b.sp>=17&&b.st>=5)reasons.push('SP17/ST5ラインへ新たに到達');
+        if(b.sp>=a.sp+2&&b.st>=Math.max(3,a.st-1))reasons.push(`SPを${a.sp}→${b.sp}へ伸ばし、ST低下を抑制`);
+        if(!a.perfect&&b.perfect&&b.sp>=a.sp-1)reasons.push('完璧配合を新たに成立させつつSPを維持');
+        return reasons;
       }
       if(goal==='arc'){
         const ta=a.sp>=14&&a.st>=6&&a.long2400&&a.recordA, tb=b.sp>=14&&b.st>=6&&b.long2400&&b.recordA;
-        if(!ta&&tb)return true;
+        if(!ta&&tb)reasons.push('凱旋門向け基準（SP14/ST6・2400m対応父・実績A）へ新たに到達');
         const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
         if(ta&&highMother){
-          if(b.sp>=a.sp+2&&b.st>=a.st&&tb)return true;
-          if(b.spst>=a.spst+4&&b.st>=a.st-1&&tb)return true;
-        }else if(b.spst>=a.spst+3&&b.st>=a.st-1)return true;
-        if(!a.perfect&&b.perfect&&b.spst>=a.spst-1)return true;
-        return false;
+          if(b.sp>=a.sp+2&&b.st>=a.st&&tb)reasons.push(`高能力母を維持したままSPを${a.sp}→${b.sp}へ上積み`);
+          if(b.spst>=a.spst+4&&b.st>=a.st-1&&tb)reasons.push(`SP+STを${a.spst}→${b.spst}へ大きく上積み`);
+        }else if(b.spst>=a.spst+3&&b.st>=a.st-1){
+          reasons.push(`SP+STを${a.spst}→${b.spst}へ改善し、ST低下を抑制`);
+        }
+        if(!a.perfect&&b.perfect&&b.spst>=a.spst-1)reasons.push('完璧配合が新たに成立し、SP+STもほぼ維持');
+        return reasons;
       }
       if(goal==='rebuild'){
         const ta=a.sp>=15&&a.st>=5, tb=b.sp>=15&&b.st>=5;
-        if(!ta&&tb)return true;
-        if(b.spst>=a.spst+3)return true;
-        if((!a.magnificent&&!a.perfect)&&(b.magnificent||b.perfect)&&b.spst>=a.spst-1)return true;
-        return false;
+        if(!ta&&tb)reasons.push('再建目安のSP15/ST5ラインへ新たに到達');
+        if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
+        if((!a.magnificent&&!a.perfect)&&(b.magnificent||b.perfect)&&b.spst>=a.spst-1)reasons.push(b.perfect?'完璧配合を新たに成立':'見事配合を新たに成立');
+        return reasons;
       }
-      return b.sp>=a.sp+2||b.spst>=a.spst+3||(!a.perfect&&b.perfect);
+      if(b.sp>=a.sp+2)reasons.push(`SPを${a.sp}→${b.sp}へ上積み`);
+      if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
+      if(!a.perfect&&b.perfect)reasons.push('完璧配合を新たに成立');
+      return reasons;
+    }
+    function materialUpgrade(prev,next,goal,assessment){
+      return materialUpgradeReasons(prev,next,goal,assessment).length>0;
     }
 
     function portfolioFacts(p){
@@ -345,15 +367,18 @@
         perfect:val(a.perfect),magnificent:val(a.magnificent),elaborate:val(a.elaborate)
       };
     }
+    function portfolioUpgradeReasons(prev,next){
+      if(!prev||!next)return next?['比較対象となる次世代候補が成立']: [];
+      const a=portfolioFacts(prev),b=portfolioFacts(next),reasons=[];
+      if(b.sp17>=a.sp17+2)reasons.push(`SP17/ST5以上の成立数が${a.sp17}→${b.sp17}`);
+      if(b.sp15>=a.sp15+4&&b.safe>=a.safe-2)reasons.push(`SP15/ST5以上の成立数が${a.sp15}→${b.sp15}へ増加し、安全配合数も維持`);
+      if(b.sp17hi>a.sp17hi)reasons.push(`SP+ST≥130母群でSP17/ST5以上が${a.sp17hi}→${b.sp17hi}`);
+      if(b.maxSp>=a.maxSp+2)reasons.push(`将来配合の最大SPニトロが${a.maxSp}→${b.maxSp}`);
+      if(b.maxSpSt>=a.maxSpSt+3)reasons.push(`将来配合の最大SP+STが${a.maxSpSt}→${b.maxSpSt}`);
+      return reasons;
+    }
     function portfolioUpgrade(prev,next){
-      if(!prev||!next)return!!next;
-      const a=portfolioFacts(prev),b=portfolioFacts(next);
-      if(b.sp17>=a.sp17+2)return true;
-      if(b.sp15>=a.sp15+4&&b.safe>=a.safe-2)return true;
-      if(b.sp17hi>a.sp17hi)return true;
-      if(b.maxSp>=a.maxSp+2)return true;
-      if(b.maxSpSt>=a.maxSpSt+3)return true;
-      return false;
+      return portfolioUpgradeReasons(prev,next).length>0;
     }
 
     function directUseLabels(assessment,summary){
@@ -374,21 +399,31 @@
       const g1=generations?.[1],g2=generations?.[2],g3=generations?.[3];
       const r1=g1?.summary?.bestRoute||routeForGoal(g1?.result,goal),r2=g2?.summary?.bestRoute||routeForGoal(g2?.result,goal),r3=g3?.summary?.bestRoute||routeForGoal(g3?.result,goal);
       let recommended=1,reasons=[],conditional=false;
+      const transitions={to2:{from:1,to:2,reasons:[]},to3:{from:1,to:3,reasons:[]}};
       if(goal==='stallion'){
         const p1=portfolios?.[1]?.routes?.[0]?.portfolio||null;
         const p2=portfolios?.[2]?.routes?.[0]?.portfolio||null;
         const p3=portfolios?.[3]?.routes?.[0]?.portfolio||null;
-        if(portfolioUpgrade(p1,p2)){recommended=2;reasons.push('2代で高能力牝馬群への血統汎用性が明確に上積みします。')}
+        const u2=portfolioUpgradeReasons(p1,p2);
+        transitions.to2.reasons=u2;
+        if(u2.length){recommended=2;reasons.push('直仔→2代：'+u2.join('／'))}
         else reasons.push('直仔段階ですでに将来種牡馬としての血統汎用性が競争力を持ちます。');
-        if(portfolioUpgrade(recommended===2?p2:p1,p3)){
-          recommended=3;conditional=true;reasons.push('3代目プレビューではさらに上積みが見えますが、全176³探索ではないため条件付き推奨です。');
+        const baseP=recommended===2?p2:p1,u3=portfolioUpgradeReasons(baseP,p3);
+        transitions.to3={from:recommended===2?2:1,to:3,reasons:u3};
+        if(u3.length){
+          recommended=3;conditional=true;
+          reasons.push((transitions.to3.from===2?'2代→3代':'直仔→3代')+'：'+u3.join('／'));
         }
       }else{
-        if(materialUpgrade(r1,r2,goal,assessment)){recommended=2;reasons.push('2代目で、直仔より意味のあるニトロ・距離適性・配合理論の上積みが確認できます。')}
+        const u2=materialUpgradeReasons(r1,r2,goal,assessment);
+        transitions.to2.reasons=u2;
+        if(u2.length){recommended=2;reasons.push('直仔→2代：'+u2.join('／'))}
         else reasons.push('2代へ進めても直仔に対する上積みが小さく、短い世代で締める価値があります。');
-        const base=recommended===2?r2:r1;
-        if(materialUpgrade(base,r3,goal,assessment)){
-          recommended=3;conditional=true;reasons.push('3代目プレビューで追加の上積みがあります。ただし3代目は条件付き探索なので、確定最適とは扱いません。');
+        const baseRoute=recommended===2?r2:r1,u3=materialUpgradeReasons(baseRoute,r3,goal,assessment);
+        transitions.to3={from:recommended===2?2:1,to:3,reasons:u3};
+        if(u3.length){
+          recommended=3;conditional=true;
+          reasons.push((transitions.to3.from===2?'2代→3代':'直仔→3代')+'：'+u3.join('／'));
         }
       }
       if(recommended>1)reasons.push('中間牝馬のSP/ST/PWは出生前に仮定せず、能力上位牝馬を実際に選抜できた場合だけ次世代へ進みます。');
@@ -398,6 +433,7 @@
         label:recommended===1?'直仔推奨':recommended===2?'2代推奨':'3代推奨候補',
         conditional,
         reasons,
+        transitions,
         routes:{1:r1,2:r2,3:r3}
       };
     }
@@ -405,7 +441,7 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,routeForGoal,routeFacts,recommendGeneration,portfolioFacts,portfolioUpgrade
+      directUseLabels,routeForGoal,routeFacts,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade
     };
   }
   return{version:1,create,known};
