@@ -240,7 +240,10 @@ function cleanupLegacySaleSync(){
    keySafe(h.name)===keySafe(h.masterRef.name)&&
    (h.role===undefined||h.role==='broodmare')&&
    (h.record||'-')==='-'&&(h.guts||'-')==='-'&&(h.stable||'-')==='-'&&
-   !String(h.starts||'').trim()&&!String(h.g1||'').trim()&&
+   !String(h.minD||'').trim()&&!String(h.maxD||'').trim()&&
+   !String(h.starts||'').trim()&&!String(h.g1||'').trim()&&!String(h.roleMemo||'').trim()&&
+   !String(h.dam||'').trim()&&!String(h.damSire||'').trim()&&!String(h.sireSire||'').trim()&&
+   !String(h.sireDam||'').trim()&&!String(h.damDam||'').trim()&&!String(h.sireDamSire||'').trim()&&!String(h.damDamSire||'').trim()&&
    !races.some(r=>r.horseId===h.id)
  ));
  if(db.horses.length!==before){save();window.renderHorses?.();window.renderBreed?.()}
