@@ -65,6 +65,37 @@ const advice=advisor.selectionAdvice('フィットレオタード','arc',expande
 assert.ok(advice.body.includes('選抜機会'),'intermediate cross must be described as a selection opportunity');
 assert.ok(advice.body.includes('出生前の繁殖SPには加算しません')||advice.body.includes('実馬でSTを確認'),'must not invent intermediate broodmare ability');
 
+function finishGeneration(mare){
+  const c1=planner.createCollector({topN:3,poolN:24}),s1=advisor.emptySummary('exact-direct');
+  for(const r of planner.iterateDirect(mare)){c1.push(r);advisor.addRoute(s1,r,'arc')}
+  const r1=c1.finish();
+  const c2=planner.createCollector({topN:3,poolN:24}),s2=advisor.emptySummary('exact-two');
+  for(const r of planner.iterateTwo(mare)){c2.push(r);advisor.addRoute(s2,r,'arc')}
+  const r2=c2.finish();
+  const bases=[],seen=new Set(),axes=['sp','speedCross','st','balance','theory'];
+  for(let i=0;i<12;i++)for(const k of axes){
+    const r=r2.shortlists?.[k]?.[i];if(!r)continue;
+    const id=planner.routeKey(r);if(!seen.has(id)){seen.add(id);bases.push(r)}
+  }
+  const c3=planner.createCollector({topN:3,poolN:18}),s3=advisor.emptySummary('preview-three');
+  for(const r of planner.iterateThirdPreview(mare,bases)){c3.push(r);advisor.addRoute(s3,r,'arc')}
+  const r3=c3.finish();
+  const assessment=advisor.mareAssessment(mare);
+  const generations={
+    1:{result:r1,summary:s1,method:'exact'},
+    2:{result:r2,summary:s2,method:'exact'},
+    3:{result:r3,summary:s3,method:'conditional-preview',previewBaseCount:bases.length}
+  };
+  return{rec:advisor.recommendGeneration({goal:'arc',assessment,generations}),generations,bases};
+}
+const fitGeneration=finishGeneration('フィットレオタード');
+assert.ok([1,2,3].includes(fitGeneration.rec.generation));
+if(fitGeneration.rec.generation===3){
+  assert.strictEqual(fitGeneration.rec.label,'3代候補（条件付き）');
+  assert.strictEqual(fitGeneration.rec.conditional,true);
+}
+assert.ok(fitGeneration.bases.some(r=>r.final?.speedCross?.has),'3-generation preview bases must include the SP-cross axis');
+
 const v26=fs.readFileSync('v26.js','utf8');
 const v27=fs.readFileSync('v27.js','utf8');
 assert.ok(v26.includes('saleGoalSection'),'goal section must be an explicit UI block');
@@ -83,5 +114,14 @@ console.log(JSON.stringify({
   lowMaterialReason:lowReasons,
   eliteMaterialReason:eliteReasons,
   sampleMaterialRoute:materialRoute.sires,
-  sampleMaterialCross:materialRoute.materialSpeedCross
+  sampleMaterialCross:materialRoute.materialSpeedCross,
+  formalGeneration:{
+    generation:fitGeneration.rec.generation,
+    label:fitGeneration.rec.label,
+    reasons:fitGeneration.rec.reasons,
+    direct:advisor.routeFacts(fitGeneration.rec.routes[1]),
+    two:advisor.routeFacts(fitGeneration.rec.routes[2]),
+    three:advisor.routeFacts(fitGeneration.rec.routes[3]),
+    previewBases:fitGeneration.bases.length
+  }
 },null,2));
