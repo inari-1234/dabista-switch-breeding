@@ -4,7 +4,7 @@ const V='1.17.0',BUILD='2026.09.20-35',db=window.db,$=s=>document.querySelector(
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
-let engine=null,planner=null,runSeq=0;
+let engine=null,planner=null,recommendationAdvisor=null,runSeq=0;
 db.salePlanner=db.salePlanner||{mare:'エイスト',goal:'arc',generation:1};
 
 function save(){window.saveFarm?.()}
@@ -139,12 +139,13 @@ async function scanIterator(iter,collector,seq,label){
 function theoryChips(t,e){
  let x='';if(t?.perfect)x+='<span class="sale-chip good">完璧</span>';else{x+=t?.interesting?'<span class="sale-chip">面白</span>':'';x+=t?.magnificent?'<span class="sale-chip">見事</span>':''}if(e?.effective)x+='<span class="sale-chip good">凝った</span>';return x||'<span class="sale-chip">追加理論なし</span>'
 }
-function stageHtml(st){
+function stageHtml(st,totalStages,goal){
+ const advice=recommendationAdvisor?.selectionAdvice?.(db.salePlanner.mare,goal,st,totalStages)||null;
  const ss=st.sireStats||{},n=st.nitro||{},d=st.danger||{},crosses=st.crosses||[];
  const dist=ss.minD&&ss.maxD?`${ss.minD}–${ss.maxD}m`:'距離不明';
  const cross=crosses.length?crosses.slice(0,5).map(x=>`${esc(x.name)} ${x.sireGen}×${x.mareGen}`).join(' / ')+(crosses.length>5?' ほか':''):'なし';
  const ev=st.elaborate?.evidence?.length?st.elaborate.evidence.slice(0,2).map(x=>x.kind==='direct-exception'?'直接成立例外':`${esc(x.a)}×${esc(x.b)}`).join(' / '):'';
- return `<div class="sale-stage"><b>${st.generation}代目父：${esc(st.sire)}</b><div>${dist} / 実績${esc(ss.record||'-')}・底力${esc(ss.guts||'-')}・安定${esc(ss.stable||'-')}</div><div class="metrics"><span><b>${fmt(n.sp)}</b><br>SPニトロ</span><span><b>${fmt(n.st)}</b><br>STニトロ</span><span><b>${fmt(n.pw)}</b><br>PWニトロ</span></div><div>${theoryChips(st.theory,st.elaborate)} <span class="sale-chip good">危険判定：安全</span></div><div>クロス：${cross}</div>${ev?`<div>凝った根拠：${ev}</div>`:''}${st.selection?`<div class="sale-select"><b>次世代へ進む条件</b><br>${esc(st.selection)}</div>`:''}</div>`
+ return `<div class="sale-stage"><b>${st.generation}代目父：${esc(st.sire)}</b><div>${dist} / 実績${esc(ss.record||'-')}・底力${esc(ss.guts||'-')}・安定${esc(ss.stable||'-')}</div><div class="metrics"><span><b>${fmt(n.sp)}</b><br>SPニトロ</span><span><b>${fmt(n.st)}</b><br>STニトロ</span><span><b>${fmt(n.pw)}</b><br>PWニトロ</span></div><div>${theoryChips(st.theory,st.elaborate)} <span class="sale-chip good">危険判定：安全</span></div><div>クロス：${cross}</div>${ev?`<div>凝った根拠：${ev}</div>`:''}${advice&&st.generation<totalStages?`<div class="sale-select"><b>${esc(advice.phase)}｜${esc(advice.headline)}</b><br>${esc(advice.body)}<div class="sale-method" style="margin-top:4px">${esc(advice.routeNote)} / 起点母：${esc(advice.strategy.label)}</div></div>`:(st.selection?`<div class="sale-select"><b>次世代へ進む条件</b><br>${esc(st.selection)}</div>`:'')}</div>`
 }
 function portfolioHtml(r){
  const p=r.portfolio;if(!p)return'';
@@ -154,7 +155,7 @@ function portfolioHtml(r){
 function routeHtml(route,index,goal,profile){
  const x=planner.expandRoute(db.salePlanner.mare,route,goal);if(!x)return'';
  const f=route.final||{},method=route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'この表示範囲は全探索結果';
- return `<div class="sale-route"><div class="sale-route-title"><b>候補 ${index+1}</b><span class="badge">SP ${f.sp} / ST ${f.st} / PW ${f.pw}</span></div><div class="sale-path">${route.sires.map(esc).join(' → ')}</div><div class="sale-method">${method}。途中世代の繁殖SP/ST/PWは仮定していません。</div>${x.stages.map(stageHtml).join('')}${profile==='sire'?portfolioHtml(route):''}</div>`
+ return `<div class="sale-route"><div class="sale-route-title"><b>候補 ${index+1}</b><span class="badge">SP ${f.sp} / ST ${f.st} / PW ${f.pw}</span></div><div class="sale-path">${route.sires.map(esc).join(' → ')}</div><div class="sale-method">${method}。途中世代の繁殖SP/ST/PWは仮定していません。</div>${x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')}${profile==='sire'?portfolioHtml(route):''}</div>`
 }
 function profileHtml(profile,routes,goal,scope){
  const label=planner.profileLabels[profile],criteria=planner.profileCriteria[profile];
@@ -215,6 +216,9 @@ async function load(){
     broodmares:engine.broodmares(),
     broodmareStats:engine.mareData.broodmares||[]
   });
+  if(window.DABISTA_SALE_RECOMMENDATION_CORE){
+   recommendationAdvisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({planner,broodmareStats:engine.mareData.broodmares||[]});
+  }
   inject();fillMares();paintButtons();renderNotice();
   window.DABISTA_SALE_PLANNER={version:1,planner,run:runDesign};
  }catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'sale-planner-load: '+String(e)})}
