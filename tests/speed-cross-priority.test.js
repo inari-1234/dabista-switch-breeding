@@ -1,4 +1,5 @@
 'use strict';
+// CI status publishing is verified on the same candidate HEAD as this regression.
 const fs=require('fs'),assert=require('assert');
 const core=require('../breeding-core.js');
 const sale=require('../sale-planner-core.js');
