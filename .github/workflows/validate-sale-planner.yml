@@ -21,7 +21,9 @@ on:
       - 'tests/mare-aware-selection-guidance.test.js'
       - 'tests/route-explainability.test.js'
       - 'tests/transient-sale-mare-wiring.test.js'
+      - 'tests/sp-cross-aware-planner.test.js'
       - 'data/mare-generation-advisor-validation.json'
+      - 'data/sp-cross-planner-validation.json'
       - 'index.html'
       - 'ui-refresh.css'
       - 'ui-refresh.js'
@@ -69,11 +71,13 @@ jobs:
           node --check tests/mare-aware-selection-guidance.test.js
           node --check tests/route-explainability.test.js
           node --check tests/transient-sale-mare-wiring.test.js
+          node --check tests/sp-cross-aware-planner.test.js
           python -m json.tool data/theory-master.json >/dev/null
           python -m json.tool data/stallions.json >/dev/null
           python -m json.tool data/default-broodmares.json >/dev/null
           python -m json.tool version.json >/dev/null
           python -m json.tool data/mare-generation-advisor-validation.json >/dev/null
+          python -m json.tool data/sp-cross-planner-validation.json >/dev/null
           python - <<'PY'
           import json
           from pathlib import Path
@@ -81,16 +85,16 @@ jobs:
           app=Path('app.js').read_text(encoding='utf-8')
           v26=Path('v26.js').read_text(encoding='utf-8')
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build'])==('1.17.0','2026.09.20-38')
-          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-38';" in app
-          assert "BUILD=window.APP_BUILD||'2026.09.20-38'" in v26
-          assert 'sale-planner-core.js?v=1.17.0' in idx
-          assert 'sale-recommendation-core.js?v=1.17.0-b37' in idx
-          assert 'v26.js?v=1.17.0-b38' in idx
-          assert 'v27.js?v=1.17.0-b37' in idx
+          assert (v['version'],v['build'])==('1.17.0','2026.09.20-39')
+          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-39';" in app
+          assert "BUILD=window.APP_BUILD||'2026.09.20-39'" in v26
+          assert 'sale-planner-core.js?v=1.17.0-b39' in idx
+          assert 'sale-recommendation-core.js?v=1.17.0-b39' in idx
+          assert 'v26.js?v=1.17.0-b39' in idx
+          assert 'v27.js?v=1.17.0-b39' in idx
           assert 'ui-refresh.css?v=2026.09.20-b37' in idx
           assert 'ui-refresh.js?v=2026.09.20-b37' in idx
-          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b37') < idx.index('v26.js?v=1.17.0-b38') < idx.index('v27.js?v=1.17.0-b37')
+          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0-b39') < idx.index('sale-recommendation-core.js?v=1.17.0-b39') < idx.index('v26.js?v=1.17.0-b39') < idx.index('v27.js?v=1.17.0-b39')
           assert 'v23.js' not in idx
           assert '繁殖能力：未判明' in v26
           assert '<summary><b>血統15祖先</b></summary>' in v26
@@ -108,6 +112,10 @@ jobs:
       - name: Transient sale mare wiring regression
         run: |
           node tests/transient-sale-mare-wiring.test.js
+
+      - name: SP cross-aware planner regression
+        run: |
+          node tests/sp-cross-aware-planner.test.js
 
       - name: Planner regression
         run: |
@@ -150,7 +158,7 @@ jobs:
           if(col.count<25000)throw Error('two-generation safe route count unexpectedly low '+col.count);
           if(!routeTarget||JSON.stringify([routeTarget.final.sp,routeTarget.final.st,routeTarget.final.pw])!==JSON.stringify([16,6,0]))throw Error('two-generation baseline '+JSON.stringify(routeTarget));
           const base=col.finish();
-          if(base.profiles.sp.length!==5||base.profiles.st.length!==5||base.profiles.balance.length!==5||base.pool.length<10)throw Error('collector output invalid');
+          if(base.profiles.sp.length!==5||base.profiles.spCross.length!==5||base.profiles.st.length!==5||base.profiles.balance.length!==5||base.pool.length<10)throw Error('collector output invalid');
 
           const portfolio=planner.portfolioPareto(base.pool,5);
           if(!portfolio.routes.length||portfolio.routes.some(r=>!r.portfolio?.spst120||!r.portfolio?.spst130))throw Error('portfolio missing');
