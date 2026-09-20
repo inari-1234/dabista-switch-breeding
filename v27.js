@@ -17,6 +17,7 @@ function style(){
  .mare-rank b{display:block;font-size:13px}.mare-rank small{display:block;font-size:8px;color:#66736c;line-height:1.35}
  .mare-use{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px}
  .mare-use>div{border:1px solid #e1e8e4;border-radius:8px;padding:7px;background:#fff}
+ .mare-use>div.selected{border-color:#77ad91;background:#eef7f2;box-shadow:0 0 0 1px #77ad91 inset}
  .mare-use b{display:block;font-size:9px;color:#405048}.mare-use span{display:block;margin-top:2px;font-size:10px;font-weight:700}
  .mare-direct{margin-top:7px;font-size:9px;line-height:1.55;color:#66736c}
  .generation-advisor{margin-top:8px;border:1px solid #cdded5;border-radius:12px;background:linear-gradient(145deg,#fff,#f5faf7);padding:10px}
@@ -60,7 +61,7 @@ function renderMareAdvice(){
  if(!box||!name||!advisor)return;
  const a=advisor.mareAssessment(name);
  if(!a){box.innerHTML='<div class="muted">牝馬評価を取得できませんでした。</div>';return}
- const direct=directSnapshot(name),use=advisor.directUseLabels(a,direct),strategy=advisor.mareStrategy(name);
+ const direct=directSnapshot(name),use=advisor.directUseLabels(a,direct),strategy=advisor.mareStrategy(name),goal=window.db?.salePlanner?.goal||'arc';
  const tierClass=a.abilityKnown?'':' unknown';
  const rankHtml=a.abilityKnown?
    `<div class="mare-ranks">
@@ -76,13 +77,14 @@ function renderMareAdvice(){
     <span class="mare-tier${tierClass}">${esc(a.tier)}</span>
    </div>
    ${rankHtml}
-   ${strategy?`<div class="advisor-note"><b>配合方針：${esc(strategy.label)}</b><br>${esc(strategy.priority)}<br><span style="display:block;margin-top:3px">維持したい能力：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / 補強したい能力：${strategy.improve.length?esc(strategy.improve.join('・')):'—'}</span></div>`:''}
+   ${strategy?`<div class="advisor-note"><b>母の補強方針：${esc(strategy.label)}</b><br>${esc(strategy.priority)}<br><span style="display:block;margin-top:3px">維持したい能力：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / 補強したい能力：${strategy.improve.length?esc(strategy.improve.join('・')):'—'}</span></div>`:''}
    <div class="mare-use">
-    <div><b>凱旋門賞</b><span>${esc(use.arc)}</span></div>
-    <div><b>BC長期</b><span>${esc(use.bc)}</span></div>
-    <div><b>繁殖再建</b><span>${esc(use.rebuild)}</span></div>
-    <div><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
+    <div class="${goal==='arc'?'selected':''}"><b>凱旋門賞</b><span>${esc(use.arc)}</span></div>
+    <div class="${goal==='bc'?'selected':''}"><b>BC長期</b><span>${esc(use.bc)}</span></div>
+    <div class="${goal==='rebuild'?'selected':''}"><b>繁殖再建</b><span>${esc(use.rebuild)}</span></div>
+    <div class="${goal==='stallion'?'selected':''}"><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
    </div>
+   <div class="advisor-note">ここは直仔の到達性と母能力から見た事前メモです。正式な推奨世代は下の「おすすめ配合世代を診断」で決定します。</div>
    <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / SP17・ST5以上 ${direct.sp17st5}件 / 2400m対応父 ${direct.long2400}件 / 最大SPニトロ ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
    <div class="advisor-note">${esc(a.note)} 「おすすめ」は母能力と直仔の血統到達性を分けて判定しています。</div>`;
 }
@@ -94,7 +96,7 @@ function invalidateGeneration(message='条件を変更したため、世代診�
 }
 const yieldUi=()=>new Promise(r=>setTimeout(r,0));
 function previewBases(shortlists,maxEach=12){
- const out=[],seen=new Set(),keys=['sp','st','balance','theory'];
+ const out=[],seen=new Set(),keys=['sp','speedCross','st','balance','theory'];
  for(let i=0;i<maxEach;i++)for(const k of keys){
   const r=shortlists?.[k]?.[i];if(!r)continue;
   const id=planner.routeKey(r);if(!seen.has(id)){seen.add(id);out.push(r)}
@@ -124,6 +126,7 @@ function generationCard(n,g,goal,recommended){
   <div class="gmetric"><span>最大SP+ST</span><b>${s.maxSpSt}</b></div>
   <div class="gmetric"><span>SP15/ST5</span><b>${s.sp15st5}</b></div>
   <div class="gmetric"><span>SP17/ST5</span><b>${s.sp17st5}</b></div>
+  ${n>1?`<div class="gmetric"><span>途中SPクロス</span><b>${f.materialSpeedCrossStages||0}世代</b></div>`:''}
   <small>安全ルート ${s.count.toLocaleString()}件 / 見事 ${s.magnificent} / 完璧 ${s.perfect} / 凝った ${s.elaborate}</small>
  </div>`
 }
@@ -184,6 +187,7 @@ async function runGenerationAdvisor(){
     3:{result:r3,summary:s3,method:'conditional-preview',previewBaseCount:bases.length}
   };
   const rec=advisor.recommendGeneration({goal,assessment,generations,portfolios});
+  window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
   const goalLabel=planner.goalLabels[goal]||goal;
   $('#generationAdvisorResult').innerHTML=`
    <div class="generation-result">
@@ -195,7 +199,7 @@ async function runGenerationAdvisor(){
     <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、距離適性、配合理論、血統汎用性と、代重ねに必要な実馬選抜回数を比較した設計判断です。3代は2代目多軸候補からの条件付きプレビューで、全176³最適解とは表示しません。</div>
    </div>`;
   $('#applyRecommendedGeneration').onclick=()=>{
-    const b=$('[data-sale-gen="'+rec.generation+'"]');if(b)b.click();
+    window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
     setTimeout(()=>$('#runSalePlanner')?.click(),30);
   };
   $('#generationAdvisorProgress').textContent=`診断完了：直仔 ${s1.count.toLocaleString()}件、2代 ${s2.count.toLocaleString()}件、3代プレビュー ${s3.count.toLocaleString()}件を比較しました。`;
@@ -210,14 +214,16 @@ function inject(){
  style();
  const summary=$('#saleMareSummary');
  const mareBox=document.createElement('div');mareBox.id='saleMareRecommendation';mareBox.className='mare-advice';
- summary?.insertAdjacentElement('afterend',mareBox);
+ const goalSection=$('#saleGoalSection');
+ if(goalSection)goalSection.insertAdjacentElement('afterend',mareBox);else summary?.insertAdjacentElement('afterend',mareBox);
  const notice=$('#salePlannerNotice');
  const gen=document.createElement('div');gen.id='saleGenerationAdvisor';gen.className='generation-advisor';
  gen.innerHTML=`<h4>おすすめ配合世代を診断</h4><p>直仔・2代・3代を横断して、「どこで締めるのが妥当か」を比較します。深い世代を自動的に高評価にはしません。</p><button type="button" class="secondary" id="runGenerationAdvisor">直仔・2代・3代を比較</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
  notice?.insertAdjacentElement('afterend',gen);
  const run=$('#runSalePlanner');if(run)run.textContent='選択した世代を詳しく設計';
  $('#saleMareSelect')?.addEventListener('change',()=>{setTimeout(renderMareAdvice,0);invalidateGeneration()});
- $('#saleGoalButtons')?.addEventListener('click',e=>{if(e.target.closest('[data-sale-goal]'))setTimeout(()=>invalidateGeneration('目的を変更したため、世代診断を更新してください。'),0)});
+ $('#saleGoalButtons')?.addEventListener('click',e=>{if(e.target.closest('[data-sale-goal]'))setTimeout(()=>{renderMareAdvice();invalidateGeneration('目的を変更したため、世代診断を更新してください。')},0)});
+ $('#saleGenButtons')?.addEventListener('click',e=>{if(!e.target.closest('[data-sale-gen]'))return;setTimeout(()=>{if($('#generationAdvisorResult')?.innerHTML)$('#generationAdvisorProgress').textContent='手動で別世代を選択中です。診断結果は比較基準として残しています。'},0)});
  $('#runGenerationAdvisor').onclick=runGenerationAdvisor;
  renderMareAdvice();
 }
