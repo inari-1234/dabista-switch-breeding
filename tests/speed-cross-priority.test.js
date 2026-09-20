@@ -71,6 +71,19 @@ const base={final:{sp:15,st:6,pw:0,speedCross:{has:false,count:0,short:0,speed:0
 const improved={final:{sp:15,st:6,pw:0,speedCross:{has:true,count:1,short:0,speed:1,effect:1},sireStats:{maxD:2400,record:'A',guts:'B'},theory:{},elaborate:false}};
 assert.strictEqual(advisor.betterGoalRoute(base,improved,'arc'),improved,'arc route should prefer SP cross when quantitative target is tied');
 assert.strictEqual(advisor.betterGoalRoute(base,improved,'bc'),improved,'BC route should prefer SP cross when quantitative target is tied');
+
+const strongerArc={final:{sp:18,st:6,pw:0,speedCross:{has:false,count:0,short:0,speed:0,effect:0},sireStats:{maxD:2400,record:'A',guts:'B'},theory:{},elaborate:false}};
+const weakerArcCross={final:{sp:15,st:6,pw:0,speedCross:{has:true,count:1,short:0,speed:1,effect:1},sireStats:{maxD:2400,record:'A',guts:'B'},theory:{},elaborate:false}};
+assert.strictEqual(advisor.betterGoalRoute(strongerArc,weakerArcCross,'arc'),strongerArc,'arc route must keep superior SP/ST ahead of SP-cross tie-break');
+
+const strongerBc={final:{sp:20,st:5,pw:0,speedCross:{has:false,count:0,short:0,speed:0,effect:0},sireStats:{maxD:2000,record:'A',guts:'B'},theory:{},elaborate:false}};
+const weakerBcCross={final:{sp:17,st:5,pw:0,speedCross:{has:true,count:1,short:0,speed:1,effect:1},sireStats:{maxD:2000,record:'A',guts:'B'},theory:{},elaborate:false}};
+assert.strictEqual(advisor.betterGoalRoute(strongerBc,weakerBcCross,'bc'),strongerBc,'BC route must keep superior SP ahead of SP-cross tie-break');
+
+const higherStArc={final:{sp:16,st:7,pw:0,speedCross:{has:false,count:0,short:0,speed:0,effect:0},sireStats:{maxD:2400,record:'A',guts:'B'},theory:{},elaborate:false}};
+const shortCrossArc={final:{sp:16,st:6,pw:0,speedCross:{has:true,count:1,short:1,speed:0,effect:2},sireStats:{maxD:2400,record:'A',guts:'B'},theory:{},elaborate:false}};
+assert.strictEqual(advisor.betterGoalRoute(higherStArc,shortCrossArc,'arc'),higherStArc,'short-distance cross must not override the better ST quantitative profile');
+
 assert.ok(advisor.materialUpgradeReasons(base,improved,'arc',{abilityKnown:true,ranks:{spst:{topPercent:50}}}).some(x=>x.includes('速力/短距離クロス')));
 
 console.log(JSON.stringify({
