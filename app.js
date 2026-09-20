@@ -1,5 +1,5 @@
 const APP_VERSION='1.17.0';
-const APP_BUILD='2026.09.20-37';
+const APP_BUILD='2026.09.20-38';
 const KEY='dabistaFarmV1';
 const errors=[];
 let updateState={lastCheck:null,status:'not-checked',remote:null};
@@ -8,6 +8,13 @@ window.addEventListener('error',e=>errors.push({at:new Date().toISOString(),mess
 window.addEventListener('unhandledrejection',e=>errors.push({at:new Date().toISOString(),message:String(e.reason)}));
 const seed={horses:[{id:'inari-shuttle',name:'イナリシャトル',sex:'牡',generation:'基準種牡馬',sire:'バゴ',dam:'イナリワルツ',minD:1000,maxD:1200,record:'A',guts:'A',stable:'C',starts:'30戦12勝',g1:'',note:'G1馬を量産した高SP基準馬。代表産駒：イナリガーデン（ジャパンC）、イナリララバイ（宝塚記念）、イナリミッキー（宝塚記念）。'}],races:[],memo:''};
 let db=JSON.parse(localStorage.getItem(KEY)||'null')||seed;db.races=db.races||[];db.horses=db.horses||[];db.memo=db.memo||'';window.db=db;
+window.DABISTA_TRANSIENT_BREED_MARE=null;
+window.getBreedHorseById=id=>{
+  const saved=db.horses.find(x=>x.id===id);
+  if(saved)return saved;
+  const t=window.DABISTA_TRANSIENT_BREED_MARE;
+  return t&&t.id===id?t:null;
+};
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const save=()=>{localStorage.setItem(KEY,JSON.stringify(db));window.db=db};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
