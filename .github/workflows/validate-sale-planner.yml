@@ -22,6 +22,7 @@ on:
       - 'tests/route-explainability.test.js'
       - 'tests/transient-sale-mare-wiring.test.js'
       - 'tests/speed-cross-priority.test.js'
+      - 'tests/generation-ui-cross-path.test.js'
       - 'data/mare-generation-advisor-validation.json'
       - 'index.html'
       - 'ui-refresh.css'
@@ -71,6 +72,7 @@ jobs:
           node --check tests/route-explainability.test.js
           node --check tests/transient-sale-mare-wiring.test.js
           node --check tests/speed-cross-priority.test.js
+          node --check tests/generation-ui-cross-path.test.js
           python -m json.tool data/theory-master.json >/dev/null
           python -m json.tool data/stallions.json >/dev/null
           python -m json.tool data/default-broodmares.json >/dev/null
@@ -118,6 +120,10 @@ jobs:
       - name: SP-cross priority regression
         run: |
           node tests/speed-cross-priority.test.js
+
+      - name: Generation UI and intermediate SP-cross regression
+        run: |
+          node tests/generation-ui-cross-path.test.js
 
       - name: Planner regression
         run: |
