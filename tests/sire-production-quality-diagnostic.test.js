@@ -17,7 +17,7 @@ const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmar
 const sireByName=new Map(S.map(x=>[x.name,x]));
 const known=M.filter(x=>+x.sp||+x.st||+x.pw).sort((a,b)=>(b.sp+b.st)-(a.sp+a.st));
 const bottom=[...known].sort((a,b)=>(a.sp+a.st)-(b.sp+b.st)).slice(0,3).map(x=>x.name);
-const names=[...new Set(['スプリングスイーツ','フィットレオタード','エイスト',bottom[0]])];
+const names=['スプリングスイーツ','フィットレオタード','エイスト','ミニミニデート'];
 
 function brief(route){
   if(!route)return null;
@@ -35,12 +35,23 @@ function brief(route){
 }
 
 const output=[];
+const groupFocus=new Set(['A/A','A/B','A/C','B/A','B/B','B/C','C/A','C/B','C/C']);
 for(const mare of names){
   const all=planner.createCollector({topN:5,poolN:24});
   const recA=planner.createCollector({topN:5,poolN:24});
   const recAC=planner.createCollector({topN:5,poolN:24});
   let total=0,noFirstThenFinal=0,noFirstThenFinalBA=0,finalCrossRecA=0,finalCrossRecB=0;
-  const combos={};
+  const combos={},bestByGroup={};
+  const routeVec=r=>{
+    const f=r.final||{},x=f.speedCross||{};
+    return[+f.sp||0,+f.st||0,+x.count||0,+f.pw||0];
+  };
+  const better=(a,b)=>{
+    if(!a)return b;
+    const A=routeVec(a),B=routeVec(b);
+    for(let i=0;i<A.length;i++){if(A[i]!==B[i])return B[i]>A[i]?b:a}
+    return a;
+  };
   for(const r of planner.iterateTwo(mare)){
     total++;all.push(r);
     const f=r.final||{},ss=f.sireStats||{},cross=!!f.speedCross?.has,first=!!r.speedCrossPath?.[0]?.has;
@@ -48,6 +59,7 @@ for(const mare of names){
       if(ss.record==='A')finalCrossRecA++;
       if(ss.record==='B')finalCrossRecB++;
       const k=(ss.record||'?')+'/'+(ss.stable||'?');combos[k]=(combos[k]||0)+1;
+      if(groupFocus.has(k))bestByGroup[k]=better(bestByGroup[k],r);
       if(!first){
         noFirstThenFinal++;
         if(ss.record==='B'&&ss.stable==='A')noFirstThenFinalBA++;
@@ -63,6 +75,7 @@ for(const mare of names){
     total,
     finalCrossRecA,finalCrossRecB,noFirstThenFinal,noFirstThenFinalBA,
     finalCrossSireCombos:Object.fromEntries(Object.entries(combos).sort((a,b)=>b[1]-a[1])),
+    bestSpeedCrossBySireGroup:Object.fromEntries([...groupFocus].map(k=>[k,brief(bestByGroup[k])]).filter(([,v])=>v)),
     currentTopSpeedCross:brief(a.profiles.speedCross?.[0]),
     currentTopSpeedCrossSet:(a.profiles.speedCross||[]).map(brief),
     bestRecordASpeedCross:brief(ra.profiles.speedCross?.[0]),
