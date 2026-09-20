@@ -19,6 +19,11 @@ assert.strictEqual(version.build,'2026.09.20-38');
 assert.ok(app.includes("const APP_BUILD='2026.09.20-38';"));
 assert.ok(app.includes('window.DABISTA_TRANSIENT_BREED_MARE=null'));
 assert.ok(app.includes('window.getBreedHorseById=id=>'));
+assert.strictEqual((app.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,1,'automatic update check must be centralized in app.js');
+for(const p of ['v15.js','v16.js','v18.js']){
+  const legacy=read(p);
+  assert.strictEqual((legacy.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,0,p+' must not auto-check updates');
+}
 
 for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js']){
   const c=read(p);
