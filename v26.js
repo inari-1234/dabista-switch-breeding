@@ -42,6 +42,9 @@ function style(){
  .sale-chip.theory-migoto{background:#e8eff9;color:#365f8a;border:1px solid #c8d7ed;font-weight:800}
  .sale-chip.theory-interesting{background:#e3f1ea;color:#1c694b;border:1px solid #c5dfd1;font-weight:800}
  .sale-chip.theory-elaborate{background:#eee8f7;color:#664f91;border:1px solid #d7ccec;font-weight:800}
+ .sale-speed-cross{margin:6px 0;padding:7px 8px;border-radius:9px;font-size:9px;line-height:1.45}
+ .sale-speed-cross.speed-cross-ok{background:#e8f6ee;color:#245b3e;border:1px solid #c7e4d3;font-weight:800}
+ .sale-speed-cross.speed-cross-miss{background:#fff2e8;color:#7a4a28;border:1px solid #ecd7c6}
  .sale-effect-block{margin-top:7px;padding:8px;border-radius:10px;background:#fff;border:1px solid #e1e8e4}
  .sale-effect-title{font-size:9px;font-weight:800;color:#50665b;margin-right:5px}
  .cross-list{display:grid;gap:5px;margin-top:6px}
@@ -140,11 +143,11 @@ function renderNotice(){
  const n=+db.salePlanner.generation,el=$('#salePlannerNotice');if(!el)return;
  if(n===1)el.innerHTML='<b>直仔：</b>国内176種牡馬を全探索。危険・超危険を除外し、複数軸で候補を表示します。';
  else if(n===2)el.innerHTML='<b>2代：</b>安全な1代目から国内176頭を掛け合わせ、約3万ルートを全探索します。中間牝馬の繁殖能力は出生前に仮定しません。';
- else el.innerHTML='<b>3代：</b>2代目までは全探索。3代目はSP/ST/バランス/配合理論の多軸候補を起点に条件付き探索する仮プレビューです。全176³の最適解とは表示しません。';
+ else el.innerHTML='<b>3代：</b>2代目までは全探索。3代目はSP上限/SPクロス補強/ST/バランス/配合理論の多軸候補を起点に条件付き探索する仮プレビューです。全176³の最適解とは表示しません。';
 }
 const yieldUi=()=>new Promise(r=>setTimeout(r,0));
 function previewBases(shortlists,maxEach=12){
- const out=[],seen=new Set(),keys=['sp','st','balance','theory'];
+ const out=[],seen=new Set(),keys=['sp','spCross','st','balance','theory'];
  for(let i=0;i<maxEach;i++)for(const k of keys){
   const r=shortlists?.[k]?.[i];if(!r)continue;const id=planner.routeKey(r);if(!seen.has(id)){seen.add(id);out.push(r)}
  }
@@ -205,7 +208,9 @@ function routeHtml(route,index,goal,profile){
  const f=route.final||{},method=route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'この表示範囲は全探索結果';
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
- return '<div class="sale-route"><div class="sale-route-title"><b>候補 '+(index+1)+'</b><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span></div><div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div><div class="sale-method">'+method+'。途中世代の繁殖SP/ST/PWは仮定していません。</div>'+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'')+'<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
+ const sc=f.speedCross||{},scText=sc.has?('SP系クロス：'+(sc.speed?'速力×'+sc.speed+' ':'')+(sc.short?'短距離×'+sc.short:'')+' / クロスSP寄与 '+signed(sc.spEffect)): 'SP系クロスなし';
+ const scClass=sc.has?'speed-cross-ok':'speed-cross-miss';
+ return '<div class="sale-route"><div class="sale-route-title"><b>候補 '+(index+1)+'</b><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span></div><div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div><div class="sale-speed-cross '+scClass+'">'+esc(scText)+(profile==='sp'&&!sc.has?'　※NSP上限は高い一方、速力/短距離の有効クロスはありません。':'')+'</div><div class="sale-method">'+method+'。途中世代の繁殖SP/ST/PWは仮定していません。</div>'+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'')+'<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
 }
 function bridgeStageHtml(st){
  const n=st.nitro||{},ss=st.sireStats||{};
@@ -289,7 +294,7 @@ function openRouteInBreed(id){
 
 function profileHtml(profile,routes,goal,scope){
  const label=planner.profileLabels[profile],criteria=planner.profileCriteria[profile];
- if(!routes?.length)return`<div class="card sale-profile"><h3>${esc(label)}</h3><p class="muted">条件を満たす候補を取得できませんでした。</p></div>`;
+ if(!routes?.length)return`<div class="card sale-profile"><h3>${esc(label)}</h3><p class="muted">${profile==='spCross'?'速力/短距離の有効クロスを持つ安全候補がありません。SP上限型や代重ね候補と比較してください。':'条件を満たす候補を取得できませんでした。'}</p></div>`;
  return `<div class="card sale-profile"><h3>${esc(label)}</h3><div class="sale-method">並び順：${esc(criteria)}</div>${profile==='sire'?`<div class="sale-method">評価範囲：${esc(scope)}</div>`:''}${routes.map((r,i)=>routeHtml(r,i,goal,profile)).join('')}</div>`
 }
 function renderResults(result){
@@ -298,7 +303,7 @@ function renderResults(result){
  const method=gen===1?`直仔176頭を全探索（安全ルート ${result.safeCount.toLocaleString()}件）`:gen===2?`2代の安全ルート ${result.safeCount.toLocaleString()}件を全探索`:`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索後、${result.previewBaseCount}本の多軸候補から3代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`;
  const caution=!info.abilityKnown?'<div class="notice"><b>繁殖能力未判明：</b>母能力を含む総合評価は保留。血統・ニトロ・配合理論だけで候補を表示しています。</div>':'';
  const profiles={...result.base.profiles,sire:result.portfolio.routes};
- $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice">4軸は合算して総合1位を作りません。最終締め時の血統を重視し、実際に生産した中間牝馬の能力を確認して次世代へ進めてください。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
+ $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice">5軸は合算して総合1位を作りません。SP上限型とSPクロス補強型は別物として比較します。最終締め時の血統を重視し、実際に生産した中間牝馬の能力を確認して次世代へ進めてください。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
 }
 async function runDesign(){
  if(!planner)return;
