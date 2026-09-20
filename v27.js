@@ -32,6 +32,12 @@ function style(){
  .generation-card h5{margin:0 0 5px;font-size:10px}.generation-card small{display:block;color:#66736c;font-size:8px;line-height:1.45}
  .generation-card .gmetric{display:flex;justify-content:space-between;gap:6px;font-size:9px;padding:2px 0}
  .generation-reasons{margin:8px 0 0;padding:0 0 0 16px;color:#53675e;font-size:9px;line-height:1.55}
+ .generation-why{margin-top:8px;padding:9px;border:1px solid #dce7e1;border-radius:10px;background:#fff}
+ .generation-why>strong{display:block;font-size:11px;color:#264f3c}
+ .generation-delta{margin-top:5px;padding:6px 7px;border-radius:8px;background:#f2f6f3;font-size:9px;line-height:1.5}
+ .generation-timeline{display:grid;gap:5px;margin-top:7px}
+ .generation-step{padding:6px 7px;border-left:3px solid #79ad90;background:#f8faf9;border-radius:0 8px 8px 0}
+ .generation-step b{display:block;font-size:9px}.generation-step span{display:block;margin-top:2px;color:#617169;font-size:8px;line-height:1.45}
  .generation-action{margin-top:8px;width:100%}
  .advisor-note{margin-top:7px;padding:7px;border-radius:8px;background:#f1f5f2;font-size:8px;line-height:1.5;color:#66736c}
  @media(max-width:420px){.mare-ranks{grid-template-columns:repeat(2,1fr)}.generation-grid{grid-template-columns:1fr}.mare-use{grid-template-columns:1fr 1fr}}
@@ -118,6 +124,26 @@ function generationCard(n,g,goal,recommended){
   <small>安全ルート ${s.count.toLocaleString()}件 / 見事 ${s.magnificent} / 完璧 ${s.perfect} / 凝った ${s.elaborate}</small>
  </div>`
 }
+function recommendationDetail(name,goal,rec){
+ const chosen=rec.routes?.[rec.generation],direct=rec.routes?.[1];
+ if(!chosen)return'';
+ const expanded=planner.expandRoute(name,chosen,goal);
+ if(!expanded)return'';
+ const a=advisor.routeFacts(direct),b=advisor.routeFacts(chosen);
+ const dSp=b.sp-a.sp,dSt=b.st-a.st,dSum=b.spst-a.spst;
+ const signed=n=>n>0?'+'+n:String(n);
+ const goalRule=goal==='arc'?'凱旋門では最終父の2400m対応・実績A・SP/STバランスを優先します。'
+  :goal==='bc'?'BCではSP上限を優先しつつ、STを極端に落とさないルートを選びます。'
+  :goal==='rebuild'?'繁殖再建では一頭の最大値より、次代に残しやすいSP/STバランスを優先します。'
+  :'自家製種牡馬では高能力繁殖牝馬群への血統汎用性を優先します。';
+ const steps=expanded.stages.map(st=>{
+   const adv=advisor.selectionAdvice(name,goal,st,expanded.stages.length);
+   if(!adv)return'';
+   return '<div class="generation-step"><b>'+st.generation+'代目｜'+esc(adv.phase)+'</b><span>'+esc(adv.headline)+'。'+esc(adv.body)+'</span></div>';
+ }).join('');
+ const label=rec.generation===1?'直仔':rec.generation+'代';
+ return '<div class="generation-why"><strong>なぜ'+label+'なのか</strong><div class="generation-delta">直仔代表 → '+label+'代表：SP '+a.sp+'→'+b.sp+'（'+signed(dSp)+'） / ST '+a.st+'→'+b.st+'（'+signed(dSt)+'） / SP+ST '+a.spst+'→'+b.spst+'（'+signed(dSum)+'）<br>'+esc(goalRule)+'</div><div class="generation-timeline">'+steps+'</div></div>';
+}
 async function runGenerationAdvisor(){
  if(!advisor||!planner)return;
  const name=$('#saleMareSelect')?.value,goal=window.db?.salePlanner?.goal||'arc';
@@ -153,6 +179,7 @@ async function runGenerationAdvisor(){
    <div class="generation-result">
     <div class="generation-pick"><b>${esc(goalLabel)}：${esc(rec.label)}</b><span>${rec.conditional?'3代目は条件付き探索です。':''} 短い世代で十分なら無理に代重ねしない判定です。</span></div>
     <div class="generation-grid">${generationCard(1,generations[1],goal,rec.generation)}${generationCard(2,generations[2],goal,rec.generation)}${generationCard(3,generations[3],goal,rec.generation)}</div>
+    ${recommendationDetail(name,goal,rec)}
     <ul class="generation-reasons">${rec.reasons.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>
     <button class="primary generation-action" type="button" id="applyRecommendedGeneration">${rec.generation===1?'直仔':rec.generation+'代'}で詳しく設計する</button>
     <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、距離適性、配合理論、血統汎用性と、代重ねに必要な実馬選抜回数を比較した設計判断です。3代は2代目多軸候補からの条件付きプレビューで、全176³最適解とは表示しません。</div>
