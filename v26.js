@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V='1.17.0',BUILD='2026.09.20-37',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
+const V=window.APP_VERSION||'1.17.0',BUILD=window.APP_BUILD||'2026.09.20-38',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
@@ -228,32 +228,37 @@ function renderRouteBreedBridge(ctx,syncedHorse){
  };
  card.scrollIntoView({behavior:'smooth',block:'start'});
 }
+function cleanupLegacySaleSync(){
+ const races=db.races||[];
+ const before=db.horses.length;
+ db.horses=db.horses.filter(h=>!(
+   h?.salePlannerSync===true&&
+   h.generation==='セリ牝馬（配合確認用）'&&
+   h.note==='セリ牝馬設計から配合確認用に同期'&&
+   !races.some(r=>r.horseId===h.id)
+ ));
+ if(db.horses.length!==before){save();window.renderHorses?.();window.renderBreed?.()}
+}
 function ensureSaleMareForBreed(name){
  if(!engine||!name)return null;
  const key=engine.core?.key||((x)=>String(x||'').normalize('NFKC').trim().toLowerCase());
- let h=(db.horses||[]).find(x=>x.sex==='牝'&&key(x.name)===key(name))||null;
+ const saved=(db.horses||[]).find(x=>x.sex==='牝'&&x.masterRef?.type==='default-broodmare'&&key(x.masterRef.name||x.name)===key(name))||null;
+ if(saved){window.DABISTA_TRANSIENT_BREED_MARE=null;return saved}
  const m=engine.master?.(name),stats=engine.mareStats?.(name);
- if(!m||!Array.isArray(m.ancestor)||m.ancestor.length!==15)return h;
- if(!h){
-  h={
-   id:crypto.randomUUID(),name,sex:'牝',generation:'セリ牝馬（配合確認用）',
+ if(!m||!Array.isArray(m.ancestor)||m.ancestor.length!==15)return null;
+ const h={
+   id:'transient-sale:'+key(name),name,sex:'牝',role:'broodmare',generation:'セリ牝馬（閲覧用）',
    sire:m.ancestor[0]||'',dam:'',minD:'',maxD:'',record:'-',guts:'-',stable:'-',starts:'',g1:'',
-   note:'セリ牝馬設計から配合確認用に同期',
+   note:'セリ牝馬設計から一時表示',
    masterRef:{type:'default-broodmare',name},
    ancestor15:[...m.ancestor],omoshiroCode:m.omoshiro||'',migotoCode:m.migoto||'',
-   mareStats:stats?{...stats}:undefined,salePlannerSync:true
-  };
-  db.horses.push(h);
- }else{
-  if(!h.masterRef)h.masterRef={type:'default-broodmare',name};
-  if(!Array.isArray(h.ancestor15)||h.ancestor15.length!==15)h.ancestor15=[...m.ancestor];
-  if(!h.omoshiroCode&&m.omoshiro)h.omoshiroCode=m.omoshiro;
-  if(!h.migotoCode&&m.migoto)h.migotoCode=m.migoto;
-  if(!h.mareStats&&stats)h.mareStats={...stats};
- }
- save();window.renderHorses?.();window.renderBreed?.();
+   mareStats:stats?{...stats}:undefined,transientBreedOnly:true
+ };
+ window.DABISTA_TRANSIENT_BREED_MARE=h;
+ window.renderBreed?.();
  return h;
 }
+
 function openRouteInBreed(id){
  const ctx=routeContexts.get(id);if(!ctx)return;
  window.DABISTA_SELECTED_SALE_ROUTE=ctx;
@@ -336,7 +341,7 @@ async function load(){
   if(window.DABISTA_SALE_RECOMMENDATION_CORE){
    recommendationAdvisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({planner,broodmareStats:engine.mareData.broodmares||[]});
   }
-  inject();fillMares();paintButtons();renderNotice();
+  cleanupLegacySaleSync();inject();fillMares();paintButtons();renderNotice();
   window.DABISTA_SALE_PLANNER={version:1,planner,run:runDesign,openRouteInBreed,routeContexts};
  }catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'sale-planner-load: '+String(e)})}
 }
