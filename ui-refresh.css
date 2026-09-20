@@ -499,6 +499,7 @@ body.ui-refresh .fab:after{
   font-size:11px;
   font-weight:900;
 }
+body.ui-refresh .ui-inline-add{display:none}
 body.ui-refresh dialog{
   width:min(94vw,560px);
   max-height:90vh;
@@ -540,7 +541,12 @@ body.ui-refresh .form h2{font-size:19px;letter-spacing:-.03em}
     box-shadow:none;
   }
   body.ui-refresh .tab:before{font-size:18px;margin-bottom:4px}
-  body.ui-refresh .fab{bottom:calc(76px + env(safe-area-inset-bottom));right:max(14px,env(safe-area-inset-right));z-index:44}
+  body.ui-refresh .fab{display:none!important}
+  body.ui-refresh #horses>.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  body.ui-refresh #horses>.toolbar #search{grid-column:1/-1;width:100%}
+  body.ui-refresh #horses>.toolbar .ui-inline-add,
+  body.ui-refresh #horses>.toolbar #photoBtn{display:block;width:100%;min-height:44px}
+  body.ui-refresh .ui-inline-add{display:block!important}
   body.ui-refresh .two{grid-template-columns:1fr}
   body.ui-refresh .three{grid-template-columns:repeat(3,1fr)}
   body.ui-refresh .breed-controls{grid-template-columns:1fr}
