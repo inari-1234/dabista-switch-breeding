@@ -31,7 +31,8 @@ const planner=plannerCore.create({
 const advisor=advisorCore.create({planner,broodmareStats:mareData.broodmares||[]});
 
 const cases={
-  'スプリングスイーツ':'elite-preserve',
+  'スプリングスイーツ':'elite-complete',
+  'エイスト':'elite-st-sp',
   'ミゼラブルウェイ':'high-balanced',
   'ミニミニデート':'sp-st-repair',
   'アルムナイ':'st-sp-repair',
@@ -46,6 +47,10 @@ const spring=advisor.mareAssessment('スプリングスイーツ');
 assert.strictEqual(spring.ranks.spst.rank,2);
 assert.strictEqual(spring.ranks.st.rank,1);
 assert.strictEqual(spring.ranks.pw.rank,3);
+assert.deepStrictEqual(advisor.mareStrategy('スプリングスイーツ').preserve,['SP','ST','PW']);
+assert.deepStrictEqual(advisor.mareStrategy('スプリングスイーツ').improve,[]);
+assert.deepStrictEqual(advisor.mareStrategy('エイスト').preserve,['ST','PW']);
+assert.deepStrictEqual(advisor.mareStrategy('エイスト').improve,['SP']);
 
 function firstThree(name){
   const two=planner.iterateTwo(name).next();
