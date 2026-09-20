@@ -7,6 +7,7 @@
 
   const PROFILE_LABELS={
     sp:'SP上限型',
+    speedCross:'SPクロス補強型',
     st:'ST・2400m型',
     balance:'バランス型',
     sire:'自家製種牡馬・血統価値型'
@@ -18,13 +19,14 @@
     bc:'BC長期狙い'
   };
   const GOAL_ORDER={
-    arc:['balance','st','sp','sire'],
-    stallion:['sire','sp','balance','st'],
-    rebuild:['balance','st','sp','sire'],
-    bc:['sp','balance','sire','st']
+    arc:['balance','speedCross','st','sp','sire'],
+    stallion:['sire','speedCross','sp','balance','st'],
+    rebuild:['balance','speedCross','st','sp','sire'],
+    bc:['speedCross','sp','balance','sire','st']
   };
   const PROFILE_CRITERIA={
     sp:'最終配合のSPニトロ → ST → PW → 完璧/見事/面白/凝った → 最終父の実績',
+    speedCross:'最終配合に速力/短距離の有効クロスを最低1本確保 → SPニトロ → ST → SP系クロス祖先数 → 配合理論',
     st:'最終父の2400m対応 → STニトロ → SP → 実績/底力 → 配合理論',
     balance:'SP15/ST5同時達成 → SP+ST → ST → SP → 2400m対応 → 実績',
     sire:'高能力繁殖牝馬群への安全配合数・SP15/ST5・SP17/ST5・面白/見事/完璧/凝った・最大ニトロを合算せず並列比較'
@@ -43,6 +45,10 @@
   function finalVector(route,profile){
     const f=route.final||{},s=f.sireStats||{},t=f.theory||{};
     if(profile==='sp')return[val(f.sp),val(f.st),val(f.pw),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate),grade(s.record)];
+    if(profile==='speedCross'){
+      const x=f.speedCross||{};
+      return[bool(x.has),val(f.sp),val(f.st),val(x.count),val(x.effect),val(f.pw),bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(s.record)];
+    }
     if(profile==='st')return[bool(val(s.maxD)>=2400),val(f.st),val(f.sp),grade(s.record),grade(s.guts),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate)];
     if(profile==='balance')return[bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.st),val(f.sp),bool(val(s.maxD)>=2400),grade(s.record),grade(s.guts)];
     if(profile==='theory')return[bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate),val(f.sp)+val(f.st),val(f.sp),val(f.st)];
@@ -60,12 +66,15 @@
   }
 
   function createCollector({topN=5,poolN=24}={}){
-    const lists={sp:[],st:[],balance:[],theory:[]};
+    const lists={sp:[],speedCross:[],st:[],balance:[],theory:[]};
     let count=0;
     return{
       push(route){
         count++;
-        for(const p of Object.keys(lists))insertTop(lists[p],route,compareProfile(p),poolN);
+        for(const p of Object.keys(lists)){
+          if(p==='speedCross'&&!route?.final?.speedCross?.has)continue;
+          insertTop(lists[p],route,compareProfile(p),poolN);
+        }
       },
       get count(){return count},
       pool(){
@@ -78,11 +87,12 @@
           count,
           profiles:{
             sp:lists.sp.slice(0,topN),
+            speedCross:lists.speedCross.slice(0,topN),
             st:lists.st.slice(0,topN),
             balance:lists.balance.slice(0,topN)
           },
           shortlists:{
-            sp:[...lists.sp],st:[...lists.st],balance:[...lists.balance],theory:[...lists.theory]
+            sp:[...lists.sp],speedCross:[...lists.speedCross],st:[...lists.st],balance:[...lists.balance],theory:[...lists.theory]
           },
           pool:this.pool()
         };
@@ -116,10 +126,24 @@
         spst:known?val(stats.sp)+val(stats.st):null
       };
     }
+    function speedCrossSummary(pair){
+      const eff=pair?.danger?.effectiveCrosses||[],factors=pair?.nitro?.factors||[];
+      const fm=new Map(factors.map(x=>[key(x.name),x])),seen=new Set(),names=[];
+      let short=0,speed=0,effect=0;
+      for(const x of eff){
+        const k=key(x.name);if(!k||seen.has(k))continue;seen.add(k);
+        const f=fm.get(k);if(!f)continue;
+        const sh=val(f.short),sp=val(f.speed);
+        if(!sh&&!sp)continue;
+        short+=sh;speed+=sp;effect+=sh*2+sp;names.push(x.name);
+      }
+      return{has:names.length>0,count:names.length,short,speed,effect,names};
+    }
     function compactFinal(pair,sireRecord){
       const n=pair.nitro||{},t=pair.theory||{},ss=statsForSire(sireRecord.name)||{};
       return{
         sp:val(n.sp),st:val(n.st),pw:val(n.pw),
+        speedCross:speedCrossSummary(pair),
         theory:{interesting:!!t.interesting,magnificent:!!t.magnificent,perfect:!!t.perfect},
         elaborate:!!pair.elaborate?.effective,
         sireStats:{record:ss.record||'-',guts:ss.guts||'-',stable:ss.stable||'-',minD:val(ss.minD),maxD:val(ss.maxD),price:val(ss.price)}
