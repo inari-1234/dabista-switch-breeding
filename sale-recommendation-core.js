@@ -258,8 +258,9 @@
     function goalVector(route,goal){
       const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
       const long=val(ss.maxD)>=2400,recA=grade(ss.record)>=3,arcReady=sp>=14&&st>=6&&long&&recA;
-      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
-      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
+      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,sc,st,sp,scEffect,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
+      const sc=!!f.speedCross?.has,scEffect=val(f.speedCross?.spEffect);
+      if(goal==='bc')return[bool(sp>=17&&st>=5&&sc),bool(sp>=17&&st>=5),sc,sp,scEffect,st,pw,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
       if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.record)];
       return[sp,sp+st,st,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
     }
@@ -307,7 +308,7 @@
 
     function routeForGoal(result,goal){
       if(!result)return null;
-      if(goal==='bc')return result.profiles?.sp?.[0]||result.profiles?.balance?.[0]||null;
+      if(goal==='bc')return result.profiles?.spCross?.[0]||result.profiles?.sp?.[0]||result.profiles?.balance?.[0]||null;
       if(goal==='arc')return result.profiles?.balance?.[0]||result.profiles?.st?.[0]||result.profiles?.sp?.[0]||null;
       if(goal==='rebuild')return result.profiles?.balance?.[0]||result.profiles?.st?.[0]||null;
       return result.profiles?.sp?.[0]||result.profiles?.balance?.[0]||null;
@@ -316,6 +317,8 @@
       const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{};
       return{
         sp:val(f.sp),st:val(f.st),pw:val(f.pw),spst:val(f.sp)+val(f.st),
+        speedCrossHas:!!f.speedCross?.has,speedCrossEffect:val(f.speedCross?.spEffect),
+        speedCrossShort:val(f.speedCross?.short),speedCrossSpeed:val(f.speedCross?.speed),
         long2400:val(ss.maxD)>=2400,recordA:grade(ss.record)>=3,gutsA:grade(ss.guts)>=3,
         interesting:bool(t.interesting),magnificent:bool(t.magnificent),perfect:bool(t.perfect),elaborate:bool(f.elaborate)
       };
@@ -325,12 +328,14 @@
       const a=routeFacts(prev),b=routeFacts(next),reasons=[];
       if(goal==='bc'){
         if(a.sp<17&&b.sp>=17&&b.st>=5)reasons.push('SP17/ST5ラインへ新たに到達');
+        if(!a.speedCrossHas&&b.speedCrossHas&&b.sp>=a.sp-2&&b.st>=Math.max(3,a.st-1))reasons.push('速力/短距離の有効クロスを新たに確保し、SP上限低下を2以内に抑制');
         if(b.sp>=a.sp+2&&b.st>=Math.max(3,a.st-1))reasons.push(`SPを${a.sp}→${b.sp}へ伸ばし、ST低下を抑制`);
         if(!a.perfect&&b.perfect&&b.sp>=a.sp-1)reasons.push('完璧配合を新たに成立させつつSPを維持');
         return reasons;
       }
       if(goal==='arc'){
         const ta=a.sp>=14&&a.st>=6&&a.long2400&&a.recordA, tb=b.sp>=14&&b.st>=6&&b.long2400&&b.recordA;
+        if(!a.speedCrossHas&&b.speedCrossHas&&b.spst>=a.spst-1&&b.st>=a.st-1)reasons.push('速力/短距離の有効クロスを新たに確保し、SP+STをほぼ維持');
         if(!ta&&tb)reasons.push('凱旋門向け基準（SP14/ST6・2400m対応父・実績A）へ新たに到達');
         const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
         if(ta&&highMother){
