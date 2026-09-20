@@ -4,11 +4,23 @@ on:
   push:
     paths:
       - 'sale-planner-core.js'
+      - 'app.js'
+      - 'breed-helper.js'
+      - 'v15.js'
+      - 'v16.js'
+      - 'v18.js'
+      - 'v19.js'
+      - 'v20.js'
+      - 'v21.js'
+      - 'v22.js'
+      - 'v24.js'
+      - 'v25.js'
       - 'sale-recommendation-core.js'
       - 'v26.js'
       - 'v27.js'
       - 'tests/mare-aware-selection-guidance.test.js'
       - 'tests/route-explainability.test.js'
+      - 'tests/transient-sale-mare-wiring.test.js'
       - 'data/mare-generation-advisor-validation.json'
       - 'index.html'
       - 'ui-refresh.css'
@@ -37,6 +49,17 @@ jobs:
 
       - name: Static syntax
         run: |
+          node --check app.js
+          node --check breed-helper.js
+          node --check v15.js
+          node --check v16.js
+          node --check v18.js
+          node --check v19.js
+          node --check v20.js
+          node --check v21.js
+          node --check v22.js
+          node --check v24.js
+          node --check v25.js
           node --check breeding-core.js
           node --check sale-planner-core.js
           node --check sale-recommendation-core.js
@@ -45,6 +68,7 @@ jobs:
           node --check ui-refresh.js
           node --check tests/mare-aware-selection-guidance.test.js
           node --check tests/route-explainability.test.js
+          node --check tests/transient-sale-mare-wiring.test.js
           python -m json.tool data/theory-master.json >/dev/null
           python -m json.tool data/stallions.json >/dev/null
           python -m json.tool data/default-broodmares.json >/dev/null
@@ -57,16 +81,16 @@ jobs:
           app=Path('app.js').read_text(encoding='utf-8')
           v26=Path('v26.js').read_text(encoding='utf-8')
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build'])==('1.17.0','2026.09.20-37')
-          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-37';" in app
-          assert "const V='1.17.0',BUILD='2026.09.20-37'" in v26
+          assert (v['version'],v['build'])==('1.17.0','2026.09.20-38')
+          assert "const APP_VERSION='1.17.0';" in app and "const APP_BUILD='2026.09.20-38';" in app
+          assert "BUILD=window.APP_BUILD||'2026.09.20-38'" in v26
           assert 'sale-planner-core.js?v=1.17.0' in idx
-          assert 'sale-recommendation-core.js?v=1.17.0-b37' in idx
-          assert 'v26.js?v=1.17.0-b37' in idx
-          assert 'v27.js?v=1.17.0-b37' in idx
+          assert 'sale-recommendation-core.js?v=1.17.0-b38' in idx
+          assert 'v26.js?v=1.17.0-b38' in idx
+          assert 'v27.js?v=1.17.0-b38' in idx
           assert 'ui-refresh.css?v=2026.09.20-b37' in idx
           assert 'ui-refresh.js?v=2026.09.20-b37' in idx
-          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b37') < idx.index('v26.js?v=1.17.0-b37') < idx.index('v27.js?v=1.17.0-b37')
+          assert idx.index('breeding-engine.js?v=1.17.0') < idx.index('sale-planner-core.js?v=1.17.0') < idx.index('sale-recommendation-core.js?v=1.17.0-b38') < idx.index('v26.js?v=1.17.0-b38') < idx.index('v27.js?v=1.17.0-b38')
           assert 'v23.js' not in idx
           assert '繁殖能力：未判明' in v26
           assert '<summary><b>血統15祖先</b></summary>' in v26
@@ -80,6 +104,10 @@ jobs:
           print('PASS sale planner release wiring')
           PY
           echo "PASS sale planner static syntax"
+
+      - name: Transient sale mare wiring regression
+        run: |
+          node tests/transient-sale-mare-wiring.test.js
 
       - name: Planner regression
         run: |
