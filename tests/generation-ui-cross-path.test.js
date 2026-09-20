@@ -130,6 +130,7 @@ assert.ok(v26.includes("q.value=''"),'rebuild starter sync must clear a conflict
 assert.ok(v27.includes("generationSection.insertAdjacentElement('beforebegin',gen)"),'formal generation diagnosis must appear before manual generation buttons');
 assert.ok(v27.includes('この繁殖牝馬の基礎評価'),'mare card must not use recommendation wording for a pre-diagnosis assessment');
 assert.ok(v27.includes('目的別の直仔・母評価（事前）'),'purpose cards must be explicitly marked as pre-diagnosis evaluation');
+assert.ok(v27.includes("if(!name){box.innerHTML='<div class=\"muted\">検索条件に一致する繁殖牝馬がありません。</div>';return}"),'empty mare search must clear stale mare advice');
 
 console.log(JSON.stringify({
   passed:true,
