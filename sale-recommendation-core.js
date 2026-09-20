@@ -117,7 +117,21 @@
       const routeNote=`血統側：SP${sp}/ST${st}/PW${pw}ニトロ${theoryNames.length?'・'+theoryNames.join('＋'):''}`;
 
       let phase='素材づくり',headline='',body='';
-      if(remaining>=2){
+      if(strategy.id==='unknown'){
+        if(remaining>=2){
+          phase='能力確認を兼ねた素材づくり';
+          headline='まず母系の実力を把握する';
+          body='母の繁殖SP/ST/PWが未判明なので、特定距離の印を最初から必須にしません。複数距離で印と走りを確認し、明確に能力上位と判断できる牝馬だけを次世代へ残します。';
+        }else if(remaining===1){
+          phase='締め前の能力確認';
+          headline='能力を確認できた牝馬だけ締めへ進める';
+          body='実馬でSP/STの方向性を確認できた牝馬だけを残し、その結果に合わせて最終父を選びます。未判明のまま2400m型・SP型と決め打ちしません。';
+        }else{
+          phase='締め';
+          headline='実馬評価に合わせて最終目的を決める';
+          body='ここまでに確認できた実馬能力と、最終ニトロ・配合理論・父能力を合わせて締め配合を判断します。';
+        }
+      }else if(remaining>=2){
         phase='素材づくり';
         if(strategy.id==='elite-preserve'){
           headline='母の高能力を崩さないことを最優先';
