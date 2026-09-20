@@ -49,7 +49,13 @@ async function loadStallions(){
     const d=await r.json();stallionMaster=d.stallions||[];renderBreed();
   }catch(e){errors.push({at:new Date().toISOString(),message:'stallion-master: '+String(e)});const el=document.querySelector('#breedCandidates');if(el)el.innerHTML='<div class="empty">種牡馬マスタの取得に失敗しました。更新確認を試してください。</div>'}
 }
-function mareOptions(){return db.horses.filter(h=>h.sex==='牝').map(h=>`<option value="${h.id}">${esc(h.name)}</option>`).join('')}
+function breedMareById(id){return window.getBreedHorseById?.(id)||db.horses.find(h=>h.id===id)||null}
+function transientMare(){const h=window.DABISTA_TRANSIENT_BREED_MARE;return h?.sex==='牝'?h:null}
+function mareOptions(){
+  const saved=db.horses.filter(h=>h.sex==='牝').map(h=>`<option value="${h.id}">${esc(h.name)}</option>`).join('');
+  const t=transientMare();
+  return (t?`<option value="${esc(t.id)}">${esc(t.name)}（セリ設計・一時）</option>`:'')+saved;
+}
 function renderBreed(){
   const mareSel=document.querySelector('#breedMare');if(!mareSel)return;
   const keep=mareSel.value;mareSel.innerHTML='<option value="">牝馬を選択</option>'+mareOptions();if([...mareSel.options].some(o=>o.value===keep))mareSel.value=keep;
@@ -58,7 +64,7 @@ function renderBreed(){
   const box=document.querySelector('#breedCandidates');
   box.innerHTML=a.map((x,i)=>`<div class="card"><div class="row"><div><b>${i+1}. ${esc(x.name)}</b><div class="muted">${x.minD}–${x.maxD}m / ${x.growth} / ${x.price}万円</div></div><div class="score">${x.score}</div></div><div class="grid"><div class="stat"><b>${x.record}/${x.guts}/${x.stable}</b><small>実績/底力/安定</small></div><div class="stat"><b>${x.nsp}</b><small>NSP</small></div><div class="stat"><b>${x.nst}</b><small>NST</small></div></div><p class="muted">${esc(roleText(x,breedGoal))}</p></div>`).join('')||'<div class="empty">該当種牡馬なし</div>';
   const info=document.querySelector('#breedNotice');
-  const mare=db.horses.find(h=>h.id===mareSel.value);
+  const mare=breedMareById(mareSel.value);
   if(mare){
     let warn=[];if(mare.sire==='イナリシャトル')warn.push('イナリシャトル直仔牝馬');if(mare.sire==='イナリシャトル'&&mare.dam)warn.push('近交・クロスは4代血統登録後に必ず確認');
     info.textContent=`選択牝馬：${mare.name}（父 ${mare.sire||'不明'}）${warn.length?'｜'+warn.join('・'):''}`;
