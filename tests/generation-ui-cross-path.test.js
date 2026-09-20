@@ -120,7 +120,7 @@ const v27=fs.readFileSync('v27.js','utf8');
 assert.ok(v26.includes('saleGoalSection'),'goal section must be an explicit UI block');
 assert.ok(v26.includes("generationSource='unset'"),'generation selection must start neutral');
 assert.ok(v26.includes("setGeneration(rec.generation")===false,'v26 must not invent advisor result');
-assert.ok(v27.includes("keys=['sp','speedCross','st','balance','theory']"),'3-generation advisor must retain the SP-cross axis');
+assert.ok(v27.includes("keys=['sp','speedCross','production','st','balance','theory']"),'3-generation advisor must retain SP-cross and strong-horse production axes');
 assert.ok(v27.includes("setGeneration?.(rec.generation,'diagnosis')"),'diagnosis must synchronize the selected generation');
 assert.ok(v27.includes('母の補強方針'),'mare strategy wording must not be confused with the selected goal');
 assert.ok(v27.includes('正式な推奨世代'),'pre-diagnosis note must distinguish itself from the formal generation diagnosis');
