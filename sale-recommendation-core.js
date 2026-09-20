@@ -275,7 +275,9 @@
         method,count:0,sp15st5:0,sp17st5:0,sp18st5:0,
         interesting:0,magnificent:0,perfect:0,elaborate:0,
         maxSp:0,maxSt:0,maxPw:0,maxSpSt:0,
-        long2400:0,recordA:0,balanceLongA:0,arcReady:0,bestRoute:null,bestGoal:''
+        long2400:0,recordA:0,balanceLongA:0,arcReady:0,
+        speedCrossRoutes:0,sp17st5SpeedCross:0,maxSpWithSpeedCross:0,
+        bestRoute:null,bestGoal:''
       };
     }
     function addRoute(summary,route,goal){
@@ -289,6 +291,11 @@
       if(t.magnificent)summary.magnificent++;
       if(t.perfect)summary.perfect++;
       if(f.elaborate)summary.elaborate++;
+      if(f.speedCross?.has){
+        summary.speedCrossRoutes++;
+        summary.maxSpWithSpeedCross=Math.max(summary.maxSpWithSpeedCross,sp);
+        if(sp>=17&&st>=5)summary.sp17st5SpeedCross++;
+      }
       if(val(ss.maxD)>=2400)summary.long2400++;
       if(grade(ss.record)>=3)summary.recordA++;
       if(sp>=15&&st>=5&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.balanceLongA++;
