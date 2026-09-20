@@ -73,7 +73,7 @@ function renderBreed(){
 function initBreedHelper(){
   const mare=document.querySelector('#breedMare'),goal=document.querySelector('#breedGoal'),search=document.querySelector('#stallionSearch');
   if(!mare||!goal||!search)return;
-  goal.onchange=()=>{breedGoal=goal.value;renderBreed()};mare.onchange=renderBreed;search.oninput=renderBreed;
+  goal.onchange=()=>{breedGoal=goal.value;renderBreed()};mare.onchange=()=>{const t=window.DABISTA_TRANSIENT_BREED_MARE;if(t&&mare.value!==t.id)window.DABISTA_TRANSIENT_BREED_MARE=null;renderBreed()};search.oninput=renderBreed;
   loadStallions();
 }
 initBreedHelper();
