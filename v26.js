@@ -24,6 +24,8 @@ function style(){
  .sale-seg.gens{grid-template-columns:repeat(3,1fr)}
  .sale-seg button{border:1px solid #d6ddd8;background:#fff;border-radius:9px;padding:9px 6px;font-size:11px;color:#405048}
  .sale-seg button.on{background:#173f2e;color:#fff;border-color:#173f2e;font-weight:700}
+ .sale-seg.gens button.on.manual{background:#fff7df;color:#725109;border-color:#d6b566}
+ .sale-seg.gens button.on.diagnosed{background:#173f2e;color:#fff;border-color:#173f2e}
  .sale-mare-summary{margin-top:8px;padding:10px;border-radius:10px;background:#f4f7f4;font-size:11px;line-height:1.55}
  .sale-ability-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}
  .sale-ability-grid>div{background:#fff;border-radius:8px;padding:7px;text-align:center}
@@ -132,7 +134,12 @@ function setGeneration(n,source='manual'){
 }
 function paintButtons(){
  document.querySelectorAll('[data-sale-goal]').forEach(b=>b.classList.toggle('on',b.dataset.saleGoal===db.salePlanner.goal));
- document.querySelectorAll('[data-sale-gen]').forEach(b=>b.classList.toggle('on',+b.dataset.saleGen===+db.salePlanner.generation));
+ document.querySelectorAll('[data-sale-gen]').forEach(b=>{
+  const selected=+b.dataset.saleGen===+db.salePlanner.generation;
+  b.classList.toggle('on',selected);
+  b.classList.toggle('diagnosed',selected&&db.salePlanner.generationSource==='diagnosis');
+  b.classList.toggle('manual',selected&&db.salePlanner.generationSource==='manual');
+ });
  const st=$('#saleGenerationState');
  if(st){
   if(!db.salePlanner.generation)st.textContent='未選択：「おすすめ配合世代を診断」を実行するか、比較したい世代を手動で選択してください。';
