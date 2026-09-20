@@ -94,7 +94,7 @@ function invalidateGeneration(message='条件を変更したため、世代診�
 }
 const yieldUi=()=>new Promise(r=>setTimeout(r,0));
 function previewBases(shortlists,maxEach=12){
- const out=[],seen=new Set(),keys=['sp','st','balance','theory'];
+ const out=[],seen=new Set(),keys=['sp','spCross','st','balance','theory'];
  for(let i=0;i<maxEach;i++)for(const k of keys){
   const r=shortlists?.[k]?.[i];if(!r)continue;
   const id=planner.routeKey(r);if(!seen.has(id)){seen.add(id);out.push(r)}
@@ -120,6 +120,7 @@ function generationCard(n,g,goal,recommended){
  return `<div class="generation-card ${recommended===n?'recommended':''}">
   <h5>${recommended===n?'★ ':''}${label} <small>${method}</small></h5>
   <div class="gmetric"><span>代表SP/ST</span><b>${f.sp}/${f.st}</b></div>
+  <div class="gmetric"><span>SP系クロス</span><b>${f.speedCrossHas?('あり +'+f.speedCrossEffect):'なし'}</b></div>
   <div class="gmetric"><span>最大SP</span><b>${s.maxSp}</b></div>
   <div class="gmetric"><span>最大SP+ST</span><b>${s.maxSpSt}</b></div>
   <div class="gmetric"><span>SP15/ST5</span><b>${s.sp15st5}</b></div>
@@ -139,6 +140,7 @@ function recommendationDetail(name,goal,rec){
   :goal==='bc'?'BCではSP上限を優先しつつ、STを極端に落とさないルートを選びます。'
   :goal==='rebuild'?'繁殖再建では一頭の最大値より、次代に残しやすいSP/STバランスを優先します。'
   :'自家製種牡馬では高能力繁殖牝馬群への血統汎用性を優先します。';
+ const speedNote='SP系クロス：直仔代表 '+(a.speedCrossHas?'あり（+'+a.speedCrossEffect+'）':'なし')+' → '+label+'代表 '+(b.speedCrossHas?'あり（+'+b.speedCrossEffect+'）':'なし')+'。';
  const steps=expanded.stages.map(st=>{
    const adv=advisor.selectionAdvice(name,goal,st,expanded.stages.length);
    if(!adv)return'';
