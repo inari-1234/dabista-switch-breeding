@@ -100,6 +100,9 @@
       }else if(r.spst.topPercent>60){
         id='rebuild';label='能力再建型';priority='一度に完成を狙わず、まず母より明確な改善を作る';
       }
+      if(id==='elite-complete'){preserve.splice(0,preserve.length,'SP','ST','PW');improve.splice(0,improve.length)}
+      if(id==='elite-st-sp'){preserve.splice(0,preserve.length,'ST','PW');improve.splice(0,improve.length,'SP')}
+      if(id==='elite-sp-st'){preserve.splice(0,preserve.length,'SP','PW');improve.splice(0,improve.length,'ST')}
       return{
         id,label,priority,preserve,improve,
         stats:{sp:val(s.sp),st:val(s.st),pw:val(s.pw),spst:val(s.sp)+val(s.st)},
