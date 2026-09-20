@@ -53,6 +53,8 @@ function style(){
  .cross-priority{font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;background:#e9eeeb;color:#52655c}
  .cross-item.high .cross-priority{background:#f4d98b;color:#725109}
  .cross-factor{font-size:8px;color:#65766e;margin-top:3px}
+ .cross-effects{font-size:9px;color:#344d41;margin-top:4px;font-weight:700}
+ .cross-tradeoff{display:inline-block;margin-left:3px;padding:1px 5px;border-radius:999px;background:#fff0d8;color:#815d13;font-size:8px}
  .route-breed-link{width:100%;margin-top:8px}
  .sale-route-bridge{border-color:#bcd8ca!important;background:linear-gradient(145deg,#fff,#f2f8f5)!important}
  .route-bridge-path{font-weight:800;font-size:12px;line-height:1.55;margin:6px 0}
@@ -174,15 +176,17 @@ function crossHtml(st){
  if(!insight.rawCount)return '<div class="sale-effect-block"><span class="sale-effect-title">クロス</span><span class="muted">なし</span></div>';
  let items='';
  for(const x of insight.items){
-  const factor=x.factor?'祖先因子寄与 SP'+signed(x.factor.sp)+' / ST'+signed(x.factor.st)+' / PW'+signed(x.factor.pw):'祖先因子寄与なし';
-  const priority=x.priority==='high'?'注目':'有効';
-  items+='<div class="cross-item '+x.priority+'"><div class="cross-head"><b>'+esc(x.name)+' '+x.sireGen+'×'+x.mareGen+'</b><span class="cross-priority">'+priority+'</span></div><div class="cross-factor">'+factor+'</div></div>';
+  const factor=x.factor?'ニトロ寄与 SP'+signed(x.factor.sp)+' / ST'+signed(x.factor.st)+' / PW'+signed(x.factor.pw):'ニトロ寄与なし';
+  const effectText=x.effects?.length?x.effects.map(e=>e.label+'（'+e.detail+'）').join('・'):'個別効果データなし';
+  const trade=x.hasTradeoff?'<span class="cross-tradeoff">トレードオフあり</span>':'';
+  items+='<div class="cross-item '+x.priority+'"><div class="cross-head"><b>'+esc(x.name)+' '+x.sireGen+'×'+x.mareGen+'</b><span class="cross-priority">'+esc(x.priorityLabel||'クロス成立')+'</span></div><div class="cross-effects">'+esc(effectText)+' '+trade+'</div><div class="cross-factor">'+factor+'</div></div>';
  }
  const note=insight.suppressedCount
   ?'生クロス '+insight.rawCount+'件 / 祖先内包を除く有効クロス '+insight.effectiveCount+'件 / 除外 '+insight.suppressedCount+'件'
-  :'有効クロス '+insight.effectiveCount+'件。因子寄与はニトロ側の表示で、クロス効果そのものとは分けて扱います。';
+  :'有効クロス '+insight.effectiveCount+'件。色の強調は祖先因子の影響量で、クロス成立そのものの強弱評価ではありません。';
  return '<div class="sale-effect-block"><span class="sale-effect-title">有効クロス</span>'+(items?'<div class="cross-list">'+items+'</div>':'<span class="muted">有効クロスなし</span>')+'<div class="sale-method">'+note+'</div></div>';
 }
+
 function stageHtml(st,totalStages,goal){
  const advice=recommendationAdvisor?.selectionAdvice?.(db.salePlanner.mare,goal,st,totalStages)||null;
  const ss=st.sireStats||{},n=st.nitro||{},d=st.danger||{},crosses=st.crosses||[];
@@ -207,11 +211,14 @@ function bridgeStageHtml(st){
  const n=st.nitro||{},ss=st.sireStats||{};
  return '<div class="route-bridge-stage"><b>'+st.generation+'代目：'+esc(st.sire)+'</b><br>SP '+fmt(n.sp)+' / ST '+fmt(n.st)+' / PW '+fmt(n.pw)+'　・　'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m　・　実績'+esc(ss.record||'-')+' / 底力'+esc(ss.guts||'-')+' / 安定'+esc(ss.stable||'-')+'<div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</div>';
 }
-function renderRouteBreedBridge(ctx){
+function renderRouteBreedBridge(ctx,syncedHorse){
  const sec=$('#breed');if(!sec||!ctx)return;
  let card=$('#saleRouteBreedBridge');
  if(!card){card=document.createElement('div');card.id='saleRouteBreedBridge';card.className='card sale-route-bridge';sec.insertBefore(card,sec.firstChild)}
- card.innerHTML='<div class="row"><div><span class="badge gold">セリ設計から連携</span><h3 class="section-title" style="margin-top:7px">'+esc(ctx.mare)+'｜'+esc(planner.goalLabels[ctx.goal]||ctx.goal)+'</h3></div><button type="button" class="secondary" id="closeRouteBridge">閉じる</button></div><div class="route-bridge-path">'+ctx.route.sires.map(esc).join(' → ')+'</div><div class="sale-method">セリ設計で選んだルートの判定を、そのまま配合カテゴリへ引き継いでいます。</div>'+ctx.x.stages.map(bridgeStageHtml).join('')+'<button type="button" class="secondary route-breed-link" id="filterFinalSire">最終父を下の候補欄で確認</button>';
+ const syncNote=syncedHorse
+  ?'<div class="sale-method">起点牝馬「'+esc(ctx.mare)+'」を配合確認用に同期済みです。下の通常候補欄もこの牝馬を選択した状態にしています。</div>'
+  :'<div class="notice">起点牝馬を通常候補欄へ同期できなかったため、ルート判定はこの連携カードの表示を基準にしてください。</div>';
+ card.innerHTML='<div class="row"><div><span class="badge gold">セリ設計から連携</span><h3 class="section-title" style="margin-top:7px">'+esc(ctx.mare)+'｜'+esc(planner.goalLabels[ctx.goal]||ctx.goal)+'</h3></div><button type="button" class="secondary" id="closeRouteBridge">閉じる</button></div><div class="route-bridge-path">'+ctx.route.sires.map(esc).join(' → ')+'</div><div class="sale-method">セリ設計で選んだルートの判定を、配合カテゴリでも同じ計算結果で確認できます。</div>'+syncNote+ctx.x.stages.map(bridgeStageHtml).join('')+'<button type="button" class="secondary route-breed-link" id="filterFinalSire">最終父を候補欄で検索</button>';
  $('#closeRouteBridge').onclick=()=>card.remove();
  $('#filterFinalSire').onclick=()=>{
   const q=$('#stallionSearch');if(!q)return;
@@ -221,15 +228,51 @@ function renderRouteBreedBridge(ctx){
  };
  card.scrollIntoView({behavior:'smooth',block:'start'});
 }
+function ensureSaleMareForBreed(name){
+ if(!engine||!name)return null;
+ const key=engine.core?.key||((x)=>String(x||'').normalize('NFKC').trim().toLowerCase());
+ let h=(db.horses||[]).find(x=>x.sex==='牝'&&key(x.name)===key(name))||null;
+ const m=engine.master?.(name),stats=engine.mareStats?.(name);
+ if(!m||!Array.isArray(m.ancestor)||m.ancestor.length!==15)return h;
+ if(!h){
+  h={
+   id:crypto.randomUUID(),name,sex:'牝',generation:'セリ牝馬（配合確認用）',
+   sire:m.ancestor[0]||'',dam:'',minD:'',maxD:'',record:'-',guts:'-',stable:'-',starts:'',g1:'',
+   note:'セリ牝馬設計から配合確認用に同期',
+   masterRef:{type:'default-broodmare',name},
+   ancestor15:[...m.ancestor],omoshiroCode:m.omoshiro||'',migotoCode:m.migoto||'',
+   mareStats:stats?{...stats}:undefined,salePlannerSync:true
+  };
+  db.horses.push(h);
+ }else{
+  if(!h.masterRef)h.masterRef={type:'default-broodmare',name};
+  if(!Array.isArray(h.ancestor15)||h.ancestor15.length!==15)h.ancestor15=[...m.ancestor];
+  if(!h.omoshiroCode&&m.omoshiro)h.omoshiroCode=m.omoshiro;
+  if(!h.migotoCode&&m.migoto)h.migotoCode=m.migoto;
+  if(!h.mareStats&&stats)h.mareStats={...stats};
+ }
+ save();window.renderHorses?.();window.renderBreed?.();
+ return h;
+}
 function openRouteInBreed(id){
  const ctx=routeContexts.get(id);if(!ctx)return;
  window.DABISTA_SELECTED_SALE_ROUTE=ctx;
+ const synced=ensureSaleMareForBreed(ctx.mare);
  const goalMap={arc:'breaker',bc:'breaker',rebuild:'rebuild',stallion:'successor'};
  const goal=$('#breedGoal');
  if(goal&&goalMap[ctx.goal]){goal.value=goalMap[ctx.goal];goal.dispatchEvent(new Event('change',{bubbles:true}))}
  $('.tab[data-tab="breed"]')?.click();
- setTimeout(()=>renderRouteBreedBridge(ctx),30);
+ setTimeout(()=>{
+  window.renderBreed?.();
+  const ms=$('#breedMare');
+  if(ms&&synced){
+   ms.value=synced.id;
+   ms.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  renderRouteBreedBridge(ctx,synced);
+ },80);
 }
+
 function profileHtml(profile,routes,goal,scope){
  const label=planner.profileLabels[profile],criteria=planner.profileCriteria[profile];
  if(!routes?.length)return`<div class="card sale-profile"><h3>${esc(label)}</h3><p class="muted">条件を満たす候補を取得できませんでした。</p></div>`;
