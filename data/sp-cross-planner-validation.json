@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-09-20",
+  "purpose": "SPニトロ上限と速力・短距離の有効クロスを別軸で評価するSPクロス補強型の回帰基準。",
+  "rules": {
+    "separation": "SPニトロは従来値を保持し、速力/短距離クロス寄与をNSPへ加算しない。",
+    "profile": "SPクロス補強型は速力/短距離の有効クロス成立を必須とし、その中でSPニトロを最優先する。",
+    "shortTradeoff": "短距離クロスはSP側の補強要素だがST低下を伴うため、STニトロは別軸で維持確認する。",
+    "beam": "3代条件付き探索の候補集合にSPクロス補強型を追加する。"
+  },
+  "direct331": {
+    "totalMares": 331,
+    "withSpeedCrossCandidate": 323,
+    "withoutSpeedCrossCandidate": 8,
+    "coveragePct": 97.6,
+    "avgSpNitroLossVsSpCeiling": 1.22,
+    "within2NitroLoss": 256,
+    "within2Pct": 79.3,
+    "noCandidateMares": [
+      "セルン",
+      "ピアニー",
+      "ベルリンブルー",
+      "ロズウェルリポート",
+      "ワイルドストロベリー",
+      "ジョアニナ",
+      "ツインコーラス",
+      "シリアルホールド"
+    ]
+  },
+  "samples": [
+    {
+      "mare": "スプリングスイーツ",
+      "spCeiling": {
+        "sire": "グランプリボス",
+        "sp": 19,
+        "st": 6
+      },
+      "spCross": {
+        "sire": "グランプリボス",
+        "sp": 19,
+        "st": 6,
+        "effect": 2,
+        "crosses": [
+          "Halo"
+        ],
+        "kind": "短距離"
+      }
+    },
+    {
+      "mare": "エイスト",
+      "spCeiling": {
+        "sire": "グランプリボス",
+        "sp": 16,
+        "st": 8
+      },
+      "spCross": {
+        "sire": "ロードアルティマ",
+        "sp": 15,
+        "st": 8,
+        "effect": 2,
+        "crosses": [
+          "Raise a Native",
+          "Native Dancer"
+        ],
+        "kind": "速力"
+      }
+    },
+    {
+      "mare": "ミゼラブルウェイ",
+      "spCeiling": {
+        "sire": "グランプリボス",
+        "sp": 19,
+        "st": 4
+      },
+      "spCross": {
+        "sire": "ロードアルティマ",
+        "sp": 18,
+        "st": 3,
+        "effect": 1,
+        "crosses": [
+          "Mr.Prospector"
+        ],
+        "kind": "速力"
+      }
+    },
+    {
+      "mare": "ミニミニデート",
+      "spCeiling": {
+        "sire": "グランプリボス",
+        "sp": 20,
+        "st": 7
+      },
+      "spCross": {
+        "sire": "ロジユニヴァース",
+        "sp": 17,
+        "st": 6,
+        "effect": 2,
+        "crosses": [
+          "Mr.Prospector",
+          "Nureyev"
+        ],
+        "kind": "速力"
+      }
+    },
+    {
+      "mare": "ラブアタック",
+      "spCeiling": {
+        "sire": "フェノーメノ",
+        "sp": 20,
+        "st": 2
+      },
+      "spCross": {
+        "sire": "ワイルドラッシュ",
+        "sp": 19,
+        "st": 5,
+        "effect": 1,
+        "crosses": [
+          "Buckpasser"
+        ],
+        "kind": "速力"
+      }
+    }
+  ],
+  "goalRegression": {
+    "eistArc": {
+      "representative": "ステイゴールド",
+      "sp": 14,
+      "st": 8,
+      "reason": "凱旋門既知ルートを維持"
+    },
+    "eistBc": {
+      "representative": "ロードアルティマ",
+      "sp": 15,
+      "st": 8,
+      "speedCross": true
+    },
+    "loveAttackBc": {
+      "representative": "ワイルドラッシュ",
+      "sp": 19,
+      "st": 5,
+      "speedCross": true
+    }
+  },
+  "passed": true
+}
