@@ -42,6 +42,9 @@
     function archetype(ranks){
       if(!ranks)return'繁殖能力未判明';
       const sp=ranks.sp.topPercent,st=ranks.st.topPercent,pw=ranks.pw.topPercent,sum=ranks.spst.topPercent;
+      if(sum<=5&&sp<=10&&st<=10&&pw<=10)return'超高能力総合母';
+      if(sum<=10&&st<=10&&sp>15)return'高能力ST優位母';
+      if(sum<=10&&sp<=10&&st>15)return'高能力SP優位母';
       if(sum<=10&&st<=20)return'高能力・中長距離母';
       if(sum<=25&&sp<=25&&st<=25)return'高能力バランス母';
       if(sp<=20&&st>45)return'SP寄り母';
@@ -80,7 +83,13 @@
       if(r.st.topPercent<=30)preserve.push('ST'); else improve.push('ST');
       if(r.pw.topPercent<=30)preserve.push('PW'); else improve.push('PW');
       let id='balanced-build',label='バランス改善型',priority='弱点を補いながらSP/STを底上げ';
-      if(r.spst.topPercent<=5){
+      if(r.spst.topPercent<=5&&r.sp.topPercent<=10&&r.st.topPercent<=10&&r.pw.topPercent<=15){
+        id='elite-complete';label='超高能力総合型';priority='SP/ST/PWを維持し、最終配合で上限と配合理論を伸ばす';
+      }else if(r.spst.topPercent<=5&&r.st.topPercent<=10&&r.sp.topPercent>15){
+        id='elite-st-sp';label='高能力ST優位・SP補強型';priority='高いST/PWを守りながらSPを引き上げる';
+      }else if(r.spst.topPercent<=5&&r.sp.topPercent<=10&&r.st.topPercent>15){
+        id='elite-sp-st';label='高能力SP優位・ST補強型';priority='高いSPを守りながらSTを引き上げる';
+      }else if(r.spst.topPercent<=5){
         id='elite-preserve';label='超高能力維持型';priority='母能力を落とさず最終配合の上限を伸ばす';
       }else if(r.spst.topPercent<=25&&r.sp.topPercent<=30&&r.st.topPercent<=30){
         id='high-balanced';label='高能力バランス型';priority='高い基礎能力を維持し、配合理論と最終ニトロを整える';
@@ -95,9 +104,11 @@
         id,label,priority,preserve,improve,
         stats:{sp:val(s.sp),st:val(s.st),pw:val(s.pw),spst:val(s.sp)+val(s.st)},
         ranks:r,
-        note:id==='elite-preserve'
+        note:(id==='elite-complete'||id==='elite-preserve')
           ?'高能力母は、序盤から2400m適性を要求するより、能力維持と血統素材づくりを優先します。'
-          :'弱点側を補いながら、強みを失わない牝馬だけを次世代へ残します。'
+          :(id==='elite-st-sp'?'ST/PWの強みを維持しつつ、SPを補強する段階設計を優先します。'
+          :(id==='elite-sp-st'?'SPの強みを維持しつつ、STを補強する段階設計を優先します。'
+          :'弱点側を補いながら、強みを失わない牝馬だけを次世代へ残します。'))
       };
     }
 
@@ -133,9 +144,15 @@
         }
       }else if(remaining>=2){
         phase='素材づくり';
-        if(strategy.id==='elite-preserve'){
+        if(strategy.id==='elite-complete'||strategy.id==='elite-preserve'){
           headline='母の高能力を崩さないことを最優先';
           body='この段階では2400m適性を必須にしません。SP/ST/PWのいずれかを大きく落とす産駒を避け、1600〜2000m付近で総合的に印が安定する牝馬を広めに残します。';
+        }else if(strategy.id==='elite-st-sp'){
+          headline='ST/PWを守りながらSP改善の余地を作る';
+          body='高いSTとPWを崩さず、SP印が母系より改善する牝馬を優先します。序盤では2400m印を必須にせず、1600〜2000mで速度側の改善を確認します。';
+        }else if(strategy.id==='elite-sp-st'){
+          headline='SPを守りながらST改善の余地を作る';
+          body='高いSPを崩さず、中距離側でST印が改善する牝馬を優先します。序盤では2400m適性を完成条件にしません。';
         }else if(strategy.id==='high-balanced'){
           headline='高い基礎能力を保ったまま、次の理論につなぐ';
           body='序盤から完成距離を求めず、SP/ST/PWのバランスを大きく崩さない牝馬を優先します。能力差が小さい場合は、次代で見事・完璧・有効クロスを作りやすい血統側を優先します。';
@@ -155,9 +172,15 @@
       }else if(remaining===1){
         phase='締め前の方向付け';
         if(goal==='arc'){
-          if(strategy.id==='elite-preserve'||strategy.id==='high-balanced'){
+          if(strategy.id==='elite-complete'||strategy.id==='elite-preserve'||strategy.id==='high-balanced'){
             headline='能力維持に加えて、締めで2400mへ伸ばせる血統を残す';
             body='1800〜2200m付近でSP/STの両方が安定する牝馬を優先します。ここでも2400m印を絶対条件にはせず、最終父で距離適性・実績A・最終ニトロを完成させます。';
+          }else if(strategy.id==='elite-st-sp'){
+            headline='締め前にSPを引き上げ、STの強みを残す';
+            body='1800〜2200mでSTの強みを保ちながらSP印が改善する牝馬を優先します。最終父で2400m対応と上限を完成させます。';
+          }else if(strategy.id==='elite-sp-st'){
+            headline='締め前にSTを引き上げ、SPの強みを残す';
+            body='1800〜2200mでSPを保ちながらST印が改善する牝馬を優先します。最終父で2400m対応を完成させます。';
           }else if(strategy.id==='sp-st-repair'){
             headline='締め前にST不足を解消する';
             body='SPの強みを維持したまま、1800〜2200mでST側の印が付く牝馬を優先します。2400m対応は最終父で仕上げます。';
