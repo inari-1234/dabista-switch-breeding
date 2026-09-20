@@ -32,6 +32,9 @@ function style(){
  .generation-card h5{margin:0 0 5px;font-size:10px}.generation-card small{display:block;color:#66736c;font-size:8px;line-height:1.45}
  .generation-card .gmetric{display:flex;justify-content:space-between;gap:6px;font-size:9px;padding:2px 0}
  .generation-reasons{margin:8px 0 0;padding:0 0 0 16px;color:#53675e;font-size:9px;line-height:1.55}
+ .generation-decision{margin-top:8px;padding:9px;border-radius:10px;background:#eef7f2;border:1px solid #cde1d6}
+ .generation-decision b{display:block;font-size:10px;color:#23543e;margin-bottom:4px}
+ .generation-decision ul{margin:0;padding-left:17px;font-size:9px;line-height:1.55;color:#456055}
  .generation-why{margin-top:8px;padding:9px;border:1px solid #dce7e1;border-radius:10px;background:#fff}
  .generation-why>strong{display:block;font-size:11px;color:#264f3c}
  .generation-delta{margin-top:5px;padding:6px 7px;border-radius:8px;background:#f2f6f3;font-size:9px;line-height:1.5}
@@ -142,8 +145,15 @@ function recommendationDetail(name,goal,rec){
    return '<div class="generation-step"><b>'+st.generation+'代目｜'+esc(adv.phase)+'</b><span>'+esc(adv.headline)+'。'+esc(adv.body)+'</span></div>';
  }).join('');
  const label=rec.generation===1?'直仔':rec.generation+'代';
- return '<div class="generation-why"><strong>なぜ'+label+'なのか</strong><div class="generation-delta">直仔代表 → '+label+'代表：SP '+a.sp+'→'+b.sp+'（'+signed(dSp)+'） / ST '+a.st+'→'+b.st+'（'+signed(dSt)+'） / SP+ST '+a.spst+'→'+b.spst+'（'+signed(dSum)+'）<br>'+esc(goalRule)+'</div><div class="generation-timeline">'+steps+'</div></div>';
+ const transition=rec.generation===3?rec.transitions?.to3:rec.generation===2?rec.transitions?.to2:null;
+ const decisionReasons=transition?.reasons||[];
+ const fromLabel=transition?.from===2?'2代':'直仔';
+ const decision=decisionReasons.length
+  ?'<div class="generation-decision"><b>'+fromLabel+'→'+label+'を選ぶ決め手</b><ul>'+decisionReasons.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>'
+  :'<div class="generation-decision"><b>'+label+'を選ぶ理由</b><ul><li>追加世代による明確な上積み条件がないため、短い世代を優先します。</li></ul></div>';
+ return '<div class="generation-why"><strong>なぜ'+label+'なのか</strong>'+decision+'<div class="generation-delta">直仔代表 → '+label+'代表：SP '+a.sp+'→'+b.sp+'（'+signed(dSp)+'） / ST '+a.st+'→'+b.st+'（'+signed(dSt)+'） / SP+ST '+a.spst+'→'+b.spst+'（'+signed(dSum)+'）<br>'+esc(goalRule)+'</div><div class="generation-timeline">'+steps+'</div></div>';
 }
+
 async function runGenerationAdvisor(){
  if(!advisor||!planner)return;
  const name=$('#saleMareSelect')?.value,goal=window.db?.salePlanner?.goal||'arc';
