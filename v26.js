@@ -296,7 +296,12 @@ function openRouteInBreed(id){
 
 function profileHtml(profile,routes,goal,scope){
  const label=planner.profileLabels[profile],criteria=planner.profileCriteria[profile];
- if(!routes?.length)return`<div class="card sale-profile"><h3>${esc(label)}</h3><p class="muted">条件を満たす候補を取得できませんでした。</p></div>`;
+ if(!routes?.length){
+  const empty=profile==='speedCross'
+   ?'SPクロス補強型候補なし。この世代の探索範囲では、安全な候補に速力/短距離の有効クロスが成立しません。SP上限型など他の軸と比較してください。'
+   :'条件を満たす候補を取得できませんでした。';
+  return`<div class="card sale-profile"><h3>${esc(label)}</h3><p class="muted">${esc(empty)}</p></div>`
+ }
  const crossNote=profile==='speedCross'?'<div class="notice">速力または短距離の有効クロスを持つ候補だけを表示します。SPニトロ単独ではなく、最終配合での直接的なスピード補強も比較する軸です。</div>':'';
  return `<div class="card sale-profile"><h3>${esc(label)}</h3><div class="sale-method">並び順：${esc(criteria)}</div>${crossNote}${profile==='sire'?`<div class="sale-method">評価範囲：${esc(scope)}</div>`:''}${routes.map((r,i)=>routeHtml(r,i,goal,profile)).join('')}</div>`
 }
