@@ -59,7 +59,8 @@ function directSnapshot(name){
 }
 function renderMareAdvice(){
  const box=$('#saleMareRecommendation'),name=$('#saleMareSelect')?.value;
- if(!box||!name||!advisor)return;
+ if(!box||!advisor)return;
+ if(!name){box.innerHTML='<div class="muted">検索条件に一致する繁殖牝馬がありません。</div>';return}
  const a=advisor.mareAssessment(name);
  if(!a){box.innerHTML='<div class="muted">牝馬評価を取得できませんでした。</div>';return}
  const direct=directSnapshot(name),use=advisor.directUseLabels(a,direct),strategy=advisor.mareStrategy(name),goal=window.db?.salePlanner?.goal||'arc';
