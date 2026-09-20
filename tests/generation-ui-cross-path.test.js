@@ -128,6 +128,9 @@ assert.ok(v26.includes("signalMareContext('search-empty','')"),'empty search mus
 assert.ok(v26.includes("setPlannerMare(sel.value,'search-auto')"),'search-driven mare replacement must reset generation state');
 assert.ok(v26.includes("signalMareContext('search-restore',keep)"),'mare advice must refresh when a previously empty search is cleared');
 assert.ok(v26.includes("setPlannerMare(n,'rebuild-sync')"),'rebuild starter sync must reset generation state');
+assert.ok(v26.includes("b.classList.toggle('diagnosed'"),'diagnosis-selected generation must have a distinct visual state');
+assert.ok(v26.includes("b.classList.toggle('manual'"),'manual comparison generation must have a distinct visual state');
+assert.ok(v26.includes('.sale-seg.gens button.on.manual'),'manual comparison must not reuse the diagnosis color');
 assert.ok(v26.includes("q.value=''"),'rebuild starter sync must clear a conflicting mare search filter');
 assert.ok(v27.includes("generationSection.insertAdjacentElement('beforebegin',gen)"),'formal generation diagnosis must appear before manual generation buttons');
 assert.ok(v27.includes('この繁殖牝馬の基礎評価'),'mare card must not use recommendation wording for a pre-diagnosis assessment');
