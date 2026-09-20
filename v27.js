@@ -89,7 +89,7 @@ function renderMareAdvice(){
    </div>
    <div class="advisor-note">ここは直仔の到達性と母能力から見た事前メモです。正式な推奨世代は「おすすめ配合世代を診断」で決定します。</div>
    <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / SP17・ST5以上 ${direct.sp17st5}件 / 2400m対応父 ${direct.long2400}件 / 最大SPニトロ ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
-   <div class="advisor-note">${esc(a.note)} 「おすすめ」は母能力と直仔の血統到達性を分けて判定しています。</div>`;
+   <div class="advisor-note">${esc(a.note)} 「基礎評価」は母能力と直仔の血統到達性を分けて判定しています。</div>`;
 }
 function invalidateGeneration(message='条件を変更したため、世代診断を更新してください。'){
  diagSeq++;
