@@ -23,6 +23,7 @@ on:
       - 'tests/transient-sale-mare-wiring.test.js'
       - 'tests/speed-cross-priority.test.js'
       - 'tests/generation-ui-cross-path.test.js'
+      - 'tests/four-generation-theory-evidence.test.js'
       - 'tests/sire-production-quality-diagnostic.test.js'
       - 'tests/mare-joint-fit-diagnostic.test.js'
       - 'data/mare-generation-advisor-validation.json'
@@ -75,6 +76,7 @@ jobs:
           node --check tests/transient-sale-mare-wiring.test.js
           node --check tests/speed-cross-priority.test.js
           node --check tests/generation-ui-cross-path.test.js
+          node --check tests/four-generation-theory-evidence.test.js
           node --check tests/sire-production-quality-diagnostic.test.js
           node --check tests/mare-joint-fit-diagnostic.test.js
           python -m json.tool data/theory-master.json >/dev/null
@@ -128,6 +130,10 @@ jobs:
       - name: Generation UI and intermediate SP-cross regression
         run: |
           node tests/generation-ui-cross-path.test.js
+
+      - name: Four-generation and theory-evidence regression
+        run: |
+          node tests/four-generation-theory-evidence.test.js
 
       - name: Sire production quality diagnostic
         run: |
