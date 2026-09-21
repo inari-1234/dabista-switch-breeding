@@ -330,7 +330,7 @@
         maxSp:0,maxSt:0,maxPw:0,maxSpSt:0,
         speedCross:0,shortCross:0,speedOnlyCross:0,maxSpeedCrossEffect:0,
         longDistanceCross:0,gutsCross:0,powerCross:0,
-        long2400:0,recordA:0,balanceLongA:0,arcReady:0,arcQuantitative:0,arcDistanceStrong:0,arcCompensated:0,bestRoute:null,bestGoal:''
+        long2400:0,recordA:0,balanceLongA:0,arcReady:0,arcQuantitative:0,arcDistanceStrong:0,arcCompensated:0,arcDistanceUncertain:0,bestRoute:null,bestGoal:''
       };
     }
     function addRoute(summary,route,goal){
@@ -356,13 +356,10 @@
       if(sp>=15&&st>=5&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.balanceLongA++;
       if(sp>=14&&st>=6&&grade(ss.record)>=3){
         summary.arcQuantitative++;
-        if(val(ss.maxD)>=2400){
-          summary.arcDistanceStrong++;
-          summary.arcReady++;
-        }else if(ce.longDistance){
-          summary.arcCompensated++;
-          summary.arcReady++;
-        }
+        summary.arcReady++;
+        if(val(ss.maxD)>=2400)summary.arcDistanceStrong++;
+        else if(ce.longDistance)summary.arcCompensated++;
+        else summary.arcDistanceUncertain++;
       }
       summary.maxSp=Math.max(summary.maxSp,sp);
       summary.maxSt=Math.max(summary.maxSt,st);
@@ -537,8 +534,12 @@
         arc:'能力評価保留',bc:'能力評価保留',rebuild:'能力評価保留',stallion:'血統評価可能'
       };
       const p=assessment.ranks,high=p.spst.topPercent<=25,mid=p.spst.topPercent<=50,spHigh=p.sp.topPercent<=25;
+      const arcDistanceSupported=val(summary.arcDistanceStrong)+val(summary.arcCompensated)>0;
+      const arcLabel=summary.arcQuantitative>0
+        ?(arcDistanceSupported?(high?'直仔から有力':'配合次第で直仔候補'):'直仔候補（距離根拠要確認）')
+        :(mid?'2代以上を比較':'代重ね・厳選前提');
       return{
-        arc:summary.arcReady>0?(high?'直仔から有力':'配合次第で直仔候補'):(mid?'2代以上を比較':'代重ね・厳選前提'),
+        arc:arcLabel,
         bc:summary.sp17st5>0?(spHigh?'直仔から有力':'配合次第'):'2代以上を比較',
         rebuild:high?'母能力を守る側':mid?'再建の起点候補':'再建素材・厳選前提',
         stallion:'世代診断で血統汎用性を比較'
