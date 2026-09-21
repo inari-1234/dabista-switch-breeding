@@ -1,0 +1,29 @@
+name: Diagnose representative generation advisor
+
+on:
+  push:
+    paths:
+      - 'tests/representative-generation-advisor-diagnostic.test.js'
+      - 'sale-recommendation-core.js'
+      - 'sale-planner-core.js'
+      - '.github/workflows/diagnose-representative-generation-advisor.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    strategy:
+      fail-fast: false
+      matrix:
+        mare: ['スプリングスイーツ','フィットレオタード','エイスト','ミニミニデート']
+    runs-on: ubuntu-latest
+    env:
+      MARE: ${{ matrix.mare }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/representative-generation-advisor-diagnostic.test.js
+      - name: Representative generation advisor diagnostic
+        run: node tests/representative-generation-advisor-diagnostic.test.js
