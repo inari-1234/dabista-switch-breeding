@@ -23,6 +23,8 @@ on:
       - 'tests/speed-cross-priority.test.js'
       - 'tests/generation-ui-cross-path.test.js'
       - 'tests/four-generation-theory-evidence.test.js'
+      - 'tests/fourth-generation-bridge-collector.test.js'
+      - 'tests/bc-goal-ranking-regression.test.js'
       - 'tests/magnificent-cross-utility-diagnostic.test.js'
       - 'tests/st-cross-2400-utility-diagnostic.test.js'
       - 'tests/theory-ranking-delta-diagnostic.test.js'
@@ -84,6 +86,8 @@ jobs:
           node --check tests/speed-cross-priority.test.js
           node --check tests/generation-ui-cross-path.test.js
           node --check tests/four-generation-theory-evidence.test.js
+          node --check tests/fourth-generation-bridge-collector.test.js
+          node --check tests/bc-goal-ranking-regression.test.js
           node --check tests/magnificent-cross-utility-diagnostic.test.js
           node --check tests/st-cross-2400-utility-diagnostic.test.js
           node --check tests/theory-ranking-delta-diagnostic.test.js
@@ -183,6 +187,14 @@ jobs:
       - name: Four-generation and theory-evidence regression
         run: |
           node tests/four-generation-theory-evidence.test.js
+
+      - name: Fourth-generation bridge collector regression
+        run: |
+          node tests/fourth-generation-bridge-collector.test.js
+
+      - name: BC goal ranking regression
+        run: |
+          node tests/bc-goal-ranking-regression.test.js
 
       - name: Fetch current Switch oracle
         run: |
