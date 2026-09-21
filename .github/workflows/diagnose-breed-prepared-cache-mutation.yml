@@ -1,0 +1,21 @@
+name: Diagnose prepared cache mutation safety
+
+on:
+  push:
+    paths:
+      - 'tests/breed-prepared-cache-mutation-contract.test.js'
+      - '.github/workflows/diagnose-breed-prepared-cache-mutation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-prepared-cache-mutation-contract.test.js
+      - name: Mutation-safe prepared cache
+        run: node tests/breed-prepared-cache-mutation-contract.test.js
