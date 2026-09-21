@@ -192,7 +192,10 @@
       return{has:names.length>0,count:names.length,short:fx.short,speed:fx.speed,effect:fx.spNitroContribution,names};
     }
     function compactEffectPath(items){
-      const path=(items||[]).map((pair,i)=>({generation:i+1,...crossEffectSummary(pair)}));
+      const path=(items||[]).map((item,i)=>{
+        const fx=item?.danger?crossEffectSummary(item):(item||{});
+        return{...fx,generation:i+1};
+      });
       const material=path.slice(0,-1);
       const longStages=material.filter(x=>x.longDistance);
       return{
@@ -233,10 +236,11 @@
         sireStats:{record:ss.record||'-',guts:ss.guts||'-',stable:ss.stable||'-',minD:val(ss.minD),maxD:val(ss.maxD),price:val(ss.price)}
       };
     }
-    function routeFrom(sires,pair,method='exact',stageCrossItems=[]){
+    function routeFrom(sires,pair,method='exact',stageCrossItems=[],stageEffectItems=[]){
       const items=stageCrossItems.length?stageCrossItems:[pair];
+      const effectItems=stageEffectItems.length?stageEffectItems:items;
       const crossPath=compactCrossPath(items);
-      const effectPath=compactEffectPath(items);
+      const effectPath=compactEffectPath(effectItems);
       return{
         id:sires.map(x=>key(x)).join('__'),
         sires:[...sires],
@@ -285,7 +289,11 @@
         if(!base?.finalChild||base.sires?.length!==2)continue;
         for(const s3 of stallions){
           const p3=engine.evaluate(s3,base.finalChild);if(!safe(p3)||!p3.child)continue;
-          yield routeFrom([...base.sires,s3.name],p3,'conditional-three-generation-preview',[...(base.speedCrossPath||[]),p3]);
+          yield routeFrom(
+            [...base.sires,s3.name],p3,'conditional-three-generation-preview',
+            [...(base.speedCrossPath||[]),p3],
+            [...(base.crossEffectPath||[]),p3]
+          );
         }
       }
     }
@@ -295,7 +303,11 @@
         if(!base?.finalChild||base.sires?.length!==3)continue;
         for(const s4 of stallions){
           const p4=engine.evaluate(s4,base.finalChild);if(!safe(p4)||!p4.child)continue;
-          yield routeFrom([...base.sires,s4.name],p4,'conditional-four-generation-preview',[...(base.speedCrossPath||[]),p4]);
+          yield routeFrom(
+            [...base.sires,s4.name],p4,'conditional-four-generation-preview',
+            [...(base.speedCrossPath||[]),p4],
+            [...(base.crossEffectPath||[]),p4]
+          );
         }
       }
     }
