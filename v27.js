@@ -88,7 +88,7 @@ function renderMareAdvice(){
     <div class="${goal==='stallion'?'selected':''}"><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
    </div>
    <div class="advisor-note">ここは直仔の到達性と母能力から見た事前メモです。正式な推奨世代は「おすすめ配合世代を診断」で決定します。</div>
-   <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / SP17・ST5以上 ${direct.sp17st5}件 / 2400m対応父 ${direct.long2400}件 / 最大SPニトロ ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
+   <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 凱旋門数値・実績 ${direct.arcQuantitative||0}件 / 2400m対応父 ${direct.long2400}件 / 長距離クロス ${direct.longDistanceCross||0}件 / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
    <div class="advisor-note">${esc(a.note)} 「基礎評価」は母能力と直仔の血統到達性を分けて判定しています。</div>`;
 }
 function invalidateGeneration(message='条件を変更したため、世代診断を更新してください。'){
@@ -124,6 +124,7 @@ function generationCard(n,g,goal,recommended){
  const assessment=advisor.mareAssessment($('#saleMareSelect')?.value||'');
  const pq=advisor.productionQuality?.(b.route,assessment);
  const method=n>=3?'条件付きプレビュー':'全探索';
+ const distanceLabel=f.distanceEvidence>=3?'2400m+父＋長距離クロス':f.distanceEvidence===2?'2400m+父':f.distanceEvidence===1?'長距離クロスで補完':'要実馬確認';
  return `<div class="generation-card ${recommended===n?'recommended':''}">
   <h5>${recommended===n?'★ ':''}${label} <small>${method}</small></h5>
   <div class="gmetric"><span>代表SP/ST</span><b>${f.sp}/${f.st}</b></div>
@@ -133,7 +134,9 @@ function generationCard(n,g,goal,recommended){
   <div class="gmetric"><span>SP17/ST5</span><b>${s.sp17st5}</b></div>
   <div class="gmetric"><span>締め父</span><b>${esc(f.record||'?')}/${esc(f.stable||'?')}</b></div>
   ${pq?`<div class="gmetric"><span>強馬生産条件</span><b>${esc(pq.label)}</b></div>`:''}
+  ${goal==='arc'?`<div class="gmetric"><span>最終距離根拠</span><b>${esc(distanceLabel)}</b></div>`:''}
   ${n>1?`<div class="gmetric"><span>途中SPクロス</span><b>${f.materialSpeedCrossStages||0}世代</b></div>`:''}
+  ${n>1&&goal==='arc'?`<div class="gmetric"><span>途中長距離クロス</span><b>${f.materialLongCrossStages||0}世代</b></div>`:''}
   <small>安全ルート ${s.count.toLocaleString()}件 / 見事 ${s.magnificent} / 完璧 ${s.perfect} / 凝った ${s.elaborate}</small>
  </div>`
 }
