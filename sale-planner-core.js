@@ -67,7 +67,11 @@
     }
     if(profile==='st')return[bool(val(s.maxD)>=2400),val(f.st),val(f.sp),grade(s.record),grade(s.guts),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate)];
     if(profile==='balance')return[bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.st),val(f.sp),bool(val(s.maxD)>=2400),grade(s.record),grade(s.guts)];
-    if(profile==='theory')return[bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate),val(f.sp)+val(f.st),val(f.sp),val(f.st)];
+    if(profile==='theory'){
+      const speedSupport=bool(f.speedCross?.has||route.materialSpeedCross?.has);
+      const magnificentCross=bool(t.magnificent&&speedSupport);
+      return[magnificentCross,bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.sp),val(f.st),bool(f.elaborate),bool(t.interesting),bool(t.magnificent)];
+    }
     return[];
   }
   function compareProfile(profile){return(a,b)=>cmpVec(finalVector(a,profile),finalVector(b,profile))}
@@ -241,6 +245,16 @@
         }
       }
     }
+    function* iterateFourthPreview(mareInput,baseRoutes){
+      const m=typeof mareInput==='string'?mare(mareInput):mareInput;if(!m)return;
+      for(const base of baseRoutes||[]){
+        if(!base?.finalChild||base.sires?.length!==3)continue;
+        for(const s4 of stallions){
+          const p4=engine.evaluate(s4,base.finalChild);if(!safe(p4)||!p4.child)continue;
+          yield routeFrom([...base.sires,s4.name],p4,'conditional-four-generation-preview',[...(base.speedCrossPath||[]),p4]);
+        }
+      }
+    }
     function selectionCondition(goal,generation){
       const prefix=`${generation}代目産駒から`;
       if(goal==='arc')return prefix+'高SP・高STの牝馬だけを選抜し、2000～2400mの印・距離対応を実馬で確認して次世代へ進む。';
@@ -316,7 +330,7 @@
       knownAbilityCount:broodmareStats.filter(abilityKnown).length,
       unknownAbilityCount:broodmareStats.filter(x=>!abilityKnown(x)).length,
       cohorts:{spst120:cohort120.length,spst130:cohort130.length},
-      mare,sire,mareInfo,statsForSire,iterateDirect,iterateTwo,iterateThirdPreview,
+      mare,sire,mareInfo,statsForSire,iterateDirect,iterateTwo,iterateThirdPreview,iterateFourthPreview,
       replay,expandRoute,createCollector,diversifiedPool,withPortfolio,portfolioPareto,
       profileLabels:PROFILE_LABELS,profileCriteria:PROFILE_CRITERIA,goalLabels:GOAL_LABELS,goalOrder,
       abilityKnown,routeKey,compareProfile
