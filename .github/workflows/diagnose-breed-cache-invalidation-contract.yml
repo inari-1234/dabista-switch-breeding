@@ -1,0 +1,21 @@
+name: Diagnose breed cache invalidation contract
+
+on:
+  push:
+    paths:
+      - 'tests/breed-cache-invalidation-contract.test.js'
+      - '.github/workflows/diagnose-breed-cache-invalidation-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-cache-invalidation-contract.test.js
+      - name: Cache invalidation contract
+        run: node tests/breed-cache-invalidation-contract.test.js
