@@ -473,9 +473,9 @@
         if(!a.longDistanceCross&&b.longDistanceCross&&b.st>=a.st-1)reasons.push('最終配合で長距離クロスが新たに成立し、直接のスタミナ補強経路を確保');
         if(!ta&&tb)reasons.push('凱旋門向けSP/ST基準（SP14/ST6）へ新たに到達');
         const recordGain=b.recordGrade-a.recordGrade;
-        if((recordGain>=2&&b.sp>=a.sp-1&&b.st>=a.st-1)||(recordGain===1&&b.sp>=a.sp&&b.st>=a.st)){
-          reasons.push(`最終父の実績が${a.record}→${b.record}へ改善し、SP/ST水準も維持`);
-        }
+        const recordUpgradeUseful=(a.recordGrade===1&&recordGain>=1&&b.sp>=a.sp-1&&b.st>=a.st-1)
+          ||(a.recordGrade>=2&&recordGain>=1&&b.sp>=a.sp&&b.st>=a.st);
+        if(recordUpgradeUseful)reasons.push(`最終父の実績が${a.record}→${b.record}へ改善し、SP/ST水準も維持`);
         if(!a.distance2400&&b.distance2400&&tb)reasons.push('最終父の2400m対応が加わり、距離適性の根拠が強化');
         const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
         if(ta&&highMother){
