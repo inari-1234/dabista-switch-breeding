@@ -32,7 +32,7 @@ assert.strictEqual(planner.iterateFourthPreview(mare,[two]).next().done,true,'fo
 assert.strictEqual(planner.iterateThirdPreview(mare,[third]).next().done,true,'third preview must reject a three-generation base');
 
 function route({
-  sp=15,st=6,pw=1,cross=false,material=false,
+  sp=15,st=6,pw=1,cross=false,longCross=false,gutsCross=false,powerCross=false,material=false,
   interesting=false,magnificent=false,perfect=false,elaborate=false,
   record='A',stable='C',maxD=2600,sires=['a','b']
 }={}){
@@ -42,6 +42,11 @@ function route({
     final:{
       sp,st,pw,
       speedCross:{has:cross,count:cross?1:0,short:0,speed:cross?1:0,effect:cross?1:0},
+      crossEffects:{
+        anyAbility:cross||longCross||gutsCross||powerCross,
+        speedSupport:cross,longDistance:longCross,gutsSupport:gutsCross,powerSupport:powerCross,
+        short:0,speed:cross?1:0,long:longCross?1:0,guts:gutsCross?1:0,power:powerCross?1:0
+      },
       theory:{interesting,magnificent,perfect},
       elaborate,
       sireStats:{record,stable,guts:'B',minD:1600,maxD}
@@ -58,7 +63,7 @@ assert.strictEqual(planner.compareProfile('theory')(combinedNoPerfect,combinedPe
 // Magnificent without a useful SP cross must not beat the same quantitative level with magnificent+SP-cross synergy.
 const perfectNoCross=route({cross:false,interesting:true,magnificent:true,perfect:true});
 const magnificentCross=route({cross:true,interesting:false,magnificent:true,perfect:false});
-assert.ok(planner.compareProfile('theory')(magnificentCross,perfectNoCross)<0,'magnificent + effective SP cross must rank ahead of perfect label without SP support');
+assert.ok(planner.compareProfile('theory')(magnificentCross,perfectNoCross)<0,'magnificent + effective ability cross must rank ahead of the same theory labels without useful cross support');
 
 // Generation extension: a new perfect flag alone is insufficient.
 const prev=route({cross:false,interesting:false,magnificent:false,perfect:false});
@@ -69,7 +74,7 @@ assert.ok(!noCrossReasons.some(x=>x.includes('見事')||x.includes('完璧')),'t
 // But theory + useful cross + maintained quantitative level is valid supporting evidence.
 const theoryCross=route({cross:true,interesting:false,magnificent:true,perfect:false});
 const synergyReasons=advisor.materialUpgradeReasons(prev,theoryCross,'arc',advisor.mareAssessment(mare));
-assert.ok(synergyReasons.some(x=>x.includes('見事配合とSP系クロス')),'magnificent + SP cross synergy should be an allowed upgrade reason');
+assert.ok(synergyReasons.some(x=>x.includes('見事配合')&&x.includes('クロス')),'magnificent + goal-relevant cross synergy should be an allowed upgrade reason');
 
 // Synthetic four-generation upgrade to lock recommendation plumbing.
 const r1=route({sp:14,st:6,cross:false,sires:['a']});
