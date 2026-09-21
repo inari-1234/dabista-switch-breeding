@@ -26,36 +26,35 @@ function previewBases(shortlists,maxEach=12){
  }
  return out;
 }
-function scan(iter,goal,{collector=null,bridge=null}={}){
- const summary=advisor.emptySummary(goal);let count=0;
- for(const r of iter){count++;advisor.addRoute(summary,r,goal);if(collector)collector.push(r);if(bridge)bridge.push(r)}
- return{summary,count};
-}
+function emptySummaries(){return{arc:advisor.emptySummary('arc'),bc:advisor.emptySummary('bc'),rebuild:advisor.emptySummary('rebuild')}}
+function addAll(s,r){for(const g of ['arc','bc','rebuild'])advisor.addRoute(s[g],r,g)}
 function facts(r){const f=advisor.routeFacts(r);return{sires:r?.sires||[],sp:f.sp,st:f.st,pw:f.pw,spst:f.spst,record:f.record,stable:f.stable,maxD:f.maxD,speedCross:f.speedCross,materialSpeedCross:f.materialSpeedCross,magnificent:f.magnificent,elaborate:f.elaborate}}
 
 const out=[];
 for(const mare of mares){
  const assessment=advisor.mareAssessment(mare);
  const perGoal={};
- const directAll=[...planner.iterateDirect(mare)];
+ const s1=emptySummaries(),s2=emptySummaries(),s3=emptySummaries(),s4=emptySummaries();
+ for(const r of planner.iterateDirect(mare))addAll(s1,r);
  const c2=planner.createCollector({topN:3,poolN:24});
- for(const r of planner.iterateTwo(mare))c2.push(r);
+ for(const r of planner.iterateTwo(mare)){c2.push(r);addAll(s2,r)}
  const r2=c2.finish(),b3=previewBases(r2.shortlists,12);
  const c3=planner.createCollector({topN:3,poolN:18}),bridge=planner.createFourthBridgeCollector();
- for(const r of planner.iterateThirdPreview(mare,b3)){c3.push(r);bridge.push(r)}
+ for(const r of planner.iterateThirdPreview(mare,b3)){c3.push(r);bridge.push(r);addAll(s3,r)}
  const r3=c3.finish(),b4=bridge.finish().bases;
  const c4=planner.createCollector({topN:3,poolN:16});
- for(const r of planner.iterateFourthPreview(mare,b4))c4.push(r);
+ for(const r of planner.iterateFourthPreview(mare,b4)){c4.push(r);addAll(s4,r)}
  const r4=c4.finish();
 
  for(const goal of ['arc','bc','rebuild']){
-  const g1=scan(directAll,goal);
-  const g2=scan(r2.pool,goal);
-  const g3=scan(r3.pool,goal);
-  const g4=scan(r4.pool,goal);
   const rec=advisor.recommendGeneration({
     goal,assessment,
-    generations:{1:g1,2:g2,3:g3,4:g4}
+    generations:{
+      1:{summary:{bestRoute:s1[goal].bestRoute}},
+      2:{summary:{bestRoute:s2[goal].bestRoute}},
+      3:{summary:{bestRoute:s3[goal].bestRoute}},
+      4:{summary:{bestRoute:s4[goal].bestRoute}}
+    }
   });
   perGoal[goal]={
     generation:rec.generation,label:rec.label,conditional:rec.conditional,reasons:rec.reasons,transitions:rec.transitions,
