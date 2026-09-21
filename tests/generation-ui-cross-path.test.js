@@ -153,7 +153,7 @@ assert.ok(!eliteFinalLong.some(x=>x.includes('最終配合で長距離クロス'
 const highMotherNeedsSp={abilityKnown:true,ranks:{sp:{topPercent:70},st:{topPercent:10},spst:{topPercent:20}}};
 const targetedFinalSpeed=advisor.materialUpgradeReasons(
   fakeRoute(0,16,9),
-  withFinalSpeedCross(fakeRoute(0,15,9)),
+  withFinalSpeedCross(fakeRoute(0,16,9)),
   'arc',highMotherNeedsSp
 );
 assert.ok(targetedFinalSpeed.some(x=>x.includes('最終配合で速力/短距離クロス')),
@@ -167,6 +167,30 @@ const targetedFinalLong=advisor.materialUpgradeReasons(
 );
 assert.ok(targetedFinalLong.some(x=>x.includes('最終配合で長距離クロス')),
   'elite dam may use a final long-distance cross when ST is the identified weak axis');
+
+const eistSumOnly=advisor.materialUpgradeReasons(
+  fakeRoute(0,16,8),
+  fakeRoute(0,15,14),
+  'arc',eistAssessment
+);
+assert.ok(!eistSumOnly.some(x=>x.includes('大きく上積み')||x.includes('SP+STを')),
+  'elite ST-dominant dam must not extend generations from extra ST alone when SP is the improvement axis');
+
+const eliteSpDirectional=advisor.materialUpgradeReasons(
+  fakeRoute(0,16,9),
+  fakeRoute(0,18,9),
+  'arc',highMotherNeedsSp
+);
+assert.ok(eliteSpDirectional.some(x=>x.includes('SPを16→18')),
+  'elite ST-dominant profile may extend when the identified SP axis materially improves');
+
+const eliteStDirectional=advisor.materialUpgradeReasons(
+  fakeRoute(0,18,8),
+  fakeRoute(0,17,10),
+  'arc',highMotherNeedsSt
+);
+assert.ok(eliteStDirectional.some(x=>x.includes('STを8→10')),
+  'elite SP-dominant profile may extend when the identified ST axis materially improves');
 
 const unknownAssessment=advisor.mareAssessment('アマリン');
 const unknownUpgrade=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',unknownAssessment);
