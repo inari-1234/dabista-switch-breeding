@@ -1,0 +1,23 @@
+name: Diagnose breed direct evaluation call count
+
+on:
+  push:
+    paths:
+      - 'tests/breed-direct-evaluation-call-count-diagnostic.test.js'
+      - '.github/workflows/diagnose-breed-direct-evaluation-call-count.yml'
+      - 'sale-planner-core.js'
+      - 'breeding-core.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-direct-evaluation-call-count-diagnostic.test.js
+      - name: Direct evaluation call count
+        run: node tests/breed-direct-evaluation-call-count-diagnostic.test.js
