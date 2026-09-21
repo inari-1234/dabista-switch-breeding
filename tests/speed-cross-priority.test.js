@@ -21,7 +21,7 @@ assert.ok(v26.includes('SPクロス補強型候補なし'),'SP-cross empty state
 
 assert.strictEqual(planner.profileLabels.speedCross,'SPクロス補強型');
 assert.ok(planner.profileCriteria.speedCross.includes('速力/短距離'));
-assert.ok(planner.profileCriteria.speedCross.includes('完璧/見事'));
+assert.ok(planner.profileCriteria.speedCross.includes('見事×有効SPクロス'),'theory must be valued as cross synergy rather than a perfect-label bonus');
 assert.ok(planner.goalOrder('arc').includes('speedCross'));
 assert.strictEqual(planner.goalOrder('arc')[0],'production','Arc should show strong-horse production conditions before pedigree-only axes');
 assert.strictEqual(planner.goalOrder('bc')[0],'production','BC should show strong-horse production conditions before SP-cross pedigree axis');
