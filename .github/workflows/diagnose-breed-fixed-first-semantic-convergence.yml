@@ -1,0 +1,45 @@
+name: Diagnose fixed-first semantic convergence
+
+on:
+  push:
+    paths:
+      - 'tests/breed-fixed-first-semantic-convergence.test.js'
+      - '.github/workflows/diagnose-breed-fixed-first-semantic-convergence.yml'
+      - 'sale-planner-core.js'
+      - 'sale-recommendation-core.js'
+      - 'breeding-core.js'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [0,1,2]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-fixed-first-semantic-convergence.test.js
+      - name: Semantic convergence
+        env:
+          CASE_INDEX: ${{ matrix.case }}
+          OUTPUT_FILE: semantic-convergence-${{ matrix.case }}.json
+        run: node tests/breed-fixed-first-semantic-convergence.test.js
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-convergence-${{ matrix.case }}
+          path: semantic-convergence-${{ matrix.case }}.json
+          if-no-files-found: error
