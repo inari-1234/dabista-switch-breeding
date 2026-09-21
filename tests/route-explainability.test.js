@@ -63,7 +63,7 @@ const g={1:{summary:{bestRoute:route1}},2:{summary:{bestRoute:route2}},3:{summar
 const rec=advisor.recommendGeneration({goal:'arc',assessment:syntheticAssessment,generations:g,portfolios:{}});
 assert.strictEqual(rec.generation,3,'generation decision reasons');
 assert.strictEqual(rec.transitions.to2.from,1);
-assert.ok(rec.transitions.to2.reasons.some(x=>x.includes('凱旋門向け基準')));
+assert.ok(rec.transitions.to2.reasons.some(x=>x.includes('凱旋門向け数値・実績基準')),'Arc transition must use SP/ST + record as the gate and keep distance as separate evidence');
 assert.strictEqual(rec.transitions.to3.from,2);
 assert.ok(rec.transitions.to3.reasons.some(x=>x.includes('SP+ST')));
 assert.ok(rec.reasons.some(x=>x.includes('2代→3代')));
