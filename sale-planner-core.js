@@ -9,7 +9,7 @@
     sp:'SP上限型',
     speedCross:'SPクロス補強型',
     production:'強馬生産型',
-    st:'ST・2400m型',
+    st:'ST・距離適性型',
     balance:'バランス型',
     sire:'自家製種牡馬・血統価値型'
   };
@@ -28,9 +28,9 @@
   const PROFILE_CRITERIA={
     sp:'最終配合のSPニトロ → ST → PW → 見事×有効SPクロスの相乗 → 同値なら最終配合の有効SPクロス → 面白 → 凝った → 最終父の実績',
     speedCross:'最終配合に速力/短距離の有効クロスを最低1本確保 → SPニトロ → ST → 見事×有効SPクロスの相乗 → SP系クロス祖先数 → 凝った/面白 → PW',
-    production:'多世代は途中または締めに速力/短距離クロスを最低1回確保 → SP15/ST5最低線 → 最終父の実績 → SP17/ST5 → 安定C/B/Aを上振れ幅の違いとして比較 → SP → ST → 見事×有効SPクロス → 凝った/面白',
-    st:'最終父の2400m対応 → STニトロ → SP → 実績/底力 → 配合理論',
-    balance:'SP15/ST5同時達成 → SP+ST → ST → SP → 2400m対応 → 実績',
+    production:'多世代は途中または締めに速力/短距離クロスを最低1回確保 → SP15/ST5最低線 → 最終父の実績 → SP17/ST5 → 安定C/B/Aを上振れ幅の違いとして比較 → SP → ST → 見事×目的有効クロス → 凝った/面白',
+    st:'STニトロ → 直接の長距離クロス → SP → 最終父実績 → 距離適性は補助根拠 → 配合理論',
+    balance:'SP15/ST5同時達成 → SP+ST → ST → SP → 距離適性・長距離クロスを補助比較 → 実績',
     sire:'高能力繁殖牝馬群への安全配合数・SP15/ST5・SP17/ST5・面白/見事/完璧/凝った・最大ニトロを合算せず並列比較'
   };
   const grade=v=>v==='A'?3:v==='B'?2:v==='C'?1:0;
@@ -45,31 +45,36 @@
     return 0;
   }
   function finalVector(route,profile){
-    const f=route.final||{},s=f.sireStats||{},t=f.theory||{},x=f.speedCross||{};
-    const speedSupport=bool(x.has||route.materialSpeedCross?.has);
-    const magnificentCross=bool(t.magnificent&&speedSupport);
-    if(profile==='sp')return[val(f.sp),val(f.st),val(f.pw),magnificentCross,bool(x.has),bool(t.interesting),bool(f.elaborate),grade(s.record)];
+    const f=route.final||{},s=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},ce=f.crossEffects||{};
+    const materialSpeedSupport=bool(route.materialSpeedCross?.has);
+    const finalSpeedSupport=bool(x.has);
+    const magnificentSpeed=bool(t.magnificent&&finalSpeedSupport);
+    const magnificentLong=bool(t.magnificent&&ce.longDistance);
+    const magnificentUseful=bool(t.magnificent&&ce.anyAbility);
+    const distanceTier=val(s.maxD)>=2400?2:val(s.maxD)>=2200?1:0;
+    if(profile==='sp')return[val(f.sp),val(f.st),val(f.pw),magnificentSpeed,finalSpeedSupport,bool(t.interesting),bool(f.elaborate),grade(s.record)];
     if(profile==='speedCross'){
-      return[bool(x.has),val(f.sp),val(f.st),magnificentCross,val(route.materialSpeedCross?.stages),val(x.count),val(x.effect),bool(f.elaborate),bool(t.interesting),val(f.pw),grade(s.record)];
+      return[finalSpeedSupport,val(f.sp),val(f.st),magnificentSpeed,val(route.materialSpeedCross?.stages),val(x.count),val(x.effect),bool(f.elaborate),bool(t.interesting),val(f.pw),grade(s.record)];
     }
     if(profile==='production'){
       const multi=(route.sires||[]).length>1;
       const stableUpside=multi?(s.stable==='C'?3:s.stable==='B'?2:s.stable==='A'?1:0):0;
+      const productionCrossSynergy=bool(t.magnificent&&(finalSpeedSupport||ce.longDistance));
       return[
         bool(val(f.sp)>=15&&val(f.st)>=5),
         grade(s.record),
         bool(val(f.sp)>=17&&val(f.st)>=5),
         stableUpside,
         val(f.sp),val(f.st),
-        bool(x.has),val(x.count),
+        bool(finalSpeedSupport||materialSpeedSupport),val(x.count),
         grade(s.guts),val(f.pw),
-        magnificentCross,bool(f.elaborate),bool(t.interesting)
+        productionCrossSynergy,bool(f.elaborate),bool(t.interesting)
       ];
     }
-    if(profile==='st')return[bool(val(s.maxD)>=2400),val(f.st),val(f.sp),grade(s.record),grade(s.guts),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate)];
-    if(profile==='balance')return[bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.st),val(f.sp),bool(val(s.maxD)>=2400),grade(s.record),grade(s.guts)];
+    if(profile==='st')return[val(f.st),bool(ce.longDistance),val(f.sp),grade(s.record),distanceTier,grade(s.guts),magnificentLong,magnificentUseful,bool(t.interesting),bool(f.elaborate)];
+    if(profile==='balance')return[bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.st),val(f.sp),distanceTier,bool(ce.longDistance),grade(s.record),grade(s.guts)];
     if(profile==='theory'){
-      return[magnificentCross,bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.sp),val(f.st),bool(f.elaborate),bool(t.interesting),bool(t.magnificent)];
+      return[magnificentUseful,bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.sp),val(f.st),bool(f.elaborate),bool(t.interesting),bool(t.magnificent)];
     }
     return[];
   }
@@ -151,18 +156,40 @@
         spst:known?val(stats.sp)+val(stats.st):null
       };
     }
-    function speedCrossSummary(pair){
+    function crossEffectSummary(pair){
       const eff=pair?.danger?.effectiveCrosses||[],factors=pair?.nitro?.factors||[];
       const fm=new Map(factors.map(x=>[key(x.name),x])),seen=new Set(),names=[];
-      let short=0,speed=0,effect=0;
+      let short=0,speed=0,power=0,guts=0,long=0;
       for(const x of eff){
         const k=key(x.name);if(!k||seen.has(k))continue;seen.add(k);
         const f=fm.get(k);if(!f)continue;
-        const sh=val(f.short),sp=val(f.speed);
-        if(!sh&&!sp)continue;
-        short+=sh;speed+=sp;effect+=sh*2+sp;names.push(x.name);
+        const sh=val(f.short),sp=val(f.speed),pw=val(f.power),gu=val(f.guts),lo=val(f.long);
+        if(!sh&&!sp&&!pw&&!gu&&!lo)continue;
+        short+=sh;speed+=sp;power+=pw;guts+=gu;long+=lo;names.push(x.name);
       }
-      return{has:names.length>0,count:names.length,short,speed,effect,names};
+      return{
+        anyAbility:names.length>0,names,
+        short,speed,power,guts,long,
+        speedSupport:short>0||speed>0,
+        longDistance:long>0,
+        gutsSupport:guts>0,
+        powerSupport:power>0,
+        spNitroContribution:short*2+speed,
+        stNitroContribution:long+guts-short,
+        pwNitroContribution:power
+      };
+    }
+    function speedCrossSummary(pair){
+      const fx=crossEffectSummary(pair);
+      const names=[];
+      const eff=pair?.danger?.effectiveCrosses||[],factors=pair?.nitro?.factors||[];
+      const fm=new Map(factors.map(x=>[key(x.name),x])),seen=new Set();
+      for(const x of eff){
+        const k=key(x.name);if(!k||seen.has(k))continue;seen.add(k);
+        const f=fm.get(k);if(!f)continue;
+        if(val(f.short)||val(f.speed))names.push(x.name);
+      }
+      return{has:names.length>0,count:names.length,short:fx.short,speed:fx.speed,effect:fx.spNitroContribution,names};
     }
     function compactCrossPath(items){
       const path=(items||[]).map((x,i)=>{
@@ -187,6 +214,7 @@
       return{
         sp:val(n.sp),st:val(n.st),pw:val(n.pw),
         speedCross:speedCrossSummary(pair),
+        crossEffects:crossEffectSummary(pair),
         theory:{interesting:!!t.interesting,magnificent:!!t.magnificent,perfect:!!t.perfect},
         elaborate:!!pair.elaborate?.effective,
         sireStats:{record:ss.record||'-',guts:ss.guts||'-',stable:ss.stable||'-',minD:val(ss.minD),maxD:val(ss.maxD),price:val(ss.price)}
