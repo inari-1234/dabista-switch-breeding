@@ -123,7 +123,7 @@ function generationCard(n,g,goal,recommended){
  const b=bestFacts(g,goal),f=b.facts,s=g.summary,label=n===1?'直仔':n+'代';
  const assessment=advisor.mareAssessment($('#saleMareSelect')?.value||'');
  const pq=advisor.productionQuality?.(b.route,assessment);
- const method=n===3?'条件付きプレビュー':'全探索';
+ const method=n>=3?'条件付きプレビュー':'全探索';
  return `<div class="generation-card ${recommended===n?'recommended':''}">
   <h5>${recommended===n?'★ ':''}${label} <small>${method}</small></h5>
   <div class="gmetric"><span>代表SP/ST</span><b>${f.sp}/${f.st}</b></div>
@@ -155,9 +155,9 @@ function recommendationDetail(name,goal,rec){
    return '<div class="generation-step"><b>'+st.generation+'代目｜'+esc(adv.phase)+'</b><span>'+esc(adv.headline)+'。'+esc(adv.body)+'</span></div>';
  }).join('');
  const label=rec.generation===1?'直仔':rec.generation+'代';
- const transition=rec.generation===3?rec.transitions?.to3:rec.generation===2?rec.transitions?.to2:null;
+ const transition=rec.generation===4?rec.transitions?.to4:rec.generation===3?rec.transitions?.to3:rec.generation===2?rec.transitions?.to2:null;
  const decisionReasons=transition?.reasons||[];
- const fromLabel=transition?.from===2?'2代':'直仔';
+ const fromLabel=transition?.from===3?'3代':transition?.from===2?'2代':'直仔';
  const decision=decisionReasons.length
   ?'<div class="generation-decision"><b>'+fromLabel+'→'+label+'を選ぶ決め手</b><ul>'+decisionReasons.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>'
   :'<div class="generation-decision"><b>'+label+'を選ぶ理由</b><ul><li>追加世代による明確な上積み条件がないため、短い世代を優先します。</li></ul></div>';
@@ -170,7 +170,7 @@ async function runGenerationAdvisor(){
  if(!name)return;
  const seq=++diagSeq,btn=$('#runGenerationAdvisor');btn.disabled=true;
  $('#generationAdvisorResult').innerHTML='';
- $('#generationAdvisorProgress').textContent='直仔・2代・3代を同じ条件で比較します…';
+ $('#generationAdvisorProgress').textContent='直仔・2代・3代・4代を同じ条件で比較します…';
  try{
   const c1=planner.createCollector({topN:3,poolN:24}),s1=advisor.emptySummary('exact-direct');
   const a1=await scan(planner.iterateDirect(name),c1,s1,seq,'直仔',goal,true),r1=c1.finish();
@@ -179,37 +179,42 @@ async function runGenerationAdvisor(){
   const bases=previewBases(r2.shortlists,12);
   const c3=planner.createCollector({topN:3,poolN:18}),s3=advisor.emptySummary('preview-three');
   await scan(planner.iterateThirdPreview(name,bases),c3,s3,seq,'3代プレビュー',goal,false);const r3=c3.finish();
+  const bases4=previewBases(r3.shortlists,8);
+  const c4=planner.createCollector({topN:3,poolN:16}),s4=advisor.emptySummary('preview-four');
+  await scan(planner.iterateFourthPreview(name,bases4),c4,s4,seq,'4代プレビュー',goal,false);const r4=c4.finish();
   if(seq!==diagSeq)return;
   $('#generationAdvisorProgress').textContent='自家製種牡馬の血統汎用性も世代別に比較中…';await yieldUi();
   const portfolios={
     1:planner.portfolioPareto(a1.all,3),
     2:planner.portfolioPareto(r2.pool,3),
-    3:planner.portfolioPareto(r3.pool,3)
+    3:planner.portfolioPareto(r3.pool,3),
+    4:planner.portfolioPareto(r4.pool,3)
   };
   if(seq!==diagSeq)return;
   const assessment=advisor.mareAssessment(name);
   const generations={
     1:{result:r1,summary:s1,method:'exact'},
     2:{result:r2,summary:s2,method:'exact'},
-    3:{result:r3,summary:s3,method:'conditional-preview',previewBaseCount:bases.length}
+    3:{result:r3,summary:s3,method:'conditional-preview',previewBaseCount:bases.length},
+    4:{result:r4,summary:s4,method:'conditional-preview',previewBaseCount:bases4.length}
   };
   const rec=advisor.recommendGeneration({goal,assessment,generations,portfolios});
   window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
   const goalLabel=planner.goalLabels[goal]||goal;
   $('#generationAdvisorResult').innerHTML=`
    <div class="generation-result">
-    <div class="generation-pick"><b>${esc(goalLabel)}：${esc(rec.label)}</b><span>${rec.conditional?'3代目は条件付き探索です。':''} 短い世代で十分なら無理に代重ねしない判定です。</span></div>
-    <div class="generation-grid">${generationCard(1,generations[1],goal,rec.generation)}${generationCard(2,generations[2],goal,rec.generation)}${generationCard(3,generations[3],goal,rec.generation)}</div>
+    <div class="generation-pick"><b>${esc(goalLabel)}：${esc(rec.label)}</b><span>${rec.conditional?'3代・4代は条件付き探索です。':''} 短い世代で十分なら無理に代重ねしない判定です。</span></div>
+    <div class="generation-grid">${generationCard(1,generations[1],goal,rec.generation)}${generationCard(2,generations[2],goal,rec.generation)}${generationCard(3,generations[3],goal,rec.generation)}${generationCard(4,generations[4],goal,rec.generation)}</div>
     ${recommendationDetail(name,goal,rec)}
     <ul class="generation-reasons">${rec.reasons.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>
     <button class="primary generation-action" type="button" id="applyRecommendedGeneration">${rec.generation===1?'直仔':rec.generation+'代'}で詳しく設計する</button>
-    <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、SPクロス、最終父の実績・安定、距離適性、配合理論と、代重ねに必要な実馬選抜回数を分けて比較した設計判断です。3代は2代目6軸候補からの条件付きプレビューで、全176³最適解とは表示しません。</div>
+    <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、SPクロス、最終父の実績・安定、距離適性、配合理論と、代重ねに必要な実馬選抜回数を分けて比較した設計判断です。3代は2代目6軸候補、4代は3代目6軸候補からの段階的な条件付きプレビューで、全176³・176⁴最適解とは表示しません。</div>
    </div>`;
   $('#applyRecommendedGeneration').onclick=()=>{
     window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
     setTimeout(()=>$('#runSalePlanner')?.click(),30);
   };
-  $('#generationAdvisorProgress').textContent=`診断完了：直仔 ${s1.count.toLocaleString()}件、2代 ${s2.count.toLocaleString()}件、3代プレビュー ${s3.count.toLocaleString()}件を比較しました。`;
+  $('#generationAdvisorProgress').textContent=`診断完了：直仔 ${s1.count.toLocaleString()}件、2代 ${s2.count.toLocaleString()}件、3代プレビュー ${s3.count.toLocaleString()}件、4代プレビュー ${s4.count.toLocaleString()}件を比較しました。`;
  }catch(e){
   if(String(e).includes('cancelled'))return;
   window.APP_ERRORS?.push({at:new Date().toISOString(),message:'generation-advisor: '+String(e)});
@@ -225,7 +230,7 @@ function inject(){
  if(goalSection)goalSection.insertAdjacentElement('afterend',mareBox);else summary?.insertAdjacentElement('afterend',mareBox);
  const notice=$('#salePlannerNotice'),generationSection=$('#saleGenerationSection');
  const gen=document.createElement('div');gen.id='saleGenerationAdvisor';gen.className='generation-advisor';
- gen.innerHTML=`<h4>おすすめ配合世代を診断</h4><p>直仔・2代・3代を横断して、「どこで締めるのが妥当か」を比較します。深い世代を自動的に高評価にはしません。</p><button type="button" class="secondary" id="runGenerationAdvisor">直仔・2代・3代を比較</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
+ gen.innerHTML=`<h4>おすすめ配合世代を診断</h4><p>直仔・2代・3代・4代を横断して、「どこで締めるのが妥当か」を比較します。深い世代を自動的に高評価にはしません。</p><button type="button" class="secondary" id="runGenerationAdvisor">直仔・2代・3代・4代を比較</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
  if(generationSection)generationSection.insertAdjacentElement('beforebegin',gen);else notice?.insertAdjacentElement('beforebegin',gen);
  const run=$('#runSalePlanner');if(run)run.textContent='選択した世代を詳しく設計';
  window.addEventListener('dabista:sale-mare-context',()=>{setTimeout(renderMareAdvice,0);invalidateGeneration('繁殖牝馬を変更したため、世代診断を更新してください。')});
