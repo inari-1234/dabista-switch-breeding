@@ -26,12 +26,16 @@ function bases(shortlists,maxEach){
  return out;
 }
 function collect(iter,poolN=24){
- const c=planner.createCollector({topN:3,poolN});for(const r of iter)c.push(r);return c.finish();
+  const c=planner.createCollector({topN:3,poolN});
+  const arc=advisor.emptySummary('diagnostic-arc'),bc=advisor.emptySummary('diagnostic-bc');
+  for(const r of iter){c.push(r);advisor.addRoute(arc,r,'arc');advisor.addRoute(bc,r,'bc')}
+  const out=c.finish();
+  out.goalBest={arc:arc.bestRoute,bc:bc.bestRoute};
+  return out;
 }
 function facts(r){if(!r)return null;return{sires:r.sires,sp:r.final.sp,st:r.final.st,pw:r.final.pw,record:r.final.sireStats?.record,stable:r.final.sireStats?.stable,maxD:r.final.sireStats?.maxD,speedCross:!!r.final.speedCross?.has,materialStages:r.materialSpeedCross?.stages||0,theory:r.final.theory,elaborate:r.final.elaborate}}
 function goalBest(result,goal){
- let best=null;for(const r of result.pool||[])best=advisor.betterGoalRoute(best,r,goal);
- return best;
+  return result?.goalBest?.[goal]||null;
 }
 const mares=['スプリングスイーツ','フィットレオタード','エイスト','ミニミニデート'];
 const widths=[6,12,18,24];
