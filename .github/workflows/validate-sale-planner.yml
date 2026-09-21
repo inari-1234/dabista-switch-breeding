@@ -30,6 +30,7 @@ on:
       - 'tests/four-generation-width-sensitivity-diagnostic.test.js'
       - 'tests/three-generation-width-sensitivity-diagnostic.test.js'
       - 'tests/generation-pool-expansion-diagnostic.test.js'
+      - 'tests/fourth-generation-high-width-diagnostic.test.js'
       - 'tests/sire-production-quality-diagnostic.test.js'
       - 'tests/mare-joint-fit-diagnostic.test.js'
       - 'data/mare-generation-advisor-validation.json'
@@ -89,6 +90,7 @@ jobs:
           node --check tests/four-generation-width-sensitivity-diagnostic.test.js
           node --check tests/three-generation-width-sensitivity-diagnostic.test.js
           node --check tests/generation-pool-expansion-diagnostic.test.js
+          node --check tests/fourth-generation-high-width-diagnostic.test.js
           node --check tests/sire-production-quality-diagnostic.test.js
           node --check tests/mare-joint-fit-diagnostic.test.js
           python -m json.tool data/theory-master.json >/dev/null
@@ -158,6 +160,10 @@ jobs:
       - name: Generation pool expansion diagnostic
         run: |
           node tests/generation-pool-expansion-diagnostic.test.js
+
+      - name: Fourth-generation high-width sensitivity diagnostic
+        run: |
+          node tests/fourth-generation-high-width-diagnostic.test.js
 
       - name: SP-cross priority regression
         run: |
