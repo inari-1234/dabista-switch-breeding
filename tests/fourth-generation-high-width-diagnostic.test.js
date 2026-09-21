@@ -1,5 +1,6 @@
 'use strict';
 const fs=require('fs');
+const assert=require('assert');
 const core=require('../breeding-core.js');
 const sale=require('../sale-planner-core.js');
 const reco=require('../sale-recommendation-core.js');
@@ -64,28 +65,47 @@ function snapshot(result){
   };
 }
 function outcome(x){if(!x)return'null';const y={...x};delete y.sires;return JSON.stringify(y)}
-function scanFourth(bases4){
-  const c=planner.createCollector({topN:3,poolN:120});
-  const arc=advisor.emptySummary('arc'),bc=advisor.emptySummary('bc');
-  for(const r of planner.iterateFourthPreview(currentMare,bases4)){c.push(r);advisor.addRoute(arc,r,'arc');advisor.addRoute(bc,r,'bc')}
-  const out=c.finish();out.goalBest={arc:arc.bestRoute,bc:bc.bestRoute};return out;
+function scanFourthVariants(mare,baseVariants){
+  const maxWidth=Math.max(...widths);
+  const largest=baseVariants[maxWidth];
+  const sets=new Map(widths.map(n=>[n,new Set(baseVariants[n].map(r=>planner.routeKey(r)))]));
+  for(const n of widths){
+    for(const k of sets.get(n))assert(sets.get(maxWidth).has(k),`bridge pool ${n} must be a subset of ${maxWidth}`);
+  }
+  const states=new Map(widths.map(n=>[n,{
+    collector:planner.createCollector({topN:3,poolN:120}),
+    arc:advisor.emptySummary('arc'),
+    bc:advisor.emptySummary('bc')
+  }]));
+  let scanned=0;
+  for(const r of planner.iterateFourthPreview(mare,largest)){
+    scanned++;
+    const baseKey=planner.routeKey({sires:(r.sires||[]).slice(0,-1)});
+    for(const n of widths){
+      if(!sets.get(n).has(baseKey))continue;
+      const s=states.get(n);s.collector.push(r);advisor.addRoute(s.arc,r,'arc');advisor.addRoute(s.bc,r,'bc');
+    }
+  }
+  const results={};
+  for(const n of widths){
+    const s=states.get(n),out=s.collector.finish();out.goalBest={arc:s.arc.bestRoute,bc:s.bc.bestRoute};
+    results[n]={scannedLargest:scanned,result:snapshot(out)};
+  }
+  return results;
 }
 
 const mares=['スプリングスイーツ','エイスト'];
 const output=[];
 const started=Date.now();
-let currentMare='';
-
 for(const mare of mares){
   currentMare=mare;
   const r2=collect(planner.iterateTwo(mare),24);
   const b3=bases(r2.shortlists,12);
   const third=multiCollect(planner.iterateThirdPreview(mare,b3));
+  const baseVariants={};for(const n of widths)baseVariants[n]=third.results[n].pool;
+  const scanned=scanFourthVariants(mare,baseVariants);
   const variants={};
-  for(const n of widths){
-    const b4=third.results[n].pool;
-    variants[n]={baseCount:b4.length,result:snapshot(scanFourth(b4))};
-  }
+  for(const n of widths)variants[n]={baseCount:baseVariants[n].length,...scanned[n]};
   const ref=variants[240].result;
   for(const n of widths){
     const cur=variants[n].result;
