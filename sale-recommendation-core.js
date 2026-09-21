@@ -129,8 +129,9 @@
       }
       if(elaborate)theoryNames.push('凝った');
       let routeNote=`血統側：SP${sp}/ST${st}/PW${pw}ニトロ${theoryNames.length?'・'+theoryNames.join('＋'):''}`;
-      const sx=stage.speedCross||{},materialStage=remaining>0&&!!sx.has;
+      const sx=stage.speedCross||{},cx=stage.crossEffects||{},materialStage=remaining>0&&!!sx.has,materialLongStage=remaining>0&&!!cx.longDistance;
       const needsSpSupport=strategy.id==='rebuild'||strategy.id==='st-sp-repair'||strategy.id==='unknown'||strategy.improve.includes('SP');
+      const needsStSupport=strategy.id==='rebuild'||strategy.id==='elite-sp-st'||strategy.id==='sp-st-repair'||strategy.improve.includes('ST');
 
       let phase='素材づくり',headline='',body='';
       if(strategy.id==='unknown'){
@@ -224,6 +225,16 @@
             :' この段階の速力クロスはSP不足を補う中間牝馬の選抜機会として利用します。ただし出生前の繁殖SPには加算しません。');
         }else{
           body+=' この段階のSP系クロスは補助材料として使い、母系の強みやSTを崩さない実馬を優先して残します。';
+        }
+      }
+      if(materialLongStage){
+        routeNote+='・長距離クロス';
+        if(strategy.id==='unknown'){
+          body+=' この段階の長距離クロスはスタミナ側を確認する選抜材料ですが、起点母の能力は未判明です。出生前の繁殖STへ加算せず、実馬の中距離〜長距離の印と走りで確認します。';
+        }else if(needsStSupport){
+          body+=' この段階の長距離クロスは直接のスタミナ補強を使えるST選抜機会です。ただし出生前の繁殖STへ加算せず、実馬でST改善を確認できた牝馬だけ次世代へ残します。';
+        }else{
+          body+=' この段階の長距離クロスは距離側の補助材料として扱い、それだけを理由に代重ねせず母系のSP/ST/PW維持を優先します。';
         }
       }
       return{
@@ -374,11 +385,12 @@
       return result.profiles?.speedCross?.[0]||result.profiles?.sp?.[0]||result.profiles?.balance?.[0]||null;
     }
     function routeFacts(route){
-      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},mx=route?.materialSpeedCross||{};
+      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},mx=route?.materialSpeedCross||{},ml=route?.materialLongCross||{};
       return{
         sp:val(f.sp),st:val(f.st),pw:val(f.pw),spst:val(f.sp)+val(f.st),
         speedCross:bool(x.has),speedCrossCount:val(x.count),speedCrossEffect:val(x.effect),shortCross:val(x.short),speedOnlyCross:val(x.speed),
         materialSpeedCross:bool(mx.has),materialSpeedCrossStages:val(mx.stages),materialSpeedCrossCount:val(mx.count),
+        materialLongCross:bool(ml.has),materialLongCrossStages:val(ml.stages),materialLongCrossNames:[...(ml.names||[])],
         maxD:val(ss.maxD),distance2400:val(ss.maxD)>=2400,long2400:val(ss.maxD)>=2400,
         longDistanceCross:bool(f.crossEffects?.longDistance),gutsCross:bool(f.crossEffects?.gutsSupport),powerCross:bool(f.crossEffects?.powerSupport),abilityCross:bool(f.crossEffects?.anyAbility),
         distanceEvidence:val(ss.maxD)>=2400?(f.crossEffects?.longDistance?3:2):(f.crossEffects?.longDistance?1:0),
@@ -433,10 +445,17 @@
       if(!prev||!next)return next?['比較対象となる次世代候補が成立']: [];
       const a=routeFacts(prev),b=routeFacts(next),reasons=[];
       const spNeedsSupport=!!assessment?.abilityKnown&&(assessment?.ranks?.sp?.topPercent>45||assessment?.ranks?.spst?.topPercent>60);
+      const stNeedsSupport=!!assessment?.abilityKnown&&(assessment?.ranks?.st?.topPercent>45||assessment?.ranks?.spst?.topPercent>60);
       const materialCrossGain=b.materialSpeedCrossStages>a.materialSpeedCrossStages;
+      const materialLongGain=b.materialLongCrossStages>a.materialLongCrossStages;
       const addMaterialSupport=()=>{
         if(spNeedsSupport&&materialCrossGain&&b.sp>=a.sp-1&&b.st>=a.st-1){
           reasons.push('SP不足側の母に対し、中間世代で速力/短距離クロスを使える工程が増え、最終SP/STも大きく落とさない');
+        }
+      };
+      const addMaterialLongSupport=()=>{
+        if(stNeedsSupport&&materialLongGain&&b.sp>=a.sp-1&&b.st>=a.st-1){
+          reasons.push('ST不足側の母に対し、中間世代で長距離クロスを使えるST選抜機会が増え、最終SP/STも大きく落とさない');
         }
       };
       if(goal==='bc'){
@@ -462,6 +481,7 @@
         }
         if(!a.magnificent&&b.magnificent&&(b.speedCross||b.longDistanceCross)&&b.spst>=a.spst-1&&b.st>=a.st-1)reasons.push('見事配合と目的に合うSP系/長距離クロスを新たに両立し、SP+STもほぼ維持');
         addMaterialSupport();
+        addMaterialLongSupport();
         return reasons;
       }
       if(goal==='rebuild'){
@@ -474,6 +494,7 @@
         const matchedCross=(needsSp&&b.speedCross)||(needsSt&&b.longDistanceCross)||(!needsSp&&!needsSt&&b.abilityCross);
         if(!a.magnificent&&b.magnificent&&matchedCross&&b.spst>=a.spst-1)reasons.push('見事配合と母の不足能力に合う有効クロスを新たに両立し、母系能力もほぼ維持');
         addMaterialSupport();
+        addMaterialLongSupport();
         return reasons;
       }
       if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('速力/短距離クロスを新たに成立');
