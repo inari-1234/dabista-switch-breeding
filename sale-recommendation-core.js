@@ -460,7 +460,7 @@
       }
       if(goal==='arc'){
         const ta=a.sp>=14&&a.st>=6, tb=b.sp>=14&&b.st>=6;
-        if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-2&&b.st>=a.st-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SP/STを大きく落とさない');
+        if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SP/STをほぼ維持');
         if(!a.longDistanceCross&&b.longDistanceCross&&b.st>=a.st-1)reasons.push('最終配合で長距離クロスが新たに成立し、直接のスタミナ補強経路を確保');
         if(!ta&&tb)reasons.push('凱旋門向けSP/ST基準（SP14/ST6）へ新たに到達');
         const recordGain=b.recordGrade-a.recordGrade;
