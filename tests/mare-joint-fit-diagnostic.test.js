@@ -23,78 +23,102 @@ const names=[...new Set([
 const val=x=>Number.isFinite(+x)?+x:0;
 const grade=x=>x==='A'?3:x==='B'?2:x==='C'?1:0;
 function facts(r){
-  const f=r?.final||{},s=f.sireStats||{};
+  const f=r?.final||{},s=f.sireStats||{},ce=f.crossEffects||{};
   return{
     sires:r?.sires||[],
     sp:val(f.sp),st:val(f.st),pw:val(f.pw),
     record:s.record||'?',stable:s.stable||'?',guts:s.guts||'?',
     minD:val(s.minD),maxD:val(s.maxD),
     finalCross:!!f.speedCross?.has,
+    longCross:!!ce.longDistance,
+    gutsCross:!!ce.gutsSupport,
     materialCross:!!r?.materialSpeedCross?.has,
     materialStages:val(r?.materialSpeedCross?.stages)
   };
 }
 function speedSupport(r){return !!r?.final?.speedCross?.has||!!r?.materialSpeedCross?.has}
-function arcMin(r){
-  const f=r?.final||{},s=f.sireStats||{};
-  return val(f.sp)>=14&&val(f.st)>=6&&val(s.maxD)>=2400&&grade(s.record)>=3&&speedSupport(r);
+function distanceEvidence(r){
+  const f=r?.final||{},s=f.sireStats||{},ce=f.crossEffects||{};
+  if(val(s.maxD)>=2400)return ce.longDistance?'STRONG_PLUS_LONG':'STRONG_2400';
+  if(ce.longDistance)return 'COMPENSATED_LONG_CROSS';
+  return 'UNCERTAIN';
 }
-function arcStrong(r){
+function arcLevel(r,level){
   const f=r?.final||{},s=f.sireStats||{};
-  return val(f.sp)>=15&&val(f.st)>=6&&val(s.maxD)>=2400&&grade(s.record)>=3&&speedSupport(r);
+  const sp=val(f.sp),st=val(f.st),recordA=grade(s.record)>=3,speed=speedSupport(r);
+  if(level==='min')return sp>=14&&st>=6&&recordA&&speed;
+  if(level==='strong')return sp>=15&&st>=6&&recordA&&speed;
+  return sp>=17&&st>=6&&recordA&&speed;
 }
-function arcElite(r){
+function bcLevel(r,level){
   const f=r?.final||{},s=f.sireStats||{};
-  return val(f.sp)>=17&&val(f.st)>=6&&val(s.maxD)>=2400&&grade(s.record)>=3&&speedSupport(r);
-}
-function bcMin(r){
-  const f=r?.final||{},s=f.sireStats||{};
-  return val(f.sp)>=17&&val(f.st)>=5&&grade(s.record)>=3&&speedSupport(r);
-}
-function bcStrong(r){
-  const f=r?.final||{},s=f.sireStats||{};
-  return val(f.sp)>=18&&val(f.st)>=5&&grade(s.record)>=3&&speedSupport(r);
-}
-function bcElite(r){
-  const f=r?.final||{},s=f.sireStats||{};
-  return val(f.sp)>=19&&val(f.st)>=6&&grade(s.record)>=3&&speedSupport(r);
+  const sp=val(f.sp),st=val(f.st),recordA=grade(s.record)>=3,speed=speedSupport(r);
+  if(level==='min')return sp>=17&&st>=5&&recordA&&speed;
+  if(level==='strong')return sp>=18&&st>=5&&recordA&&speed;
+  return sp>=19&&st>=6&&recordA&&speed;
 }
 function better(a,b,kind){
   if(!a)return b;
   const A=facts(a),B=facts(b);
+  const dist=x=>x.maxD>=2400?(x.longCross?3:2):(x.longCross?1:0);
   const va=kind==='arc'
-    ?[A.sp+A.st,A.sp,A.st,A.finalCross?1:0,A.materialCross?1:0,grade(A.record)]
+    ?[A.sp+A.st,A.sp,A.st,dist(A),A.finalCross?1:0,A.materialCross?1:0,grade(A.record)]
     :[A.sp,A.st,A.finalCross?1:0,A.materialCross?1:0,grade(A.record),A.pw];
   const vb=kind==='arc'
-    ?[B.sp+B.st,B.sp,B.st,B.finalCross?1:0,B.materialCross?1:0,grade(B.record)]
+    ?[B.sp+B.st,B.sp,B.st,dist(B),B.finalCross?1:0,B.materialCross?1:0,grade(B.record)]
     :[B.sp,B.st,B.finalCross?1:0,B.materialCross?1:0,grade(B.record),B.pw];
   for(let i=0;i<va.length;i++){if(va[i]!==vb[i])return vb[i]>va[i]?b:a}
   return a;
 }
+function levelBucket(){
+  return{count:0,distance:{strongPlusLong:0,strong2400:0,compensatedLong:0,uncertain:0},best:null};
+}
+function addDistance(bucket,r){
+  const d=distanceEvidence(r);
+  if(d==='STRONG_PLUS_LONG')bucket.distance.strongPlusLong++;
+  else if(d==='STRONG_2400')bucket.distance.strong2400++;
+  else if(d==='COMPENSATED_LONG_CROSS')bucket.distance.compensatedLong++;
+  else bucket.distance.uncertain++;
+}
 function scan(iter){
   const out={
     count:0,
-    arc:{min:0,strong:0,elite:0,bestMin:null,bestStrong:null,bestElite:null},
-    bc:{min:0,strong:0,elite:0,bestMin:null,bestStrong:null,bestElite:null}
+    arc:{min:levelBucket(),strong:levelBucket(),elite:levelBucket()},
+    bc:{min:levelBucket(),strong:levelBucket(),elite:levelBucket()}
   };
   for(const r of iter){
     out.count++;
-    if(arcMin(r)){out.arc.min++;out.arc.bestMin=better(out.arc.bestMin,r,'arc')}
-    if(arcStrong(r)){out.arc.strong++;out.arc.bestStrong=better(out.arc.bestStrong,r,'arc')}
-    if(arcElite(r)){out.arc.elite++;out.arc.bestElite=better(out.arc.bestElite,r,'arc')}
-    if(bcMin(r)){out.bc.min++;out.bc.bestMin=better(out.bc.bestMin,r,'bc')}
-    if(bcStrong(r)){out.bc.strong++;out.bc.bestStrong=better(out.bc.bestStrong,r,'bc')}
-    if(bcElite(r)){out.bc.elite++;out.bc.bestElite=better(out.bc.bestElite,r,'bc')}
+    for(const level of ['min','strong','elite']){
+      if(arcLevel(r,level)){
+        const b=out.arc[level];b.count++;addDistance(b,r);b.best=better(b.best,r,'arc');
+      }
+      if(bcLevel(r,level)){
+        const b=out.bc[level];b.count++;b.best=better(b.best,r,'bc');
+      }
+    }
   }
-  for(const g of [out.arc,out.bc]){
-    g.bestMin=facts(g.bestMin);g.bestStrong=facts(g.bestStrong);g.bestElite=facts(g.bestElite);
+  for(const goal of ['arc','bc'])for(const level of ['min','strong','elite']){
+    out[goal][level].best=facts(out[goal][level].best);
   }
   return out;
 }
+function usableArcCount(bucket){
+  const d=bucket?.distance||{};
+  return val(d.strongPlusLong)+val(d.strong2400)+val(d.compensatedLong);
+}
 function tier(direct,two,goal,level='strong'){
-  if((direct?.[goal]?.[level]||0)>0)return 'DIRECT_JOINT';
-  if((two?.[goal]?.[level]||0)>0)return 'TWO_GEN_JOINT';
-  if((direct?.[goal]?.min||0)>0||(two?.[goal]?.min||0)>0)return 'MIN_ONLY';
+  const d=direct?.[goal]?.[level],t=two?.[goal]?.[level];
+  if(goal==='arc'){
+    if(usableArcCount(d)>0)return 'DIRECT_JOINT';
+    if(usableArcCount(t)>0)return 'TWO_GEN_JOINT';
+    if(val(d?.count)>0)return 'DIRECT_NUMERIC_DISTANCE_UNCERTAIN';
+    if(val(t?.count)>0)return 'TWO_GEN_NUMERIC_DISTANCE_UNCERTAIN';
+    if(val(direct?.arc?.min?.count)>0||val(two?.arc?.min?.count)>0)return 'MIN_ONLY';
+    return 'DIFFICULT_2GEN';
+  }
+  if(val(d?.count)>0)return 'DIRECT_JOINT';
+  if(val(t?.count)>0)return 'TWO_GEN_JOINT';
+  if(val(direct?.[goal]?.min?.count)>0||val(two?.[goal]?.min?.count)>0)return 'MIN_ONLY';
   return 'DIFFICULT_2GEN';
 }
 const output=[];
@@ -114,4 +138,13 @@ for(const name of names){
     }
   });
 }
-console.log(JSON.stringify({passed:true,count:output.length,names,output},null,2));
+console.log(JSON.stringify({
+  passed:true,
+  method:'joint-fit-with-separated-distance-evidence',
+  rules:{
+    arcNumeric:'SP/ST + record A + SP support',
+    distance:'2400m+ = strong evidence; under 2400m + long-distance cross = compensating evidence; otherwise uncertain',
+    noHard2400Gate:true
+  },
+  count:output.length,names,output
+},null,2));
