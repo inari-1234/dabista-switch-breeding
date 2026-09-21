@@ -40,8 +40,11 @@ same(!!replayPair.elaborate.effective,!!pair.elaborate.effective,'elaborate');
 
 const child=engine.deriveChild(sire,mare,'エイスト×グランプリボス娘');
 if(!child||child.ancestor.length!==15||child.omoshiro.length!==4)throw Error('derived child incomplete');
+const childAll=T.stallions.map(s=>engine.evaluate(s,child));
+const childSafeCount=childAll.filter(p=>p&&!p.danger?.kiken&&!p.danger?.tyokiken).length;
 const childDirect=[...planner.iterateDirect(child)];
-if(childDirect.length!==176)throw Error('derived child direct count '+childDirect.length);
+if(childAll.length!==176)throw Error('derived child evaluated count '+childAll.length);
+if(childDirect.length!==childSafeCount)throw Error('derived child safe-route mismatch '+childDirect.length+' vs '+childSafeCount);
 
 const c2=planner.createCollector({topN:3,poolN:24});
 let twoCount=0;
@@ -98,7 +101,7 @@ console.log(JSON.stringify({
  },
  derivedChild:{
   name:child.name,ancestorCount:child.ancestor.length,omoshiro:child.omoshiro,migoto:child.migoto,
-  directRoutes:childDirect.length,twoRoutes:twoCount,thirdPreviewRoutes:threeCount,fourthPreviewRoutes:fourCount,
+  evaluatedDirectPairs:childAll.length,safeDirectRoutes:childDirect.length,dangerFiltered:childAll.length-childDirect.length,twoRoutes:twoCount,thirdPreviewRoutes:threeCount,fourthPreviewRoutes:fourCount,
   categoryFuture
  },
  abilityContext:{
