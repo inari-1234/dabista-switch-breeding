@@ -93,6 +93,25 @@ const b3=previewBases(r2.shortlists,12);
 const c3=planner.createCollector({topN:3,poolN:24});
 const routes=[];for(const r of planner.iterateThirdPreview(mare,b3)){c3.push(r);routes.push(r)}
 const generic=c3.finish().pool,rankA=rankRoutes(routes,vectorA),rankD=rankRoutes(routes,vectorD);
+
+const referenceSourceRanks={};
+for(const [axis,sires] of Object.entries(reference)){
+  const sourceKey=sires.slice(0,-1).join('>');
+  const src=routes.find(r=>planner.routeKey(r)===sourceKey);
+  if(!src){referenceSourceRanks[axis]={sourceKey,found:false};continue}
+  const official={};
+  for(const p of axes){
+    const eligible=p!=='speedCross'||src?.final?.speedCross?.has;
+    official[p]=eligible?(routes.filter(r=>p!=='speedCross'||r?.final?.speedCross?.has).sort(planner.compareProfile(p)).findIndex(r=>planner.routeKey(r)===sourceKey)+1):null;
+  }
+  referenceSourceRanks[axis]={
+    sourceKey,found:true,
+    vectorA:rankA.findIndex(r=>planner.routeKey(r)===sourceKey)+1,
+    vectorD:rankD.findIndex(r=>planner.routeKey(r)===sourceKey)+1,
+    official,
+    facts:bridgeFacts(src)
+  };
+}
 const baseMap={};
 for(const n of widths)baseMap[n]=unionBases(generic,rankA.slice(0,n),rankD.slice(0,n));
 const max=widths[widths.length-1],maxBases=baseMap[max],sets=new Map(widths.map(n=>[n,new Set(baseMap[n].map(r=>planner.routeKey(r)))]));
@@ -113,4 +132,4 @@ for(const n of widths){
   for(const axis of Object.keys(reference))matches[axis]=JSON.stringify(snap[axis]?.sires||[])===JSON.stringify(reference[axis]);
   variants[n]={baseCount:baseMap[n].length,result:snap,matchesReference:matches,allReferenceAxes:Object.values(matches).every(Boolean)};
 }
-console.log(JSON.stringify({passed:true,method:'bridge-strategy-diagnostic',mare,thirdScanned:routes.length,thirdBases:b3.length,genericBases:generic.length,scannedLargest:scanned,widths,variants},null,2));
+console.log(JSON.stringify({passed:true,method:'bridge-strategy-diagnostic',mare,thirdScanned:routes.length,thirdBases:b3.length,genericBases:generic.length,scannedLargest:scanned,widths,referenceSourceRanks,variants},null,2));
