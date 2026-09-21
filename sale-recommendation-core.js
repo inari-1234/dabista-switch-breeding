@@ -460,22 +460,25 @@
       }
       if(goal==='arc'){
         const ta=a.sp>=14&&a.st>=6, tb=b.sp>=14&&b.st>=6;
-        if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SP/STをほぼ維持');
-        if(!a.longDistanceCross&&b.longDistanceCross&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('最終配合で長距離クロスが新たに成立し、SP/STをほぼ維持しながら直接のスタミナ補強経路を確保');
+        const highMother=!!assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
+        const speedCrossRelevant=!!assessment?.abilityKnown&&(!highMother||spNeedsSupport);
+        const longCrossRelevant=!!assessment?.abilityKnown&&(!highMother||stNeedsSupport);
+        if(speedCrossRelevant&&!a.speedCross&&b.speedCross&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SP/STをほぼ維持');
+        if(longCrossRelevant&&!a.longDistanceCross&&b.longDistanceCross&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('最終配合で長距離クロスが新たに成立し、SP/STをほぼ維持しながら直接のスタミナ補強経路を確保');
         if(!ta&&tb)reasons.push('凱旋門向けSP/ST基準（SP14/ST6）へ新たに到達');
         const recordGain=b.recordGrade-a.recordGrade;
         const recordUpgradeUseful=(a.recordGrade===1&&recordGain>=1&&b.sp>=a.sp-1&&b.st>=a.st-1)
           ||(a.recordGrade>=2&&recordGain>=1&&b.sp>=a.sp&&b.st>=a.st);
         if(recordUpgradeUseful)reasons.push(`最終父の実績が${a.record}→${b.record}へ改善し、SP/ST水準も維持`);
         if(!a.distance2400&&b.distance2400&&tb&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('SP/STをほぼ維持したまま最終父の2400m対応が加わり、距離適性の根拠が強化');
-        const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
         if(ta&&highMother){
           if(b.sp>=a.sp+2&&b.st>=a.st&&tb)reasons.push(`高能力母を維持したままSPを${a.sp}→${b.sp}へ上積み`);
           if(b.spst>=a.spst+4&&b.st>=a.st-1&&tb)reasons.push(`SP+STを${a.spst}→${b.spst}へ大きく上積み`);
         }else if(b.spst>=a.spst+3&&b.st>=a.st-1){
           reasons.push(`SP+STを${a.spst}→${b.spst}へ改善し、ST低下を抑制`);
         }
-        if(!a.magnificent&&b.magnificent&&(b.speedCross||b.longDistanceCross)&&b.spst>=a.spst-1&&b.st>=a.st-1)reasons.push('見事配合と目的に合うSP系/長距離クロスを新たに両立し、SP+STもほぼ維持');
+        const magnificentRelevant=(speedCrossRelevant&&b.speedCross)||(longCrossRelevant&&b.longDistanceCross);
+        if(!a.magnificent&&b.magnificent&&magnificentRelevant&&b.spst>=a.spst-1&&b.st>=a.st-1)reasons.push('見事配合と母の不足軸に合うSP系/長距離クロスを新たに両立し、SP+STもほぼ維持');
         addMaterialSupport();
         addMaterialLongSupport();
         return reasons;
