@@ -1,0 +1,62 @@
+name: Diagnose representative breed category futures
+
+on:
+  push:
+    paths:
+      - 'tests/breed-category-future-representative-matrix.test.js'
+      - 'tests/aggregate-breed-category-future-representatives.test.js'
+      - '.github/workflows/diagnose-breed-category-future-representatives.yml'
+      - 'sale-planner-core.js'
+      - 'sale-recommendation-core.js'
+      - 'breeding-core.js'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        mare: [0,1,2,3,4]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: |
+          node --check tests/breed-category-future-representative-matrix.test.js
+          node --check tests/aggregate-breed-category-future-representatives.test.js
+      - name: Representative breed-category future
+        env:
+          MARE_INDEX: ${{ matrix.mare }}
+          OUTPUT_FILE: breed-cat-future-${{ matrix.mare }}.json
+        run: node tests/breed-category-future-representative-matrix.test.js
+      - name: Upload representative result
+        uses: actions/upload-artifact@v4
+        with:
+          name: breed-cat-future-${{ matrix.mare }}
+          path: breed-cat-future-${{ matrix.mare }}.json
+          if-no-files-found: error
+
+  aggregate:
+    needs: diagnose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download representative results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: breed-cat-future-*
+          path: breed-cat-future
+          merge-multiple: true
+      - name: Aggregate representative matrix
+        run: node tests/aggregate-breed-category-future-representatives.test.js breed-cat-future
