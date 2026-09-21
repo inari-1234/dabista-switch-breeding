@@ -77,6 +77,12 @@ for(const mare of names){
     const speedTop=a.profiles.speedCross?.[0];
     if(speedTop?.final?.sireStats?.record!=='B'||speedTop?.final?.sireStats?.stable!=='A')throw Error('MiniMini speed-cross baseline must remain B/A');
     if(speedTop?.speedCrossPath?.[0]?.has)throw Error('MiniMini speed-cross baseline must have no first-stage SP cross');
+    const support=!!productionTop?.final?.speedCross?.has||!!productionTop?.materialSpeedCross?.has;
+    if(!support)throw Error('MiniMini production profile must include SP reinforcement in a multi-generation route');
+    if((productionTop?.final?.sp||0)<15||(productionTop?.final?.st||0)<5)throw Error('MiniMini production profile must keep SP15/ST5 floor');
+    if(productionTop?.final?.sireStats?.record==='B'&&productionTop?.final?.sireStats?.stable==='A'&&!productionTop?.materialSpeedCross?.has){
+      throw Error('MiniMini production profile must not select unsupported B/A closure as unconditional top');
+    }
   }
   if(mare==='フィットレオタード'){
     if(productionTop?.final?.sireStats?.record!=='A')throw Error('Fit production profile should find viable record-A closure');
@@ -109,11 +115,20 @@ const miniProdQuality=advisor.productionQuality(miniProductionRoute,miniAssessme
 if(miniSpeedQuality.key!=='selection-dependent')throw Error('MiniMini B/A no-material route must be selection-dependent');
 if(!miniSpeedQuality.requiresSelectedMare)throw Error('MiniMini B/A route must require selected high-quality intermediate mare');
 if(!miniSpeedQuality.warnings.some(x=>x.includes('途中SP系クロス補強がなく')))throw Error('MiniMini B/A route must explain missing material SP-cross support');
-console.log('MINIMINI_PRODUCTION_TOP',JSON.stringify({route:brief(miniProductionRoute),quality:miniProdQuality}));
 if(!miniProdQuality.viable)throw Error('MiniMini production route must satisfy SP15/ST5 floor');
+if(!miniProdQuality.speedSupport)throw Error('MiniMini production route must expose SP reinforcement support');
+if(miniProdQuality.key==='no-speed-support')throw Error('MiniMini production top must not be a no-SP-support route');
 
 const fitQuality=advisor.productionQuality(fitProductionRoute,advisor.mareAssessment('フィットレオタード'));
 if(fitQuality.key!=='ceiling'||fitQuality.record!=='A')throw Error('Fit production route should expose record-A ceiling condition');
+
+const unsupportedMultiAC={
+  sires:['ベーカバド','ステイゴールド'],
+  final:{sp:16,st:5,pw:1,speedCross:{has:false,count:0},sireStats:{record:'A',stable:'C',guts:'A'},theory:{},elaborate:false},
+  materialSpeedCross:{has:false,stages:0}
+};
+const unsupportedQuality=advisor.productionQuality(unsupportedMultiAC,advisor.mareAssessment('ミニミニデート'));
+if(unsupportedQuality.key!=='no-speed-support')throw Error('multi-generation A/C route without SP reinforcement must be labeled no-speed-support');
 
 const directAA={
   sires:['ダイワメジャー'],
@@ -130,6 +145,7 @@ console.log(JSON.stringify({
     miniSpeed:{key:miniSpeedQuality.key,label:miniSpeedQuality.label,warnings:miniSpeedQuality.warnings},
     miniProduction:{key:miniProdQuality.key,label:miniProdQuality.label},
     fitProduction:{key:fitQuality.key,label:fitQuality.label},
+    unsupportedMultiAC:{key:unsupportedQuality.key,label:unsupportedQuality.label,warnings:unsupportedQuality.warnings},
     highDirect:{key:highDirect.key,label:highDirect.label,notes:highDirect.notes}
   }
 },null,2));
