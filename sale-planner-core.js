@@ -130,6 +130,59 @@
     }
   }
 
+  function fourthBridgeFacts(route){
+    const f=route?.final||{},s=f.sireStats||{},t=f.theory||{},ce=f.crossEffects||{};
+    const multi=(route?.sires||[]).length>1;
+    return{
+      sp:val(f.sp),st:val(f.st),pw:val(f.pw),sum:val(f.sp)+val(f.st),
+      record:grade(s.record),
+      stableUpside:multi?(s.stable==='C'?3:s.stable==='B'?2:s.stable==='A'?1:0):0,
+      speedSupport:bool(f.speedCross?.has||route?.materialSpeedCross?.has),
+      longSupport:bool(ce.longDistance||route?.materialLongCross?.has),
+      elaborate:bool(f.elaborate),magnificent:bool(t.magnificent),
+      crossCount:val(f.speedCross?.count)+val(route?.materialSpeedCross?.stages)
+    };
+  }
+  function fourthBridgeVector(route,kind){
+    const x=fourthBridgeFacts(route);
+    if(kind==='A')return[x.speedSupport,x.record,x.elaborate,x.magnificent,x.sum,x.st,x.sp,x.longSupport,x.crossCount,x.stableUpside];
+    return[x.speedSupport,x.record,x.sum,x.elaborate,x.st,x.sp,x.longSupport,x.crossCount,x.stableUpside];
+  }
+  function compareFourthBridge(kind){return(a,b)=>cmpVec(fourthBridgeVector(a,kind),fourthBridgeVector(b,kind))}
+  function createFourthBridgeCollector({generalN=128,speedCrossN=320,bridgeAN=96,bridgeDN=160}={}){
+    const official={sp:[],speedCross:[],production:[],st:[],balance:[],theory:[]},bridgeA=[],bridgeD=[];
+    let count=0;
+    const cfg={generalN,speedCrossN,bridgeAN,bridgeDN};
+    return{
+      push(route){
+        count++;
+        for(const p of Object.keys(official)){
+          if(p==='speedCross'&&!route?.final?.speedCross?.has)continue;
+          if(p==='production'){
+            const multi=(route?.sires||[]).length>1;
+            const speedSupport=!!route?.final?.speedCross?.has||!!route?.materialSpeedCross?.has;
+            if(multi&&!speedSupport)continue;
+          }
+          insertTop(official[p],route,compareProfile(p),p==='speedCross'?speedCrossN:generalN);
+        }
+        if(bridgeAN>0)insertTop(bridgeA,route,compareFourthBridge('A'),bridgeAN);
+        if(bridgeDN>0)insertTop(bridgeD,route,compareFourthBridge('D'),bridgeDN);
+      },
+      get count(){return count},
+      finish(){
+        const m=new Map();
+        for(const list of Object.values(official))for(const r of list)m.set(routeKey(r),r);
+        for(const r of bridgeA)m.set(routeKey(r),r);
+        for(const r of bridgeD)m.set(routeKey(r),r);
+        return{
+          count,config:{...cfg},bases:[...m.values()],
+          sourceCounts:Object.fromEntries(Object.entries(official).map(([k,v])=>[k,v.length])),
+          bridgeCounts:{A:bridgeA.length,D:bridgeD.length}
+        };
+      }
+    };
+  }
+
   function create(config={}){
     const engine=config.engine;
     if(!engine||typeof engine.evaluate!=='function'||typeof engine.deriveChild!=='function')throw Error('sale planner requires common breeding engine');
@@ -388,9 +441,9 @@
       unknownAbilityCount:broodmareStats.filter(x=>!abilityKnown(x)).length,
       cohorts:{spst120:cohort120.length,spst130:cohort130.length},
       mare,sire,mareInfo,statsForSire,iterateDirect,iterateTwo,iterateThirdPreview,iterateFourthPreview,
-      replay,expandRoute,createCollector,diversifiedPool,withPortfolio,portfolioPareto,
+      replay,expandRoute,createCollector,createFourthBridgeCollector,diversifiedPool,withPortfolio,portfolioPareto,
       profileLabels:PROFILE_LABELS,profileCriteria:PROFILE_CRITERIA,goalLabels:GOAL_LABELS,goalOrder,
-      abilityKnown,routeKey,compareProfile
+      abilityKnown,routeKey,compareProfile,compareFourthBridge
     };
   }
 
