@@ -26,7 +26,7 @@
     bc:['production','speedCross','sp','balance','sire','st']
   };
   const PROFILE_CRITERIA={
-    sp:'最終配合のSPニトロ → ST → PW → 見事×有効SPクロスの相乗 → 凝った → 面白 → 最終父の実績',
+    sp:'最終配合のSPニトロ → ST → PW → 見事×有効SPクロスの相乗 → 同値なら最終配合の有効SPクロス → 面白 → 凝った → 最終父の実績',
     speedCross:'最終配合に速力/短距離の有効クロスを最低1本確保 → SPニトロ → ST → 見事×有効SPクロスの相乗 → SP系クロス祖先数 → 凝った/面白 → PW',
     production:'多世代は途中または締めに速力/短距離クロスを最低1回確保 → SP15/ST5最低線 → 最終父の実績 → SP17/ST5 → 安定C/B/Aを上振れ幅の違いとして比較 → SP → ST → 見事×有効SPクロス → 凝った/面白',
     st:'最終父の2400m対応 → STニトロ → SP → 実績/底力 → 配合理論',
@@ -48,7 +48,7 @@
     const f=route.final||{},s=f.sireStats||{},t=f.theory||{},x=f.speedCross||{};
     const speedSupport=bool(x.has||route.materialSpeedCross?.has);
     const magnificentCross=bool(t.magnificent&&speedSupport);
-    if(profile==='sp')return[val(f.sp),val(f.st),val(f.pw),magnificentCross,bool(f.elaborate),bool(t.interesting),grade(s.record)];
+    if(profile==='sp')return[val(f.sp),val(f.st),val(f.pw),magnificentCross,bool(x.has),bool(t.interesting),bool(f.elaborate),grade(s.record)];
     if(profile==='speedCross'){
       return[bool(x.has),val(f.sp),val(f.st),magnificentCross,val(route.materialSpeedCross?.stages),val(x.count),val(x.effect),bool(f.elaborate),bool(t.interesting),val(f.pw),grade(s.record)];
     }
