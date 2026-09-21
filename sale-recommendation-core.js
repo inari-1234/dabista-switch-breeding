@@ -406,7 +406,7 @@
       const viable=sp>=15&&st>=5,eliteLine=sp>=17&&st>=5,recordGrade=grade(record),materialSupport=!!route?.materialSpeedCross?.has;
       const highKnownMother=!!assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
       const notes=[],warnings=[];
-      if(record==='A')notes.push('最終父は実績Aで、産駒上限側を狙う条件を確保');
+      if(record==='A')notes.push('最終父は実績Aで、産駒上限側を狙う強い根拠を確保');
       else if(record==='B')warnings.push('最終父は実績B。実績A締めより能力上限側の確度は下がるため、SPクロスだけで強馬を保証しない');
       else warnings.push('最終父は実績C。血統値が高くても強馬生産の締めとしては上限側の不確実性が大きい');
       if(stable==='A'){
@@ -472,7 +472,10 @@
         if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-2&&b.st>=a.st-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SP/STを大きく落とさない');
         if(!a.longDistanceCross&&b.longDistanceCross&&b.st>=a.st-1)reasons.push('最終配合で長距離クロスが新たに成立し、直接のスタミナ補強経路を確保');
         if(!ta&&tb)reasons.push('凱旋門向けSP/ST基準（SP14/ST6）へ新たに到達');
-        if(b.recordGrade>a.recordGrade&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push(`最終父の実績が${a.record}→${b.record}へ改善し、SP/STもほぼ維持`);
+        const recordGain=b.recordGrade-a.recordGrade;
+        if((recordGain>=2&&b.sp>=a.sp-1&&b.st>=a.st-1)||(recordGain===1&&b.sp>=a.sp&&b.st>=a.st)){
+          reasons.push(`最終父の実績が${a.record}→${b.record}へ改善し、SP/ST水準も維持`);
+        }
         if(!a.distance2400&&b.distance2400&&tb)reasons.push('最終父の2400m対応が加わり、距離適性の根拠が強化');
         const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
         if(ta&&highMother){
