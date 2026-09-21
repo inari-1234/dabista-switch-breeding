@@ -1,0 +1,22 @@
+name: Diagnose breed integration load order
+
+on:
+  push:
+    paths:
+      - 'tests/breed-integration-load-order-contract.test.js'
+      - '.github/workflows/diagnose-breed-integration-load-order.yml'
+      - 'index.html'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-integration-load-order-contract.test.js
+      - name: Load order contract
+        run: node tests/breed-integration-load-order-contract.test.js
