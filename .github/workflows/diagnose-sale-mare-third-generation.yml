@@ -1,0 +1,63 @@
+name: Diagnose sale mare third generation
+
+on:
+  push:
+    paths:
+      - 'tests/sale-mare-third-generation-matrix-diagnostic.test.js'
+      - 'tests/aggregate-sale-mare-third-generation-shards.test.js'
+      - '.github/workflows/diagnose-sale-mare-third-generation.yml'
+      - 'sale-planner-core.js'
+      - 'sale-recommendation-core.js'
+      - 'breeding-core.js'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: |
+          node --check tests/sale-mare-third-generation-matrix-diagnostic.test.js
+          node --check tests/aggregate-sale-mare-third-generation-shards.test.js
+      - name: Exact through 2gen plus conditional 3gen
+        env:
+          SHARD_COUNT: 8
+          SHARD_INDEX: ${{ matrix.shard }}
+          OUTPUT_FILE: third-shard-${{ matrix.shard }}.json
+        run: node tests/sale-mare-third-generation-matrix-diagnostic.test.js
+      - name: Upload shard result
+        uses: actions/upload-artifact@v4
+        with:
+          name: third-${{ matrix.shard }}
+          path: third-shard-${{ matrix.shard }}.json
+          if-no-files-found: error
+
+  aggregate:
+    needs: diagnose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download shard results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: third-*
+          path: third
+          merge-multiple: true
+      - name: Aggregate third-generation matrix
+        run: node tests/aggregate-sale-mare-third-generation-shards.test.js third
