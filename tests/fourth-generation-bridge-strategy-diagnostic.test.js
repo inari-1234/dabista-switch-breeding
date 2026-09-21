@@ -87,12 +87,21 @@ const reference={
   st:['キンシャサノキセキ','エスケンデレヤ','スペシャルウィーク','フリオーソ'],
   balance:['グランプリボス','ストラヴィンスキー','スペシャルウィーク','ワイルドラッシュ']
 };
-const mare='エイスト',widths=[64,96,128,160,192];
+const mare='エイスト';
 const r2=collect(planner.iterateTwo(mare),24);
 const b3=previewBases(r2.shortlists,12);
 const c3=planner.createCollector({topN:3,poolN:24});
 const routes=[];for(const r of planner.iterateThirdPreview(mare,b3)){c3.push(r);routes.push(r)}
 const generic=c3.finish().pool,rankA=rankRoutes(routes,vectorA),rankD=rankRoutes(routes,vectorD);
+const officialRanked={};
+for(const p of axes){
+  officialRanked[p]=routes.filter(r=>{
+    if(p==='speedCross'&&!r?.final?.speedCross?.has)return false;
+    if(p==='production'&&!r?.final?.speedCross?.has&&!r?.materialSpeedCross?.has)return false;
+    return true;
+  }).sort(planner.compareProfile(p));
+}
+function officialBases(n){return unionBases(...axes.map(p=>officialRanked[p].slice(0,n)))}
 
 const referenceSourceRanks={};
 for(const [axis,sires] of Object.entries(reference)){
@@ -101,8 +110,8 @@ for(const [axis,sires] of Object.entries(reference)){
   if(!src){referenceSourceRanks[axis]={sourceKey,found:false};continue}
   const official={};
   for(const p of axes){
-    const eligible=p!=='speedCross'||src?.final?.speedCross?.has;
-    official[p]=eligible?(routes.filter(r=>p!=='speedCross'||r?.final?.speedCross?.has).sort(planner.compareProfile(p)).findIndex(r=>planner.routeKey(r)===sourceKey)+1):null;
+    const pos=officialRanked[p].findIndex(r=>planner.routeKey(r)===sourceKey);
+    official[p]=pos>=0?pos+1:null;
   }
   referenceSourceRanks[axis]={
     sourceKey,found:true,
@@ -112,24 +121,35 @@ for(const [axis,sires] of Object.entries(reference)){
     facts:bridgeFacts(src)
   };
 }
+
+const strategyDefs={
+  o64_a96_d160:{official:64,a:96,d:160},
+  o96_a96_d160:{official:96,a:96,d:160},
+  o128_a96_d160:{official:128,a:96,d:160},
+  o128_a128_d160:{official:128,a:128,d:160},
+  o128_a96_d192:{official:128,a:96,d:192}
+};
 const baseMap={};
-for(const n of widths)baseMap[n]=unionBases(generic,rankA.slice(0,n),rankD.slice(0,n));
-const max=widths[widths.length-1],maxBases=baseMap[max],sets=new Map(widths.map(n=>[n,new Set(baseMap[n].map(r=>planner.routeKey(r)))]));
-const states=new Map(widths.map(n=>[n,{c:planner.createCollector({topN:3,poolN:120}),arc:advisor.emptySummary('arc'),bc:advisor.emptySummary('bc')}]));
+for(const [name,x] of Object.entries(strategyDefs)){
+  baseMap[name]=unionBases(officialBases(x.official),rankA.slice(0,x.a),rankD.slice(0,x.d));
+}
+const allBases=unionBases(...Object.values(baseMap));
+const sets=new Map(Object.entries(baseMap).map(([name,list])=>[name,new Set(list.map(r=>planner.routeKey(r)))]));
+const states=new Map(Object.keys(baseMap).map(name=>[name,{c:planner.createCollector({topN:3,poolN:120}),arc:advisor.emptySummary('arc'),bc:advisor.emptySummary('bc')}]));
 let scanned=0;
-for(const r of planner.iterateFourthPreview(mare,maxBases)){
+for(const r of planner.iterateFourthPreview(mare,allBases)){
   scanned++;
   const key=planner.routeKey({sires:r.sires.slice(0,-1)});
-  for(const n of widths){
-    if(!sets.get(n).has(key))continue;
-    const s=states.get(n);s.c.push(r);advisor.addRoute(s.arc,r,'arc');advisor.addRoute(s.bc,r,'bc');
+  for(const name of Object.keys(baseMap)){
+    if(!sets.get(name).has(key))continue;
+    const s=states.get(name);s.c.push(r);advisor.addRoute(s.arc,r,'arc');advisor.addRoute(s.bc,r,'bc');
   }
 }
 const variants={};
-for(const n of widths){
-  const s=states.get(n),res=s.c.finish();res.goalBest={arc:s.arc.bestRoute,bc:s.bc.bestRoute};
+for(const name of Object.keys(baseMap)){
+  const s=states.get(name),res=s.c.finish();res.goalBest={arc:s.arc.bestRoute,bc:s.bc.bestRoute};
   const snap=snapshot(res),matches={};
   for(const axis of Object.keys(reference))matches[axis]=JSON.stringify(snap[axis]?.sires||[])===JSON.stringify(reference[axis]);
-  variants[n]={baseCount:baseMap[n].length,result:snap,matchesReference:matches,allReferenceAxes:Object.values(matches).every(Boolean)};
+  variants[name]={config:strategyDefs[name],baseCount:baseMap[name].length,result:snap,matchesReference:matches,allReferenceAxes:Object.values(matches).every(Boolean)};
 }
-console.log(JSON.stringify({passed:true,method:'bridge-strategy-diagnostic',mare,thirdScanned:routes.length,thirdBases:b3.length,genericBases:generic.length,scannedLargest:scanned,widths,referenceSourceRanks,variants},null,2));
+console.log(JSON.stringify({passed:true,method:'bridge-strategy-diagnostic',mare,thirdScanned:routes.length,thirdBases:b3.length,genericBases:generic.length,scannedLargest:scanned,allBaseCount:allBases.length,referenceSourceRanks,variants},null,2));
