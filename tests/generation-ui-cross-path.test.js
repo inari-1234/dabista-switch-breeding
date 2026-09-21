@@ -30,16 +30,18 @@ const use=advisor.directUseLabels(fit,direct);
 assert.strictEqual(use.arc,'2代以上を比較','pre-diagnosis label must not claim a 2-generation recommendation');
 assert.ok(!use.arc.includes('推奨'),'only the generation advisor may publish a generation recommendation');
 
-function fakeRoute(materialStages,sp=15,st=6){
+function fakeRoute(materialStages,sp=15,st=6,longStages=0){
   return{
     final:{
       sp,st,pw:1,
       speedCross:{has:false,count:0,effect:0,short:0,speed:0},
+      crossEffects:{anyAbility:false,longDistance:false,gutsSupport:false,powerSupport:false},
       theory:{interesting:false,magnificent:false,perfect:false},
       elaborate:false,
       sireStats:{record:'B',guts:'B',stable:'B',minD:1600,maxD:2200}
     },
-    materialSpeedCross:{has:materialStages>0,stages:materialStages,count:materialStages,short:0,speed:materialStages,effect:materialStages}
+    materialSpeedCross:{has:materialStages>0,stages:materialStages,count:materialStages,short:0,speed:materialStages,effect:materialStages},
+    materialLongCross:{has:longStages>0,stages:longStages,names:longStages?['Synthetic Long']:[]}
   };
 }
 const lowReasons=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',fit);
@@ -58,6 +60,14 @@ const unknownAssessment=advisor.mareAssessment('アマリン');
 const unknownUpgrade=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',unknownAssessment);
 assert.ok(!unknownUpgrade.some(x=>x.includes('中間世代で速力/短距離クロス')),'unknown mare must not be treated as SP-deficient when recommending a deeper generation');
 
+const stNeeds=advisor.mareAssessment('ミニミニデート');
+const stReasons=advisor.materialUpgradeReasons(fakeRoute(0,15,6,0),fakeRoute(0,15,6,1),'arc',stNeeds);
+assert.ok(stReasons.some(x=>x.includes('長距離クロス')&&x.includes('ST選抜機会')),'ST-needy mare should value an intermediate long-distance-cross selection opportunity when final SP/ST are maintained');
+const eliteLongReasons=advisor.materialUpgradeReasons(fakeRoute(0,15,6,0),fakeRoute(0,15,6,1),'arc',elite);
+assert.ok(!eliteLongReasons.some(x=>x.includes('ST選抜機会')),'elite mare must not extend generations only for an intermediate long-distance cross');
+const unknownLongReasons=advisor.materialUpgradeReasons(fakeRoute(0,15,6,0),fakeRoute(0,15,6,1),'arc',unknownAssessment);
+assert.ok(!unknownLongReasons.some(x=>x.includes('ST不足側')),'unknown mare must not be treated as ST-deficient when recommending a deeper generation');
+
 let materialRoute=null;
 for(const r of planner.iterateTwo('フィットレオタード')){
   if(r.materialSpeedCross?.has){materialRoute=r;break}
@@ -73,6 +83,19 @@ assert.ok(expanded.stages[0].speedCross?.has,'expanded route must expose stage S
 const advice=advisor.selectionAdvice('フィットレオタード','arc',expanded.stages[0],2);
 assert.ok(advice.body.includes('選抜機会'),'intermediate cross must be described as a selection opportunity');
 assert.ok(advice.body.includes('出生前の繁殖SPには加算しません')||advice.body.includes('実馬でSTを確認'),'must not invent intermediate broodmare ability');
+
+let materialLongRoute=null;
+for(const r of planner.iterateTwo('ミニミニデート')){
+  if(r.materialLongCross?.has){materialLongRoute=r;break}
+}
+assert.ok(materialLongRoute,'two-generation route with an intermediate long-distance cross should exist');
+assert.strictEqual(materialLongRoute.crossEffectPath.length,2);
+assert.ok(materialLongRoute.crossEffectPath[0].longDistance,'material long-distance cross must belong to an intermediate generation');
+const expandedLong=planner.expandRoute('ミニミニデート',materialLongRoute,'arc');
+assert.ok(expandedLong.stages[0].crossEffects?.longDistance,'expanded route must expose direct long-distance cross effect');
+const longAdvice=advisor.selectionAdvice('ミニミニデート','arc',expandedLong.stages[0],2);
+assert.ok(longAdvice.body.includes('ST選抜機会'),'intermediate long-distance cross must be described as an ST selection opportunity');
+assert.ok(longAdvice.body.includes('出生前の繁殖STへ加算せず'),'intermediate long-distance cross must not invent broodmare ST');
 
 let unknownMaterialRoute=null;
 for(const r of planner.iterateTwo('アマリン')){
