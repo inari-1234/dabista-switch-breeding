@@ -98,7 +98,6 @@ const mares=['スプリングスイーツ','エイスト'];
 const output=[];
 const started=Date.now();
 for(const mare of mares){
-  currentMare=mare;
   const r2=collect(planner.iterateTwo(mare),24);
   const b3=bases(r2.shortlists,12);
   const third=multiCollect(planner.iterateThirdPreview(mare,b3));
