@@ -56,6 +56,7 @@ uncertainArcSummary.arcQuantitative=1;
 uncertainArcSummary.arcReady=1;
 uncertainArcSummary.arcRecordB=1;
 uncertainArcSummary.arcDistanceUncertain=1;
+uncertainArcSummary.arcUncertainB=1;
 assert.strictEqual(
   advisor.directUseLabels(elite,uncertainArcSummary).arc,
   '直仔候補（距離根拠要確認）',
