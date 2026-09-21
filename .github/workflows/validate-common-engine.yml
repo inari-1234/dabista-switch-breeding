@@ -66,6 +66,8 @@ jobs:
 
       - name: Static syntax and release wiring
         run: |
+          for f in *.js tests/*.test.js; do node --check "$f"; done
+          for f in version.json data/*.json; do python -m json.tool "$f" >/dev/null; done
           node --check app.js
           node --check breed-helper.js
           node --check v15.js
