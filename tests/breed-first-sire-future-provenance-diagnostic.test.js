@@ -42,13 +42,16 @@ function facts(r){if(!r)return null;const f=advisor.routeFacts(r);return{sires:r
 
 const group=new Map();
 let directCount=0,twoCount=0,threeCount=0,fourCount=0;
+const thirdBaseFirstSires=new Set(),thirdRouteFirstSires=new Set(),fourthBaseFirstSires=new Set(),fourthRouteFirstSires=new Set();
 const c2=planner.createCollector({topN:3,poolN:24});
 for(const r of planner.iterateDirect(mare)){directCount++;update(group,r,1)}
 for(const r of planner.iterateTwo(mare)){twoCount++;c2.push(r);update(group,r,2)}
 const r2=c2.finish(),b3=bases(r2.shortlists,12),c3=planner.createCollector({topN:3,poolN:18}),bridge=planner.createFourthBridgeCollector();
-for(const r of planner.iterateThirdPreview(mare,b3)){threeCount++;c3.push(r);bridge.push(r);update(group,r,3)}
+for(const r of b3)if(r?.sires?.[0])thirdBaseFirstSires.add(r.sires[0]);
+for(const r of planner.iterateThirdPreview(mare,b3)){threeCount++;c3.push(r);bridge.push(r);update(group,r,3);if(r?.sires?.[0])thirdRouteFirstSires.add(r.sires[0])}
 const r3=c3.finish(),b4=bridge.finish().bases;
-for(const r of planner.iterateFourthPreview(mare,b4)){fourCount++;update(group,r,4)}
+for(const r of b4)if(r?.sires?.[0])fourthBaseFirstSires.add(r.sires[0]);
+for(const r of planner.iterateFourthPreview(mare,b4)){fourCount++;update(group,r,4);if(r?.sires?.[0])fourthRouteFirstSires.add(r.sires[0])}
 
 const summary=[...group.values()].map(rec=>({
  firstSire:rec.firstSire,
@@ -73,6 +76,12 @@ console.log(JSON.stringify({
  method:'single-mare-scan-grouped-by-first-sire',
  mare,
  counts:{firstSireGroups:summary.length,directCount,twoCount,threeCount,fourCount,thirdBases:b3.length,fourthBases:b4.length},
+ deepCoverage:{
+  thirdBaseFirstSires:thirdBaseFirstSires.size,thirdRouteFirstSires:thirdRouteFirstSires.size,
+  fourthBaseFirstSires:fourthBaseFirstSires.size,fourthRouteFirstSires:fourthRouteFirstSires.size,
+  notThirdExplored:summary.filter(x=>!thirdRouteFirstSires.has(x.firstSire)).map(x=>x.firstSire),
+  notFourthExplored:summary.filter(x=>!fourthRouteFirstSires.has(x.firstSire)).map(x=>x.firstSire)
+ },
  categoryDeepCounts,
  grandPrixBoss:gp,
  examples:summary.filter(x=>['グランプリボス','ワイルドラッシュ','バゴ','ロードアルティマ'].includes(x.firstSire))
