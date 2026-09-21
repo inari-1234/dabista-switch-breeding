@@ -27,7 +27,8 @@
     "magnificentSynergy": "見事は単独加点ではなく目的に有効なクロスとの相乗で評価する。BCはSP系、凱旋門はSP系/長距離系、繁殖再建は母の不足能力に対応するクロスを重視する。",
     "generation4": "3代目の条件付き候補から4代目を展開する。旧8件/軸は感度不足のため廃止。代表4牝馬でwide480と比較し、一般6軸64件/軸＋SPクロス軸320件＋bridge D144件（重複除外）のcompact bridgeがArc/BC/rebuild/SP/SPクロス/production/ST/balanceとportfolioで同等以上を維持したため、この条件付きbridge探索を正式プレビューに使う。全176^4最適解とは扱わない。",
     "sireRecordContext": "実績Aは強馬生産の強い根拠だが絶対条件ではない。同程度のSP/STならA>B>Cを優先し、実績B/Cでも数値・クロス・母能力が優れる候補は失格にしない。",
-    "generation4Sensitivity": "代表4牝馬ではbridge D128がエイストのST軸を落としたため不採用。D144を実測下限とし、bridge Aは全4頭で不要だったため0件。一般軸64、SPクロス320はwide480比較で全項目維持。"
+    "generation4Sensitivity": "代表4牝馬ではbridge D128がエイストのST軸を落としたため不採用。D144を実測下限とし、bridge Aは全4頭で不要だったため0件。一般軸64、SPクロス320はwide480比較で全項目維持。",
+    "arcGenerationSpeedCross": "凱旋門向け世代延長では最終配合の速力/短距離クロスを能力保証として扱わない。クロス新規成立だけを理由に深い世代へ進む場合、直前世代比でSPは-1以内、STも-1以内を最低条件とし、SPが2以上落ちる場合は延長理由にしない。"
   },
   "samples": [
     {
