@@ -273,15 +273,16 @@
 
     function goalVector(route,goal){
       const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},ce=f.crossEffects||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
-      const maxD=val(ss.maxD),distanceTier=maxD>=2400?2:maxD>=2200?1:0,rec=grade(ss.record),recA=rec>=3;
+      const maxD=val(ss.maxD),rec=grade(ss.record),recA=rec>=3;
       const hasSpeed=bool(x.has),hasLong=bool(ce.longDistance),hasUseful=bool(ce.anyAbility),crossCount=val(x.count),materialStages=val(route?.materialSpeedCross?.stages);
+      const distanceEvidence=maxD>=2400?(hasLong?3:2):(hasLong?1:0);
       const multi=(route?.sires||[]).length>1,stableUpside=multi?(ss.stable==='C'?3:ss.stable==='B'?2:ss.stable==='A'?1:0):0;
       const speedPath=hasSpeed||materialStages>0;
       const magnificentSpeed=bool(t.magnificent&&hasSpeed);
       const magnificentLong=bool(t.magnificent&&hasLong);
       const magnificentUseful=bool(t.magnificent&&hasUseful);
       const arcQuantitative=sp>=14&&st>=6&&recA;
-      if(goal==='arc')return[bool(arcQuantitative),bool(sp>=15&&st>=5&&recA),sp+st,st,sp,hasLong,distanceTier,hasSpeed,crossCount,materialStages,stableUpside,magnificentLong,magnificentSpeed,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
+      if(goal==='arc')return[bool(arcQuantitative),bool(sp>=15&&st>=5&&recA),sp+st,st,sp,distanceEvidence,hasSpeed,crossCount,materialStages,stableUpside,magnificentLong,magnificentSpeed,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
       if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(speedPath),rec,stableUpside,hasSpeed,crossCount,materialStages,magnificentSpeed,bool(f.elaborate),bool(t.interesting)];
       if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting),rec];
       return[sp,sp+st,st,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting)];
@@ -343,10 +344,14 @@
       if(grade(ss.record)>=3)summary.recordA++;
       if(sp>=15&&st>=5&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.balanceLongA++;
       if(sp>=14&&st>=6&&grade(ss.record)>=3){
-        summary.arcReady++;
         summary.arcQuantitative++;
-        if(val(ss.maxD)>=2400)summary.arcDistanceStrong++;
-        else if(ce.longDistance)summary.arcCompensated++;
+        if(val(ss.maxD)>=2400){
+          summary.arcDistanceStrong++;
+          summary.arcReady++;
+        }else if(ce.longDistance){
+          summary.arcCompensated++;
+          summary.arcReady++;
+        }
       }
       summary.maxSp=Math.max(summary.maxSp,sp);
       summary.maxSt=Math.max(summary.maxSt,st);
@@ -374,8 +379,9 @@
         sp:val(f.sp),st:val(f.st),pw:val(f.pw),spst:val(f.sp)+val(f.st),
         speedCross:bool(x.has),speedCrossCount:val(x.count),speedCrossEffect:val(x.effect),shortCross:val(x.short),speedOnlyCross:val(x.speed),
         materialSpeedCross:bool(mx.has),materialSpeedCrossStages:val(mx.stages),materialSpeedCrossCount:val(mx.count),
-        maxD:val(ss.maxD),distance2400:val(ss.maxD)>=2400,distanceTier:val(ss.maxD)>=2400?2:val(ss.maxD)>=2200?1:0,long2400:val(ss.maxD)>=2400,
+        maxD:val(ss.maxD),distance2400:val(ss.maxD)>=2400,long2400:val(ss.maxD)>=2400,
         longDistanceCross:bool(f.crossEffects?.longDistance),gutsCross:bool(f.crossEffects?.gutsSupport),powerCross:bool(f.crossEffects?.powerSupport),abilityCross:bool(f.crossEffects?.anyAbility),
+        distanceEvidence:val(ss.maxD)>=2400?(f.crossEffects?.longDistance?3:2):(f.crossEffects?.longDistance?1:0),
         record:String(ss.record||'?'),stable:String(ss.stable||'?'),guts:String(ss.guts||'?'),
         recordGrade:grade(ss.record),recordA:grade(ss.record)>=3,gutsA:grade(ss.guts)>=3,
         interesting:bool(t.interesting),magnificent:bool(t.magnificent),perfect:bool(t.perfect),elaborate:bool(f.elaborate)
