@@ -14,9 +14,9 @@ const v26=read('v26.js');
 const idx=read('index.html');
 const version=JSON.parse(read('version.json'));
 
-assert.strictEqual(version.version,'1.17.0');
-assert.strictEqual(version.build,'2026.09.21-42');
-assert.ok(app.includes("const APP_BUILD='2026.09.21-42';"));
+assert.strictEqual(version.version,'1.18.0');
+assert.strictEqual(version.build,'2026.09.21-43');
+assert.ok(app.includes("const APP_BUILD='2026.09.21-43';"));
 assert.ok(app.includes('window.DABISTA_TRANSIENT_BREED_MARE=null'));
 assert.ok(app.includes('window.getBreedHorseById=id=>'));
 assert.strictEqual((app.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,1,'automatic update check must be centralized in app.js');
@@ -58,11 +58,11 @@ assert.ok(v15.includes('馬DB・バックアップJSONには保存されませ�
 for(const p of ['breed-helper.js','v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js']){
   assert.ok(idx.includes(p+'?v=1.17.0-b38'),p+' cache key');
 }
-assert.ok(idx.includes('app.js?v=1.17.0-b42'),'app cache key');
-assert.ok(idx.includes('sale-planner-core.js?v=1.17.0-b42'),'sale planner core cache key');
-assert.ok(idx.includes('sale-recommendation-core.js?v=1.17.0-b42'),'sale recommendation core cache key');
-assert.ok(idx.includes('v26.js?v=1.17.0-b42'),'v26 cache key');
-assert.ok(idx.includes('v27.js?v=1.17.0-b42'),'v27 cache key');
+assert.ok(idx.includes('app.js?v=1.18.0-b43'),'app cache key');
+assert.ok(idx.includes('sale-planner-core.js?v=1.18.0-b43'),'sale planner core cache key');
+assert.ok(idx.includes('sale-recommendation-core.js?v=1.18.0-b43'),'sale recommendation core cache key');
+assert.ok(idx.includes('v26.js?v=1.18.0-b43'),'v26 cache key');
+assert.ok(idx.includes('v27.js?v=1.18.0-b43'),'v27 cache key');
 
 console.log(JSON.stringify({
   passed:true,
