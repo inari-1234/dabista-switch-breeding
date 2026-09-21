@@ -274,12 +274,22 @@ function finishGeneration(mare){
   };
   return{rec:advisor.recommendGeneration({goal:'arc',assessment,generations}),generations,bases};
 }
+const springGeneration=finishGeneration('スプリングスイーツ');
+assert.strictEqual(springGeneration.rec.generation,1,'Spring Sweets must stay at direct Arc generation unless a deeper route materially improves an already elite dam');
+
+const eistGeneration=finishGeneration('エイスト');
+assert.strictEqual(eistGeneration.rec.generation,1,'Eist must not be pushed deeper by extra ST or cross evidence when SP is the mare-specific improvement axis');
+
 const fitGeneration=finishGeneration('フィットレオタード');
 assert.strictEqual(fitGeneration.rec.generation,2,'Fit Leotard Arc diagnosis must stop at generation 2');
 assert.strictEqual(fitGeneration.rec.label,'2代推奨');
-assert.ok(fitGeneration.rec.reasons.some(x=>x.includes('凱旋門向けSP/ST基準')||x.includes('最終父の実績')),'generation 2 must be justified by an Arc ability/record improvement rather than a hard 2400m or record-A gate');
-assert.ok(!fitGeneration.rec.reasons.some(x=>x.startsWith('2代→3代')),'generation 3 must not be selected only for an intermediate SP cross');
+assert.ok(fitGeneration.rec.reasons.some(x=>x.includes('中間世代で速力/短距離クロス')||x.includes('凱旋門向けSP/ST基準')||x.includes('最終父の実績')),'generation 2 must be justified by a mare-aware material improvement rather than a hard 2400m or record-A gate');
+assert.ok(!fitGeneration.rec.reasons.some(x=>x.startsWith('2代→3代')),'generation 3 must not be selected only for a final SP cross after losing too much SP');
 assert.ok(fitGeneration.bases.some(r=>r.final?.speedCross?.has),'3-generation preview bases must include the SP-cross axis');
+
+const miniGeneration=finishGeneration('ミニミニデート');
+assert.strictEqual(miniGeneration.rec.generation,2,'Mini Mini Date must retain the validated two-generation Arc recommendation');
+assert.ok(!miniGeneration.rec.reasons.some(x=>x.startsWith('2代→3代')),'Mini Mini Date must not be extended after the validated generation-2 gain is already captured');
 
 const v26=fs.readFileSync('v26.js','utf8');
 const v27=fs.readFileSync('v27.js','utf8');
