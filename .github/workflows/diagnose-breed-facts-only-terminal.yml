@@ -1,0 +1,31 @@
+name: Diagnose facts-only terminal optimization
+
+on:
+  push:
+    paths:
+      - 'tests/breed-facts-only-terminal-diagnostic.test.js'
+      - '.github/workflows/diagnose-breed-facts-only-terminal.yml'
+      - 'sale-planner-core.js'
+      - 'breeding-core.js'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-facts-only-terminal-diagnostic.test.js
+      - name: Facts-only terminal optimization
+        run: node tests/breed-facts-only-terminal-diagnostic.test.js
