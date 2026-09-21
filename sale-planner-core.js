@@ -26,9 +26,9 @@
     bc:['production','speedCross','sp','balance','sire','st']
   };
   const PROFILE_CRITERIA={
-    sp:'最終配合のSPニトロ → ST → PW → 完璧/見事/面白/凝った → 最終父の実績',
-    speedCross:'最終配合に速力/短距離の有効クロスを最低1本確保 → SPニトロ → ST → 完璧/見事 → SP系クロス祖先数 → PW/その他配合理論',
-    production:'多世代は途中または締めに速力/短距離クロスを最低1回確保 → SP15/ST5最低線 → 最終父の実績 → SP17/ST5 → 安定C/B/Aを上振れ幅の違いとして比較 → SP → ST → 底力/配合理論',
+    sp:'最終配合のSPニトロ → ST → PW → 見事×有効SPクロスの相乗 → 凝った → 面白 → 最終父の実績',
+    speedCross:'最終配合に速力/短距離の有効クロスを最低1本確保 → SPニトロ → ST → 見事×有効SPクロスの相乗 → SP系クロス祖先数 → 凝った/面白 → PW',
+    production:'多世代は途中または締めに速力/短距離クロスを最低1回確保 → SP15/ST5最低線 → 最終父の実績 → SP17/ST5 → 安定C/B/Aを上振れ幅の違いとして比較 → SP → ST → 見事×有効SPクロス → 凝った/面白',
     st:'最終父の2400m対応 → STニトロ → SP → 実績/底力 → 配合理論',
     balance:'SP15/ST5同時達成 → SP+ST → ST → SP → 2400m対応 → 実績',
     sire:'高能力繁殖牝馬群への安全配合数・SP15/ST5・SP17/ST5・面白/見事/完璧/凝った・最大ニトロを合算せず並列比較'
@@ -45,14 +45,15 @@
     return 0;
   }
   function finalVector(route,profile){
-    const f=route.final||{},s=f.sireStats||{},t=f.theory||{};
-    if(profile==='sp')return[val(f.sp),val(f.st),val(f.pw),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate),grade(s.record)];
+    const f=route.final||{},s=f.sireStats||{},t=f.theory||{},x=f.speedCross||{};
+    const speedSupport=bool(x.has||route.materialSpeedCross?.has);
+    const magnificentCross=bool(t.magnificent&&speedSupport);
+    if(profile==='sp')return[val(f.sp),val(f.st),val(f.pw),magnificentCross,bool(f.elaborate),bool(t.interesting),grade(s.record)];
     if(profile==='speedCross'){
-      const x=f.speedCross||{};
-      return[bool(x.has),val(f.sp),val(f.st),bool(t.perfect),bool(t.magnificent),val(route.materialSpeedCross?.stages),val(x.count),val(x.effect),val(f.pw),bool(f.elaborate),grade(s.record)];
+      return[bool(x.has),val(f.sp),val(f.st),magnificentCross,val(route.materialSpeedCross?.stages),val(x.count),val(x.effect),bool(f.elaborate),bool(t.interesting),val(f.pw),grade(s.record)];
     }
     if(profile==='production'){
-      const x=f.speedCross||{},multi=(route.sires||[]).length>1;
+      const multi=(route.sires||[]).length>1;
       const stableUpside=multi?(s.stable==='C'?3:s.stable==='B'?2:s.stable==='A'?1:0):0;
       return[
         bool(val(f.sp)>=15&&val(f.st)>=5),
@@ -62,14 +63,12 @@
         val(f.sp),val(f.st),
         bool(x.has),val(x.count),
         grade(s.guts),val(f.pw),
-        bool(t.perfect),bool(t.magnificent),bool(f.elaborate)
+        magnificentCross,bool(f.elaborate),bool(t.interesting)
       ];
     }
     if(profile==='st')return[bool(val(s.maxD)>=2400),val(f.st),val(f.sp),grade(s.record),grade(s.guts),bool(t.perfect),bool(t.magnificent),bool(t.interesting),bool(f.elaborate)];
     if(profile==='balance')return[bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.st),val(f.sp),bool(val(s.maxD)>=2400),grade(s.record),grade(s.guts)];
     if(profile==='theory'){
-      const speedSupport=bool(f.speedCross?.has||route.materialSpeedCross?.has);
-      const magnificentCross=bool(t.magnificent&&speedSupport);
       return[magnificentCross,bool(val(f.sp)>=15&&val(f.st)>=5),val(f.sp)+val(f.st),val(f.sp),val(f.st),bool(f.elaborate),bool(t.interesting),bool(t.magnificent)];
     }
     return[];
