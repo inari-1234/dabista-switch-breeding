@@ -191,6 +191,19 @@
       }
       return{has:names.length>0,count:names.length,short:fx.short,speed:fx.speed,effect:fx.spNitroContribution,names};
     }
+    function compactEffectPath(items){
+      const path=(items||[]).map((pair,i)=>({generation:i+1,...crossEffectSummary(pair)}));
+      const material=path.slice(0,-1);
+      const longStages=material.filter(x=>x.longDistance);
+      return{
+        path,
+        materialLong:{
+          has:longStages.length>0,
+          stages:longStages.length,
+          names:[...new Set(longStages.flatMap(x=>x.names||[]))]
+        }
+      };
+    }
     function compactCrossPath(items){
       const path=(items||[]).map((x,i)=>{
         const s=x?.danger?speedCrossSummary(x):x||{};
@@ -221,7 +234,9 @@
       };
     }
     function routeFrom(sires,pair,method='exact',stageCrossItems=[]){
-      const crossPath=compactCrossPath(stageCrossItems.length?stageCrossItems:[pair]);
+      const items=stageCrossItems.length?stageCrossItems:[pair];
+      const crossPath=compactCrossPath(items);
+      const effectPath=compactEffectPath(items);
       return{
         id:sires.map(x=>key(x)).join('__'),
         sires:[...sires],
@@ -230,6 +245,8 @@
         final:compactFinal(pair,sire(sires[sires.length-1])||{name:sires[sires.length-1]}),
         speedCrossPath:crossPath.path,
         materialSpeedCross:crossPath.material,
+        crossEffectPath:effectPath.path,
+        materialLongCross:effectPath.materialLong,
         finalChild:pair.child
       };
     }
@@ -303,6 +320,7 @@
           danger:x.pair.danger,
           crosses:x.pair.danger?.rawCrosses||[],
           speedCross:speedCrossSummary(x.pair),
+          crossEffects:crossEffectSummary(x.pair),
           selection:i<r.stages.length-1?selectionCondition(goal,i+1):null
         }))
       };
