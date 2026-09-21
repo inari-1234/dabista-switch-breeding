@@ -1,0 +1,44 @@
+name: Diagnose fixed-first high-width sensitivity
+
+on:
+  push:
+    paths:
+      - 'tests/breed-fixed-first-high-width-sensitivity.test.js'
+      - '.github/workflows/diagnose-breed-fixed-first-high-width-sensitivity.yml'
+      - 'sale-planner-core.js'
+      - 'breeding-core.js'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [0,1]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-fixed-first-high-width-sensitivity.test.js
+      - name: High-width sensitivity
+        env:
+          CASE_INDEX: ${{ matrix.case }}
+          OUTPUT_FILE: high-width-${{ matrix.case }}.json
+        run: node tests/breed-fixed-first-high-width-sensitivity.test.js
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: high-width-${{ matrix.case }}
+          path: high-width-${{ matrix.case }}.json
+          if-no-files-found: error
