@@ -92,7 +92,7 @@ function finishGeneration(mare){
   const c2=planner.createCollector({topN:3,poolN:24}),s2=advisor.emptySummary('exact-two');
   for(const r of planner.iterateTwo(mare)){c2.push(r);advisor.addRoute(s2,r,'arc')}
   const r2=c2.finish();
-  const bases=[],seen=new Set(),axes=['sp','speedCross','st','balance','theory'];
+  const bases=[],seen=new Set(),axes=['sp','speedCross','production','st','balance','theory'];
   for(let i=0;i<12;i++)for(const k of axes){
     const r=r2.shortlists?.[k]?.[i];if(!r)continue;
     const id=planner.routeKey(r);if(!seen.has(id)){seen.add(id);bases.push(r)}
