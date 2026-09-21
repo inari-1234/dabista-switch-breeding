@@ -1,0 +1,31 @@
+name: Diagnose prepared pedigree cache exact3
+
+on:
+  push:
+    paths:
+      - 'tests/breed-prepared-core-exact3-benchmark.test.js'
+      - '.github/workflows/diagnose-breed-prepared-core-exact3.yml'
+      - 'breeding-core.js'
+      - 'sale-planner-core.js'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-prepared-core-exact3-benchmark.test.js
+      - name: Prepared pedigree cache exact3 benchmark
+        run: node tests/breed-prepared-core-exact3-benchmark.test.js
