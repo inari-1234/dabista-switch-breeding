@@ -1,0 +1,33 @@
+name: Diagnose breed category future reuse
+
+on:
+  push:
+    paths:
+      - 'tests/breed-category-future-reuse-diagnostic.test.js'
+      - '.github/workflows/diagnose-breed-category-future-reuse.yml'
+      - 'sale-planner-core.js'
+      - 'sale-recommendation-core.js'
+      - 'breeding-core.js'
+      - 'index.html'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-category-future-reuse-diagnostic.test.js
+      - name: Breed category future-potential reuse diagnostic
+        run: node tests/breed-category-future-reuse-diagnostic.test.js
