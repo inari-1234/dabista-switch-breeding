@@ -83,7 +83,7 @@ function goalButtons(){
  return Object.entries(labels).map(([k,v])=>`<button type="button" data-sale-goal="${k}" class="${db.salePlanner.goal===k?'on':''}">${v}</button>`).join('')
 }
 function genButtons(){
- return [1,2,3].map(n=>`<button type="button" data-sale-gen="${n}" class="${+db.salePlanner.generation===n?'on':''}">${n===1?'直仔':n+'代'}</button>`).join('')
+ return [1,2,3,4].map(n=>`<button type="button" data-sale-gen="${n}" class="${+db.salePlanner.generation===n?'on':''}">${n===1?'直仔':n+'代'}</button>`).join('')
 }
 function inject(){
  if($('#salePlanner')||!$('#rebuild'))return;
@@ -98,7 +98,7 @@ function inject(){
   <div id="saleMareSummary" class="sale-mare-summary">繁殖牝馬マスタを読み込み中…</div>
   <div id="saleGoalSection"><label>目的</label><div class="sale-seg" id="saleGoalButtons">${goalButtons()}</div></div>
   <div id="saleGenerationSection"><label>診断結果／比較する世代</label><div class="sale-seg gens" id="saleGenButtons">${genButtons()}</div><div id="saleGenerationState" class="sale-generation-state"></div></div>
-  <div id="salePlannerNotice" class="notice">直仔は176頭全探索、2代は安全な1代目から約3万ルートを全探索します。3代は2代目まで全探索した候補を起点に条件付きプレビューします。</div>
+  <div id="salePlannerNotice" class="notice">直仔は176頭全探索、2代は安全な1代目から約3万ルートを全探索します。3代は2代目の多軸候補、4代は3代目の多軸候補を起点にした条件付きプレビューです。</div>
   <div class="actions"><button class="primary" id="runSalePlanner">この条件で設計</button></div>
   <div id="salePlannerProgress" class="sale-progress"></div>
  `;
@@ -134,7 +134,7 @@ function setPlannerMare(name,reason='select'){
  return changed;
 }
 function setGeneration(n,source='manual'){
- db.salePlanner.generation=[1,2,3].includes(+n)?+n:0;
+ db.salePlanner.generation=[1,2,3,4].includes(+n)?+n:0;
  db.salePlanner.generationSource=db.salePlanner.generation?source:'unset';
  save();paintButtons();renderNotice();
 }
@@ -195,7 +195,8 @@ function renderNotice(){
  if(!n){el.innerHTML='<b>世代未選択：</b>正式な推奨は「おすすめ配合世代を診断」で決定します。手動で比較することもできます。';return}
  if(n===1)el.innerHTML='<b>直仔：</b>国内176種牡馬を全探索。危険・超危険を除外し、複数軸で候補を表示します。';
  else if(n===2)el.innerHTML='<b>2代：</b>安全な1代目から国内176頭を掛け合わせ、約3万ルートを全探索します。中間牝馬の繁殖能力は出生前に仮定しません。';
- else el.innerHTML='<b>3代：</b>2代目までは全探索。3代目はSP上限/SPクロス補強/ST/バランス/配合理論の多軸候補を起点に条件付き探索する仮プレビューです。全176³の最適解とは表示しません。';
+ else if(n===3)el.innerHTML='<b>3代：</b>2代目までは全探索。3代目はSP上限/SPクロス補強/強馬生産/ST/バランス/配合理論の多軸候補を起点に条件付き探索する仮プレビューです。全176³の最適解とは表示しません。';
+ else el.innerHTML='<b>4代：</b>2代目までは全探索。3代目の条件付き多軸候補をさらに絞り、4代目を条件付き探索します。全176⁴の最適解ではなく、条件付きの深掘り候補です。';
 }
 const yieldUi=()=>new Promise(r=>setTimeout(r,0));
 function previewBases(shortlists,maxEach=12){
@@ -268,7 +269,7 @@ function productionHtml(route){
 }
 function routeHtml(route,index,goal,profile){
  const x=planner.expandRoute(db.salePlanner.mare,route,goal);if(!x)return'';
- const f=route.final||{},sx=f.speedCross||{},method=route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'この表示範囲は全探索結果';
+ const f=route.final||{},sx=f.speedCross||{},method=route.method==='conditional-four-generation-preview'?'4代目は条件付き仮プレビュー':route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'この表示範囲は全探索結果';
  const speedBadge=sx.has?'<span class="sale-chip cross-speed-ok">SP系クロス '+fmt(sx.count)+'祖先</span>':'<span class="sale-chip cross-speed-missing">SP系クロスなし</span>';
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
@@ -372,7 +373,10 @@ function profileHtml(profile,routes,goal,scope){
 function renderResults(result){
  routeContexts.clear();routeContextSeq=0;
  const goal=db.salePlanner.goal,order=planner.goalOrder(goal),gen=+db.salePlanner.generation,info=planner.mareInfo(db.salePlanner.mare);
- const method=gen===1?`直仔176頭を全探索（安全ルート ${result.safeCount.toLocaleString()}件）`:gen===2?`2代の安全ルート ${result.safeCount.toLocaleString()}件を全探索`:`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索後、${result.previewBaseCount}本の多軸候補から3代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`;
+ const method=gen===1?`直仔176頭を全探索（安全ルート ${result.safeCount.toLocaleString()}件）`
+  :gen===2?`2代の安全ルート ${result.safeCount.toLocaleString()}件を全探索`
+  :gen===3?`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索後、${result.previewBaseCount3}本の多軸候補から3代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`
+  :`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索し、3代目を${result.previewBaseCount3}本から条件付き探索後、${result.previewBaseCount4}本の3代候補から4代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`;
  const caution=!info.abilityKnown?'<div class="notice"><b>繁殖能力未判明：</b>母能力を含む総合評価は保留。血統・ニトロ・配合理論だけで候補を表示しています。</div>':'';
  const profiles={...result.base.profiles,sire:result.portfolio.routes};
  $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice">6軸は合算して総合1位を作りません。<b>強馬生産型</b>は最終父の実績・安定とSP/ST最低線を重視し、SP上限型・SPクロス補強型は血統上限側として別に残します。実際に生産した中間牝馬の能力を確認して次世代へ進めてください。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
@@ -381,7 +385,7 @@ async function runDesign(){
  if(!planner)return;
  const name=$('#saleMareSelect')?.value;if(!name)return;
  const gen=+db.salePlanner.generation;
- if(![1,2,3].includes(gen)){const p=$('#salePlannerProgress');if(p)p.textContent='世代が未選択です。世代診断を実行するか、直仔・2代・3代を手動で選択してください。';return}
+ if(![1,2,3,4].includes(gen)){const p=$('#salePlannerProgress');if(p)p.textContent='世代が未選択です。世代診断を実行するか、直仔・2代・3代・4代を手動で選択してください。';return}
  db.salePlanner.mare=name;save();const seq=++runSeq,btn=$('#runSalePlanner');btn.disabled=true;
  $('#salePlannerResults').innerHTML='';$('#salePlannerProgress').textContent='設計を開始します…';
  try{
@@ -392,13 +396,23 @@ async function runDesign(){
   }else{
    baseSafe=await scanIterator(planner.iterateTwo(name),baseCollector,seq,'2代全探索');
   }
-  const base=baseCollector.finish();let finalBase=base,safeCount=baseSafe,previewBaseCount=0,portfolioSource,portfolioScope;
-  if(gen===3){
-   const bases=previewBases(base.shortlists,12);previewBaseCount=bases.length;
-   const c=planner.createCollector({topN:3,poolN:18});
-   safeCount=await scanIterator(planner.iterateThirdPreview(name,bases),c,seq,'3代条件付きプレビュー');
-   finalBase=c.finish();portfolioSource=finalBase.pool;
-   portfolioScope=`3代目条件付き候補プール ${portfolioSource.length}件。2代目までは全探索、3代目は全176³探索ではありません。`;
+  const base=baseCollector.finish();
+  let finalBase=base,safeCount=baseSafe,previewBaseCount3=0,previewBaseCount4=0,thirdSafeCount=0,portfolioSource,portfolioScope;
+  if(gen>=3){
+   const bases3=previewBases(base.shortlists,12);previewBaseCount3=bases3.length;
+   const c3=planner.createCollector({topN:3,poolN:18});
+   thirdSafeCount=await scanIterator(planner.iterateThirdPreview(name,bases3),c3,seq,'3代条件付きプレビュー');
+   const r3=c3.finish();
+   if(gen===4){
+    const bases4=previewBases(r3.shortlists,8);previewBaseCount4=bases4.length;
+    const c4=planner.createCollector({topN:3,poolN:16});
+    safeCount=await scanIterator(planner.iterateFourthPreview(name,bases4),c4,seq,'4代条件付きプレビュー');
+    finalBase=c4.finish();portfolioSource=finalBase.pool;
+    portfolioScope=`4代目条件付き候補プール ${portfolioSource.length}件。2代目までは全探索、3代・4代は段階的な多軸候補探索で、全176⁴探索ではありません。`;
+   }else{
+    safeCount=thirdSafeCount;finalBase=r3;portfolioSource=finalBase.pool;
+    portfolioScope=`3代目条件付き候補プール ${portfolioSource.length}件。2代目までは全探索、3代目は全176³探索ではありません。`;
+   }
   }else if(gen===2){
    portfolioSource=base.pool;portfolioScope=`2代全探索後の多軸候補プール ${portfolioSource.length}件。将来価値はこの候補群で比較。`;
   }else{
@@ -407,8 +421,8 @@ async function runDesign(){
   $('#salePlannerProgress').textContent='自家製種牡馬としての血統汎用性をSP+ST≥120 / ≥130の2母集団で比較中…';await yieldUi();
   const portfolio=planner.portfolioPareto(portfolioSource,3);
   if(seq!==runSeq)return;
-  renderResults({base:finalBase,portfolio,safeCount,baseSafeCount:baseSafe,previewBaseCount,portfolioScope});
-  $('#salePlannerProgress').textContent=`設計完了：${gen===3?'3代目は条件付き仮プレビューです。':'対象範囲を全探索しました。'}`;
+  renderResults({base:finalBase,portfolio,safeCount,baseSafeCount:baseSafe,previewBaseCount3,previewBaseCount4,thirdSafeCount,portfolioScope});
+  $('#salePlannerProgress').textContent=`設計完了：${gen===4?'4代目は条件付き仮プレビューです。':gen===3?'3代目は条件付き仮プレビューです。':'対象範囲を全探索しました。'}`;
  }catch(e){
   if(String(e).includes('cancelled'))return;
   window.APP_ERRORS?.push({at:new Date().toISOString(),message:'sale-planner: '+String(e)});
