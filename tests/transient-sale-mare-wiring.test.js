@@ -56,8 +56,9 @@ for(const [p,c] of [['v15.js',v15],['v18.js',v18],['v19.js',v19],['v20.js',v20],
 assert.ok(v15.includes('15祖先内蔵'));
 assert.ok(v15.includes('馬DB・バックアップJSONには保存されません'));
 
-for(const p of ['breed-helper.js','v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js']){
-  assert.ok(idx.includes(p+'?v=1.17.0-b38'),p+' cache key');
+assert.ok(idx.includes('breed-helper.js?v=1.17.0-b38'),'breed-helper.js cache key');
+for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js']){
+  assert.ok(idx.includes(p+'?v=1.18.0-b43'),p+' cache key');
 }
 assert.ok(idx.includes('app.js?v=1.18.0-b43'),'app cache key');
 assert.ok(idx.includes('sale-planner-core.js?v=1.18.0-b43'),'sale planner core cache key');
