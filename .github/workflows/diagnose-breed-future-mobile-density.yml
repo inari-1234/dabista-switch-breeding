@@ -1,0 +1,21 @@
+name: Diagnose breed future mobile density
+
+on:
+  push:
+    paths:
+      - 'tests/breed-future-mobile-density-diagnostic.test.js'
+      - '.github/workflows/diagnose-breed-future-mobile-density.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-future-mobile-density-diagnostic.test.js
+      - name: Mobile density contract
+        run: node tests/breed-future-mobile-density-diagnostic.test.js
