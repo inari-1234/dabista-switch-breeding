@@ -51,6 +51,16 @@ const elite=advisor.mareAssessment('スプリングスイーツ');
 const eliteReasons=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',elite);
 assert.ok(!eliteReasons.some(x=>x.includes('中間世代で速力/短距離クロス')),'elite mare must not extend generations only for an intermediate SP cross');
 
+const uncertainArcSummary=advisor.emptySummary('synthetic-uncertain-distance');
+uncertainArcSummary.arcQuantitative=1;
+uncertainArcSummary.arcReady=1;
+uncertainArcSummary.arcDistanceUncertain=1;
+assert.strictEqual(
+  advisor.directUseLabels(elite,uncertainArcSummary).arc,
+  '直仔候補（距離根拠要確認）',
+  'Arc quantitative/record eligibility must not be rejected solely because sire distance evidence is uncertain'
+);
+
 const lowSpDrop=advisor.materialUpgradeReasons(fakeRoute(0,15,6),fakeRoute(1,13,6),'arc',fit);
 assert.ok(!lowSpDrop.some(x=>x.includes('中間世代で速力/短距離クロス')),'intermediate SP cross must not justify generation extension after a 2-point SP drop');
 const lowStDrop=advisor.materialUpgradeReasons(fakeRoute(0,15,6),fakeRoute(1,15,4),'arc',fit);
