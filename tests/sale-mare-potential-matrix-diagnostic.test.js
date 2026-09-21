@@ -73,6 +73,7 @@ function samplePush(samples,key,item,limit=4){samples[key]??=[];if(samples[key].
 
 const started=Date.now();
 const matrix={arc:{},bc:{},rebuild:{}};
+const preferredMatrix={arc:{},bc:{},rebuild:{}};
 const samples={};
 const rows=[];
 let twoRoutes=0;
@@ -95,8 +96,21 @@ for(let mi=0;mi<mares.length;mi++){
   for(const g of ['arc','bc','rebuild']){
     const s=statusFor(direct[g],two[g],g,a);
     bump(matrix[g],band,s.status);
+    const rec=advisor.recommendGeneration({
+      goal:g,assessment:a,
+      generations:{
+        1:{summary:{bestRoute:direct[g].best}},
+        2:{summary:{bestRoute:two[g].best}}
+      }
+    });
+    const preferredBucket=rec.generation===2?two[g]:direct[g];
+    const preferredStage=preferredBucket.qualified>0?(rec.generation===2?'two':'direct'):'difficult';
+    bump(preferredMatrix[g],band,preferredStage);
     goalRows[g]={
       status:s.status,
+      recommendedGeneration:rec.generation,
+      preferredStage,
+      recommendationReasons:rec.reasons,
       upgrade:s.upgrade,
       direct:{qualified:direct[g].qualified,strong:direct[g].strong,supported:direct[g].supported,best:advisor.routeFacts(direct[g].best)},
       two:{qualified:two[g].qualified,strong:two[g].strong,supported:two[g].supported,best:advisor.routeFacts(two[g].best)}
@@ -120,7 +134,11 @@ if(focus['エイスト']&&focus['エイスト'].band!=='high')throw Error('Eist 
 if(focus['フィットレオタード']&&focus['フィットレオタード'].band!=='middle')throw Error('Fit ability band');
 if(focus['ワカヒルメ']&&focus['ワカヒルメ'].band!=='low')throw Error('Wakahirume ability band');
 if(focus['ミムラス']&&(focus['ミムラス'].band!=='low'||focus['ミムラス'].goals.arc.status!=='direct-supported'))throw Error('low-ability/high-pedigree edge case');
-if(focus['エトワルセリータ']&&(focus['エトワルセリータ'].band!=='high'||!focus['エトワルセリータ'].goals.arc.status.startsWith('two-')))throw Error('high-ability/staged edge case');
+if(focus['エトワルセリータ']&&(focus['エトワルセリータ'].band!=='high'||focus['エトワルセリータ'].goals.arc.recommendedGeneration!==2))throw Error('high-ability/staged edge case');
+if(focus['スプリングスイーツ']&&focus['スプリングスイーツ'].goals.arc.recommendedGeneration!==1)throw Error('Spring Arc generation regression');
+if(focus['エイスト']&&focus['エイスト'].goals.arc.recommendedGeneration!==1)throw Error('Eist Arc generation regression');
+if(focus['フィットレオタード']&&focus['フィットレオタード'].goals.arc.recommendedGeneration!==2)throw Error('Fit Arc generation regression');
+if(focus['ミニミニデート']&&focus['ミニミニデート'].goals.arc.recommendedGeneration!==2)throw Error('Mini Arc generation regression');
 
 const output={
   passed:true,
@@ -135,7 +153,7 @@ const output={
     caution:'This diagnostic does not convert the matrix into a single numeric score.'
   },
   totals:{mares:rows.length,known:rows.filter(x=>x.band!=='unknown').length,unknown:rows.filter(x=>x.band==='unknown').length,twoRoutes,runtimeMs:Date.now()-started},
-  matrix,focus,samples
+  matrix,preferredMatrix,focus,samples
 };
 const outFile=process.env.OUTPUT_FILE;
 if(outFile)fs.writeFileSync(outFile,JSON.stringify(output,null,2));
