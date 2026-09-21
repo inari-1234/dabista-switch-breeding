@@ -1,5 +1,6 @@
 'use strict';
 const fs=require('fs');
+const path=require('path');
 const core=require('../breeding-core.js');
 const sale=require('../sale-planner-core.js');
 const reco=require('../sale-recommendation-core.js');
@@ -16,6 +17,11 @@ const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elab
 const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
 const advisor=reco.create({planner,broodmareStats:M});
 
+const SHARD_COUNT=Math.max(1,+process.env.SHARD_COUNT||1);
+const SHARD_INDEX=Math.max(0,+process.env.SHARD_INDEX||0);
+if(SHARD_INDEX>=SHARD_COUNT)throw Error('invalid shard '+SHARD_INDEX+'/'+SHARD_COUNT);
+const mares=M.filter((_,i)=>i%SHARD_COUNT===SHARD_INDEX);
+
 function abilityBand(a){
   if(!a?.abilityKnown)return 'unknown';
   const p=a.ranks.spst.topPercent;
@@ -23,8 +29,7 @@ function abilityBand(a){
   if(p<=60)return 'middle';
   return 'low';
 }
-function routeEvidence(route,goal){
-  const f=advisor.routeFacts(route);
+function routeEvidenceFromFacts(f,goal){
   const speedPath=!!(f.speedCross||f.materialSpeedCross);
   if(goal==='arc'){
     return{
@@ -47,8 +52,8 @@ function routeEvidence(route,goal){
   };
 }
 function emptyGoal(){return{qualified:0,strong:0,supported:0,best:null}}
-function addGoal(bucket,route,goal){
-  const e=routeEvidence(route,goal);
+function addGoal(bucket,route,facts,goal){
+  const e=routeEvidenceFromFacts(facts,goal);
   if(e.qualified)bucket.qualified++;
   if(e.strong)bucket.strong++;
   if(e.supported)bucket.supported++;
@@ -64,24 +69,27 @@ function statusFor(direct,two,goal,assessment){
   return{status:'difficult-2gen',upgrade:reasons};
 }
 function bump(obj,a,b){obj[a]??={};obj[a][b]=(obj[a][b]||0)+1}
-function samplePush(samples,key,item,limit=6){samples[key]??=[];if(samples[key].length<limit)samples[key].push(item)}
+function samplePush(samples,key,item,limit=4){samples[key]??=[];if(samples[key].length<limit)samples[key].push(item)}
 
 const started=Date.now();
 const matrix={arc:{},bc:{},rebuild:{}};
 const samples={};
 const rows=[];
 let twoRoutes=0;
-for(const m of M){
+for(let mi=0;mi<mares.length;mi++){
+  const m=mares[mi];
   const a=advisor.mareAssessment(m.name);
   const band=abilityBand(a);
   const direct={arc:emptyGoal(),bc:emptyGoal(),rebuild:emptyGoal()};
   for(const r of planner.iterateDirect(m.name)){
-    for(const g of ['arc','bc','rebuild'])addGoal(direct[g],r,g);
+    const facts=advisor.routeFacts(r);
+    for(const g of ['arc','bc','rebuild'])addGoal(direct[g],r,facts,g);
   }
   const two={arc:emptyGoal(),bc:emptyGoal(),rebuild:emptyGoal()};
   for(const r of planner.iterateTwo(m.name)){
     twoRoutes++;
-    for(const g of ['arc','bc','rebuild'])addGoal(two[g],r,g);
+    const facts=advisor.routeFacts(r);
+    for(const g of ['arc','bc','rebuild'])addGoal(two[g],r,facts,g);
   }
   const goalRows={};
   for(const g of ['arc','bc','rebuild']){
@@ -96,23 +104,28 @@ for(const m of M){
     samplePush(samples,band+'|'+g+'|'+s.status,{mare:m.name,tier:a?.tier||'未判明',spstPct:a?.ranks?.spst?.topPercent??null});
   }
   rows.push({mare:m.name,band,tier:a?.tier||'未判明',spstPct:a?.ranks?.spst?.topPercent??null,strategy:advisor.mareStrategy(m.name)?.label||'',goals:goalRows});
+  if((mi+1)%10===0||mi===mares.length-1)console.error('progress shard '+SHARD_INDEX+': '+(mi+1)+'/'+mares.length);
 }
 const byName=Object.fromEntries(rows.map(x=>[x.mare,x]));
-const required=['スプリングスイーツ','エイスト','フィットレオタード','ミニミニデート','ワカヒルメ','ミムラス','エトワルセリータ','アマリン'];
-const focus=Object.fromEntries(required.map(n=>[n,byName[n]]));
+const focusNames=['スプリングスイーツ','エイスト','フィットレオタード','ミニミニデート','ワカヒルメ','ミムラス','エトワルセリータ','アマリン'];
+const focus={};
+for(const n of focusNames)if(byName[n])focus[n]=byName[n];
 
-if(rows.length!==331)throw Error('mare count '+rows.length);
-if(rows.filter(x=>x.band==='unknown').length!==33)throw Error('unknown count');
-if(focus['アマリン'].band!=='unknown')throw Error('unknown mare misclassified');
-if(focus['エイスト'].band!=='high')throw Error('Eist ability band');
-if(focus['フィットレオタード'].band!=='middle')throw Error('Fit ability band');
-if(focus['ワカヒルメ'].band!=='low')throw Error('Wakahirume ability band');
-if(focus['ミムラス'].band!=='low'||focus['ミムラス'].goals.arc.status!=='direct-supported')throw Error('low-ability/high-pedigree edge case');
-if(focus['エトワルセリータ'].band!=='high'||!focus['エトワルセリータ'].goals.arc.status.startsWith('two-'))throw Error('high-ability/staged edge case');
+if(SHARD_COUNT===1){
+  if(rows.length!==331)throw Error('mare count '+rows.length);
+  if(rows.filter(x=>x.band==='unknown').length!==33)throw Error('unknown count');
+}
+if(focus['アマリン']&&focus['アマリン'].band!=='unknown')throw Error('unknown mare misclassified');
+if(focus['エイスト']&&focus['エイスト'].band!=='high')throw Error('Eist ability band');
+if(focus['フィットレオタード']&&focus['フィットレオタード'].band!=='middle')throw Error('Fit ability band');
+if(focus['ワカヒルメ']&&focus['ワカヒルメ'].band!=='low')throw Error('Wakahirume ability band');
+if(focus['ミムラス']&&(focus['ミムラス'].band!=='low'||focus['ミムラス'].goals.arc.status!=='direct-supported'))throw Error('low-ability/high-pedigree edge case');
+if(focus['エトワルセリータ']&&(focus['エトワルセリータ'].band!=='high'||!focus['エトワルセリータ'].goals.arc.status.startsWith('two-')))throw Error('high-ability/staged edge case');
 
-console.log(JSON.stringify({
+const output={
   passed:true,
   method:'ability-band-x-exact-direct-and-two-generation-future-potential',
+  shard:{index:SHARD_INDEX,count:SHARD_COUNT},
   rules:{
     ability:'high=SP+ST top15%, middle=top16-60%, low=below60%, unknown kept separate',
     arc:'SP14/ST6 qualified, SP15/ST6 strong; supported additionally requires sire record B+ and distance evidence. Speed cross is not a hard Arc gate.',
@@ -122,7 +135,8 @@ console.log(JSON.stringify({
     caution:'This diagnostic does not convert the matrix into a single numeric score.'
   },
   totals:{mares:rows.length,known:rows.filter(x=>x.band!=='unknown').length,unknown:rows.filter(x=>x.band==='unknown').length,twoRoutes,runtimeMs:Date.now()-started},
-  matrix,
-  focus,
-  samples
-},null,2));
+  matrix,focus,samples
+};
+const outFile=process.env.OUTPUT_FILE;
+if(outFile)fs.writeFileSync(outFile,JSON.stringify(output,null,2));
+console.log(JSON.stringify(output,null,2));
