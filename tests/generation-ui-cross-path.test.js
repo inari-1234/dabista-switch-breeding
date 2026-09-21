@@ -93,6 +93,46 @@ const finalCrossTwoPoint=advisor.materialUpgradeReasons(
 assert.ok(!finalCrossTwoPoint.some(x=>x.includes('最終配合で速力/短距離クロス')),
   'Arc must not extend a generation solely for a final SP cross after a 2-point SP drop');
 
+function withFinalLongCross(route,maxD=2200){
+  return{
+    ...route,
+    final:{
+      ...route.final,
+      sireStats:{...(route.final.sireStats||{}),maxD},
+      crossEffects:{...(route.final.crossEffects||{}),anyAbility:true,longDistance:true,long:1}
+    }
+  };
+}
+const finalLongOnePoint=advisor.materialUpgradeReasons(
+  fakeRoute(0,18,8),
+  withFinalLongCross(fakeRoute(0,17,8)),
+  'arc',fit
+);
+assert.ok(finalLongOnePoint.some(x=>x.includes('最終配合で長距離クロス')),
+  'Arc may extend for a new final long-distance cross when SP/ST are otherwise almost maintained');
+const finalLongTwoPoint=advisor.materialUpgradeReasons(
+  fakeRoute(0,18,8),
+  withFinalLongCross(fakeRoute(0,16,9)),
+  'arc',fit
+);
+assert.ok(!finalLongTwoPoint.some(x=>x.includes('最終配合で長距離クロス')),
+  'Arc must not extend a generation solely for a final long-distance cross after a 2-point SP drop');
+
+const distanceNear=advisor.materialUpgradeReasons(
+  fakeRoute(0,18,8),
+  withFinalLongCross(fakeRoute(0,17,8),2400),
+  'arc',fit
+);
+assert.ok(distanceNear.some(x=>x.includes('2400m対応')),
+  'Arc may value new 2400m sire evidence when SP/ST are almost maintained');
+const distanceWeak=advisor.materialUpgradeReasons(
+  fakeRoute(0,18,8),
+  withFinalLongCross(fakeRoute(0,15,8),2400),
+  'arc',fit
+);
+assert.ok(!distanceWeak.some(x=>x.includes('2400m対応')),
+  '2400m sire evidence must not justify a generation after a large SP loss');
+
 const unknownAssessment=advisor.mareAssessment('アマリン');
 const unknownUpgrade=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',unknownAssessment);
 assert.ok(!unknownUpgrade.some(x=>x.includes('中間世代で速力/短距離クロス')),'unknown mare must not be treated as SP-deficient when recommending a deeper generation');
