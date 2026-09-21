@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'tests/sale-category-future-potential-diagnostic.test.js'
+      - 'tests/aggregate-sale-category-future-potential.test.js'
       - '.github/workflows/diagnose-sale-category-future-potential.yml'
       - 'sale-planner-core.js'
       - 'sale-recommendation-core.js'
@@ -24,9 +25,38 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        mare: [0,1,2,3,4,5,6,7]
     steps:
       - uses: actions/checkout@v4
       - name: Static syntax
-        run: node --check tests/sale-category-future-potential-diagnostic.test.js
+        run: |
+          node --check tests/sale-category-future-potential-diagnostic.test.js
+          node --check tests/aggregate-sale-category-future-potential.test.js
       - name: Per-category four-generation future diagnostic
+        env:
+          MARE_INDEX: ${{ matrix.mare }}
+          OUTPUT_FILE: category-future-${{ matrix.mare }}.json
         run: node tests/sale-category-future-potential-diagnostic.test.js
+      - name: Upload category future result
+        uses: actions/upload-artifact@v4
+        with:
+          name: category-future-${{ matrix.mare }}
+          path: category-future-${{ matrix.mare }}.json
+          if-no-files-found: error
+
+  aggregate:
+    needs: diagnose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download category future results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: category-future-*
+          path: category-future
+          merge-multiple: true
+      - name: Aggregate category future matrix
+        run: node tests/aggregate-sale-category-future-potential.test.js category-future
