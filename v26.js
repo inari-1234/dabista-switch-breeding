@@ -206,11 +206,11 @@ function previewBases(shortlists,maxEach=12){
  }
  return out
 }
-async function scanIterator(iter,collector,seq,label){
+async function scanIterator(iter,collector,seq,label,sideCollector=null){
  let n=0;
  for(const r of iter){
   if(seq!==runSeq)throw Error('cancelled');
-  collector.push(r);n++;
+  collector.push(r);if(sideCollector)sideCollector.push(r);n++;
   if(n%700===0){$('#salePlannerProgress').textContent=`${label}：安全ルート ${n.toLocaleString()}件を確認中…`;await yieldUi()}
  }
  return n
@@ -376,7 +376,7 @@ function renderResults(result){
  const method=gen===1?`直仔176頭を全探索（安全ルート ${result.safeCount.toLocaleString()}件）`
   :gen===2?`2代の安全ルート ${result.safeCount.toLocaleString()}件を全探索`
   :gen===3?`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索後、${result.previewBaseCount3}本の多軸候補から3代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`
-  :`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索し、3代目を${result.previewBaseCount3}本から条件付き探索後、${result.previewBaseCount4}本の3代候補から4代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`;
+  :`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索し、3代目を${result.previewBaseCount3}本から条件付き探索後、${result.previewBaseCount4}本の3代bridge候補から4代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`;
  const caution=!info.abilityKnown?'<div class="notice"><b>繁殖能力未判明：</b>母能力を含む総合評価は保留。血統・ニトロ・配合理論だけで候補を表示しています。</div>':'';
  const profiles={...result.base.profiles,sire:result.portfolio.routes};
  $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice">6軸は合算して総合1位を作りません。<b>強馬生産型</b>は最終父の実績・安定とSP/ST最低線を重視し、SP上限型・SPクロス補強型は血統上限側として別に残します。実際に生産した中間牝馬の能力を確認して次世代へ進めてください。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
@@ -401,14 +401,15 @@ async function runDesign(){
   if(gen>=3){
    const bases3=previewBases(base.shortlists,12);previewBaseCount3=bases3.length;
    const c3=planner.createCollector({topN:3,poolN:18});
-   thirdSafeCount=await scanIterator(planner.iterateThirdPreview(name,bases3),c3,seq,'3代条件付きプレビュー');
+   const bridge4=gen===4?planner.createFourthBridgeCollector():null;
+   thirdSafeCount=await scanIterator(planner.iterateThirdPreview(name,bases3),c3,seq,'3代条件付きプレビュー',bridge4);
    const r3=c3.finish();
    if(gen===4){
-    const bases4=previewBases(r3.shortlists,8);previewBaseCount4=bases4.length;
+    const bridge4Result=bridge4.finish(),bases4=bridge4Result.bases;previewBaseCount4=bases4.length;
     const c4=planner.createCollector({topN:3,poolN:16});
-    safeCount=await scanIterator(planner.iterateFourthPreview(name,bases4),c4,seq,'4代条件付きプレビュー');
+    safeCount=await scanIterator(planner.iterateFourthPreview(name,bases4),c4,seq,'4代bridge条件付きプレビュー');
     finalBase=c4.finish();portfolioSource=finalBase.pool;
-    portfolioScope=`4代目条件付き候補プール ${portfolioSource.length}件。2代目までは全探索、3代・4代は段階的な多軸候補探索で、全176⁴探索ではありません。`;
+    portfolioScope=`4代目条件付き候補プール ${portfolioSource.length}件。2代目までは全探索、3代目は多軸候補探索、4代目はSPクロス深掘り＋bridge候補から展開し、全176⁴探索ではありません。`;
    }else{
     safeCount=thirdSafeCount;finalBase=r3;portfolioSource=finalBase.pool;
     portfolioScope=`3代目条件付き候補プール ${portfolioSource.length}件。2代目までは全探索、3代目は全176³探索ではありません。`;
