@@ -196,7 +196,7 @@ function renderNotice(){
  if(n===1)el.innerHTML='<b>直仔：</b>国内176種牡馬を全探索。危険・超危険を除外し、複数軸で候補を表示します。';
  else if(n===2)el.innerHTML='<b>2代：</b>安全な1代目から国内176頭を掛け合わせ、約3万ルートを全探索します。中間牝馬の繁殖能力は出生前に仮定しません。';
  else if(n===3)el.innerHTML='<b>3代：</b>2代目までは全探索。3代目はSP上限/SPクロス補強/強馬生産/ST/バランス/配合理論の多軸候補を起点に条件付き探索する仮プレビューです。全176³の最適解とは表示しません。';
- else el.innerHTML='<b>4代：</b>2代目までは全探索。3代目の条件付き多軸候補をさらに絞り、4代目を条件付き探索します。全176⁴の最適解ではなく、条件付きの深掘り候補です。';
+ else el.innerHTML='<b>4代：</b>2代目までは全探索。3代目は多軸候補を展開し、4代目は一般多軸候補にSPクロス深掘りと強馬/ST bridge候補を加えて条件付き探索します。全176⁴の最適解ではなく、検証済みcompact bridgeによる深掘り候補です。';
 }
 const yieldUi=()=>new Promise(r=>setTimeout(r,0));
 function previewBases(shortlists,maxEach=12){
