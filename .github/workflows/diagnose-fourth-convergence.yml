@@ -13,9 +13,27 @@ permissions:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mare: ['スプリングスイーツ', 'エイスト']
     steps:
       - uses: actions/checkout@v4
       - name: Static syntax
         run: node --check tests/fourth-generation-high-width-diagnostic.test.js
+      - name: Limit diagnostic to matrix mare
+        env:
+          DIAG_MARE: ${{ matrix.mare }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          p=Path('tests/fourth-generation-high-width-diagnostic.test.js')
+          s=p.read_text(encoding='utf-8')
+          old="const mares=['スプリングスイーツ','エイスト'];"
+          new="const mares=["+repr(os.environ['DIAG_MARE'])+"];"
+          assert old in s
+          p.write_text(s.replace(old,new),encoding='utf-8')
+          PY
       - name: Fourth-generation convergence diagnostic
         run: node tests/fourth-generation-high-width-diagnostic.test.js
