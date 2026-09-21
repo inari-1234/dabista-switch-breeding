@@ -68,6 +68,31 @@ assert.ok(!lowSpDrop.some(x=>x.includes('中間世代で速力/短距離クロ�
 const lowStDrop=advisor.materialUpgradeReasons(fakeRoute(0,15,6),fakeRoute(1,15,4),'arc',fit);
 assert.ok(!lowStDrop.some(x=>x.includes('中間世代で速力/短距離クロス')),'intermediate SP cross must not justify generation extension after a 2-point ST drop');
 
+function withFinalSpeedCross(route){
+  return{
+    ...route,
+    final:{
+      ...route.final,
+      speedCross:{has:true,count:1,effect:1,short:0,speed:1},
+      crossEffects:{...(route.final.crossEffects||{}),anyAbility:true,speedSupport:true}
+    }
+  };
+}
+const finalCrossOnePoint=advisor.materialUpgradeReasons(
+  fakeRoute(0,19,9),
+  withFinalSpeedCross(fakeRoute(0,18,9)),
+  'arc',fit
+);
+assert.ok(finalCrossOnePoint.some(x=>x.includes('最終配合で速力/短距離クロス')),
+  'Arc may extend for a new final SP cross when SP/ST are otherwise almost maintained');
+const finalCrossTwoPoint=advisor.materialUpgradeReasons(
+  fakeRoute(0,19,9),
+  withFinalSpeedCross(fakeRoute(0,17,10)),
+  'arc',fit
+);
+assert.ok(!finalCrossTwoPoint.some(x=>x.includes('最終配合で速力/短距離クロス')),
+  'Arc must not extend a generation solely for a final SP cross after a 2-point SP drop');
+
 const unknownAssessment=advisor.mareAssessment('アマリン');
 const unknownUpgrade=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',unknownAssessment);
 assert.ok(!unknownUpgrade.some(x=>x.includes('中間世代で速力/短距離クロス')),'unknown mare must not be treated as SP-deficient when recommending a deeper generation');
