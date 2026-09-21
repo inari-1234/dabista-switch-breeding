@@ -83,6 +83,11 @@ const bToADrop=advisor.materialUpgradeReasons(recordRoute(15,6,'B'),recordRoute(
 assert.ok(!bToADrop.some(x=>x.includes('実績がB→A')),'B to A alone must not justify a generation after SP loss');
 const cToBSmallDrop=advisor.materialUpgradeReasons(recordRoute(15,6,'C'),recordRoute(14,6,'B'),'arc',syntheticAssessment);
 assert.ok(cToBSmallDrop.some(x=>x.includes('実績がC→B')),'escaping record C may justify a small SP tradeoff without making record A mandatory');
+
+const noLongPath=recordRoute(16,7,'B');
+const withLongPath=recordRoute(16,7,'B');
+withLongPath.materialLongCross={has:true,stages:1,names:['Synthetic Long']};
+assert.strictEqual(advisor.betterGoalRoute(noLongPath,withLongPath,'arc'),withLongPath,'equal Arc routes should prefer an intermediate long-distance-cross ST selection path as supporting evidence');
 const g={1:{summary:{bestRoute:route1}},2:{summary:{bestRoute:route2}},3:{summary:{bestRoute:route3}}};
 const rec=advisor.recommendGeneration({goal:'arc',assessment:syntheticAssessment,generations:g,portfolios:{}});
 assert.strictEqual(rec.generation,3,'generation decision reasons');
