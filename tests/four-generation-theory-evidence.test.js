@@ -28,6 +28,20 @@ assert.ok(fourth&&fourth.generation===4,'fourth preview must extend a three-gene
 assert.strictEqual(fourth.method,'conditional-four-generation-preview');
 assert.strictEqual(fourth.sires.length,4);
 assert.strictEqual(fourth.speedCrossPath.length,4,'fourth route must retain all four stage cross summaries');
+assert.strictEqual(fourth.crossEffectPath.length,4,'fourth route must retain all four stage direct-effect summaries');
+
+let longTwo=null;
+for(const r of planner.iterateTwo('ミムラス')){
+  if(r.materialLongCross?.has){longTwo=r;break}
+}
+assert.ok(longTwo,'need a two-generation base with an intermediate long-distance cross');
+const longThree=planner.iterateThirdPreview('ミムラス',[longTwo]).next().value;
+assert.ok(longThree&&longThree.crossEffectPath.length===3,'third preview must preserve cross-effect history');
+assert.ok(longThree.materialLongCross?.has,'third preview must preserve an earlier long-distance-cross selection stage');
+const longFour=planner.iterateFourthPreview('ミムラス',[longThree]).next().value;
+assert.ok(longFour&&longFour.crossEffectPath.length===4,'fourth preview must preserve cross-effect history');
+assert.ok(longFour.materialLongCross?.has,'fourth preview must preserve earlier long-distance-cross selection stages');
+
 assert.strictEqual(planner.iterateFourthPreview(mare,[two]).next().done,true,'fourth preview must reject a two-generation base');
 assert.strictEqual(planner.iterateThirdPreview(mare,[third]).next().done,true,'third preview must reject a three-generation base');
 
