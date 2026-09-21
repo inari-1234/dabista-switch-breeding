@@ -21,9 +21,11 @@ const prepCache=new WeakMap();let prepBuilds=0,prepHits=0;
 function validAnc(a){return Array.isArray(a)&&a.length===15}
 function prep(h){
  if(!h||typeof h!=='object')return{nameCanon:'',ancCanon:[],ancKey:[]};
- const got=prepCache.get(h);if(got){prepHits++;return got}
- prepBuilds++;const a=Array.isArray(h.ancestor)?h.ancestor:[];
- const x={nameCanon:core.canon(h.name),ancCanon:a.map(core.canon),ancKey:a.map(core.key)};prepCache.set(h,x);return x;
+ const a=Array.isArray(h.ancestor)?h.ancestor:[],sig=String(h.name??'')+'\\u001f'+a.map(x=>String(x??'')).join('\\u001f');
+ const got=prepCache.get(h);if(got&&got.sig===sig){prepHits++;return got.value}
+ prepBuilds++;
+ const value={nameCanon:core.canon(h.name),ancCanon:a.map(core.canon),ancKey:a.map(core.key)};
+ prepCache.set(h,{sig,value});return value;
 }
 function fastDanger(sire,mare){
  const sa=sire?.ancestor||[],ma=mare?.ancestor||[];
