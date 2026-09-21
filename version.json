@@ -1,6 +1,6 @@
 {
   "version": "1.18.0",
-  "build": "2026.09.21-43",
-  "releasedAt": "2026-09-21T19:40:17+09:00",
-  "message": "4代compact bridge探索を正式化し、Arc/BC評価・牝馬別の世代延長条件・SP/長距離クロスと距離根拠の扱いを再検証"
+  "build": "2026.09.21-44",
+  "releasedAt": "2026-09-21T21:32:00+09:00",
+  "message": "全ファイル再監査に基づき、CI回帰範囲・release wiring・legacy fallback・asset cache整合性を強化"
 }

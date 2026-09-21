@@ -1,5 +1,5 @@
 (()=>{
-const V=window.APP_VERSION||'1.18.0',BUILD=window.APP_BUILD||'2026.09.21-43',db=window.db,$=s=>document.querySelector(s);
+const V=window.APP_VERSION||'1.18.0',BUILD=window.APP_BUILD||'2026.09.21-44',db=window.db,$=s=>document.querySelector(s);
 if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ver=$('#ver');if(ver)ver.textContent=`v${V} / Build ${BUILD}`;
 const esc=window.esc||((s)=>String(s??''));let engine=null,stallions=[],research=null;
 const master=name=>engine?.master(name)||null;

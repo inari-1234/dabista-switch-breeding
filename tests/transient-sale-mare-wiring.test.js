@@ -15,8 +15,8 @@ const idx=read('index.html');
 const version=JSON.parse(read('version.json'));
 
 assert.strictEqual(version.version,'1.18.0');
-assert.strictEqual(version.build,'2026.09.21-43');
-assert.ok(app.includes("const APP_BUILD='2026.09.21-43';"));
+assert.strictEqual(version.build,'2026.09.21-44');
+assert.ok(app.includes("const APP_BUILD='2026.09.21-44';"));
 assert.ok(app.includes('window.DABISTA_TRANSIENT_BREED_MARE=null'));
 assert.ok(app.includes('window.getBreedHorseById=id=>'));
 assert.strictEqual((app.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,1,'automatic update check must be centralized in app.js');
@@ -27,10 +27,11 @@ for(const p of ['v15.js','v16.js','v18.js','v26.js']){
 
 for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js']){
   const c=read(p);
-  assert.ok(c.includes("BUILD=window.APP_BUILD||'2026.09.21-43'"),p+' must use shared APP_BUILD');
+  assert.ok(c.includes("BUILD=window.APP_BUILD||'2026.09.21-44'"),p+' must use shared APP_BUILD');
   assert.ok(!c.includes('2026.09.20-35'),p+' stale Build 35');
   assert.ok(!c.includes('2026.09.20-37'),p+' stale Build 37');
   assert.ok(!c.includes('2026.09.20-38'),p+' stale Build 38');
+  assert.ok(!c.includes('2026.09.21-43'),p+' stale Build 43');
 }
 
 const ensureStart=v26.indexOf('function ensureSaleMareForBreed(name){');
@@ -58,12 +59,12 @@ assert.ok(v15.includes('馬DB・バックアップJSONには保存されませ�
 
 assert.ok(idx.includes('breed-helper.js?v=1.17.0-b38'),'breed-helper.js cache key');
 for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js']){
-  assert.ok(idx.includes(p+'?v=1.18.0-b43'),p+' cache key');
+  assert.ok(idx.includes(p+'?v=1.18.0-b44'),p+' cache key');
 }
-assert.ok(idx.includes('app.js?v=1.18.0-b43'),'app cache key');
+assert.ok(idx.includes('app.js?v=1.18.0-b44'),'app cache key');
 assert.ok(idx.includes('sale-planner-core.js?v=1.18.0-b43'),'sale planner core cache key');
 assert.ok(idx.includes('sale-recommendation-core.js?v=1.18.0-b43'),'sale recommendation core cache key');
-assert.ok(idx.includes('v26.js?v=1.18.0-b43'),'v26 cache key');
+assert.ok(idx.includes('v26.js?v=1.18.0-b44'),'v26 cache key');
 assert.ok(idx.includes('v27.js?v=1.18.0-b43'),'v27 cache key');
 
 console.log(JSON.stringify({
