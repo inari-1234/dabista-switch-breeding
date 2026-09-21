@@ -100,6 +100,18 @@ const strongerBc={final:{sp:20,st:5,pw:0,speedCross:{has:false,count:0,short:0,s
 const weakerBcCross={final:{sp:17,st:5,pw:0,speedCross:{has:true,count:1,short:0,speed:1,effect:1},sireStats:{maxD:2000,record:'A',guts:'B'},theory:{},elaborate:false}};
 assert.strictEqual(advisor.betterGoalRoute(strongerBc,weakerBcCross,'bc'),strongerBc,'BC route must keep superior SP ahead of SP-cross tie-break');
 
+const nearBa={
+  sires:['素材父','ワイルドラッシュ'],
+  materialSpeedCross:{has:false,stages:0},
+  final:{sp:19,st:8,pw:1,speedCross:{has:true,count:1,short:0,speed:1,effect:1},sireStats:{maxD:1800,record:'B',stable:'A',guts:'B'},theory:{},elaborate:false}
+};
+const nearBc={
+  sires:['素材父','グラスワンダー'],
+  materialSpeedCross:{has:false,stages:0},
+  final:{sp:17,st:7,pw:1,speedCross:{has:true,count:1,short:0,speed:1,effect:1},sireStats:{maxD:2200,record:'B',stable:'C',guts:'A'},theory:{},elaborate:false}
+};
+assert.strictEqual(advisor.betterGoalRoute(nearBa,nearBc,'bc'),nearBc,'within a 2-point SP gap, BC should prefer B/C upside over unsupported B/A closure');
+
 const higherStArc={final:{sp:16,st:7,pw:0,speedCross:{has:false,count:0,short:0,speed:0,effect:0},sireStats:{maxD:2400,record:'A',guts:'B'},theory:{},elaborate:false}};
 const shortCrossArc={final:{sp:16,st:6,pw:0,speedCross:{has:true,count:1,short:1,speed:0,effect:2},sireStats:{maxD:2400,record:'A',guts:'B'},theory:{},elaborate:false}};
 assert.strictEqual(advisor.betterGoalRoute(higherStArc,shortCrossArc,'arc'),higherStArc,'short-distance cross must not override the better ST quantitative profile');
