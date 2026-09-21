@@ -28,7 +28,7 @@
   const PROFILE_CRITERIA={
     sp:'最終配合のSPニトロ → ST → PW → 完璧/見事/面白/凝った → 最終父の実績',
     speedCross:'最終配合に速力/短距離の有効クロスを最低1本確保 → SPニトロ → ST → 完璧/見事 → SP系クロス祖先数 → PW/その他配合理論',
-    production:'SP15/ST5最低線 → 最終父の実績 → SP17/ST5 → 多世代では安定C/B/Aを上振れ幅の違いとして比較 → SP → ST → SP系クロス → 底力/配合理論',
+    production:'多世代は途中または締めに速力/短距離クロスを最低1回確保 → SP15/ST5最低線 → 最終父の実績 → SP17/ST5 → 安定C/B/Aを上振れ幅の違いとして比較 → SP → ST → 底力/配合理論',
     st:'最終父の2400m対応 → STニトロ → SP → 実績/底力 → 配合理論',
     balance:'SP15/ST5同時達成 → SP+ST → ST → SP → 2400m対応 → 実績',
     sire:'高能力繁殖牝馬群への安全配合数・SP15/ST5・SP17/ST5・面白/見事/完璧/凝った・最大ニトロを合算せず並列比較'
@@ -89,6 +89,11 @@
         count++;
         for(const p of Object.keys(lists)){
           if(p==='speedCross'&&!route?.final?.speedCross?.has)continue;
+          if(p==='production'){
+            const multi=(route?.sires||[]).length>1;
+            const speedSupport=!!route?.final?.speedCross?.has||!!route?.materialSpeedCross?.has;
+            if(multi&&!speedSupport)continue;
+          }
           insertTop(lists[p],route,compareProfile(p),poolN);
         }
       },
