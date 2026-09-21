@@ -54,6 +54,7 @@ assert.ok(!eliteReasons.some(x=>x.includes('中間世代で速力/短距離ク�
 const uncertainArcSummary=advisor.emptySummary('synthetic-uncertain-distance');
 uncertainArcSummary.arcQuantitative=1;
 uncertainArcSummary.arcReady=1;
+uncertainArcSummary.arcRecordB=1;
 uncertainArcSummary.arcDistanceUncertain=1;
 assert.strictEqual(
   advisor.directUseLabels(elite,uncertainArcSummary).arc,
@@ -144,7 +145,7 @@ function finishGeneration(mare){
 const fitGeneration=finishGeneration('フィットレオタード');
 assert.strictEqual(fitGeneration.rec.generation,2,'Fit Leotard Arc diagnosis must stop at generation 2');
 assert.strictEqual(fitGeneration.rec.label,'2代推奨');
-assert.ok(fitGeneration.rec.reasons.some(x=>x.includes('凱旋門向け数値・実績基準')),'generation 2 must be justified by Arc quantitative/record readiness rather than a 2400m hard gate');
+assert.ok(fitGeneration.rec.reasons.some(x=>x.includes('凱旋門向けSP/ST基準')||x.includes('最終父の実績')),'generation 2 must be justified by an Arc ability/record improvement rather than a hard 2400m or record-A gate');
 assert.ok(!fitGeneration.rec.reasons.some(x=>x.startsWith('2代→3代')),'generation 3 must not be selected only for an intermediate SP cross');
 assert.ok(fitGeneration.bases.some(r=>r.final?.speedCross?.has),'3-generation preview bases must include the SP-cross axis');
 
