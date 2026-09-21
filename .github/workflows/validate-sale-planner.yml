@@ -115,7 +115,7 @@ jobs:
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
           assert (v['version'],v['build'])==('1.18.0','2026.09.21-43')
           assert "const APP_VERSION='1.18.0';" in app and "const APP_BUILD='2026.09.21-43';" in app
-          assert "BUILD=window.APP_BUILD||'2026.09.20-38'" in v26
+          assert "BUILD=window.APP_BUILD||'2026.09.21-43'" in v26
           assert 'sale-planner-core.js?v=1.18.0-b43' in idx
           assert 'sale-recommendation-core.js?v=1.18.0-b43' in idx
           assert 'v26.js?v=1.18.0-b43' in idx
