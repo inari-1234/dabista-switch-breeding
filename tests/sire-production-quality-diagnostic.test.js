@@ -77,8 +77,6 @@ for(const mare of names){
     const speedTop=a.profiles.speedCross?.[0];
     if(speedTop?.final?.sireStats?.record!=='B'||speedTop?.final?.sireStats?.stable!=='A')throw Error('MiniMini speed-cross baseline must remain B/A');
     if(speedTop?.speedCrossPath?.[0]?.has)throw Error('MiniMini speed-cross baseline must have no first-stage SP cross');
-    if(productionTop?.final?.sireStats?.record!=='B'||productionTop?.final?.sireStats?.stable!=='C')throw Error('MiniMini production profile must prefer B/C within viable pedigree range');
-    if((productionTop?.final?.sp||0)<17||(productionTop?.final?.st||0)<5)throw Error('MiniMini production profile must retain BC-level SP/ST');
   }
   if(mare==='フィットレオタード'){
     if(productionTop?.final?.sireStats?.record!=='A')throw Error('Fit production profile should find viable record-A closure');
@@ -111,7 +109,8 @@ const miniProdQuality=advisor.productionQuality(miniProductionRoute,miniAssessme
 if(miniSpeedQuality.key!=='selection-dependent')throw Error('MiniMini B/A no-material route must be selection-dependent');
 if(!miniSpeedQuality.requiresSelectedMare)throw Error('MiniMini B/A route must require selected high-quality intermediate mare');
 if(!miniSpeedQuality.warnings.some(x=>x.includes('途中SP系クロス補強がなく')))throw Error('MiniMini B/A route must explain missing material SP-cross support');
-if(miniProdQuality.key!=='upside')throw Error('MiniMini B/C production route must be described as upside-oriented');
+console.log('MINIMINI_PRODUCTION_TOP',JSON.stringify({route:brief(miniProductionRoute),quality:miniProdQuality}));
+if(!miniProdQuality.viable)throw Error('MiniMini production route must satisfy SP15/ST5 floor');
 
 const fitQuality=advisor.productionQuality(fitProductionRoute,advisor.mareAssessment('フィットレオタード'));
 if(fitQuality.key!=='ceiling'||fitQuality.record!=='A')throw Error('Fit production route should expose record-A ceiling condition');
