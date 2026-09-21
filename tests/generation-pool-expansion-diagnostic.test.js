@@ -1,5 +1,6 @@
 'use strict';
 const fs=require('fs');
+const assert=require('assert');
 const core=require('../breeding-core.js');
 const sale=require('../sale-planner-core.js');
 const reco=require('../sale-recommendation-core.js');
@@ -79,6 +80,37 @@ function bridgeVariants(iter,poolNs){
   return{count,uniqueChild:childSet.size,uniqueChildSupport:supportSet.size,results};
 }
 
+function collectFourthByBaseSets(mare,baseMap,largestKey,poolN=24){
+  const keys=Object.keys(baseMap);
+  const largest=baseMap[largestKey];
+  const sets=new Map(keys.map(k=>[k,new Set(baseMap[k].map(r=>planner.routeKey(r)))]));
+  for(const k of keys){
+    for(const id of sets.get(k))assert(sets.get(String(largestKey)).has(id),`fourth base set ${k} must be contained in ${largestKey}`);
+  }
+  const states=new Map(keys.map(k=>[k,{
+    collector:planner.createCollector({topN:3,poolN}),
+    arc:advisor.emptySummary('diagnostic-arc'),
+    bc:advisor.emptySummary('diagnostic-bc')
+  }]));
+  let scanned=0;
+  for(const r of planner.iterateFourthPreview(mare,largest)){
+    scanned++;
+    const baseKey=planner.routeKey({sires:(r.sires||[]).slice(0,-1)});
+    for(const k of keys){
+      if(!sets.get(k).has(baseKey))continue;
+      const s=states.get(k);
+      s.collector.push(r);advisor.addRoute(s.arc,r,'arc');advisor.addRoute(s.bc,r,'bc');
+    }
+  }
+  const results={};
+  for(const k of keys){
+    const s=states.get(k),out=s.collector.finish();
+    out.goalBest={arc:s.arc.bestRoute,bc:s.bc.bestRoute};
+    results[k]=out;
+  }
+  return{scanned,results};
+}
+
 const mares=['スプリングスイーツ','フィットレオタード','エイスト','ミニミニデート'];
 const output=[];
 const started=Date.now();
@@ -92,10 +124,10 @@ for(const mare of mares){
   const thirdFull=collect(planner.iterateThirdPreview(mare,thirdFullBases),24);
 
   const fourth8Bases=bases(third12.shortlists,8);
-  const fourth8=collect(planner.iterateFourthPreview(mare,fourth8Bases),24);
-
   const fourthPoolBases=third12.pool;
-  const fourthPool=collect(planner.iterateFourthPreview(mare,fourthPoolBases),24);
+  const fourthCurrentScans=collectFourthByBaseSets(mare,{small:fourth8Bases,full:fourthPoolBases},'full',24);
+  const fourth8=fourthCurrentScans.results.small;
+  const fourthPool=fourthCurrentScans.results.full;
 
   const fourthFullPoolBases=thirdFull.pool;
   const fourthFullPool=collect(planner.iterateFourthPreview(mare,fourthFullPoolBases),24);
@@ -105,10 +137,12 @@ for(const mare of mares){
 
   const bridgePoolNs=[24,36,48,72];
   const bridge=bridgeVariants(planner.iterateThirdPreview(mare,third12Bases),bridgePoolNs);
+  const bridgeBases=Object.fromEntries(bridgePoolNs.map(n=>[String(n),bridge.results[n].pool]));
+  const bridgeScans=collectFourthByBaseSets(mare,bridgeBases,'72',72);
   const bridgeFourth={};
   for(const n of bridgePoolNs){
     const base=bridge.results[n].pool;
-    bridgeFourth[n]={baseCount:base.length,result:snapshot(collect(planner.iterateFourthPreview(mare,base),72))};
+    bridgeFourth[n]={baseCount:base.length,result:snapshot(bridgeScans.results[String(n)])};
   }
   const refBridge=bridgeFourth[72].result;
   const bridgeStability={};
