@@ -55,6 +55,14 @@ for(const mare of T.broodmares){
 assert.strictEqual(coverage,323,'direct mares with a safe SP-cross route');
 assert.strictEqual(invalid,0,'SP-cross profile must never contain a no-cross route');
 assert.strictEqual(pureSpNoCross,292,'pure SP profile diagnostic baseline');
+{
+  const col=planner.createCollector({topN:3,poolN:24});
+  for(const r of planner.iterateDirect('カワーイナヤ'))col.push(r);
+  const top=col.finish().profiles.sp?.[0]||null;
+  assert.ok(top,'カワーイナヤ pure SP route must exist');
+  assert.strictEqual(top.sires[0],'ロードアルティマ','equal SP/ST/PW must not let elaborate-only outrank an effective SP-cross route');
+  assert.ok(top.final.speedCross?.has,'カワーイナヤ pure SP tie-break must preserve the effective SP cross');
+}
 assert.strictEqual(within2,256,'SP-cross route should stay within NSP 2 for validated majority');
 assert.ok(lossSum/lossN<1.3,'average NSP tradeoff should stay small');
 
