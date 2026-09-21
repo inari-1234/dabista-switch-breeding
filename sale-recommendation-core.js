@@ -241,11 +241,11 @@
       const effectLabels=f=>{
         if(!f)return[];
         const out=[];
-        if(val(f.short))out.push({key:'short',label:'短距離',detail:'SP+2 / ST-1',tradeoff:true});
-        if(val(f.speed))out.push({key:'speed',label:'速力',detail:'SP+1',tradeoff:false});
-        if(val(f.power))out.push({key:'power',label:'パワー',detail:'PW+1',tradeoff:false});
-        if(val(f.guts))out.push({key:'guts',label:'底力',detail:'ST+1',tradeoff:false});
-        if(val(f.long))out.push({key:'long',label:'長距離',detail:'ST+1',tradeoff:false});
+        if(val(f.short))out.push({key:'short',label:'短距離',detail:'スピードUP / SPニトロ+2・STニトロ-1',tradeoff:true});
+        if(val(f.speed))out.push({key:'speed',label:'速力',detail:'スピードUP / SPニトロ+1',tradeoff:false});
+        if(val(f.power))out.push({key:'power',label:'パワー',detail:'パワーUP / PWニトロ+1',tradeoff:false});
+        if(val(f.guts))out.push({key:'guts',label:'底力',detail:'勝負根性UP / STニトロ+1',tradeoff:false});
+        if(val(f.long))out.push({key:'long',label:'長距離',detail:'スタミナUP / STニトロ+1',tradeoff:false});
         return out;
       };
       const items=effective.map(x=>{
@@ -272,15 +272,19 @@
     }
 
     function goalVector(route,goal){
-      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
-      const long=val(ss.maxD)>=2400,rec=grade(ss.record),recA=rec>=3,arcReady=sp>=14&&st>=6&&long&&recA,hasSpeed=bool(x.has),crossCount=val(x.count),materialStages=val(route?.materialSpeedCross?.stages);
+      const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},ce=f.crossEffects||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
+      const maxD=val(ss.maxD),distanceTier=maxD>=2400?2:maxD>=2200?1:0,rec=grade(ss.record),recA=rec>=3;
+      const hasSpeed=bool(x.has),hasLong=bool(ce.longDistance),hasUseful=bool(ce.anyAbility),crossCount=val(x.count),materialStages=val(route?.materialSpeedCross?.stages);
       const multi=(route?.sires||[]).length>1,stableUpside=multi?(ss.stable==='C'?3:ss.stable==='B'?2:ss.stable==='A'?1:0):0;
-      const speedSupport=hasSpeed||materialStages>0;
-      const theoryCrossSynergy=bool(t.magnificent&&speedSupport);
-      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,hasSpeed,crossCount,materialStages,stableUpside,theoryCrossSynergy,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
-      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(speedSupport),rec,stableUpside,hasSpeed,crossCount,materialStages,theoryCrossSynergy,bool(f.elaborate),bool(t.interesting)];
-      if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,crossCount,materialStages,theoryCrossSynergy,bool(f.elaborate),bool(t.interesting),rec];
-      return[sp,sp+st,st,hasSpeed,crossCount,materialStages,theoryCrossSynergy,bool(f.elaborate),bool(t.interesting)];
+      const speedPath=hasSpeed||materialStages>0;
+      const magnificentSpeed=bool(t.magnificent&&hasSpeed);
+      const magnificentLong=bool(t.magnificent&&hasLong);
+      const magnificentUseful=bool(t.magnificent&&hasUseful);
+      const arcQuantitative=sp>=14&&st>=6&&recA;
+      if(goal==='arc')return[bool(arcQuantitative),bool(sp>=15&&st>=5&&recA),sp+st,st,sp,hasLong,distanceTier,hasSpeed,crossCount,materialStages,stableUpside,magnificentLong,magnificentSpeed,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
+      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(speedPath),rec,stableUpside,hasSpeed,crossCount,materialStages,magnificentSpeed,bool(f.elaborate),bool(t.interesting)];
+      if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting),rec];
+      return[sp,sp+st,st,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting)];
     }
     function betterGoalRoute(a,b,goal){
       if(!a)return b;if(!b)return a;
@@ -313,16 +317,20 @@
         interesting:0,magnificent:0,perfect:0,elaborate:0,
         maxSp:0,maxSt:0,maxPw:0,maxSpSt:0,
         speedCross:0,shortCross:0,speedOnlyCross:0,maxSpeedCrossEffect:0,
-        long2400:0,recordA:0,balanceLongA:0,arcReady:0,bestRoute:null,bestGoal:''
+        longDistanceCross:0,gutsCross:0,powerCross:0,
+        long2400:0,recordA:0,balanceLongA:0,arcReady:0,arcQuantitative:0,arcDistanceStrong:0,arcCompensated:0,bestRoute:null,bestGoal:''
       };
     }
     function addRoute(summary,route,goal){
-      const f=route?.final||{},t=f.theory||{},ss=f.sireStats||{};
+      const f=route?.final||{},t=f.theory||{},ss=f.sireStats||{},ce=f.crossEffects||{};
       summary.count++;
       const sp=val(f.sp),st=val(f.st),pw=val(f.pw),x=f.speedCross||{};
       if(x.has)summary.speedCross++;
       if(val(x.short)>0)summary.shortCross++;
       if(val(x.speed)>0)summary.speedOnlyCross++;
+      if(ce.longDistance)summary.longDistanceCross++;
+      if(ce.gutsSupport)summary.gutsCross++;
+      if(ce.powerSupport)summary.powerCross++;
       summary.maxSpeedCrossEffect=Math.max(summary.maxSpeedCrossEffect,val(x.effect));
       if(sp>=15&&st>=5)summary.sp15st5++;
       if(sp>=17&&st>=5)summary.sp17st5++;
@@ -334,7 +342,12 @@
       if(val(ss.maxD)>=2400)summary.long2400++;
       if(grade(ss.record)>=3)summary.recordA++;
       if(sp>=15&&st>=5&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.balanceLongA++;
-      if(sp>=14&&st>=6&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.arcReady++;
+      if(sp>=14&&st>=6&&grade(ss.record)>=3){
+        summary.arcReady++;
+        summary.arcQuantitative++;
+        if(val(ss.maxD)>=2400)summary.arcDistanceStrong++;
+        else if(ce.longDistance)summary.arcCompensated++;
+      }
       summary.maxSp=Math.max(summary.maxSp,sp);
       summary.maxSt=Math.max(summary.maxSt,st);
       summary.maxPw=Math.max(summary.maxPw,pw);
@@ -361,7 +374,9 @@
         sp:val(f.sp),st:val(f.st),pw:val(f.pw),spst:val(f.sp)+val(f.st),
         speedCross:bool(x.has),speedCrossCount:val(x.count),speedCrossEffect:val(x.effect),shortCross:val(x.short),speedOnlyCross:val(x.speed),
         materialSpeedCross:bool(mx.has),materialSpeedCrossStages:val(mx.stages),materialSpeedCrossCount:val(mx.count),
-        long2400:val(ss.maxD)>=2400,record:String(ss.record||'?'),stable:String(ss.stable||'?'),guts:String(ss.guts||'?'),
+        maxD:val(ss.maxD),distance2400:val(ss.maxD)>=2400,distanceTier:val(ss.maxD)>=2400?2:val(ss.maxD)>=2200?1:0,long2400:val(ss.maxD)>=2400,
+        longDistanceCross:bool(f.crossEffects?.longDistance),gutsCross:bool(f.crossEffects?.gutsSupport),powerCross:bool(f.crossEffects?.powerSupport),abilityCross:bool(f.crossEffects?.anyAbility),
+        record:String(ss.record||'?'),stable:String(ss.stable||'?'),guts:String(ss.guts||'?'),
         recordGrade:grade(ss.record),recordA:grade(ss.record)>=3,gutsA:grade(ss.guts)>=3,
         interesting:bool(t.interesting),magnificent:bool(t.magnificent),perfect:bool(t.perfect),elaborate:bool(f.elaborate)
       };
@@ -427,9 +442,11 @@
         return reasons;
       }
       if(goal==='arc'){
-        const ta=a.sp>=14&&a.st>=6&&a.long2400&&a.recordA, tb=b.sp>=14&&b.st>=6&&b.long2400&&b.recordA;
+        const ta=a.sp>=14&&a.st>=6&&a.recordA, tb=b.sp>=14&&b.st>=6&&b.recordA;
         if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-2&&b.st>=a.st-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SP/STを大きく落とさない');
-        if(!ta&&tb)reasons.push('凱旋門向け基準（SP14/ST6・2400m対応父・実績A）へ新たに到達');
+        if(!a.longDistanceCross&&b.longDistanceCross&&b.st>=a.st-1)reasons.push('最終配合で長距離クロスが新たに成立し、直接のスタミナ補強経路を確保');
+        if(!ta&&tb)reasons.push('凱旋門向け数値・実績基準（SP14/ST6・実績A）へ新たに到達');
+        if(!a.distance2400&&b.distance2400&&tb)reasons.push('最終父の2400m対応が加わり、距離適性の根拠が強化');
         const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
         if(ta&&highMother){
           if(b.sp>=a.sp+2&&b.st>=a.st&&tb)reasons.push(`高能力母を維持したままSPを${a.sp}→${b.sp}へ上積み`);
@@ -437,7 +454,7 @@
         }else if(b.spst>=a.spst+3&&b.st>=a.st-1){
           reasons.push(`SP+STを${a.spst}→${b.spst}へ改善し、ST低下を抑制`);
         }
-        if(!a.magnificent&&b.magnificent&&(b.speedCross||b.materialSpeedCross)&&b.spst>=a.spst-1&&b.st>=a.st-1)reasons.push('見事配合とSP系クロスを新たに両立し、SP+STもほぼ維持');
+        if(!a.magnificent&&b.magnificent&&(b.speedCross||b.longDistanceCross)&&b.spst>=a.spst-1&&b.st>=a.st-1)reasons.push('見事配合と目的に合うSP系/長距離クロスを新たに両立し、SP+STもほぼ維持');
         addMaterialSupport();
         return reasons;
       }
@@ -446,14 +463,17 @@
         if(!a.speedCross&&b.speedCross&&b.spst>=a.spst-2)reasons.push('速力/短距離クロスを新たに成立させ、母系のSP補強手段を確保');
         if(!ta&&tb)reasons.push('再建目安のSP15/ST5ラインへ新たに到達');
         if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
-        if(!a.magnificent&&b.magnificent&&(b.speedCross||b.materialSpeedCross)&&b.spst>=a.spst-1)reasons.push('見事配合とSP系クロスを新たに両立し、母系能力もほぼ維持');
+        const needsSp=!!assessment?.abilityKnown&&(assessment?.ranks?.sp?.topPercent>45||assessment?.ranks?.spst?.topPercent>60);
+        const needsSt=!!assessment?.abilityKnown&&(assessment?.ranks?.st?.topPercent>45||assessment?.ranks?.spst?.topPercent>60);
+        const matchedCross=(needsSp&&b.speedCross)||(needsSt&&b.longDistanceCross)||(!needsSp&&!needsSt&&b.abilityCross);
+        if(!a.magnificent&&b.magnificent&&matchedCross&&b.spst>=a.spst-1)reasons.push('見事配合と母の不足能力に合う有効クロスを新たに両立し、母系能力もほぼ維持');
         addMaterialSupport();
         return reasons;
       }
       if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('速力/短距離クロスを新たに成立');
       if(b.sp>=a.sp+2)reasons.push(`SPを${a.sp}→${b.sp}へ上積み`);
       if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
-      if(!a.magnificent&&b.magnificent&&(b.speedCross||b.materialSpeedCross)&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('見事配合とSP系クロスを新たに両立し、能力水準も維持');
+      if(!a.magnificent&&b.magnificent&&b.abilityCross&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('見事配合と有効な能力系クロスを新たに両立し、能力水準も維持');
       addMaterialSupport();
       return reasons;
     }
