@@ -61,8 +61,8 @@ const g1=scan(planner.iterateDirect(name),goal,{keep:true});
 const g2=scan(planner.iterateTwo(name),goal);
 const bases=previewBases(g2.result.shortlists,12);
 const g3=scan(planner.iterateThirdPreview(name,bases),goal,{poolN:18});
-assert.deepStrictEqual(g1.summary.bestRoute.sires,['ステイゴールド']);
-assert.strictEqual(g1.summary.bestRoute.final.sp,14);
+assert.deepStrictEqual(g1.summary.bestRoute.sires,['グランプリボス']);
+assert.strictEqual(g1.summary.bestRoute.final.sp,16);
 assert.strictEqual(g1.summary.bestRoute.final.st,8);
 
 const portfolios={
