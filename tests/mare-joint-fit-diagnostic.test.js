@@ -15,11 +15,10 @@ const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elab
 const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
 
 const known=M.filter(x=>+x.sp||+x.st||+x.pw).sort((a,b)=>(b.sp+b.st)-(a.sp+a.st));
-const pickIdx=[0,10,25,50,75,100,150,200,250,known.length-1];
 const names=[...new Set([
   'スプリングスイーツ','フィットレオタード','エイスト','ミニミニデート',
-  ...pickIdx.map(i=>known[Math.min(i,known.length-1)]?.name).filter(Boolean)
-])];
+  known[known.length-1]?.name
+].filter(Boolean))];
 
 const val=x=>Number.isFinite(+x)?+x:0;
 const grade=x=>x==='A'?3:x==='B'?2:x==='C'?1:0;
