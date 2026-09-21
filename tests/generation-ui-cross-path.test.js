@@ -27,7 +27,7 @@ assert.ok(fit.ranks.sp.topPercent>45,'screenshot mare is on SP-support side');
 const direct=advisor.emptySummary('direct');
 for(const r of planner.iterateDirect('フィットレオタード'))advisor.addRoute(direct,r,'arc');
 const use=advisor.directUseLabels(fit,direct);
-assert.strictEqual(use.arc,'2代以上を比較','pre-diagnosis label must not claim a 2-generation recommendation');
+assert.strictEqual(use.arc,'直仔候補（距離根拠要確認）','pre-diagnosis label should keep a numerically viable direct Arc route as a candidate while exposing uncertain distance evidence');
 assert.ok(!use.arc.includes('推奨'),'only the generation advisor may publish a generation recommendation');
 
 function fakeRoute(materialStages,sp=15,st=6,longStages=0){
