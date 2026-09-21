@@ -276,10 +276,11 @@
       const long=val(ss.maxD)>=2400,rec=grade(ss.record),recA=rec>=3,arcReady=sp>=14&&st>=6&&long&&recA,hasSpeed=bool(x.has),crossCount=val(x.count),materialStages=val(route?.materialSpeedCross?.stages);
       const multi=(route?.sires||[]).length>1,stableUpside=multi?(ss.stable==='C'?3:ss.stable==='B'?2:ss.stable==='A'?1:0):0;
       const speedSupport=hasSpeed||materialStages>0;
-      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,hasSpeed,crossCount,materialStages,stableUpside,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
-      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(speedSupport),rec,stableUpside,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
-      if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),rec];
-      return[sp,sp+st,st,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
+      const theoryCrossSynergy=bool(t.magnificent&&speedSupport);
+      if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,hasSpeed,crossCount,materialStages,stableUpside,theoryCrossSynergy,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
+      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(speedSupport),rec,stableUpside,hasSpeed,crossCount,materialStages,theoryCrossSynergy,bool(f.elaborate),bool(t.interesting)];
+      if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,crossCount,materialStages,theoryCrossSynergy,bool(f.elaborate),bool(t.interesting),rec];
+      return[sp,sp+st,st,hasSpeed,crossCount,materialStages,theoryCrossSynergy,bool(f.elaborate),bool(t.interesting)];
     }
     function betterGoalRoute(a,b,goal){
       if(!a)return b;if(!b)return a;
@@ -421,7 +422,7 @@
         if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SPニトロもほぼ維持');
         if(a.sp<17&&b.sp>=17&&b.st>=5)reasons.push('SP17/ST5ラインへ新たに到達');
         if(b.sp>=a.sp+2&&b.st>=Math.max(3,a.st-1))reasons.push(`SPを${a.sp}→${b.sp}へ伸ばし、ST低下を抑制`);
-        if(!a.perfect&&b.perfect&&b.sp>=a.sp-1)reasons.push('完璧配合を新たに成立させつつSPを維持');
+        if(!a.magnificent&&b.magnificent&&(b.speedCross||b.materialSpeedCross)&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('見事配合とSP系クロスを新たに両立し、SP/STもほぼ維持');
         addMaterialSupport();
         return reasons;
       }
@@ -436,7 +437,7 @@
         }else if(b.spst>=a.spst+3&&b.st>=a.st-1){
           reasons.push(`SP+STを${a.spst}→${b.spst}へ改善し、ST低下を抑制`);
         }
-        if(!a.perfect&&b.perfect&&b.spst>=a.spst-1)reasons.push('完璧配合が新たに成立し、SP+STもほぼ維持');
+        if(!a.magnificent&&b.magnificent&&(b.speedCross||b.materialSpeedCross)&&b.spst>=a.spst-1&&b.st>=a.st-1)reasons.push('見事配合とSP系クロスを新たに両立し、SP+STもほぼ維持');
         addMaterialSupport();
         return reasons;
       }
@@ -445,14 +446,14 @@
         if(!a.speedCross&&b.speedCross&&b.spst>=a.spst-2)reasons.push('速力/短距離クロスを新たに成立させ、母系のSP補強手段を確保');
         if(!ta&&tb)reasons.push('再建目安のSP15/ST5ラインへ新たに到達');
         if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
-        if((!a.magnificent&&!a.perfect)&&(b.magnificent||b.perfect)&&b.spst>=a.spst-1)reasons.push(b.perfect?'完璧配合を新たに成立':'見事配合を新たに成立');
+        if(!a.magnificent&&b.magnificent&&(b.speedCross||b.materialSpeedCross)&&b.spst>=a.spst-1)reasons.push('見事配合とSP系クロスを新たに両立し、母系能力もほぼ維持');
         addMaterialSupport();
         return reasons;
       }
       if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('速力/短距離クロスを新たに成立');
       if(b.sp>=a.sp+2)reasons.push(`SPを${a.sp}→${b.sp}へ上積み`);
       if(b.spst>=a.spst+3)reasons.push(`SP+STを${a.spst}→${b.spst}へ改善`);
-      if(!a.perfect&&b.perfect)reasons.push('完璧配合を新たに成立');
+      if(!a.magnificent&&b.magnificent&&(b.speedCross||b.materialSpeedCross)&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('見事配合とSP系クロスを新たに両立し、能力水準も維持');
       addMaterialSupport();
       return reasons;
     }
@@ -498,45 +499,61 @@
     }
 
     function recommendGeneration({goal='arc',assessment,generations,portfolios}={}){
-      const g1=generations?.[1],g2=generations?.[2],g3=generations?.[3];
-      const r1=g1?.summary?.bestRoute||routeForGoal(g1?.result,goal),r2=g2?.summary?.bestRoute||routeForGoal(g2?.result,goal),r3=g3?.summary?.bestRoute||routeForGoal(g3?.result,goal);
+      const g1=generations?.[1],g2=generations?.[2],g3=generations?.[3],g4=generations?.[4];
+      const r1=g1?.summary?.bestRoute||routeForGoal(g1?.result,goal);
+      const r2=g2?.summary?.bestRoute||routeForGoal(g2?.result,goal);
+      const r3=g3?.summary?.bestRoute||routeForGoal(g3?.result,goal);
+      const r4=g4?.summary?.bestRoute||routeForGoal(g4?.result,goal);
       let recommended=1,reasons=[],conditional=false;
-      const transitions={to2:{from:1,to:2,reasons:[]},to3:{from:1,to:3,reasons:[]}};
+      const transitions={to2:{from:1,to:2,reasons:[]},to3:{from:1,to:3,reasons:[]},to4:{from:1,to:4,reasons:[]}};
       if(goal==='stallion'){
         const p1=portfolios?.[1]?.routes?.[0]?.portfolio||null;
         const p2=portfolios?.[2]?.routes?.[0]?.portfolio||null;
         const p3=portfolios?.[3]?.routes?.[0]?.portfolio||null;
+        const p4=portfolios?.[4]?.routes?.[0]?.portfolio||null;
         const u2=portfolioUpgradeReasons(p1,p2);
         transitions.to2.reasons=u2;
         if(u2.length){recommended=2;reasons.push('直仔→2代：'+u2.join('／'))}
         else reasons.push('直仔段階ですでに将来種牡馬としての血統汎用性が競争力を持ちます。');
-        const baseP=recommended===2?p2:p1,u3=portfolioUpgradeReasons(baseP,p3);
-        transitions.to3={from:recommended===2?2:1,to:3,reasons:u3};
+        const baseP3=recommended===2?p2:p1,u3=portfolioUpgradeReasons(baseP3,p3);
+        transitions.to3={from:recommended,to:3,reasons:u3};
         if(u3.length){
           recommended=3;conditional=true;
           reasons.push((transitions.to3.from===2?'2代→3代':'直仔→3代')+'：'+u3.join('／'));
+        }
+        const baseP4=recommended===3?p3:recommended===2?p2:p1,u4=portfolioUpgradeReasons(baseP4,p4);
+        transitions.to4={from:recommended,to:4,reasons:u4};
+        if(u4.length){
+          const from=recommended;recommended=4;conditional=true;
+          reasons.push((from===3?'3代→4代':from===2?'2代→4代':'直仔→4代')+'：'+u4.join('／'));
         }
       }else{
         const u2=materialUpgradeReasons(r1,r2,goal,assessment);
         transitions.to2.reasons=u2;
         if(u2.length){recommended=2;reasons.push('直仔→2代：'+u2.join('／'))}
         else reasons.push('2代へ進めても直仔に対する上積みが小さく、短い世代で締める価値があります。');
-        const baseRoute=recommended===2?r2:r1,u3=materialUpgradeReasons(baseRoute,r3,goal,assessment);
-        transitions.to3={from:recommended===2?2:1,to:3,reasons:u3};
+        const baseRoute3=recommended===2?r2:r1,u3=materialUpgradeReasons(baseRoute3,r3,goal,assessment);
+        transitions.to3={from:recommended,to:3,reasons:u3};
         if(u3.length){
-          recommended=3;conditional=true;
-          reasons.push((transitions.to3.from===2?'2代→3代':'直仔→3代')+'：'+u3.join('／'));
+          const from=recommended;recommended=3;conditional=true;
+          reasons.push((from===2?'2代→3代':'直仔→3代')+'：'+u3.join('／'));
+        }
+        const baseRoute4=recommended===3?r3:recommended===2?r2:r1,u4=materialUpgradeReasons(baseRoute4,r4,goal,assessment);
+        transitions.to4={from:recommended,to:4,reasons:u4};
+        if(u4.length){
+          const from=recommended;recommended=4;conditional=true;
+          reasons.push((from===3?'3代→4代':from===2?'2代→4代':'直仔→4代')+'：'+u4.join('／'));
         }
       }
       if(recommended>1)reasons.push('中間牝馬のSP/ST/PWは出生前に仮定せず、能力上位牝馬を実際に選抜できた場合だけ次世代へ進みます。');
       if(assessment&&!assessment.abilityKnown)reasons.push('起点牝馬の繁殖能力が未判明なので、母能力を含む総合判断は保留です。');
       return{
         generation:recommended,
-        label:recommended===1?'直仔推奨':recommended===2?'2代推奨':'3代候補（条件付き）',
+        label:recommended===1?'直仔推奨':recommended===2?'2代推奨':recommended===3?'3代候補（条件付き）':'4代候補（条件付き）',
         conditional,
         reasons,
         transitions,
-        routes:{1:r1,2:r2,3:r3}
+        routes:{1:r1,2:r2,3:r3,4:r4}
       };
     }
 
