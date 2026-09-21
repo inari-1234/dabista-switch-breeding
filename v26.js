@@ -71,7 +71,7 @@ function style(){
  .production-quality b{font-size:10px}
  .production-quality.ceiling{background:#edf7f2;border-color:#bcd8ca}
  .production-quality.upside{background:#eef3fa;border-color:#cad8eb}
- .production-quality.selection-dependent,.production-quality.low-ceiling,.production-quality.tradeoff{background:#fff7df;border-color:#e7ca75}
+ .production-quality.selection-dependent,.production-quality.low-ceiling,.production-quality.tradeoff,.production-quality.no-speed-support{background:#fff7df;border-color:#e7ca75}
  .production-warning{display:block;margin-top:3px;color:#7a5610}
  .sale-method{font-size:10px;line-height:1.5;color:#66736c}
  .sale-generation-state{margin:-4px 0 9px;font-size:9px;line-height:1.45;color:#66736c}
@@ -365,7 +365,7 @@ function profileHtml(profile,routes,goal,scope){
  const crossNote=profile==='speedCross'
   ?'<div class="notice">速力または短距離の有効クロスを持つ候補だけを表示する<b>血統上限側の軸</b>です。ここで1位でも強馬生産の確度1位とは限りません。最終父の実績・安定と中間牝馬の選抜条件も確認してください。</div>'
   :profile==='production'
-   ?'<div class="notice"><b>強馬生産型：</b>SP15/ST5を最低線に、最終父の実績を早い段階で評価します。多世代では安定C/B/Aを「上振れ幅の違い」として比較し、安定Aは高能力の中間牝馬を実際に選抜できた場合に向く条件として扱います。</div>'
+   ?'<div class="notice"><b>強馬生産型：</b>多世代では途中または締めに速力/短距離クロスを最低1回確保し、SP15/ST5を最低線に最終父の実績を評価します。安定C/B/Aは「上振れ幅の違い」として比較し、安定Aは高能力の中間牝馬を実際に選抜できた場合に向く条件として扱います。</div>'
    :'';
  return `<div class="card sale-profile"><h3>${esc(label)}</h3><div class="sale-method">並び順：${esc(criteria)}</div>${crossNote}${profile==='sire'?`<div class="sale-method">評価範囲：${esc(scope)}</div>`:''}${routes.map((r,i)=>routeHtml(r,i,goal,profile)).join('')}</div>`
 }
