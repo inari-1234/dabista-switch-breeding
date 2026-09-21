@@ -81,21 +81,65 @@ for(const mareName of ['エイスト','スプリングスイーツ','ワカヒ�
  for(const s of T.stallions){const a=base.evaluate(s,m),b=fastEvaluate(s,m);if(JSON.stringify(a)!==JSON.stringify(b))throw Error('pair mismatch '+s.name+' x '+mareName)}
 }
 function scan(planner){
- const started=Date.now(),two=[];
- for(const r of planner.iterateTwo('エイスト'))if(r.sires[0]==='グランプリボス')two.push(r);
+ const started=Date.now();
+ const direct=[...planner.iterateDirect('エイスト')].find(r=>r.sires[0]==='グランプリボス');
+ if(!direct)throw Error('direct missing');
+ const two=[],c2=planner.createCollector({topN:16,poolN:96});
+ for(const r of planner.iterateTwo('エイスト'))if(r.sires[0]==='グランプリボス'){two.push(r);c2.push(r)}
+ const r2=c2.finish();
+
  const c3=planner.createCollector({topN:16,poolN:96}),bridge=planner.createFourthBridgeCollector();let n3=0;
  for(const r of planner.iterateThirdPreview('エイスト',two)){n3++;c3.push(r);bridge.push(r)}
  const r3=c3.finish(),b=bridge.finish();
- return{runtimeMs:Date.now()-started,two:two.length,three:n3,profiles:Object.fromEntries(['sp','speedCross','production','st','balance'].map(p=>[p,planner.routeKey(r3.profiles?.[p]?.[0])])),bridgeKeys:b.bases.map(planner.routeKey)};
+
+ const c4=planner.createCollector({topN:16,poolN:96});let n4=0;
+ for(const r of planner.iterateFourthPreview('エイスト',b.bases)){n4++;c4.push(r)}
+ const r4=c4.finish();
+
+ const profiles={};
+ for(const p of ['sp','speedCross','production','st','balance']){
+   profiles[p]={
+     direct:planner.routeKey(direct),
+     two:planner.routeKey(r2.profiles?.[p]?.[0]),
+     three:planner.routeKey(r3.profiles?.[p]?.[0]),
+     four:planner.routeKey(r4.profiles?.[p]?.[0])
+   };
+ }
+ const portfolios={};
+ for(const [name,pool] of [['direct',[direct]],['two',r2.pool],['three',r3.pool],['four',r4.pool]]){
+   const x=planner.portfolioPareto(pool,1);
+   portfolios[name]={
+     route:planner.routeKey(x.routes?.[0]),
+     portfolio:x.routes?.[0]?.portfolio||null,
+     population:x.population,
+     paretoCount:x.paretoCount
+   };
+ }
+ return{
+   runtimeMs:Date.now()-started,
+   counts:{two:two.length,three:n3,bridgeBases:b.bases.length,four:n4},
+   profiles,
+   bridgeKeys:b.bases.map(planner.routeKey),
+   pools:{two:r2.pool.length,three:r3.pool.length,four:r4.pool.length},
+   portfolios
+ };
 }
 const A=scan(basePlanner);
 prepBuilds=0;prepHits=0;
 const B=scan(fastPlanner),cacheStats={prepBuilds,prepHits};
-if(A.two!==B.two||A.three!==B.three)throw Error('route count mismatch');
+if(JSON.stringify(A.counts)!==JSON.stringify(B.counts))throw Error('route count mismatch');
 if(JSON.stringify(A.profiles)!==JSON.stringify(B.profiles))throw Error('profile ranking mismatch');
 if(JSON.stringify(A.bridgeKeys)!==JSON.stringify(B.bridgeKeys))throw Error('bridge selection mismatch');
+if(JSON.stringify(A.pools)!==JSON.stringify(B.pools))throw Error('pool size mismatch');
+if(JSON.stringify(A.portfolios)!==JSON.stringify(B.portfolios))throw Error('portfolio mismatch');
 console.log(JSON.stringify({
- passed:true,pairEquivalence:3*176,counts:{two:A.two,three:A.three,bridgeBases:A.bridgeKeys.length},
- timingMs:{canonical:A.runtimeMs,preparedSinglePass:B.runtimeMs},speedup:A.runtimeMs/Math.max(1,B.runtimeMs),cacheStats,
- conclusion:'Cached normalized pedigree plus single-pass raw/effective cross scan preserves exact behavior through exact third generation.'
+ passed:true,
+ pairEquivalence:3*176,
+ counts:A.counts,
+ pools:A.pools,
+ timingMs:{canonical:A.runtimeMs,preparedSinglePass:B.runtimeMs},
+ speedup:A.runtimeMs/Math.max(1,B.runtimeMs),
+ cacheStats,
+ fullResultEquivalent:true,
+ conclusion:'Cached normalized pedigree plus single-pass raw/effective cross scan preserves exact 2-4 generation profiles, bridge selection, pool sizes, and portfolio results end-to-end.'
 },null,2));
