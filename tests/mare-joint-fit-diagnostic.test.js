@@ -72,14 +72,14 @@ function better(a,b,kind){
 function levelBucket(){
   return{count:0,record:{A:0,B:0,C:0},distance:{strongPlusLong:0,strong2400:0,compensatedLong:0,uncertain:0},supported:0,best:null};
 }
-function addEvidence(bucket,r){
-  const d=distanceEvidence(r),rec=facts(r).record;
+function addEvidence(bucket,r,goal){
+  const d=distanceEvidence(r),rec=facts(r).record,recordSupported=rec==='A'||rec==='B',distanceSupported=d!=='UNCERTAIN';
   if(rec==='A')bucket.record.A++;else if(rec==='B')bucket.record.B++;else bucket.record.C++;
   if(d==='STRONG_PLUS_LONG')bucket.distance.strongPlusLong++;
   else if(d==='STRONG_2400')bucket.distance.strong2400++;
   else if(d==='COMPENSATED_LONG_CROSS')bucket.distance.compensatedLong++;
   else bucket.distance.uncertain++;
-  if((rec==='A'||rec==='B')&&d!=='UNCERTAIN')bucket.supported++;
+  if(goal==='bc' ? recordSupported : recordSupported&&distanceSupported)bucket.supported++;
 }
 function scan(iter){
   const out={
@@ -91,9 +91,9 @@ function scan(iter){
   for(const r of iter){
     out.count++;
     for(const level of ['min','strong','elite']){
-      if(arcLevel(r,level)){const b=out.arc[level];b.count++;addEvidence(b,r);b.best=better(b.best,r,'arc')}
-      if(bcLevel(r,level)){const b=out.bc[level];b.count++;addEvidence(b,r);b.best=better(b.best,r,'bc')}
-      if(jointLevel(r,level)){const b=out.joint[level];b.count++;addEvidence(b,r);b.best=better(b.best,r,'joint')}
+      if(arcLevel(r,level)){const b=out.arc[level];b.count++;addEvidence(b,r,'arc');b.best=better(b.best,r,'arc')}
+      if(bcLevel(r,level)){const b=out.bc[level];b.count++;addEvidence(b,r,'bc');b.best=better(b.best,r,'bc')}
+      if(jointLevel(r,level)){const b=out.joint[level];b.count++;addEvidence(b,r,'joint');b.best=better(b.best,r,'joint')}
     }
   }
   for(const goal of ['arc','bc','joint'])for(const level of ['min','strong','elite']){
