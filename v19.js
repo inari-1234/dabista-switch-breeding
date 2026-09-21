@@ -1,5 +1,5 @@
 (()=>{
-const V=window.APP_VERSION||'1.17.0',BUILD=window.APP_BUILD||'2026.09.20-38';
+const V=window.APP_VERSION||'1.18.0',BUILD=window.APP_BUILD||'2026.09.21-43';
 const db=window.db,$=s=>document.querySelector(s),norm=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();
 if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ver=$('#ver');if(ver)ver.textContent=`v${V} / Build ${BUILD}`;
 const depth=i=>i<1?1:i<3?2:i<7?3:4;
