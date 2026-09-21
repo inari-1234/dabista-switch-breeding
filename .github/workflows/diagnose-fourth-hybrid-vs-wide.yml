@@ -1,0 +1,27 @@
+name: Diagnose fourth-generation hybrid vs wide
+
+on:
+  push:
+    paths:
+      - 'tests/fourth-generation-hybrid-vs-wide-diagnostic.test.js'
+      - '.github/workflows/diagnose-fourth-hybrid-vs-wide.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    strategy:
+      fail-fast: false
+      matrix:
+        mare: ['スプリングスイーツ','フィットレオタード','エイスト','ミニミニデート']
+    runs-on: ubuntu-latest
+    env:
+      MARE: ${{ matrix.mare }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/fourth-generation-hybrid-vs-wide-diagnostic.test.js
+      - name: Hybrid versus wide diagnostic
+        run: node tests/fourth-generation-hybrid-vs-wide-diagnostic.test.js
