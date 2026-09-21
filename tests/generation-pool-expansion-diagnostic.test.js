@@ -57,6 +57,27 @@ function snapshot(result){
   };
 }
 function key(x){return JSON.stringify(x?.sires||[])}
+function outcomeKey(x){
+  if(!x)return'null';
+  const r={...x};delete r.sires;
+  return JSON.stringify(r);
+}
+function childKey(r){
+  const c=r?.finalChild||{};
+  return JSON.stringify([c.ancestor||[],c.omoshiro||'',c.migoto||'']);
+}
+function bridgeVariants(iter,poolNs){
+  const collectors=new Map(poolNs.map(n=>[n,planner.createCollector({topN:3,poolN:n})]));
+  const childSet=new Set(),supportSet=new Set();let count=0;
+  for(const r of iter){
+    count++;
+    const ck=childKey(r);childSet.add(ck);
+    supportSet.add(JSON.stringify([ck,r.materialSpeedCross?.stages||0,r.materialLongCross?.stages||0]));
+    for(const col of collectors.values())col.push(r);
+  }
+  const results={};for(const [n,col] of collectors)results[n]=col.finish();
+  return{count,uniqueChild:childSet.size,uniqueChildSupport:supportSet.size,results};
+}
 
 const mares=['スプリングスイーツ','フィットレオタード','エイスト','ミニミニデート'];
 const output=[];
@@ -81,6 +102,26 @@ for(const mare of mares){
 
   const current3=snapshot(third12),full3=snapshot(thirdFull);
   const current4=snapshot(fourth8),pool4=snapshot(fourthPool),fullPool4=snapshot(fourthFullPool);
+
+  const bridgePoolNs=[24,36,48,72];
+  const bridge=bridgeVariants(planner.iterateThirdPreview(mare,third12Bases),bridgePoolNs);
+  const bridgeFourth={};
+  for(const n of bridgePoolNs){
+    const base=bridge.results[n].pool;
+    bridgeFourth[n]={baseCount:base.length,result:snapshot(collect(planner.iterateFourthPreview(mare,base),72))};
+  }
+  const refBridge=bridgeFourth[72].result;
+  const bridgeStability={};
+  for(const n of bridgePoolNs){
+    const cur=bridgeFourth[n].result;
+    bridgeStability[n]={};
+    for(const axis of ['arc','bc','production','sp','st','balance']){
+      bridgeStability[n][axis]={
+        sameRoute:key(cur[axis])===key(refBridge[axis]),
+        sameOutcome:outcomeKey(cur[axis])===outcomeKey(refBridge[axis])
+      };
+    }
+  }
 
   output.push({
     mare,
@@ -123,6 +164,23 @@ for(const mare of mares){
         st:key(pool4.st)===key(fullPool4.st),
         balance:key(pool4.balance)===key(fullPool4.balance)
       }
+    },
+    bridgePool:{
+      scannedThird:bridge.count,
+      uniqueChild:bridge.uniqueChild,
+      uniqueChildSupport:bridge.uniqueChildSupport,
+      variants:Object.fromEntries(bridgePoolNs.map(n=>[n,{
+        baseCount:bridgeFourth[n].baseCount,
+        safe:bridgeFourth[n].result.count,
+        pool:bridgeFourth[n].result.pool,
+        arc:bridgeFourth[n].result.arc,
+        bc:bridgeFourth[n].result.bc,
+        production:bridgeFourth[n].result.production,
+        sp:bridgeFourth[n].result.sp,
+        st:bridgeFourth[n].result.st,
+        balance:bridgeFourth[n].result.balance,
+        stabilityVs72:bridgeStability[n]
+      }]))
     }
   });
 }
