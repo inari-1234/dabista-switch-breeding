@@ -35,14 +35,14 @@ const out=bridge.finish();
 
 assert.ok(out.count>9000,'third-generation bridge scan unexpectedly small: '+out.count);
 assert.strictEqual(out.sourceCounts.speedCross,320,'speedCross bridge depth must stay explicit');
-assert.strictEqual(out.sourceCounts.sp,128);
-assert.strictEqual(out.sourceCounts.production,128);
-assert.strictEqual(out.sourceCounts.st,128);
-assert.strictEqual(out.sourceCounts.balance,128);
-assert.strictEqual(out.sourceCounts.theory,128);
-assert.strictEqual(out.bridgeCounts.A,96);
-assert.strictEqual(out.bridgeCounts.D,160);
-assert.ok(out.bases.length<900,'bridge candidate union should remain substantially below the old wide pool');
+assert.strictEqual(out.sourceCounts.sp,64);
+assert.strictEqual(out.sourceCounts.production,64);
+assert.strictEqual(out.sourceCounts.st,64);
+assert.strictEqual(out.sourceCounts.balance,64);
+assert.strictEqual(out.sourceCounts.theory,64);
+assert.strictEqual(out.bridgeCounts.A,0);
+assert.strictEqual(out.bridgeCounts.D,144);
+assert.ok(out.bases.length<650,'validated compact bridge union should remain substantially below the old wide pool');
 
 const keys=new Set(out.bases.map(r=>planner.routeKey(r)));
 for(const key of [
