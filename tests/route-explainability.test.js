@@ -75,6 +75,14 @@ const recordASame={final:{sp:17,st:8,pw:0,crossEffects:{anyAbility:false,longDis
 const recordALow={final:{sp:14,st:6,pw:0,crossEffects:{anyAbility:false,longDistance:false,gutsSupport:false,powerSupport:false},speedCross:{has:false,count:0,short:0,speed:0,effect:0},sireStats:{maxD:2400,record:'A',guts:'B'},theory:{interesting:false,magnificent:false,perfect:false},elaborate:false}};
 assert.strictEqual(advisor.betterGoalRoute(recordBHigh,recordASame,'arc'),recordASame,'same Arc ceiling should prefer the stronger sire record');
 assert.strictEqual(advisor.betterGoalRoute(recordALow,recordBHigh,'arc'),recordBHigh,'record A must not hard-gate a materially stronger SP/ST route');
+
+const recordRoute=(sp,st,record)=>({final:{sp,st,pw:0,crossEffects:{anyAbility:false,longDistance:false,gutsSupport:false,powerSupport:false},speedCross:{has:false,count:0,short:0,speed:0,effect:0},sireStats:{maxD:2200,record,guts:'B'},theory:{interesting:false,magnificent:false,perfect:false},elaborate:false},materialSpeedCross:{has:false,stages:0},materialLongCross:{has:false,stages:0}});
+const bToASame=advisor.materialUpgradeReasons(recordRoute(15,6,'B'),recordRoute(15,6,'A'),'arc',syntheticAssessment);
+assert.ok(bToASame.some(x=>x.includes('実績がB→A')),'B to A is a meaningful supporting upgrade when SP/ST is preserved');
+const bToADrop=advisor.materialUpgradeReasons(recordRoute(15,6,'B'),recordRoute(14,6,'A'),'arc',syntheticAssessment);
+assert.ok(!bToADrop.some(x=>x.includes('実績がB→A')),'B to A alone must not justify a generation after SP loss');
+const cToBSmallDrop=advisor.materialUpgradeReasons(recordRoute(15,6,'C'),recordRoute(14,6,'B'),'arc',syntheticAssessment);
+assert.ok(cToBSmallDrop.some(x=>x.includes('実績がC→B')),'escaping record C may justify a small SP tradeoff without making record A mandatory');
 const g={1:{summary:{bestRoute:route1}},2:{summary:{bestRoute:route2}},3:{summary:{bestRoute:route3}}};
 const rec=advisor.recommendGeneration({goal:'arc',assessment:syntheticAssessment,generations:g,portfolios:{}});
 assert.strictEqual(rec.generation,3,'generation decision reasons');
