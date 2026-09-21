@@ -23,6 +23,7 @@ on:
       - 'tests/speed-cross-priority.test.js'
       - 'tests/generation-ui-cross-path.test.js'
       - 'tests/four-generation-theory-evidence.test.js'
+      - 'tests/magnificent-cross-utility-diagnostic.test.js'
       - 'v20.js'
       - 'v21.js'
       - 'v25.js'
@@ -79,6 +80,7 @@ jobs:
           node --check tests/speed-cross-priority.test.js
           node --check tests/generation-ui-cross-path.test.js
           node --check tests/four-generation-theory-evidence.test.js
+          node --check tests/magnificent-cross-utility-diagnostic.test.js
           node --check v20.js
           node --check v21.js
           node --check v25.js
@@ -141,6 +143,10 @@ jobs:
       - name: Transient sale mare wiring regression
         run: |
           node tests/transient-sale-mare-wiring.test.js
+
+      - name: Magnificent cross utility diagnostic
+        run: |
+          node tests/magnificent-cross-utility-diagnostic.test.js
 
       - name: SP-cross priority regression
         run: |
