@@ -14,6 +14,7 @@ function mergeNestedCounts(dst,src){
 }
 const total={mares:0,known:0,unknown:0,twoRoutes:0,runtimeMsSum:0};
 const matrix={arc:{},bc:{},rebuild:{}};
+const preferredMatrix={arc:{},bc:{},rebuild:{}};
 const focus={};
 const samples={};
 const shardIds=[];
@@ -26,7 +27,10 @@ for(const file of files){
   total.unknown+=x.totals.unknown;
   total.twoRoutes+=x.totals.twoRoutes;
   total.runtimeMsSum+=x.totals.runtimeMs;
-  for(const g of ['arc','bc','rebuild'])mergeNestedCounts(matrix[g],x.matrix[g]);
+  for(const g of ['arc','bc','rebuild']){
+    mergeNestedCounts(matrix[g],x.matrix[g]);
+    mergeNestedCounts(preferredMatrix[g],x.preferredMatrix[g]);
+  }
   Object.assign(focus,x.focus||{});
   for(const [k,arr] of Object.entries(x.samples||{})){
     samples[k]??=[];
@@ -43,13 +47,18 @@ if(focus['エイスト'].band!=='high')throw Error('Eist ability band');
 if(focus['フィットレオタード'].band!=='middle')throw Error('Fit ability band');
 if(focus['ワカヒルメ'].band!=='low')throw Error('Wakahirume ability band');
 if(focus['ミムラス'].band!=='low'||focus['ミムラス'].goals.arc.status!=='direct-supported')throw Error('low/high-pedigree edge');
-if(focus['エトワルセリータ'].band!=='high'||!focus['エトワルセリータ'].goals.arc.status.startsWith('two-'))throw Error('high/staged edge');
+if(focus['エトワルセリータ'].band!=='high'||focus['エトワルセリータ'].goals.arc.recommendedGeneration!==2)throw Error('high/staged edge');
+if(focus['スプリングスイーツ'].goals.arc.recommendedGeneration!==1)throw Error('Spring Arc generation regression');
+if(focus['エイスト'].goals.arc.recommendedGeneration!==1)throw Error('Eist Arc generation regression');
+if(focus['フィットレオタード'].goals.arc.recommendedGeneration!==2)throw Error('Fit Arc generation regression');
+if(focus['ミニミニデート'].goals.arc.recommendedGeneration!==2)throw Error('Mini Arc generation regression');
 
 console.log(JSON.stringify({
   passed:true,
   shardCount:files.length,
   totals:total,
   matrix,
+  preferredMatrix,
   focus,
   samples
 },null,2));
