@@ -133,9 +133,51 @@ const distanceWeak=advisor.materialUpgradeReasons(
 assert.ok(!distanceWeak.some(x=>x.includes('2400m対応')),
   '2400m sire evidence must not justify a generation after a large SP loss');
 
+const eliteFinalSpeed=advisor.materialUpgradeReasons(
+  fakeRoute(0,18,9),
+  withFinalSpeedCross(fakeRoute(0,18,9)),
+  'arc',elite
+);
+assert.ok(!eliteFinalSpeed.some(x=>x.includes('最終配合で速力/短距離クロス')),
+  'elite dam without an SP weakness must not extend generations only for a final SP cross');
+
+const eistAssessment=advisor.mareAssessment('エイスト');
+const eliteFinalLong=advisor.materialUpgradeReasons(
+  fakeRoute(0,16,8),
+  withFinalLongCross(fakeRoute(0,15,12)),
+  'arc',eistAssessment
+);
+assert.ok(!eliteFinalLong.some(x=>x.includes('最終配合で長距離クロス')),
+  'elite dam without an ST weakness must not extend generations only for a final long-distance cross');
+
+const highMotherNeedsSp={abilityKnown:true,ranks:{sp:{topPercent:70},st:{topPercent:10},spst:{topPercent:20}}};
+const targetedFinalSpeed=advisor.materialUpgradeReasons(
+  fakeRoute(0,16,9),
+  withFinalSpeedCross(fakeRoute(0,15,9)),
+  'arc',highMotherNeedsSp
+);
+assert.ok(targetedFinalSpeed.some(x=>x.includes('最終配合で速力/短距離クロス')),
+  'elite dam may use a final SP cross when SP is the identified weak axis');
+
+const highMotherNeedsSt={abilityKnown:true,ranks:{sp:{topPercent:10},st:{topPercent:70},spst:{topPercent:20}}};
+const targetedFinalLong=advisor.materialUpgradeReasons(
+  fakeRoute(0,18,8),
+  withFinalLongCross(fakeRoute(0,17,8)),
+  'arc',highMotherNeedsSt
+);
+assert.ok(targetedFinalLong.some(x=>x.includes('最終配合で長距離クロス')),
+  'elite dam may use a final long-distance cross when ST is the identified weak axis');
+
 const unknownAssessment=advisor.mareAssessment('アマリン');
 const unknownUpgrade=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',unknownAssessment);
 assert.ok(!unknownUpgrade.some(x=>x.includes('中間世代で速力/短距離クロス')),'unknown mare must not be treated as SP-deficient when recommending a deeper generation');
+const unknownFinalCross=advisor.materialUpgradeReasons(
+  fakeRoute(0,16,8),
+  withFinalSpeedCross(fakeRoute(0,16,8)),
+  'arc',unknownAssessment
+);
+assert.ok(!unknownFinalCross.some(x=>x.includes('最終配合で速力/短距離クロス')),
+  'unknown mare must not be pushed deeper solely by a final SP cross');
 
 const stNeeds=advisor.mareAssessment('ミニミニデート');
 const stReasons=advisor.materialUpgradeReasons(fakeRoute(0,15,6,0),fakeRoute(0,15,6,1),'arc',stNeeds);
