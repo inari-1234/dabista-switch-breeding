@@ -47,6 +47,13 @@ assert.deepStrictEqual(danzig.factor,{sp:2,st:-1,pw:0});
 assert.strictEqual(danzig.hasTradeoff,true);
 assert.ok(danzig.effects.some(x=>x.label==='短距離'&&x.detail==='スピードUP / SPニトロ+2・STニトロ-1'&&x.tradeoff===true));
 
+const staminaRoute=directRoute('ミムラス','ゴールドアリュール');
+assert.ok(staminaRoute,'Gold Allure x Mimulus should remain a safe direct route');
+const staminaInsights=advisor.crossInsights(staminaRoute.stages[0]);
+const vague=staminaInsights.items.find(x=>x.name==='Vaguely Noble');
+assert.ok(vague,'Vaguely Noble long-distance cross should be exposed');
+assert.ok(vague.effects.some(x=>x.label==='長距離'&&x.detail==='スタミナUP / STニトロ+1'),'long-distance cross must separate direct stamina effect from nitro contribution');
+
 const suppressed=directRoute('アドミニストレータ','ディープインパクト');
 assert.ok(suppressed);
 const si=advisor.crossInsights(suppressed.stages[0]);
