@@ -285,16 +285,16 @@
     function goalVector(route,goal){
       const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},ce=f.crossEffects||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
       const maxD=val(ss.maxD),rec=grade(ss.record);
-      const hasSpeed=bool(x.has),hasLong=bool(ce.longDistance),hasUseful=bool(ce.anyAbility),crossCount=val(x.count),materialStages=val(route?.materialSpeedCross?.stages);
+      const hasSpeed=bool(x.has),hasLong=bool(ce.longDistance),hasUseful=bool(ce.anyAbility),crossCount=val(x.count),materialStages=val(route?.materialSpeedCross?.stages),materialLongStages=val(route?.materialLongCross?.stages);
       const distanceEvidence=maxD>=2400?(hasLong?3:2):(hasLong?1:0);
       const multi=(route?.sires||[]).length>1,stableUpside=multi?(ss.stable==='C'?3:ss.stable==='B'?2:ss.stable==='A'?1:0):0;
-      const speedPath=hasSpeed||materialStages>0;
+      const speedPath=hasSpeed||materialStages>0,longPath=hasLong||materialLongStages>0;
       const magnificentSpeed=bool(t.magnificent&&hasSpeed);
       const magnificentLong=bool(t.magnificent&&hasLong);
       const magnificentUseful=bool(t.magnificent&&hasUseful);
       const arcQuantitative=sp>=14&&st>=6;
       const arcStrong=sp>=15&&st>=6;
-      if(goal==='arc')return[bool(arcQuantitative),bool(arcStrong),sp+st,st,sp,rec,distanceEvidence,bool(speedPath),crossCount,materialStages,stableUpside,magnificentLong,magnificentSpeed,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
+      if(goal==='arc')return[bool(arcQuantitative),bool(arcStrong),sp+st,st,sp,rec,distanceEvidence,bool(speedPath),bool(longPath),crossCount,materialStages,materialLongStages,stableUpside,magnificentLong,magnificentSpeed,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
       if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(speedPath),rec,stableUpside,hasSpeed,crossCount,materialStages,magnificentSpeed,bool(f.elaborate),bool(t.interesting)];
       if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting),rec];
       return[sp,sp+st,st,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting)];
