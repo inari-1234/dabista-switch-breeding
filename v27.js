@@ -106,11 +106,11 @@ function previewBases(shortlists,maxEach=12){
  }
  return out
 }
-async function scan(iter,collector,summary,seq,label,goal,keepAll=false){
+async function scan(iter,collector,summary,seq,label,goal,keepAll=false,sideCollector=null){
  const all=[];let n=0;
  for(const r of iter){
   if(seq!==diagSeq)throw Error('cancelled');
-  collector.push(r);advisor.addRoute(summary,r,goal);if(keepAll)all.push(r);n++;
+  collector.push(r);if(sideCollector)sideCollector.push(r);advisor.addRoute(summary,r,goal);if(keepAll)all.push(r);n++;
   if(n%700===0){$('#generationAdvisorProgress').textContent=`${label}：安全ルート ${n.toLocaleString()}件を比較中…`;await yieldUi()}
  }
  return{count:n,all}
@@ -181,10 +181,11 @@ async function runGenerationAdvisor(){
   await scan(planner.iterateTwo(name),c2,s2,seq,'2代',goal,false);const r2=c2.finish();
   const bases=previewBases(r2.shortlists,12);
   const c3=planner.createCollector({topN:3,poolN:18}),s3=advisor.emptySummary('preview-three');
-  await scan(planner.iterateThirdPreview(name,bases),c3,s3,seq,'3代プレビュー',goal,false);const r3=c3.finish();
-  const bases4=previewBases(r3.shortlists,8);
+  const bridge4=planner.createFourthBridgeCollector();
+  await scan(planner.iterateThirdPreview(name,bases),c3,s3,seq,'3代プレビュー',goal,false,bridge4);const r3=c3.finish();
+  const bridge4Result=bridge4.finish(),bases4=bridge4Result.bases;
   const c4=planner.createCollector({topN:3,poolN:16}),s4=advisor.emptySummary('preview-four');
-  await scan(planner.iterateFourthPreview(name,bases4),c4,s4,seq,'4代プレビュー',goal,false);const r4=c4.finish();
+  await scan(planner.iterateFourthPreview(name,bases4),c4,s4,seq,'4代bridgeプレビュー',goal,false);const r4=c4.finish();
   if(seq!==diagSeq)return;
   $('#generationAdvisorProgress').textContent='自家製種牡馬の血統汎用性も世代別に比較中…';await yieldUi();
   const portfolios={
@@ -199,7 +200,7 @@ async function runGenerationAdvisor(){
     1:{result:r1,summary:s1,method:'exact'},
     2:{result:r2,summary:s2,method:'exact'},
     3:{result:r3,summary:s3,method:'conditional-preview',previewBaseCount:bases.length},
-    4:{result:r4,summary:s4,method:'conditional-preview',previewBaseCount:bases4.length}
+    4:{result:r4,summary:s4,method:'conditional-bridge-preview',previewBaseCount:bases4.length,bridgeConfig:bridge4Result.config}
   };
   const rec=advisor.recommendGeneration({goal,assessment,generations,portfolios});
   window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
@@ -211,7 +212,7 @@ async function runGenerationAdvisor(){
     ${recommendationDetail(name,goal,rec)}
     <ul class="generation-reasons">${rec.reasons.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>
     <button class="primary generation-action" type="button" id="applyRecommendedGeneration">${rec.generation===1?'直仔':rec.generation+'代'}で詳しく設計する</button>
-    <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、SPクロス、最終父の実績・安定、距離適性、配合理論と、代重ねに必要な実馬選抜回数を分けて比較した設計判断です。3代・4代は前世代の多軸候補を段階的に展開する条件付きプレビューで、全176³・176⁴最適解とは表示しません。</div>
+    <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、SPクロス、最終父の実績・安定、距離適性、配合理論と、代重ねに必要な実馬選抜回数を分けて比較した設計判断です。3代は前世代の多軸候補、4代は3代目の一般多軸候補にSPクロス深掘りとbridge候補を加えて展開する条件付きプレビューで、全176³・176⁴最適解とは表示しません。</div>
    </div>`;
   $('#applyRecommendedGeneration').onclick=()=>{
     window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
