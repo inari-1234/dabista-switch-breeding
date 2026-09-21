@@ -27,6 +27,7 @@ on:
       - 'tests/st-cross-2400-utility-diagnostic.test.js'
       - 'tests/theory-ranking-delta-diagnostic.test.js'
       - 'tests/four-generation-width-sensitivity-diagnostic.test.js'
+      - 'tests/three-generation-width-sensitivity-diagnostic.test.js'
       - 'v20.js'
       - 'v21.js'
       - 'v25.js'
@@ -87,6 +88,7 @@ jobs:
           node --check tests/st-cross-2400-utility-diagnostic.test.js
           node --check tests/theory-ranking-delta-diagnostic.test.js
           node --check tests/four-generation-width-sensitivity-diagnostic.test.js
+          node --check tests/three-generation-width-sensitivity-diagnostic.test.js
           node --check v20.js
           node --check v21.js
           node --check v25.js
@@ -165,6 +167,10 @@ jobs:
       - name: Four-generation width sensitivity diagnostic
         run: |
           node tests/four-generation-width-sensitivity-diagnostic.test.js
+
+      - name: Three-generation width sensitivity diagnostic
+        run: |
+          node tests/three-generation-width-sensitivity-diagnostic.test.js
 
       - name: SP-cross priority regression
         run: |
