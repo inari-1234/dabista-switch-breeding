@@ -461,13 +461,13 @@
       if(goal==='arc'){
         const ta=a.sp>=14&&a.st>=6, tb=b.sp>=14&&b.st>=6;
         if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SP/STをほぼ維持');
-        if(!a.longDistanceCross&&b.longDistanceCross&&b.st>=a.st-1)reasons.push('最終配合で長距離クロスが新たに成立し、直接のスタミナ補強経路を確保');
+        if(!a.longDistanceCross&&b.longDistanceCross&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('最終配合で長距離クロスが新たに成立し、SP/STをほぼ維持しながら直接のスタミナ補強経路を確保');
         if(!ta&&tb)reasons.push('凱旋門向けSP/ST基準（SP14/ST6）へ新たに到達');
         const recordGain=b.recordGrade-a.recordGrade;
         const recordUpgradeUseful=(a.recordGrade===1&&recordGain>=1&&b.sp>=a.sp-1&&b.st>=a.st-1)
           ||(a.recordGrade>=2&&recordGain>=1&&b.sp>=a.sp&&b.st>=a.st);
         if(recordUpgradeUseful)reasons.push(`最終父の実績が${a.record}→${b.record}へ改善し、SP/ST水準も維持`);
-        if(!a.distance2400&&b.distance2400&&tb)reasons.push('最終父の2400m対応が加わり、距離適性の根拠が強化');
+        if(!a.distance2400&&b.distance2400&&tb&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('SP/STをほぼ維持したまま最終父の2400m対応が加わり、距離適性の根拠が強化');
         const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
         if(ta&&highMother){
           if(b.sp>=a.sp+2&&b.st>=a.st&&tb)reasons.push(`高能力母を維持したままSPを${a.sp}→${b.sp}へ上積み`);
