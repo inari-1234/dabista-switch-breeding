@@ -34,10 +34,14 @@ const out={
  total:0,safe:0,
  longCross:0,gutsCross:0,longAndGuts:0,
  highStNitro:{st5:0,st6:0,st7:0},
- currentArcReady:0,
- quantitativeArcWithout2400:0,
- quantitativeArcWith2400:0,
- quantitativeArcByMaxD:{},
+ legacyArcRecordA2400:0,
+ arcNumericTotal:0,
+ arcNumericRecord:{A:0,B:0,C:0},
+ arcNumericWithout2400:0,
+ arcNumericWith2400:0,
+ arcNumericByMaxD:{},
+ recordAThresholdWithout2400:0,
+ recordAThresholdWith2400:0,
  highBalanceRecordAUnder2400:[],
  longCrossRecordAUnder2400:[],
  sireDistance:{ge2400:0,lt2400:0,recordAGe2400:0,recordALt2400:0}
@@ -59,19 +63,24 @@ for(const s of T.stallions){
     if(st>=5)out.highStNitro.st5++;
     if(st>=6)out.highStNitro.st6++;
     if(st>=7)out.highStNitro.st7++;
-    const quantitative=sp>=14&&st>=6&&recordA;
-    if(quantitative){
-      out.quantitativeArcByMaxD[maxD]=(out.quantitativeArcByMaxD[maxD]||0)+1;
-      if(maxD>=2400){out.quantitativeArcWith2400++;out.currentArcReady++}
-      else{
-        out.quantitativeArcWithout2400++;
-        if(out.highBalanceRecordAUnder2400.length<40)out.highBalanceRecordAUnder2400.push({
-          sire:s.name,mare:m.name,maxD,record:ss.record,sp,st,pw:+p.nitro.pw||0,
-          longCross:fx.directStamina,gutsCross:fx.gutsCross,speedCross:fx.speedCross,crosses:fx.names
-        });
-        if(fx.directStamina&&out.longCrossRecordAUnder2400.length<40)out.longCrossRecordAUnder2400.push({
-          sire:s.name,mare:m.name,maxD,sp,st,pw:+p.nitro.pw||0,crosses:fx.names
-        });
+    const numeric=sp>=14&&st>=6;
+    if(numeric){
+      out.arcNumericTotal++;
+      const rec=ss.record==='A'?'A':ss.record==='B'?'B':'C';out.arcNumericRecord[rec]++;
+      out.arcNumericByMaxD[maxD]=(out.arcNumericByMaxD[maxD]||0)+1;
+      if(maxD>=2400)out.arcNumericWith2400++;else out.arcNumericWithout2400++;
+      if(recordA){
+        if(maxD>=2400){out.recordAThresholdWith2400++;out.legacyArcRecordA2400++}
+        else{
+          out.recordAThresholdWithout2400++;
+          if(out.highBalanceRecordAUnder2400.length<40)out.highBalanceRecordAUnder2400.push({
+            sire:s.name,mare:m.name,maxD,record:ss.record,sp,st,pw:+p.nitro.pw||0,
+            longCross:fx.directStamina,gutsCross:fx.gutsCross,speedCross:fx.speedCross,crosses:fx.names
+          });
+          if(fx.directStamina&&out.longCrossRecordAUnder2400.length<40)out.longCrossRecordAUnder2400.push({
+            sire:s.name,mare:m.name,maxD,sp,st,pw:+p.nitro.pw||0,crosses:fx.names
+          });
+        }
       }
     }
   }
