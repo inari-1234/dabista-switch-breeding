@@ -284,7 +284,7 @@
 
     function goalVector(route,goal){
       const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},ce=f.crossEffects||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
-      const maxD=val(ss.maxD),rec=grade(ss.record),recA=rec>=3;
+      const maxD=val(ss.maxD),rec=grade(ss.record);
       const hasSpeed=bool(x.has),hasLong=bool(ce.longDistance),hasUseful=bool(ce.anyAbility),crossCount=val(x.count),materialStages=val(route?.materialSpeedCross?.stages);
       const distanceEvidence=maxD>=2400?(hasLong?3:2):(hasLong?1:0);
       const multi=(route?.sires||[]).length>1,stableUpside=multi?(ss.stable==='C'?3:ss.stable==='B'?2:ss.stable==='A'?1:0):0;
@@ -292,8 +292,9 @@
       const magnificentSpeed=bool(t.magnificent&&hasSpeed);
       const magnificentLong=bool(t.magnificent&&hasLong);
       const magnificentUseful=bool(t.magnificent&&hasUseful);
-      const arcQuantitative=sp>=14&&st>=6&&recA;
-      if(goal==='arc')return[bool(arcQuantitative),bool(sp>=15&&st>=5&&recA),sp+st,st,sp,distanceEvidence,hasSpeed,crossCount,materialStages,stableUpside,magnificentLong,magnificentSpeed,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
+      const arcQuantitative=sp>=14&&st>=6;
+      const arcStrong=sp>=15&&st>=6;
+      if(goal==='arc')return[bool(arcQuantitative),bool(arcStrong),sp+st,st,sp,rec,distanceEvidence,bool(speedPath),crossCount,materialStages,stableUpside,magnificentLong,magnificentSpeed,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
       if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(speedPath),rec,stableUpside,hasSpeed,crossCount,materialStages,magnificentSpeed,bool(f.elaborate),bool(t.interesting)];
       if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting),rec];
       return[sp,sp+st,st,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting)];
@@ -330,7 +331,7 @@
         maxSp:0,maxSt:0,maxPw:0,maxSpSt:0,
         speedCross:0,shortCross:0,speedOnlyCross:0,maxSpeedCrossEffect:0,
         longDistanceCross:0,gutsCross:0,powerCross:0,
-        long2400:0,recordA:0,balanceLongA:0,arcReady:0,arcQuantitative:0,arcDistanceStrong:0,arcCompensated:0,arcDistanceUncertain:0,bestRoute:null,bestGoal:''
+        long2400:0,recordA:0,balanceLongA:0,arcReady:0,arcQuantitative:0,arcRecordA:0,arcRecordB:0,arcRecordC:0,arcDistanceStrong:0,arcCompensated:0,arcDistanceUncertain:0,bestRoute:null,bestGoal:''
       };
     }
     function addRoute(summary,route,goal){
@@ -354,9 +355,12 @@
       if(val(ss.maxD)>=2400)summary.long2400++;
       if(grade(ss.record)>=3)summary.recordA++;
       if(sp>=15&&st>=5&&val(ss.maxD)>=2400&&grade(ss.record)>=3)summary.balanceLongA++;
-      if(sp>=14&&st>=6&&grade(ss.record)>=3){
+      if(sp>=14&&st>=6){
         summary.arcQuantitative++;
         summary.arcReady++;
+        if(grade(ss.record)>=3)summary.arcRecordA++;
+        else if(grade(ss.record)>=2)summary.arcRecordB++;
+        else summary.arcRecordC++;
         if(val(ss.maxD)>=2400)summary.arcDistanceStrong++;
         else if(ce.longDistance)summary.arcCompensated++;
         else summary.arcDistanceUncertain++;
@@ -392,7 +396,7 @@
         longDistanceCross:bool(f.crossEffects?.longDistance),gutsCross:bool(f.crossEffects?.gutsSupport),powerCross:bool(f.crossEffects?.powerSupport),abilityCross:bool(f.crossEffects?.anyAbility),
         distanceEvidence:val(ss.maxD)>=2400?(f.crossEffects?.longDistance?3:2):(f.crossEffects?.longDistance?1:0),
         record:String(ss.record||'?'),stable:String(ss.stable||'?'),guts:String(ss.guts||'?'),
-        recordGrade:grade(ss.record),recordA:grade(ss.record)>=3,gutsA:grade(ss.guts)>=3,
+        recordGrade:grade(ss.record),recordA:grade(ss.record)>=3,recordBPlus:grade(ss.record)>=2,gutsA:grade(ss.guts)>=3,
         interesting:bool(t.interesting),magnificent:bool(t.magnificent),perfect:bool(t.perfect),elaborate:bool(f.elaborate)
       };
     }
@@ -464,10 +468,11 @@
         return reasons;
       }
       if(goal==='arc'){
-        const ta=a.sp>=14&&a.st>=6&&a.recordA, tb=b.sp>=14&&b.st>=6&&b.recordA;
+        const ta=a.sp>=14&&a.st>=6, tb=b.sp>=14&&b.st>=6;
         if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-2&&b.st>=a.st-1)reasons.push('最終配合で速力/短距離クロスが新たに成立し、SP/STを大きく落とさない');
         if(!a.longDistanceCross&&b.longDistanceCross&&b.st>=a.st-1)reasons.push('最終配合で長距離クロスが新たに成立し、直接のスタミナ補強経路を確保');
-        if(!ta&&tb)reasons.push('凱旋門向け数値・実績基準（SP14/ST6・実績A）へ新たに到達');
+        if(!ta&&tb)reasons.push('凱旋門向けSP/ST基準（SP14/ST6）へ新たに到達');
+        if(b.recordGrade>a.recordGrade&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push(`最終父の実績が${a.record}→${b.record}へ改善し、SP/STもほぼ維持`);
         if(!a.distance2400&&b.distance2400&&tb)reasons.push('最終父の2400m対応が加わり、距離適性の根拠が強化');
         const highMother=assessment?.abilityKnown&&assessment?.ranks?.spst?.topPercent<=25;
         if(ta&&highMother){
@@ -535,8 +540,12 @@
       };
       const p=assessment.ranks,high=p.spst.topPercent<=25,mid=p.spst.topPercent<=50,spHigh=p.sp.topPercent<=25;
       const arcDistanceSupported=val(summary.arcDistanceStrong)+val(summary.arcCompensated)>0;
+      const arcRecordStrong=val(summary.arcRecordA)>0;
+      const arcRecordUsable=arcRecordStrong||val(summary.arcRecordB)>0;
       const arcLabel=summary.arcQuantitative>0
-        ?(arcDistanceSupported?(high?'直仔から有力':'配合次第で直仔候補'):'直仔候補（距離根拠要確認）')
+        ?(!arcRecordUsable?'直仔候補（父実績C・試行前提）'
+          :!arcDistanceSupported?'直仔候補（距離根拠要確認）'
+          :(arcRecordStrong&&high?'直仔から有力':'配合次第で直仔候補'))
         :(mid?'2代以上を比較':'代重ね・厳選前提');
       return{
         arc:arcLabel,
