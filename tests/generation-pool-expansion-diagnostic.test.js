@@ -27,8 +27,11 @@ function bases(shortlists,maxEach){
 }
 function collect(iter,poolN=24){
   const c=planner.createCollector({topN:3,poolN});
-  for(const r of iter)c.push(r);
-  return c.finish();
+  const arc=advisor.emptySummary('diagnostic-arc'),bc=advisor.emptySummary('diagnostic-bc');
+  for(const r of iter){c.push(r);advisor.addRoute(arc,r,'arc');advisor.addRoute(bc,r,'bc')}
+  const out=c.finish();
+  out.goalBest={arc:arc.bestRoute,bc:bc.bestRoute};
+  return out;
 }
 function facts(r){
   if(!r)return null;
@@ -40,8 +43,7 @@ function facts(r){
   };
 }
 function goalBest(result,goal){
-  let best=null;for(const r of result.pool||[])best=advisor.betterGoalRoute(best,r,goal);
-  return best;
+  return result?.goalBest?.[goal]||null;
 }
 function snapshot(result){
   return{
