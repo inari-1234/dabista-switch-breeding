@@ -16,7 +16,7 @@ const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elab
 const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
 const advisor=reco.create({planner,broodmareStats:M});
 const axes=['sp','speedCross','production','st','balance','theory'];
-const widths=[72,96,120];
+const widths=[120,144,176];
 
 function bases(shortlists,maxEach){
   const out=[],seen=new Set();
@@ -86,12 +86,12 @@ for(const mare of mares){
     const b4=third.results[n].pool;
     variants[n]={baseCount:b4.length,result:snapshot(scanFourth(b4))};
   }
-  const ref=variants[120].result;
+  const ref=variants[176].result;
   for(const n of widths){
     const cur=variants[n].result;
-    variants[n].stabilityVs120={};
+    variants[n].stabilityVs176={};
     for(const axis of ['arc','bc','production','sp','st','balance']){
-      variants[n].stabilityVs120[axis]={
+      variants[n].stabilityVs176[axis]={
         sameRoute:JSON.stringify(cur[axis]?.sires||[])===JSON.stringify(ref[axis]?.sires||[]),
         sameOutcome:outcome(cur[axis])===outcome(ref[axis])
       };
@@ -100,4 +100,4 @@ for(const mare of mares){
   output.push({mare,thirdScanned:third.count,thirdBases:b3.length,variants});
 }
 
-console.log(JSON.stringify({passed:true,method:'fourth-high-width-sensitivity',runtimeMs:Date.now()-started,widths,output},null,2));
+console.log(JSON.stringify({passed:true,method:'fourth-terminal-width-sensitivity',runtimeMs:Date.now()-started,widths,output},null,2));
