@@ -13,27 +13,21 @@ permissions:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        mare: ['スプリングスイーツ', 'エイスト']
     steps:
       - uses: actions/checkout@v4
       - name: Static syntax
         run: node --check tests/fourth-generation-high-width-diagnostic.test.js
-      - name: Limit diagnostic to matrix mare
-        env:
-          DIAG_MARE: ${{ matrix.mare }}
+      - name: Configure terminal Eist probe
         run: |
           python - <<'PY'
-          import os
           from pathlib import Path
           p=Path('tests/fourth-generation-high-width-diagnostic.test.js')
           s=p.read_text(encoding='utf-8')
-          old="const mares=['スプリングスイーツ','エイスト'];"
-          new="const mares=["+repr(os.environ['DIAG_MARE'])+"];"
-          assert old in s
-          p.write_text(s.replace(old,new),encoding='utf-8')
+          s=s.replace("const widths=[120,176,240];","const widths=[240,320,480];")
+          s=s.replace("const mares=['スプリングスイーツ','エイスト'];","const mares=['エイスト'];")
+          s=s.replace("const ref=variants[240].result;","const ref=variants[480].result;")
+          s=s.replace("stabilityVs240","stabilityVs480")
+          p.write_text(s,encoding='utf-8')
           PY
-      - name: Fourth-generation convergence diagnostic
+      - name: Fourth-generation terminal Eist convergence diagnostic
         run: node tests/fourth-generation-high-width-diagnostic.test.js
