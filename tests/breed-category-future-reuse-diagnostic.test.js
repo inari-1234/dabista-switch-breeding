@@ -28,13 +28,15 @@ const direct=planner.replay(mare,['グランプリボス']);
 if(!direct)throw Error('planner direct replay failed');
 
 function same(a,b,k){if(JSON.stringify(a)!==JSON.stringify(b))throw Error(k+' mismatch '+JSON.stringify({a,b}))}
-same(direct.final.sp,pair.nitro.sp,'SP nitro');
-same(direct.final.st,pair.nitro.st,'ST nitro');
-same(direct.final.pw,pair.nitro.pw,'PW nitro');
-same(!!direct.final.theory.interesting,!!pair.theory.interesting,'interesting');
-same(!!direct.final.theory.magnificent,!!pair.theory.magnificent,'magnificent');
-same(!!direct.final.theory.perfect,!!pair.theory.perfect,'perfect');
-same(!!direct.final.elaborate,!!pair.elaborate.effective,'elaborate');
+const replayPair=direct.stages?.[0]?.pair;
+if(!replayPair)throw Error('planner replay pair missing');
+same(replayPair.nitro.sp,pair.nitro.sp,'SP nitro');
+same(replayPair.nitro.st,pair.nitro.st,'ST nitro');
+same(replayPair.nitro.pw,pair.nitro.pw,'PW nitro');
+same(!!replayPair.theory.interesting,!!pair.theory.interesting,'interesting');
+same(!!replayPair.theory.magnificent,!!pair.theory.magnificent,'magnificent');
+same(!!replayPair.theory.perfect,!!pair.theory.perfect,'perfect');
+same(!!replayPair.elaborate.effective,!!pair.elaborate.effective,'elaborate');
 
 const child=engine.deriveChild(sire,mare,'エイスト×グランプリボス娘');
 if(!child||child.ancestor.length!==15||child.omoshiro.length!==4)throw Error('derived child incomplete');
