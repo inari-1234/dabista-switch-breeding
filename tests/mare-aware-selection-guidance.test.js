@@ -67,7 +67,7 @@ assert.strictEqual(a1.phase,'素材づくり');
 assert.strictEqual(a1.headline,'母の高能力を崩さないことを最優先');
 assert.ok(a1.body.includes('2400m適性を必須にしません'));
 assert.strictEqual(a2.phase,'締め前の方向付け');
-assert.ok(a2.body.includes('2400m印を絶対条件にはせず'));
+assert.ok(a2.body.includes('2400m印は絶対条件にせず'),'Arc guidance must explicitly keep 2400m as evidence rather than a hard gate');
 assert.strictEqual(a3.phase,'締め');
 assert.ok(a3.body.includes('最終世代ではじめて'));
 
