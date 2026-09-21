@@ -331,7 +331,11 @@
         maxSp:0,maxSt:0,maxPw:0,maxSpSt:0,
         speedCross:0,shortCross:0,speedOnlyCross:0,maxSpeedCrossEffect:0,
         longDistanceCross:0,gutsCross:0,powerCross:0,
-        long2400:0,recordA:0,balanceLongA:0,arcReady:0,arcQuantitative:0,arcRecordA:0,arcRecordB:0,arcRecordC:0,arcDistanceStrong:0,arcCompensated:0,arcDistanceUncertain:0,bestRoute:null,bestGoal:''
+        long2400:0,recordA:0,balanceLongA:0,arcReady:0,arcQuantitative:0,
+        arcRecordA:0,arcRecordB:0,arcRecordC:0,
+        arcDistanceStrong:0,arcCompensated:0,arcDistanceUncertain:0,
+        arcSupportedA:0,arcSupportedB:0,arcSupportedC:0,arcUncertainA:0,arcUncertainB:0,arcUncertainC:0,
+        bestRoute:null,bestGoal:''
       };
     }
     function addRoute(summary,route,goal){
@@ -358,12 +362,14 @@
       if(sp>=14&&st>=6){
         summary.arcQuantitative++;
         summary.arcReady++;
-        if(grade(ss.record)>=3)summary.arcRecordA++;
-        else if(grade(ss.record)>=2)summary.arcRecordB++;
-        else summary.arcRecordC++;
+        const recKey=grade(ss.record)>=3?'A':grade(ss.record)>=2?'B':'C';
+        if(recKey==='A')summary.arcRecordA++;else if(recKey==='B')summary.arcRecordB++;else summary.arcRecordC++;
+        const distanceSupported=val(ss.maxD)>=2400||!!ce.longDistance;
         if(val(ss.maxD)>=2400)summary.arcDistanceStrong++;
         else if(ce.longDistance)summary.arcCompensated++;
         else summary.arcDistanceUncertain++;
+        if(distanceSupported)summary['arcSupported'+recKey]++;
+        else summary['arcUncertain'+recKey]++;
       }
       summary.maxSp=Math.max(summary.maxSp,sp);
       summary.maxSt=Math.max(summary.maxSt,st);
@@ -542,13 +548,15 @@
         arc:'能力評価保留',bc:'能力評価保留',rebuild:'能力評価保留',stallion:'血統評価可能'
       };
       const p=assessment.ranks,high=p.spst.topPercent<=25,mid=p.spst.topPercent<=50,spHigh=p.sp.topPercent<=25;
-      const arcDistanceSupported=val(summary.arcDistanceStrong)+val(summary.arcCompensated)>0;
-      const arcRecordStrong=val(summary.arcRecordA)>0;
-      const arcRecordUsable=arcRecordStrong||val(summary.arcRecordB)>0;
+      const supportedA=val(summary.arcSupportedA)>0,supportedB=val(summary.arcSupportedB)>0,supportedC=val(summary.arcSupportedC)>0;
+      const uncertainA=val(summary.arcUncertainA)>0,uncertainB=val(summary.arcUncertainB)>0,uncertainC=val(summary.arcUncertainC)>0;
       const arcLabel=summary.arcQuantitative>0
-        ?(!arcRecordUsable?'直仔候補（父実績C・試行前提）'
-          :!arcDistanceSupported?'直仔候補（距離根拠要確認）'
-          :(arcRecordStrong&&high?'直仔から有力':'配合次第で直仔候補'))
+        ?(supportedA?(high?'直仔から有力':'配合次第で直仔候補')
+          :supportedB?'配合次第で直仔候補'
+          :supportedC?'直仔候補（父実績C・試行前提）'
+          :(uncertainA||uncertainB)?'直仔候補（距離根拠要確認）'
+          :uncertainC?'直仔候補（父実績C・距離根拠要確認）'
+          :'直仔候補（根拠要確認）')
         :(mid?'2代以上を比較':'代重ね・厳選前提');
       return{
         arc:arcLabel,
