@@ -19,6 +19,7 @@ on:
       - 'v26.js'
       - 'v27.js'
       - 'tests/mare-aware-selection-guidance.test.js'
+      - 'tests/mare-generation-advisor.test.js'
       - 'tests/route-explainability.test.js'
       - 'tests/transient-sale-mare-wiring.test.js'
       - 'tests/speed-cross-priority.test.js'
@@ -81,6 +82,7 @@ jobs:
           node --check v27.js
           node --check ui-refresh.js
           node --check tests/mare-aware-selection-guidance.test.js
+          node --check tests/mare-generation-advisor.test.js
           node --check tests/route-explainability.test.js
           node --check tests/transient-sale-mare-wiring.test.js
           node --check tests/speed-cross-priority.test.js
@@ -274,6 +276,10 @@ jobs:
       - name: Mare-aware selection regression
         run: |
           node tests/mare-aware-selection-guidance.test.js
+
+      - name: Mare generation advisor regression
+        run: |
+          node tests/mare-generation-advisor.test.js
 
       - name: Route explainability regression
         run: |
