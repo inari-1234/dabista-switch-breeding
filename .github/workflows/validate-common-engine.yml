@@ -24,6 +24,7 @@ on:
       - 'tests/generation-ui-cross-path.test.js'
       - 'tests/four-generation-theory-evidence.test.js'
       - 'tests/magnificent-cross-utility-diagnostic.test.js'
+      - 'tests/st-cross-2400-utility-diagnostic.test.js'
       - 'v20.js'
       - 'v21.js'
       - 'v25.js'
@@ -81,6 +82,7 @@ jobs:
           node --check tests/generation-ui-cross-path.test.js
           node --check tests/four-generation-theory-evidence.test.js
           node --check tests/magnificent-cross-utility-diagnostic.test.js
+          node --check tests/st-cross-2400-utility-diagnostic.test.js
           node --check v20.js
           node --check v21.js
           node --check v25.js
@@ -147,6 +149,10 @@ jobs:
       - name: Magnificent cross utility diagnostic
         run: |
           node tests/magnificent-cross-utility-diagnostic.test.js
+
+      - name: ST cross and 2400m utility diagnostic
+        run: |
+          node tests/st-cross-2400-utility-diagnostic.test.js
 
       - name: SP-cross priority regression
         run: |
