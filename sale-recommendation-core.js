@@ -295,31 +295,16 @@
       const arcQuantitative=sp>=14&&st>=6;
       const arcStrong=sp>=15&&st>=6;
       if(goal==='arc')return[bool(arcQuantitative),bool(arcStrong),sp+st,st,sp,rec,distanceEvidence,bool(speedPath),bool(longPath),crossCount,materialStages,materialLongStages,stableUpside,magnificentLong,magnificentSpeed,bool(f.elaborate),bool(t.interesting),grade(ss.guts)];
-      if(goal==='bc')return[bool(sp>=17&&st>=5),sp,st,pw,bool(speedPath),rec,stableUpside,hasSpeed,crossCount,materialStages,magnificentSpeed,bool(f.elaborate),bool(t.interesting)];
+      if(goal==='bc'){
+        const bcQualified=sp>=17&&st>=5;
+        const bcTier=sp>=19&&st>=6?3:sp>=18&&st>=5?2:bcQualified?1:0;
+        return[bool(bcQualified),bool(speedPath),bcTier,rec,sp,st,pw,stableUpside,hasSpeed,crossCount,materialStages,magnificentSpeed,bool(f.elaborate),bool(t.interesting)];
+      }
       if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting),rec];
       return[sp,sp+st,st,hasSpeed,hasLong,crossCount,materialStages,magnificentUseful,bool(f.elaborate),bool(t.interesting)];
     }
     function betterGoalRoute(a,b,goal){
       if(!a)return b;if(!b)return a;
-      if(goal==='bc'){
-        const fa=a?.final||{},fb=b?.final||{},sa=fa.sireStats||{},sb=fb.sireStats||{};
-        const asp=val(fa.sp),bsp=val(fb.sp),ast=val(fa.st),bst=val(fb.st),apw=val(fa.pw),bpw=val(fb.pw);
-        const aq=asp>=17&&ast>=5,bq=bsp>=17&&bst>=5;
-        if(aq!==bq)return bq?b:a;
-        if(Math.abs(asp-bsp)>=3)return bsp>asp?b:a;
-        const asupport=bool(fa.speedCross?.has||val(a?.materialSpeedCross?.stages)>0);
-        const bsupport=bool(fb.speedCross?.has||val(b?.materialSpeedCross?.stages)>0);
-        if(asupport!==bsupport)return bsupport?b:a;
-        const ar=grade(sa.record),br=grade(sb.record);if(ar!==br)return br>ar?b:a;
-        const amulti=(a?.sires||[]).length>1,bmulti=(b?.sires||[]).length>1;
-        const au=amulti?(sa.stable==='C'?3:sa.stable==='B'?2:sa.stable==='A'?1:0):0;
-        const bu=bmulti?(sb.stable==='C'?3:sb.stable==='B'?2:sb.stable==='A'?1:0):0;
-        if(au!==bu)return bu>au?b:a;
-        if(asp!==bsp)return bsp>asp?b:a;
-        if(ast!==bst)return bst>ast?b:a;
-        if(apw!==bpw)return bpw>apw?b:a;
-        const ac=val(fa.speedCross?.count),bc=val(fb.speedCross?.count);if(ac!==bc)return bc>ac?b:a;
-      }
       const A=goalVector(a,goal),B=goalVector(b,goal);
       for(let i=0;i<Math.max(A.length,B.length);i++){const x=A[i]||0,y=B[i]||0;if(x!==y)return y>x?b:a}
       return a;
