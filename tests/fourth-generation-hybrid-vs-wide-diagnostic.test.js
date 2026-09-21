@@ -82,8 +82,9 @@ for(const p of axes){
   }).sort(planner.compareProfile(p));
 }
 const officialBases=n=>unionBases(...axes.map(p=>officialRanked[p].slice(0,n)));
+const hybridOfficial=()=>unionBases(...axes.map(p=>officialRanked[p].slice(0,p==='speedCross'?320:128)));
 const rankA=rankRoutes(routes,vectorA),rankD=rankRoutes(routes,vectorD);
-const hybrid=unionBases(officialBases(128),rankA.slice(0,96),rankD.slice(0,160));
+const hybrid=unionBases(hybridOfficial(),rankA.slice(0,96),rankD.slice(0,160));
 const wide=officialBases(480);
 const all=unionBases(hybrid,wide);
 const sets={hybrid:new Set(hybrid.map(r=>planner.routeKey(r))),wide:new Set(wide.map(r=>planner.routeKey(r)))};
@@ -136,6 +137,7 @@ const hpf=portfolioFacts(results.hybrid.portfolio),wpf=portfolioFacts(results.wi
 console.log(JSON.stringify({
   passed:true,method:'hybrid-vs-wide-fourth-generation',mare,
   thirdScanned:routes.length,thirdBases:b3.length,
+  strategy:{official:128,speedCross:320,bridgeA:96,bridgeD:160},
   baseCounts:{hybrid:hybrid.length,wide:wide.length,union:all.length},
   fourthScannedUnion:scanned,
   comparison,
