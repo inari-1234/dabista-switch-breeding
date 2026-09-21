@@ -70,11 +70,16 @@ const routeUnder2400={final:{sp:16,st:7,pw:0,crossEffects:{anyAbility:true,longD
 assert.strictEqual(advisor.routeFacts(route2).distanceEvidence,2,'2400m sire without long-distance cross is strong distance evidence');
 assert.strictEqual(advisor.routeFacts(routeUnder2400).distanceEvidence,1,'under-2400 sire with a long-distance cross remains compensable rather than rejected');
 assert.strictEqual(advisor.betterGoalRoute(route1,routeUnder2400,'arc'),routeUnder2400,'under-2400 route that meets Arc quantitative/record conditions must remain eligible');
+const recordBHigh={final:{sp:17,st:8,pw:0,crossEffects:{anyAbility:false,longDistance:false,gutsSupport:false,powerSupport:false},speedCross:{has:false,count:0,short:0,speed:0,effect:0},sireStats:{maxD:2200,record:'B',guts:'B'},theory:{interesting:false,magnificent:false,perfect:false},elaborate:false}};
+const recordASame={final:{sp:17,st:8,pw:0,crossEffects:{anyAbility:false,longDistance:false,gutsSupport:false,powerSupport:false},speedCross:{has:false,count:0,short:0,speed:0,effect:0},sireStats:{maxD:2200,record:'A',guts:'B'},theory:{interesting:false,magnificent:false,perfect:false},elaborate:false}};
+const recordALow={final:{sp:14,st:6,pw:0,crossEffects:{anyAbility:false,longDistance:false,gutsSupport:false,powerSupport:false},speedCross:{has:false,count:0,short:0,speed:0,effect:0},sireStats:{maxD:2400,record:'A',guts:'B'},theory:{interesting:false,magnificent:false,perfect:false},elaborate:false}};
+assert.strictEqual(advisor.betterGoalRoute(recordBHigh,recordASame,'arc'),recordASame,'same Arc ceiling should prefer the stronger sire record');
+assert.strictEqual(advisor.betterGoalRoute(recordALow,recordBHigh,'arc'),recordBHigh,'record A must not hard-gate a materially stronger SP/ST route');
 const g={1:{summary:{bestRoute:route1}},2:{summary:{bestRoute:route2}},3:{summary:{bestRoute:route3}}};
 const rec=advisor.recommendGeneration({goal:'arc',assessment:syntheticAssessment,generations:g,portfolios:{}});
 assert.strictEqual(rec.generation,3,'generation decision reasons');
 assert.strictEqual(rec.transitions.to2.from,1);
-assert.ok(rec.transitions.to2.reasons.some(x=>x.includes('凱旋門向け数値・実績基準')),'Arc transition must use SP/ST + record as the gate and keep distance as separate evidence');
+assert.ok(rec.transitions.to2.reasons.some(x=>x.includes('凱旋門向けSP/ST基準')),'Arc transition must use SP/ST as the eligibility line while keeping sire record and distance as graded evidence');
 assert.strictEqual(rec.transitions.to3.from,2);
 assert.ok(rec.transitions.to3.reasons.some(x=>x.includes('SP+ST')));
 assert.ok(rec.reasons.some(x=>x.includes('2代→3代')));
