@@ -17,7 +17,10 @@ const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmar
 const advisor=reco.create({planner,broodmareStats:M});
 const profiles=['sp','speedCross','production','st','balance'];
 const axes=['sp','speedCross','production','st','balance','theory'];
-const mares=['スプリングスイーツ','エイスト','フィットレオタード','ミニミニデート','ワカヒルメ','ミムラス','エトワルセリータ','アマリン'];
+const allMares=['スプリングスイーツ','エイスト','フィットレオタード','ミニミニデート','ワカヒルメ','ミムラス','エトワルセリータ','アマリン'];
+const MARE_INDEX=process.env.MARE_INDEX==null?null:+process.env.MARE_INDEX;
+if(MARE_INDEX!==null&&(MARE_INDEX<0||MARE_INDEX>=allMares.length))throw Error('invalid MARE_INDEX '+MARE_INDEX);
+const mares=MARE_INDEX===null?allMares:[allMares[MARE_INDEX]];
 
 function previewBases(shortlists,maxEach=12){
  const out=[],seen=new Set();
@@ -137,4 +140,6 @@ for(const mare of mares){
  categories.sire={label:planner.profileLabels.sire,transitions:sireTrans,latestMaterialGeneration:sireLatest};
  out.push({mare,assessment:advisor.mareAssessment(mare),categories,b3:b3.length,b4:b4.length});
 }
-console.log(JSON.stringify({passed:true,method:'per-category-four-generation-future-potential',out},null,2));
+const output={passed:true,method:'per-category-four-generation-future-potential',mareIndex:MARE_INDEX,out};
+if(process.env.OUTPUT_FILE)fs.writeFileSync(process.env.OUTPUT_FILE,JSON.stringify(output,null,2));
+console.log(JSON.stringify(output,null,2));
