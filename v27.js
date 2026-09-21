@@ -88,7 +88,7 @@ function renderMareAdvice(){
     <div class="${goal==='stallion'?'selected':''}"><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
    </div>
    <div class="advisor-note">ここは直仔の到達性と母能力から見た事前メモです。正式な推奨世代は「おすすめ配合世代を診断」で決定します。</div>
-   <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 凱旋門数値・実績 ${direct.arcQuantitative||0}件 / 2400m対応父 ${direct.long2400}件 / 長距離クロス ${direct.longDistanceCross||0}件 / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
+   <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 凱旋門SP/ST基準 ${direct.arcQuantitative||0}件 / 基準内父実績 A/B/C ${direct.arcRecordA||0}/${direct.arcRecordB||0}/${direct.arcRecordC||0} / 2400m対応父 ${direct.long2400}件 / 長距離クロス ${direct.longDistanceCross||0}件 / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
    <div class="advisor-note">${esc(a.note)} 「基礎評価」は母能力と直仔の血統到達性を分けて判定しています。</div>`;
 }
 function invalidateGeneration(message='条件を変更したため、世代診断を更新してください。'){
@@ -148,7 +148,7 @@ function recommendationDetail(name,goal,rec){
  const a=advisor.routeFacts(direct),b=advisor.routeFacts(chosen);
  const dSp=b.sp-a.sp,dSt=b.st-a.st,dSum=b.spst-a.spst;
  const signed=n=>n>0?'+'+n:String(n);
- const goalRule=goal==='arc'?'凱旋門ではSP/STと最終父実績を主条件にし、2400m対応は強い距離根拠、長距離クロスは補完根拠として比較します。'
+ const goalRule=goal==='arc'?'凱旋門ではSP/STを基礎に、最終父実績はA>B>Cの強弱として比較します。実績Aや2400m対応を単独の必須条件にはせず、2400m対応は強い距離根拠、長距離クロスは補完根拠として扱います。'
   :goal==='bc'?'BCではSP17/ST5とSP系補強経路を確認したうえで、最終父の実績と多世代時の安定特性を比較します。実績・安定だけ、SPクロスだけのどちらにも寄せません。'
   :goal==='rebuild'?'繁殖再建では一頭の最大値より、次代に残しやすいSP/STバランスを優先します。'
   :'自家製種牡馬では高能力繁殖牝馬群への血統汎用性を優先します。';
