@@ -275,8 +275,9 @@
       const f=route?.final||{},ss=f.sireStats||{},t=f.theory||{},x=f.speedCross||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
       const long=val(ss.maxD)>=2400,rec=grade(ss.record),recA=rec>=3,arcReady=sp>=14&&st>=6&&long&&recA,hasSpeed=bool(x.has),crossCount=val(x.count),materialStages=val(route?.materialSpeedCross?.stages);
       const multi=(route?.sires||[]).length>1,stableUpside=multi?(ss.stable==='C'?3:ss.stable==='B'?2:ss.stable==='A'?1:0):0;
+      const speedSupport=hasSpeed||materialStages>0;
       if(goal==='arc')return[bool(arcReady),bool(sp>=15&&st>=5&&long&&recA),sp+st,st,sp,hasSpeed,crossCount,materialStages,stableUpside,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),grade(ss.guts)];
-      if(goal==='bc')return[bool(sp>=17&&st>=5),rec,stableUpside,sp,st,pw,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
+      if(goal==='bc')return[bool(sp>=17&&st>=5),bool(speedSupport),rec,stableUpside,sp,st,pw,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
       if(goal==='rebuild')return[bool(sp>=15&&st>=5),sp+st,st,sp,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate),rec];
       return[sp,sp+st,st,hasSpeed,crossCount,materialStages,bool(t.perfect),bool(t.magnificent),bool(f.elaborate)];
     }
@@ -369,8 +370,10 @@
       if(multi&&!materialSupport)warnings.push('締め前までに速力/短距離の有効クロス補強がなく、中間牝馬のSPは実馬選抜に依存');
       if(x.has)notes.push('最終配合では速力/短距離の有効クロスあり');
       else warnings.push('最終配合に速力/短距離の有効クロスなし');
+      const speedSupport=materialSupport||!!x.has;
       let key='pedigree-only',label='血統候補';
-      if(viable&&record==='A'){key='ceiling';label='上限重視';}
+      if(multi&&!speedSupport){key='no-speed-support';label='SP補強経路なし';}
+      else if(viable&&record==='A'){key='ceiling';label='上限重視';}
       else if(viable&&record==='B'&&stable==='C'){key='upside';label='上振れ狙い';}
       else if(viable&&record==='B'&&stable==='B'){key='conditional';label='条件付き';}
       else if(viable&&record==='B'&&stable==='A'){key='selection-dependent';label=multi?'中間牝馬選抜が前提':'母能力依存';}
@@ -379,7 +382,7 @@
       return{
         key,label,viable,eliteLine,generations,multi,
         record,stable,guts:String(ss.guts||'?'),recordGrade,
-        materialSupport,finalSpeedCross:!!x.has,
+        materialSupport,finalSpeedCross:!!x.has,speedSupport,
         highKnownMother,requiresSelectedMare:multi&&stable==='A',
         notes,warnings
       };
