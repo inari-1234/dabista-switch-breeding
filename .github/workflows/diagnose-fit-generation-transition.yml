@@ -1,0 +1,21 @@
+name: Diagnose Fit Leotard generation transition
+
+on:
+  push:
+    paths:
+      - 'tests/fit-generation-transition-diagnostic.test.js'
+      - '.github/workflows/diagnose-fit-generation-transition.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/fit-generation-transition-diagnostic.test.js
+      - name: Fit generation transition diagnostic
+        run: node tests/fit-generation-transition-diagnostic.test.js
