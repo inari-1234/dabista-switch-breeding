@@ -149,7 +149,7 @@
     return[x.speedSupport,x.record,x.sum,x.elaborate,x.st,x.sp,x.longSupport,x.crossCount,x.stableUpside];
   }
   function compareFourthBridge(kind){return(a,b)=>cmpVec(fourthBridgeVector(a,kind),fourthBridgeVector(b,kind))}
-  function createFourthBridgeCollector({generalN=128,speedCrossN=320,bridgeAN=96,bridgeDN=160}={}){
+  function createFourthBridgeCollector({generalN=64,speedCrossN=320,bridgeAN=0,bridgeDN=144}={}){
     const official={sp:[],speedCross:[],production:[],st:[],balance:[],theory:[]},bridgeA=[],bridgeD=[];
     let count=0;
     const cfg={generalN,speedCrossN,bridgeAN,bridgeDN};
