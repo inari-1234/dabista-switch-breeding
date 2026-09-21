@@ -145,7 +145,7 @@ function recommendationDetail(name,goal,rec){
  const a=advisor.routeFacts(direct),b=advisor.routeFacts(chosen);
  const dSp=b.sp-a.sp,dSt=b.st-a.st,dSum=b.spst-a.spst;
  const signed=n=>n>0?'+'+n:String(n);
- const goalRule=goal==='arc'?'凱旋門では最終父の2400m対応・実績A・SP/STバランスを優先します。'
+ const goalRule=goal==='arc'?'凱旋門ではSP/STと最終父実績を主条件にし、2400m対応は強い距離根拠、長距離クロスは補完根拠として比較します。'
   :goal==='bc'?'BCではSP17/ST5とSP系補強経路を確認したうえで、最終父の実績と多世代時の安定特性を比較します。実績・安定だけ、SPクロスだけのどちらにも寄せません。'
   :goal==='rebuild'?'繁殖再建では一頭の最大値より、次代に残しやすいSP/STバランスを優先します。'
   :'自家製種牡馬では高能力繁殖牝馬群への血統汎用性を優先します。';
@@ -208,7 +208,7 @@ async function runGenerationAdvisor(){
     ${recommendationDetail(name,goal,rec)}
     <ul class="generation-reasons">${rec.reasons.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>
     <button class="primary generation-action" type="button" id="applyRecommendedGeneration">${rec.generation===1?'直仔':rec.generation+'代'}で詳しく設計する</button>
-    <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、SPクロス、最終父の実績・安定、距離適性、配合理論と、代重ねに必要な実馬選抜回数を分けて比較した設計判断です。3代は2代目6軸候補、4代は3代目6軸候補からの段階的な条件付きプレビューで、全176³・176⁴最適解とは表示しません。</div>
+    <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、SPクロス、最終父の実績・安定、距離適性、配合理論と、代重ねに必要な実馬選抜回数を分けて比較した設計判断です。3代・4代は前世代の多軸候補を段階的に展開する条件付きプレビューで、全176³・176⁴最適解とは表示しません。</div>
    </div>`;
   $('#applyRecommendedGeneration').onclick=()=>{
     window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
