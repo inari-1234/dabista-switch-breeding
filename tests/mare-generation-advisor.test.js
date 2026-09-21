@@ -43,7 +43,7 @@ assert.strictEqual(unknown.ranks,null);
 assert.strictEqual(unknown.tier,'未判明');
 
 function previewBases(shortlists,maxEach=12){
- const out=[],seen=new Set(),keys=['sp','st','balance','theory'];
+ const out=[],seen=new Set(),keys=['sp','speedCross','production','st','balance','theory'];
  for(let i=0;i<maxEach;i++)for(const k of keys){
   const r=shortlists?.[k]?.[i];if(!r)continue;
   const id=planner.routeKey(r);if(!seen.has(id)){seen.add(id);out.push(r)}
