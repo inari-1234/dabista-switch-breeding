@@ -157,13 +157,13 @@ jobs:
         run: |
           node tests/three-generation-width-sensitivity-diagnostic.test.js
 
-      - name: Generation pool expansion diagnostic
-        run: |
-          node tests/generation-pool-expansion-diagnostic.test.js
-
       - name: Fourth-generation high-width sensitivity diagnostic
         run: |
           node tests/fourth-generation-high-width-diagnostic.test.js
+
+      - name: Generation pool expansion diagnostic
+        run: |
+          node tests/generation-pool-expansion-diagnostic.test.js
 
       - name: SP-cross priority regression
         run: |
