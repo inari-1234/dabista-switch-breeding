@@ -27,9 +27,10 @@ for(const p of ['v15.js','v16.js','v18.js','v26.js']){
 
 for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js']){
   const c=read(p);
-  assert.ok(c.includes("BUILD=window.APP_BUILD||'2026.09.20-38'"),p+' must use shared APP_BUILD');
+  assert.ok(c.includes("BUILD=window.APP_BUILD||'2026.09.21-43'"),p+' must use shared APP_BUILD');
   assert.ok(!c.includes('2026.09.20-35'),p+' stale Build 35');
   assert.ok(!c.includes('2026.09.20-37'),p+' stale Build 37');
+  assert.ok(!c.includes('2026.09.20-38'),p+' stale Build 38');
 }
 
 const ensureStart=v26.indexOf('function ensureSaleMareForBreed(name){');
