@@ -146,7 +146,7 @@ function recommendationDetail(name,goal,rec){
  const dSp=b.sp-a.sp,dSt=b.st-a.st,dSum=b.spst-a.spst;
  const signed=n=>n>0?'+'+n:String(n);
  const goalRule=goal==='arc'?'凱旋門では最終父の2400m対応・実績A・SP/STバランスを優先します。'
-  :goal==='bc'?'BCではSP17/ST5を満たした後、最終父の実績と多世代時の安定特性を先に比較し、その範囲でSP/ST・SPクロスを見ます。'
+  :goal==='bc'?'BCではSP17/ST5とSP系補強経路を確認したうえで、最終父の実績と多世代時の安定特性を比較します。実績・安定だけ、SPクロスだけのどちらにも寄せません。'
   :goal==='rebuild'?'繁殖再建では一頭の最大値より、次代に残しやすいSP/STバランスを優先します。'
   :'自家製種牡馬では高能力繁殖牝馬群への血統汎用性を優先します。';
  const steps=expanded.stages.map(st=>{
