@@ -26,7 +26,8 @@ host.ready=(async()=>{
   const refName=h.masterRef?.name||'',refMaster=refName?master(refName):null;
   if(refMaster)return refMaster;
   const id=h.id||h.name||'';if(id&&stack.has(id))return null;const next=new Set(stack);if(id)next.add(id);
-  const anc=Array.isArray(h.ancestor15)&&h.ancestor15.length===15?[...h.ancestor15]:null;
+  const derivedCacheSource=h.theorySource==='derived'||String(h.theorySource||'').startsWith('parent-code-inheritance');
+  const anc=!derivedCacheSource&&Array.isArray(h.ancestor15)&&h.ancestor15.length===15?[...h.ancestor15]:null;
   const directOm=String(h.omoshiroCode||h.omoshiro||''),directMg=String(h.migotoCode||h.migoto||'');
   const hasFarmIdentity=!!(anc||directOm||directMg||h.sire||h.dam);
   if(!hasFarmIdentity){const legacyMaster=master(h.name);if(legacyMaster)return legacyMaster;}
