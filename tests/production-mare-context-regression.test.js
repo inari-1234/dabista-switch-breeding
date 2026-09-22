@@ -50,6 +50,23 @@ const lowA=fake({record:'B',stable:'A',sp:16,st:6});
 assert.ok(advisor.compareProductionForMare(low)(lowC,lowA)<0,'rebuild mare must retain stable-C upside value instead of globally penalizing it');
 assert.strictEqual(advisor.productionContext(lowC,low).key,'rebuild-upside');
 
+const allMiddle=M.map(x=>x.name).filter(name=>advisor.mareAssessment(name)?.tier==='中位');
+let allMiddleDirectChecked=0,allMiddleDirectWithPractical=0;
+for(const name of allMiddle){
+  const assessment=advisor.mareAssessment(name);
+  const direct=[...planner.iterateDirect(name)];
+  const ranked=advisor.rankProductionRoutes(direct,assessment,3);
+  const practical=direct.filter(r=>advisor.productionContext(r,assessment).practical);
+  allMiddleDirectChecked++;
+  if(practical.length){
+    allMiddleDirectWithPractical++;
+    const top=advisor.productionContext(ranked[0],assessment);
+    assert.ok(top.record==='A'||top.record==='B',name+' direct top must not be record C while practical candidates exist');
+    assert.notStrictEqual(top.key,'longshot',name+' direct top must not be C/C longshot');
+  }
+}
+if(allMiddleDirectChecked<20)throw Error('middle-tier coverage unexpectedly small '+allMiddleDirectChecked);
+
 const mediumNames=['ミニミニデート','フィットレオタード','ラブアタック'];
 const actual=[];
 for(const name of mediumNames){
@@ -91,5 +108,6 @@ console.log(JSON.stringify({
   passed:true,
   rule:'middle mares prefer practical A/B-record production candidates; C/C remains available as longshot; rebuild mares retain stable-C upside context',
   synthetic:{middle:true,high:true,rebuild:true},
+  coverage:{allMiddleDirectChecked,allMiddleDirectWithPractical},
   actual
 },null,2));
