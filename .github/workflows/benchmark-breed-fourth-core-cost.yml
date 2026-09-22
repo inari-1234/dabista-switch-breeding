@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/benchmark-breed-fourth-core-cost.yml'
       - 'tests/breed-fourth-collector-cost-diagnostic.test.js'
+      - 'sale-planner-core.js'
   workflow_dispatch:
 
 permissions:

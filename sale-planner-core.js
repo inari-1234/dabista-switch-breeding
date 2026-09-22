@@ -89,29 +89,68 @@
     if(list.length>limit)list.length=limit;
   }
 
+  function createRankedBucket(limit,vectorFn){
+    const entries=[],byKey=new Map();
+    return{
+      push(route,k=routeKey(route)){
+        if(!route)return;
+        const old=byKey.get(k);
+        if(old){
+          const oldIndex=entries.indexOf(old);
+          if(oldIndex>=0)entries.splice(oldIndex,1);
+          byKey.delete(k);
+        }
+        const entry={route,key:k,vector:vectorFn(route)};
+        let lo=0,hi=entries.length;
+        while(lo<hi){
+          const mid=(lo+hi)>>1;
+          if(cmpVec(entries[mid].vector,entry.vector)<=0)lo=mid+1;
+          else hi=mid;
+        }
+        if(entries.length>=limit&&lo>=limit)return;
+        entries.splice(lo,0,entry);byKey.set(k,entry);
+        if(entries.length>limit){
+          const removed=entries.pop();
+          byKey.delete(removed.key);
+        }
+      },
+      routes(){return entries.map(x=>x.route)}
+    };
+  }
+
   function createCollector({topN=5,poolN=24}={}){
-    const lists={sp:[],speedCross:[],production:[],st:[],balance:[],theory:[]};
+    const buckets={
+      sp:createRankedBucket(poolN,r=>finalVector(r,'sp')),
+      speedCross:createRankedBucket(poolN,r=>finalVector(r,'speedCross')),
+      production:createRankedBucket(poolN,r=>finalVector(r,'production')),
+      st:createRankedBucket(poolN,r=>finalVector(r,'st')),
+      balance:createRankedBucket(poolN,r=>finalVector(r,'balance')),
+      theory:createRankedBucket(poolN,r=>finalVector(r,'theory'))
+    };
     let count=0;
+    const routesFor=p=>buckets[p].routes();
     return{
       push(route){
         count++;
-        for(const p of Object.keys(lists)){
+        const k=routeKey(route);
+        for(const p of Object.keys(buckets)){
           if(p==='speedCross'&&!route?.final?.speedCross?.has)continue;
           if(p==='production'){
             const multi=(route?.sires||[]).length>1;
             const speedSupport=!!route?.final?.speedCross?.has||!!route?.materialSpeedCross?.has;
             if(multi&&!speedSupport)continue;
           }
-          insertTop(lists[p],route,compareProfile(p),poolN);
+          buckets[p].push(route,k);
         }
       },
       get count(){return count},
       pool(){
         const m=new Map();
-        for(const list of Object.values(lists))for(const r of list)m.set(routeKey(r),r);
+        for(const p of Object.keys(buckets))for(const r of routesFor(p))m.set(routeKey(r),r);
         return[...m.values()];
       },
       finish(){
+        const lists=Object.fromEntries(Object.keys(buckets).map(p=>[p,routesFor(p)]));
         return{
           count,
           profiles:{
@@ -127,7 +166,7 @@
           pool:this.pool()
         };
       }
-    }
+    };
   }
 
   function fourthBridgeFacts(route){
