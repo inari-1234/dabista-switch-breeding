@@ -1,5 +1,6 @@
 'use strict';
 const assert=require('assert');
+const fs=require('fs');
 const core=require('../breeding-core.js');
 const plannerCore=require('../sale-planner-core.js');
 const advisorCore=require('../sale-recommendation-core.js');
@@ -51,6 +52,41 @@ assert.deepStrictEqual(advisor.mareStrategy('スプリングスイーツ').prese
 assert.deepStrictEqual(advisor.mareStrategy('スプリングスイーツ').improve,[]);
 assert.deepStrictEqual(advisor.mareStrategy('エイスト').preserve,['ST','PW']);
 assert.deepStrictEqual(advisor.mareStrategy('エイスト').improve,['SP']);
+
+const roseStrategy=advisor.mareStrategy('ローズティンテッド');
+assert.deepStrictEqual(roseStrategy.improve,[],'Rose Tinted has no confirmed deficiency axis');
+assert.deepStrictEqual(roseStrategy.strengths,['SP','PW'],'Rose Tinted strengths must expose SP/PW');
+assert.deepStrictEqual(roseStrategy.relativeAdjust,['ST'],'Rose Tinted ST must be relative adjustment, not a deficiency');
+
+function directSummary(name){
+  const s=advisor.emptySummary('direct');
+  for(const r of planner.iterateDirect(name))advisor.addRoute(s,r);
+  return s;
+}
+const roseReason=advisor.goalMareReason('ローズティンテッド','arc',directSummary('ローズティンテッド'));
+assert.ok(roseReason.reasons.includes('強み：SP・PW'),'Rose Tinted reason must expose actual strengths');
+assert.ok(roseReason.reasons.some(x=>x.includes('相対調整：ST')&&x.includes('弱点扱いではない')),'Rose Tinted reason must distinguish relative adjustment from weakness');
+
+for(const mare of mareData.broodmares.filter(x=>advisor.mareAssessment(x.name)?.abilityKnown)){
+  for(const goal of ['arc','bc','rebuild','stallion']){
+    const decision=advisor.goalMareReason(mare.name,goal,advisor.emptySummary('test'));
+    assert.ok(!(decision.reasons||[]).some(x=>x.includes('不足軸')),mare.name+' '+goal+' must not use the generic deficiency-axis wording');
+  }
+}
+
+const unknownArcReasonVariants=new Set();
+for(const mare of mareData.broodmares.filter(x=>!advisor.mareAssessment(x.name)?.abilityKnown)){
+  const decision=advisor.goalMareReason(mare.name,'arc',directSummary(mare.name));
+  assert.strictEqual(advisor.mareAssessment(mare.name).abilityKnown,false,mare.name+' ability must remain unknown');
+  unknownArcReasonVariants.add((decision.reasons||[]).join('|'));
+}
+assert.ok(unknownArcReasonVariants.size>1,'unknown mares must expose different bloodline outlooks without inventing ability values');
+
+const ui=fs.readFileSync('v27.js','utf8');
+assert.ok(ui.includes("decision.reasons||[]"),'v27 must render mare-specific decision reasons');
+assert.ok(ui.includes('mare-why-reasons'),'v27 must include compact reason UI');
+assert.ok(ui.includes('相対調整：'),'v27 must render relative adjustment wording');
+assert.ok(!ui.includes('不足軸'),'v27 must not restore generic deficiency-axis wording');
 
 function firstThree(name){
   const two=planner.iterateTwo(name).next();
@@ -118,5 +154,7 @@ console.log(JSON.stringify({
   spring:{spstRank:spring.ranks.spst.rank,stage1:a1.headline,stage2:a2.headline,final:a3.headline},
   strategies:cases,
   allMaresChecked,
-  unknownChecked
+  unknownChecked,
+  rose:{strengths:roseStrategy.strengths,relativeAdjust:roseStrategy.relativeAdjust,reasons:roseReason.reasons},
+  unknownArcReasonVariants:unknownArcReasonVariants.size
 },null,2));
