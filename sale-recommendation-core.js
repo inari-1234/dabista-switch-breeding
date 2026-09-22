@@ -453,17 +453,15 @@
       const speedSupport=!multi||!!f.speedCross?.has||!!route?.materialSpeedCross?.has;
       const viable=sp>=15&&st>=5,eliteLine=sp>=17&&st>=5,practical=viable&&recordGrade>=2;
       const stableRank=stabilityPreference(stable,band);
-      const vector=[
-        bool(speedSupport),
-        bool(practical),
-        bool(viable),
-        recordGrade,
-        bool(eliteLine),
-        stableRank,
+      const middleMain=band==='middle'&&practical&&stable!=='C';
+      const tail=[
         sp,st,grade(ss.guts),pw,
         bool(f.speedCross?.has),val(route?.materialSpeedCross?.stages),
         bool(f.theory?.magnificent),bool(f.elaborate),bool(f.theory?.interesting)
       ];
+      const vector=band==='middle'
+        ?[bool(speedSupport),bool(practical),bool(viable),bool(middleMain),bool(eliteLine),stableRank,recordGrade,...tail]
+        :[bool(speedSupport),bool(practical),bool(viable),recordGrade,bool(eliteLine),stableRank,...tail];
       let key='conditional',label='条件付き',headline='条件を確認して比較';
       if(record==='C'&&stable==='C'){
         key='longshot';label='一発狙い';headline='上振れ幅はあるが本命より再現性を優先しない';
@@ -487,7 +485,7 @@
       if(stable!=='?')reasons.push('安定'+stable);
       if(f.speedCross?.has)reasons.push('最終SPクロス');
       else if(route?.materialSpeedCross?.has)reasons.push('途中SP補強');
-      return{band,key,label,headline,reasons,vector,viable,eliteLine,practical,record,stable,recordGrade,stableRank,speedSupport};
+      return{band,key,label,headline,reasons,vector,viable,eliteLine,practical,middleMain,record,stable,recordGrade,stableRank,speedSupport};
     }
     function compareProductionForMare(assessment){
       return(a,b)=>{
