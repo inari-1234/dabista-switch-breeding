@@ -1,5 +1,5 @@
 const APP_VERSION='1.19.1';
-const APP_BUILD='2026.09.23-49';
+const APP_BUILD='2026.09.23-50';
 const KEY='dabistaFarmV1';
 const errors=[];
 let updateState={lastCheck:null,status:'not-checked',remote:null};
