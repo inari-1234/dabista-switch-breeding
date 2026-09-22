@@ -2,12 +2,6 @@ name: Diagnose sale mare potential matrix
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - candidate/sale-mare-potential-ui
-    paths:
-      - '.github/workflows/diagnose-sale-mare-potential.yml'
-      - 'tests/sale-mare-potential-matrix-diagnostic.test.js'
 
 permissions:
   contents: read
