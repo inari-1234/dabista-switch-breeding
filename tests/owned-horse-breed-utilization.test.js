@@ -45,6 +45,13 @@ for(const r of planner.iterateTwoFromDirect(exact.route)){
 const nextRuntimeMs=Date.now()-nextStarted;
 if(nextSafe<=0)throw Error('owned sire next-generation scan produced no safe routes');
 
+const twoRoute=[...planner.iterateTwoFromDirect(exact.route)][0];
+if(!twoRoute)throw Error('route registration fixture needs a two-generation route');
+const expanded=planner.expandRoute('スプリングスイーツ',twoRoute,'bc');
+if(!expanded||expanded.stages.length!==2)throw Error('expanded route missing stages for registration');
+if(expanded.stages.some(s=>!s.child||!Array.isArray(s.child.ancestor)||s.child.ancestor.length!==15))
+  throw Error('every expanded stage must expose an exact 15-ancestor child for farm registration');
+
 const ui=fs.readFileSync('breed-integration.js','utf8');
 for(const token of [
   'function farmSirePool()',
@@ -68,6 +75,7 @@ console.log(JSON.stringify({
   compactIndex:true,
   exactOwnedSireReconstruction:true,
   nextGeneration:{safeRoutes:nextSafe,materialRoutes:nextMaterial,runtimeMs:nextRuntimeMs},
+  routeRegistrationStages:expanded.stages.length,
   portfolioCohort:portfolio.population,
   farmMareBoundary:'real-race evidence remains separate from breeding SP/ST/PW',
   sireOrdering:'portfolio facts, not alphabetical'
