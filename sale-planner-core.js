@@ -247,6 +247,7 @@
     const mareStatsMap=new Map(broodmareStats.map(x=>[key(x.name),x]));
     const cohort120=broodmareStats.filter(abilityKnown).filter(x=>val(x.sp)+val(x.st)>=120).map(x=>mareMap.get(key(x.name))).filter(Boolean);
     const cohort130=broodmareStats.filter(abilityKnown).filter(x=>val(x.sp)+val(x.st)>=130).map(x=>mareMap.get(key(x.name))).filter(Boolean);
+    // spst130 is a strict subset of spst120; combined portfolio evaluation reuses the same pair result once.
 
     function mare(name){return mareMap.get(key(name))||null}
     function sire(name){return sireMap.get(key(name))||null}
