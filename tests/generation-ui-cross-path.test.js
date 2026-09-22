@@ -293,33 +293,36 @@ assert.ok(!miniGeneration.rec.reasons.some(x=>x.startsWith('2代→3代')),'Mini
 
 const v26=fs.readFileSync('v26.js','utf8');
 const v27=fs.readFileSync('v27.js','utf8');
-assert.ok(v26.includes('saleGoalSection'),'goal section must be an explicit UI block');
-assert.ok(v26.includes("generationSource='unset'"),'generation selection must start neutral');
+assert.ok(v26.includes('saleGoalSection'),'goal section must remain explicit');
+assert.ok(v26.includes("generationSource='unset'"),'generation state must still start neutral internally');
 assert.ok(v26.includes("setGeneration(rec.generation")===false,'v26 must not invent advisor result');
-assert.ok(v27.includes("keys=['sp','speedCross','production','st','balance','theory']"),'3-generation advisor must retain SP-cross and strong-horse production axes');
+assert.ok(v27.includes("keys=['sp','speedCross','production','st','balance','theory']"),'generation advisor must retain all six internal axes');
 assert.ok(v27.includes("setGeneration?.(rec.generation,'diagnosis')"),'diagnosis must synchronize the selected generation');
-assert.ok(v27.includes('今の育成方針'),'mare strategy must be promoted as the primary actionable cue and kept distinct from the selected goal');
-assert.ok(v27.includes('.mare-tier{padding:7px 11px;font-size:14px'),'ability tier must be visually prominent rather than 8-9px metadata');
-assert.ok(v27.includes('tier-middle'),'middle-tier mares must have a distinct whole-card tone');
-assert.ok(v27.includes('tier-unknown'),'unknown ability must have a neutral whole-card tone');
+assert.ok(v27.includes('この牝馬を使う理由'),'mare card must explain why the mare is used');
+assert.ok(v27.includes('カード色＝母能力帯'),'mare color meaning must be explicit');
+assert.ok(v27.includes('.mare-tier{padding:7px 11px;font-size:14px'),'ability tier must remain prominent');
+assert.ok(v27.includes('tier-middle'),'middle-tier mares must retain a distinct whole-card tone');
+assert.ok(v27.includes('tier-unknown'),'unknown ability must retain a neutral whole-card tone');
 const mareAdviceBlock=v27.match(/function renderMareAdvice\(\)\{[\s\S]*?\n\}\nfunction invalidateGeneration/)?.[0]||'';
 assert.ok(mareAdviceBlock&&!mareAdviceBlock.includes('推奨世代'),'mare summary must not masquerade as the formal generation recommendation');
-assert.ok(v27.includes('おすすめ配合世代を診断'),'formal generation diagnosis must remain a separate explicit UI action');
+assert.ok(v27.includes('何代で締めるか比較'),'formal generation diagnosis must explain its purpose');
+assert.ok(v27.includes('おすすめ世代を決める'),'generation diagnosis must have one primary action');
+assert.ok(v27.includes('generationSection.hidden=true'),'manual generation buttons must be hidden from the primary flow');
+assert.ok(v27.includes('if(notice)notice.hidden=true'),'technical generation notice must be hidden from the primary flow');
+assert.ok(v27.includes('if(run)run.hidden=true'),'duplicate manual design action must be hidden');
+assert.ok(v27.includes('generation-compare'),'four-generation comparison must remain visible in compact form');
+assert.ok(v27.includes('generation-key-reason'),'recommended generation must include a concise reason');
 assert.ok(v26.includes("signalMareContext('search-empty','')"),'empty search must invalidate mare/generation context');
 assert.ok(v26.includes("setPlannerMare(sel.value,'search-auto')"),'search-driven mare replacement must reset generation state');
 assert.ok(v26.includes("signalMareContext('search-restore',keep)"),'mare advice must refresh when a previously empty search is cleared');
 assert.ok(v26.includes("setPlannerMare(n,'rebuild-sync')"),'rebuild starter sync must reset generation state');
-assert.ok(v26.includes("b.classList.toggle('diagnosed'"),'diagnosis-selected generation must have a distinct visual state');
-assert.ok(v26.includes("b.classList.toggle('manual'"),'manual comparison generation must have a distinct visual state');
-assert.ok(v26.includes('.sale-seg.gens button.on.manual'),'manual comparison must not reuse the diagnosis color');
 assert.ok(v26.includes("q.value=''"),'rebuild starter sync must clear a conflicting mare search filter');
-assert.ok(v27.includes("generationSection.insertAdjacentElement('beforebegin',gen)"),'formal generation diagnosis must appear before manual generation buttons');
+assert.ok(v26.includes('331頭中 '),'UI must reveal that the full mare master is available');
 assert.ok(v27.includes("box.className='mare-advice tier-'"),'mare card must carry a whole-card ability-tier tone');
-assert.ok(v27.includes('<h4>${esc(name)}</h4>'),'mare identity must be the primary card heading');
-assert.ok(v27.includes('他の目的・補強方針・直仔データを見る'),'secondary explanation must be collapsed behind an explicit details control');
+assert.ok(v27.includes('<h4>${esc(name)}</h4>'),'mare identity must remain the primary card heading');
+assert.ok(v27.includes('順位・他目的・血統評価を見る'),'secondary mare data must remain collapsed');
 assert.ok(v27.includes('目的別の事前評価'),'purpose cards inside details must remain explicitly pre-diagnosis evaluation');
 assert.ok(v27.includes("if(!name){box.className='mare-advice tier-unknown';box.innerHTML='<div class=\"muted\">検索条件に一致する繁殖牝馬がありません。</div>';return}"),'empty mare search must clear stale mare advice and reset card tone');
-
 console.log(JSON.stringify({
   passed:true,
   mare:'フィットレオタード',
