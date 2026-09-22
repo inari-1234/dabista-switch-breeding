@@ -537,19 +537,21 @@
     }
     function productionCandidateCue(route,baseline,assessment,rank=0){
       const p=productionContext(route,assessment),f=routeFacts(route);
-      const b=baseline?productionContext(baseline,assessment):p,bf=baseline?routeFacts(baseline):f;
+      const hasReference=!!baseline&&baseline!==route;
+      const b=hasReference?productionContext(baseline,assessment):p,bf=hasReference?routeFacts(baseline):f;
       const advantages=[],tradeoffs=[];
       const add=(arr,x)=>{if(x&&!arr.includes(x))arr.push(x)};
-      if(rank===0){
+      if(rank===0&&!hasReference){
         if(p.record==='A')add(advantages,'実績A');
         if(p.shortDistanceRelevant&&p.shortTier>=2)add(advantages,'距離下限'+p.minD+'m');
+        if(p.materialShort)add(advantages,'途中'+p.materialShortBest+'m父');
         if(f.speedCross)add(advantages,'最終SPクロス');
         else if(f.materialSpeedCross)add(advantages,'途中SP補強');
         if(f.sp>=17)add(advantages,'SPニトロ'+f.sp);
         if(f.magnificent)add(advantages,'見事配合');
         if(!advantages.length)add(advantages,'SP/ST '+f.sp+'/'+f.st);
       }else{
-        if(p.recordGrade>b.recordGrade)add(advantages,'実績'+p.record+'が本命より上');
+        if(p.recordGrade>b.recordGrade)add(advantages,'実績'+p.record+'が比較候補より上');
         if(p.stableRank>b.stableRank)add(advantages,'安定'+p.stable+'で再現性寄り');
         if(p.shortDistanceRelevant&&p.shortTier>b.shortTier)add(advantages,'距離下限'+p.minD+'mでSP側を狙う');
         if(p.materialShort&&(!b.materialShort||p.materialShortBest<(b.materialShortBest||9999)))add(advantages,'途中'+p.materialShortBest+'m父でSP側の選抜機会');
@@ -560,21 +562,22 @@
         if(f.materialSpeedCrossStages>bf.materialSpeedCrossStages)add(advantages,'途中SP補強が多い');
         if(f.magnificent&&!bf.magnificent)add(advantages,'見事配合');
         if(f.elaborate&&!bf.elaborate)add(advantages,'凝った配合');
-        if(p.recordGrade<b.recordGrade)add(tradeoffs,'実績'+p.record+'は本命より下');
+        if(p.recordGrade<b.recordGrade)add(tradeoffs,'実績'+p.record+'は比較した実績'+b.record+'候補より下');
         if(p.stableRank<b.stableRank)add(tradeoffs,'安定'+p.stable+'は再現性で不利');
         if(f.sp<bf.sp)add(tradeoffs,'SPニトロ -'+(bf.sp-f.sp));
         if(f.st<bf.st)add(tradeoffs,'STニトロ -'+(bf.st-f.st));
-        if(!advantages.length)add(advantages,'本命と近い条件の別血統ルート');
+        if(f.pw<bf.pw)add(tradeoffs,'PWニトロ -'+(bf.pw-f.pw));
+        if(!advantages.length)add(advantages,'比較候補と近い条件の別血統ルート');
       }
       let roleKey='balanced',roleLabel=rank===0?'総合本命':'別強み';
-      const recordAdv=rank>0&&p.recordGrade>b.recordGrade;
-      const speedAdv=rank>0&&(
+      const recordAdv=(rank>0||hasReference)&&p.recordGrade>b.recordGrade;
+      const speedAdv=(rank>0||hasReference)&&(
         (p.shortDistanceRelevant&&p.shortTier>b.shortTier)||
         (p.materialShort&&(!b.materialShort||p.materialShortBest<(b.materialShortBest||9999)))||
         f.sp>bf.sp||(f.speedCross&&!bf.speedCross)||
         f.materialSpeedCrossStages>bf.materialSpeedCrossStages
       );
-      const nitroAdv=rank>0&&(f.st>=bf.st+2||f.pw>=bf.pw+2);
+      const nitroAdv=(rank>0||hasReference)&&(f.st>=bf.st+2||f.pw>=bf.pw+2);
       if(p.record==='C'||p.stable==='C'){roleKey='upside';roleLabel='上振れ'}
       else if(recordAdv){roleKey='record';roleLabel='実績重視'}
       else if(speedAdv){roleKey='speed';roleLabel='SP補強'}
@@ -584,12 +587,14 @@
       else if(rank===0&&(f.speedCross||f.materialSpeedCross)){roleKey='speed';roleLabel='SP補強'}
       const lead=advantages.slice(0,2).join('＋');
       const headline=rank===0
-        ?lead+'を軸に本命化'
+        ?(hasReference&&p.recordGrade<b.recordGrade
+          ?'実績'+p.record+'だが、'+lead+'で実績'+b.record+'候補を逆転'
+          :lead+'を軸に本命化')
         :lead+(tradeoffs.length?'。'+tradeoffs[0]+'と引き換え':'');
       return{
         key:roleKey,label:roleLabel,headline,
         reasons:[...advantages.slice(0,2),...tradeoffs.slice(0,1)],
-        advantages,tradeoffs
+        advantages,tradeoffs,hasReference
       };
     }
     function rankProductionRoutes(routes,assessment,limit=3){
