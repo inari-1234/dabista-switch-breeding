@@ -28,7 +28,7 @@ function topProduction(iter,assessment,limit=3){
 }
 function fake({
   record='B',stable='B',sp=15,st=5,pw=1,minD=1600,maxD=2200,
-  multi=false,speedCross=true,material=false,magnificent=false,elaborate=false,
+  multi=false,speedCross=true,material=false,materialShortMinD=0,magnificent=false,elaborate=false,
   sire='父1'
 }={}){
   return{
@@ -41,7 +41,8 @@ function fake({
       elaborate,
       sireStats:{record,stable,guts:'B',minD,maxD}
     },
-    materialSpeedCross:{has:material,stages:material?1:0}
+    materialSpeedCross:{has:material,stages:material?1:0},
+    materialShortDistance:{has:materialShortMinD>0,stages:materialShortMinD>0?1:0,bestMinD:materialShortMinD||0}
   };
 }
 const middle={abilityKnown:true,ranks:{sp:{topPercent:70},spst:{topPercent:50}}};
@@ -89,9 +90,18 @@ assert.ok(advisor.productionContext(shortMiddle,middle).distanceEvidence>advisor
 assert.strictEqual(advisor.productionContext(shortMiddle,high).distanceEvidence,0,'high non-SP-needy mare must not receive an automatic short-distance bonus');
 assert.strictEqual(advisor.productionContext(shortMiddle,unknown).distanceEvidence,0,'unknown ability must not be assumed SP-deficient');
 
+const intermediateShort=fake({record:'B',stable:'B',sp:16,st:6,minD:1600,multi:true,materialShortMinD:1000,speedCross:false,sire:'中間短距離あり'});
+const noIntermediateShort=fake({record:'B',stable:'B',sp:16,st:6,minD:1600,multi:true,materialShortMinD:0,speedCross:false,sire:'中間短距離なし'});
+const intermediateCtx=advisor.productionContext(intermediateShort,middle);
+assert.ok(intermediateCtx.materialShort&&intermediateCtx.compensationSignals.intermediateShortDistance,'intermediate 1000m sire must be retained as SP-side selection evidence');
+assert.ok(advisor.compareProductionForMare(middle)(intermediateShort,noIntermediateShort)<0,'intermediate short-distance sire evidence must matter when other facts are equal');
+
 // Candidate cards must explain why an alternative exists.
 const shortCue=advisor.productionCandidateCue(shortMiddle,longMiddle,middle,1);
 assert.ok(shortCue.advantages.some(x=>x.includes('距離下限1000m')),'alternative cue must expose the short-distance SP-side advantage');
+const intermediateCue=advisor.productionCandidateCue(intermediateShort,noIntermediateShort,middle,1);
+assert.ok(intermediateCue.advantages.some(x=>x.includes('途中1000m父')),'candidate cue must expose an intermediate short-distance sire as a selection opportunity');
+assert.strictEqual(intermediateCue.key,'speed','intermediate short-distance advantage must be labeled as SP-side support');
 
 const nitroAlt=fake({record:'B',stable:'B',sp:19,st:6,minD:1600,speedCross:false,sire:'ニトロ父'});
 const candidates=advisor.selectProductionRecommendations([longMiddle,shortMiddle,nitroAlt],middle,3);
