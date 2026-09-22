@@ -1,0 +1,37 @@
+name: Diagnose ancestor-array cache end-to-end
+
+on:
+  push:
+    paths:
+      - 'tests/breed-prepared-ancestor-array-endtoend-benchmark.test.js'
+      - '.github/workflows/diagnose-breed-prepared-ancestor-array-endtoend.yml'
+      - 'breeding-core.js'
+      - 'sale-planner-core.js'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [0,1,4]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-prepared-ancestor-array-endtoend-benchmark.test.js
+      - name: Ancestor-array end-to-end benchmark
+        env:
+          CASE_INDEX: ${{ matrix.case }}
+        run: node tests/breed-prepared-ancestor-array-endtoend-benchmark.test.js
