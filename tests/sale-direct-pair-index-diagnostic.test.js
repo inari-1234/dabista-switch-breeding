@@ -31,8 +31,8 @@ function validate(mareInput){
   if(index.entries.length!==176)throw Error(name+' entries '+index.entries.length);
   if(index.safeCount+index.unsafeCount!==176)throw Error(name+' count total');
   if(index.currentRoutes.length!==index.safeCount)throw Error(name+' route/safe count');
-  if(index.entries.some(x=>x.pair?.child!==null))throw Error(name+' pair child retained');
-  if(index.entries.some(x=>x.currentRoute?.finalChild!==null))throw Error(name+' route child retained');
+  if(index.entries.some(x=>x.pair&&x.pair.child!==null))throw Error(name+' pair child retained');
+  if(index.entries.some(x=>x.currentRoute&&x.currentRoute.finalChild!==null))throw Error(name+' route child retained');
   if(index.entries.some(x=>x.safe&&!x.currentRoute))throw Error(name+' safe entry lacks current route');
   if(index.entries.some(x=>!x.safe&&x.currentRoute))throw Error(name+' unsafe entry leaked route');
   if(index.entries.some(x=>!x.pair))throw Error(name+' valid sire entry lacks pair');
