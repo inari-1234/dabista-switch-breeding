@@ -299,12 +299,13 @@ function getPairIndex(resolved,fp){
   return lruSet(pairCache,k,planner.createDirectPairIndex(resolved),PAIR_CACHE_LIMIT);
 }
 function directSirePortfolio(entry){
-  const r=entry?.currentRoute;
-  if(!r)return null;
-  if(directPortfolioCache.has(r))return directPortfolioCache.get(r);
-  const p=planner.withPortfolio(r)?.portfolio||null;
-  directPortfolioCache.set(r,p);
-  return p;
+  const compact=entry?.currentRoute;
+  if(!compact||!currentResolvedMare)return null;
+  if(directPortfolioCache.has(compact))return directPortfolioCache.get(compact);
+  const exact=planner.evaluateDirectPair(currentResolvedMare,entry.sire);
+  const p=exact?.route?planner.withPortfolio(exact.route)?.portfolio:null;
+  directPortfolioCache.set(compact,p||null);
+  return p||null;
 }
 function portfolioVector(p){
   const a=p?.spst120||{},b=p?.spst130||{};
