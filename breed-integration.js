@@ -127,7 +127,7 @@ function ensureControls(){
     controls.appendChild(field);
     cat=field.querySelector('select');
   }
-  cat.value=selectedCategory();
+  cat.value=PROFILES.includes(db.breedPlanner.category)?db.breedPlanner.category:'production';
   const mare=$('#breedMare'),goal=$('#breedGoal'),search=$('#stallionSearch');
   if(search&&!$('#breedIntegrationTools')){
     const tools=document.createElement('div');
