@@ -298,7 +298,10 @@ assert.ok(v26.includes("generationSource='unset'"),'generation selection must st
 assert.ok(v26.includes("setGeneration(rec.generation")===false,'v26 must not invent advisor result');
 assert.ok(v27.includes("keys=['sp','speedCross','production','st','balance','theory']"),'3-generation advisor must retain SP-cross and strong-horse production axes');
 assert.ok(v27.includes("setGeneration?.(rec.generation,'diagnosis')"),'diagnosis must synchronize the selected generation');
-assert.ok(v27.includes('母の補強方針'),'mare strategy wording must not be confused with the selected goal');
+assert.ok(v27.includes('今の育成方針'),'mare strategy must be promoted as the primary actionable cue and kept distinct from the selected goal');
+assert.ok(v27.includes('.mare-tier{padding:7px 11px;font-size:14px'),'ability tier must be visually prominent rather than 8-9px metadata');
+assert.ok(v27.includes('tier-middle'),'middle-tier mares must have a distinct whole-card tone');
+assert.ok(v27.includes('tier-unknown'),'unknown ability must have a neutral whole-card tone');
 assert.ok(v27.includes('正式な推奨世代'),'pre-diagnosis note must distinguish itself from the formal generation diagnosis');
 assert.ok(v26.includes("signalMareContext('search-empty','')"),'empty search must invalidate mare/generation context');
 assert.ok(v26.includes("setPlannerMare(sel.value,'search-auto')"),'search-driven mare replacement must reset generation state');
@@ -309,10 +312,11 @@ assert.ok(v26.includes("b.classList.toggle('manual'"),'manual comparison generat
 assert.ok(v26.includes('.sale-seg.gens button.on.manual'),'manual comparison must not reuse the diagnosis color');
 assert.ok(v26.includes("q.value=''"),'rebuild starter sync must clear a conflicting mare search filter');
 assert.ok(v27.includes("generationSection.insertAdjacentElement('beforebegin',gen)"),'formal generation diagnosis must appear before manual generation buttons');
-assert.ok(v27.includes('この繁殖牝馬の基礎評価'),'mare card must not use recommendation wording for a pre-diagnosis assessment');
-assert.ok(v27.includes('「基礎評価」は母能力と直仔の血統到達性を分けて判定しています。'),'pre-diagnosis note must consistently use evaluation wording');
-assert.ok(v27.includes('目的別の直仔・母評価（事前）'),'purpose cards must be explicitly marked as pre-diagnosis evaluation');
-assert.ok(v27.includes("if(!name){box.innerHTML='<div class=\"muted\">検索条件に一致する繁殖牝馬がありません。</div>';return}"),'empty mare search must clear stale mare advice');
+assert.ok(v27.includes("box.className='mare-advice tier-'"),'mare card must carry a whole-card ability-tier tone');
+assert.ok(v27.includes('<h4>${esc(name)}</h4>'),'mare identity must be the primary card heading');
+assert.ok(v27.includes('他の目的・補強方針・直仔データを見る'),'secondary explanation must be collapsed behind an explicit details control');
+assert.ok(v27.includes('目的別の事前評価'),'purpose cards inside details must remain explicitly pre-diagnosis evaluation');
+assert.ok(v27.includes("if(!name){box.className='mare-advice tier-unknown';box.innerHTML='<div class=\"muted\">検索条件に一致する繁殖牝馬がありません。</div>';return}"),'empty mare search must clear stale mare advice and reset card tone');
 
 console.log(JSON.stringify({
   passed:true,
