@@ -32,7 +32,7 @@ function inject(){
  const tabs=$('.tabs'),backup=$('.tab[data-tab="backup"]'),b=document.createElement('button');
  b.className='tab';b.dataset.tab='rebuild';b.textContent='再建';tabs.insertBefore(b,backup);
  const sec=document.createElement('section');sec.id='rebuild';sec.className='hidden';
- sec.innerHTML=`<div class="card"><h3 class="section-title">牧場再建・配合研究</h3><p class="muted">外国種牡馬なし・スプリングスイーツ前提なし。繁殖能力、配合理論、ニトロ、父能力を分離して見ます。</p><div class="breed-controls"><div class="field"><label>目的</label><select id="rebuildGoal"><option value="arc">${goalLabels.arc}</option><option value="rebuild">${goalLabels.rebuild}</option><option value="bc">${goalLabels.bc}</option></select></div><div class="field"><label>起点牝馬を確認</label><select id="rebuildStarter"></select></div></div><div id="rebuildStatus" class="notice">研究マスタを読み込み中…</div></div><div id="rebuildBody"></div>`;
+ sec.innerHTML=`<div class="card"><h3 class="section-title">牧場再建・配合研究</h3><p class="muted">目的と繁殖牝馬を選ぶと、おすすめ世代と本命配合を表示します。</p><div hidden aria-hidden="true"><select id="rebuildGoal"><option value="arc">${goalLabels.arc}</option><option value="rebuild">${goalLabels.rebuild}</option><option value="bc">${goalLabels.bc}</option></select><select id="rebuildStarter"></select><div id="rebuildStatus">研究マスタを読み込み中…</div></div></div><div id="rebuildBody" hidden aria-hidden="true"></div>`;
  $('#backup').insertAdjacentElement('beforebegin',sec);
  b.onclick=()=>activate();
  document.querySelectorAll('.tab:not([data-tab="rebuild"])').forEach(x=>x.addEventListener('click',()=>sec.classList.add('hidden')));
