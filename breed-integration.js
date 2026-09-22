@@ -110,6 +110,7 @@ function ensureStyle(){
 }
 function ensureControls(){
   ensureStyle();
+  document.querySelector('.theory-tools')?.remove();
   const controls=$('#breed .breed-controls');
   if(!controls)return;
   let cat=$('#breedCategory');
