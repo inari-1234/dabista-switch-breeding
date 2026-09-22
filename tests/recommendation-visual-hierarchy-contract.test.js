@@ -22,7 +22,7 @@ need(v27,'おすすめ世代を決める','generation single primary action');
 need(v27,'data-generation-choice','generation comparison cards must be selectable');
 need(v27,'selectedGeneration=rec.generation','automatic recommendation must remain the initial selected generation');
 need(v27,"selectedGeneration===rec.generation?'diagnosis':'manual'","manual generation choice must remain distinguishable from diagnosis");
-need(v27,'generation-compare-card selected','generation card selected state');
+need(v27,"selected===n?'selected':''",'generation card selected state');
 need(v27,'手動で比較中（自動推奨は','manual generation choice must keep the auto recommendation visible');
 need(v27,'generationSection.hidden=true','legacy generation selector must stay hidden');
 need(v27,'if(notice)notice.hidden=true','technical generation notice must not be primary');
