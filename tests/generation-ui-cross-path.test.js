@@ -264,6 +264,21 @@ const unknownGoal=advisor.goalMareReason('アマリン','bc',unknownDirect);
 assert.ok(unknownGoal.headline.includes('母能力を仮定せず'),'unknown mare goal reason must not infer SP deficiency');
 const unknownUpgrade=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',unknownAssessment);
 assert.ok(!unknownUpgrade.some(x=>x.includes('中間世代で速力/短距離クロス')),'unknown mare must not be treated as SP-deficient when recommending a deeper generation');
+
+const unknownVisibleReasons=[];
+for(const m of M){
+  const a=advisor.mareAssessment(m.name);
+  if(!a||a.abilityKnown)continue;
+  const summary=advisor.emptySummary('unknown-bloodline-variation');
+  for(const r of planner.iterateDirect(m.name))advisor.addRoute(summary,r);
+  const reason=advisor.goalMareReason(m.name,'arc',summary);
+  unknownVisibleReasons.push({name:m.name,visible:(reason.reasons||[])[0]||'',detail:reason.detail||''});
+}
+assert.strictEqual(unknownVisibleReasons.length,33,'all 33 unknown-ability mares must remain in the bloodline comparison');
+assert.ok(new Set(unknownVisibleReasons.map(x=>x.visible)).size>=2,
+  'unknown-ability mares must expose different visible bloodline outlooks when their pedigrees differ');
+assert.ok(unknownVisibleReasons.every(x=>x.visible.includes('直仔血統')),
+  'unknown-ability variation must come from bloodline evidence, not inferred hidden ability');
 const unknownFinalCross=advisor.materialUpgradeReasons(
   fakeRoute(0,16,8),
   withFinalSpeedCross(fakeRoute(0,16,8)),
