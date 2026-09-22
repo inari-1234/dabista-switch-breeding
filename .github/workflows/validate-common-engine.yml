@@ -42,6 +42,8 @@ on:
       - 'tests/breed-resolve-horse-name-collision.test.js'
       - 'tests/backup-restore-db-identity-contract.test.js'
       - 'tests/diagnostic-workflows-manual-only-contract.test.js'
+      - 'tests/sync-game-master-safety-contract.test.js'
+      - 'tests/breed-portfolio-optimization-regression.test.js'
       - 'tests/magnificent-cross-utility-diagnostic.test.js'
       - 'tests/st-cross-2400-utility-diagnostic.test.js'
       - 'tests/theory-ranking-delta-diagnostic.test.js'
@@ -69,6 +71,7 @@ on:
       - 'data/sale-planner-design-validation.json'
       - 'data/mare-generation-advisor-validation.json'
       - '.github/workflows/validate-common-engine.yml'
+      - '.github/workflows/sync-game-master.yml'
   workflow_dispatch:
 
 permissions:
@@ -382,6 +385,10 @@ jobs:
       - name: Portfolio optimization regression
         run: |
           node tests/breed-portfolio-optimization-regression.test.js
+
+      - name: Master sync safety contract
+        run: |
+          node tests/sync-game-master-safety-contract.test.js
 
       - name: Mare-aware selection regression
         run: |

@@ -9,10 +9,10 @@ on:
     - cron: '17 19 * * 0'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  sync:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -174,14 +174,138 @@ jobs:
           print('theory domestic',len(sts),'all pedigree stallions',len(pedigree_sires),'broodmares',len(bms),'pedigree total',len(horses))
           PY
 
-      - name: Commit updated data
+      - name: Package generated data
+        run: |
+          mkdir -p /tmp/synced-game-master
+          cp data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json data/elaborate-direct-exceptions.json /tmp/synced-game-master/
+
+      - name: Upload generated data
+        uses: actions/upload-artifact@v4
+        with:
+          name: synced-game-master
+          path: /tmp/synced-game-master
+          if-no-files-found: error
+          retention-days: 3
+
+  validate:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download generated data
+        uses: actions/download-artifact@v4
+        with:
+          name: synced-game-master
+          path: /tmp/synced-game-master
+
+      - name: Install generated data for validation
+        run: |
+          cp /tmp/synced-game-master/*.json data/
+          for f in data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json data/elaborate-direct-exceptions.json; do
+            python -m json.tool "$f" >/dev/null
+          done
+
+      - name: Generated master invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const key=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();
+          const S=JSON.parse(fs.readFileSync('data/stallions.json','utf8'));
+          const M=JSON.parse(fs.readFileSync('data/default-broodmares.json','utf8'));
+          const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
+          const P=JSON.parse(fs.readFileSync('data/pedigree-master.json','utf8'));
+          const D=JSON.parse(fs.readFileSync('data/elaborate-direct-exceptions.json','utf8'));
+          const unique=a=>new Set(a.map(x=>key(x.name))).size===a.length;
+          if(S.count!==176||S.stallions.length!==176||!unique(S.stallions))throw Error('stallion master invariant');
+          if(M.count!==331||M.broodmares.length!==331||!unique(M.broodmares))throw Error('broodmare master invariant');
+          const unknown=M.broodmares.filter(x=>(+x.sp||0)===0&&(+x.st||0)===0&&(+x.pw||0)===0);
+          if(unknown.length!==33)throw Error('unknown broodmare count '+unknown.length);
+          if(T.stallionCount!==176||T.stallions.length!==176||T.broodmareCount!==331||T.broodmares.length!==331)throw Error('theory master counts');
+          if(T.stallions.some(x=>!Array.isArray(x.ancestor)||x.ancestor.length!==15||String(x.omoshiro||'').length!==4||String(x.migoto||'').length!==4))throw Error('stallion theory completeness');
+          if(T.broodmares.some(x=>!Array.isArray(x.ancestor)||x.ancestor.length!==15||String(x.omoshiro||'').length!==4))throw Error('broodmare theory completeness');
+          if(P.schemaVersion!==4||P.domesticStallionCount!==176||P.pedigreeStallionCount!==214||P.broodmareCount!==331||P.count!==P.horses.length||!unique(P.horses))throw Error('pedigree master invariant');
+          if(D.count!==33||D.pairs.length!==33)throw Error('direct elaborate exception count');
+          console.log(JSON.stringify({passed:true,stallions:176,broodmares:331,unknown:33,pedigreeSires:214,directExceptions:33}));
+          NODE
+
+      - name: Pre-push breeding regressions
+        run: |
+          node tests/breeding-core-postoptimization-safety.test.js
+          node tests/sale-planner-fixed-first-api.test.js
+          node tests/breed-pair-cache-filter-equivalence.test.js
+          node tests/breed-fixed-first-optimized-matrix.test.js
+          node tests/fourth-generation-bridge-collector.test.js
+          node tests/speed-cross-priority.test.js
+          node tests/st-cross-2400-utility-diagnostic.test.js
+          node tests/breed-portfolio-optimization-regression.test.js
+          node tests/mare-generation-advisor.test.js
+
+  commit:
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Ensure main has not moved
+        run: |
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$GITHUB_SHA"
+
+      - name: Download validated data
+        uses: actions/download-artifact@v4
+        with:
+          name: synced-game-master
+          path: /tmp/synced-game-master
+
+      - name: Install validated data
+        run: |
+          cp /tmp/synced-game-master/*.json data/
+          for f in data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json data/elaborate-direct-exceptions.json; do
+            python -m json.tool "$f" >/dev/null
+          done
+
+      - name: Ignore timestamp-only changes
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          paths=[
+            'data/stallions.json','data/default-broodmares.json','data/pedigree-master.json',
+            'data/theory-master.json','data/elaborate-direct-exceptions.json'
+          ]
+          def normalized(obj):
+              if isinstance(obj,dict):
+                  return {k:normalized(v) for k,v in obj.items() if k not in ('syncedAt','updatedAt')}
+              if isinstance(obj,list): return [normalized(x) for x in obj]
+              return obj
+          for path in paths:
+              current=json.loads(Path(path).read_text(encoding='utf-8'))
+              try:
+                  previous=json.loads(subprocess.check_output(['git','show',f'HEAD:{path}'],text=True))
+              except subprocess.CalledProcessError:
+                  continue
+              if normalized(current)==normalized(previous):
+                  Path(path).write_text(subprocess.check_output(['git','show',f'HEAD:{path}'],text=True),encoding='utf-8')
+          PY
+
+      - name: Commit validated data
         run: |
           if git diff --quiet -- data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json data/elaborate-direct-exceptions.json; then
-            echo 'No changes'
+            echo 'No substantive changes'
             exit 0
           fi
+          git diff --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json data/elaborate-direct-exceptions.json
           git commit -m 'Sync default Dabista pedigree and theory masters'
-          git push
+          git push origin HEAD:main

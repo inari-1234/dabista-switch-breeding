@@ -40,6 +40,12 @@ const c4=planner.createCollector({topN:16,poolN:96});
 for(const r of planner.iterateFourthPreview(mare,bridge.finish().bases))c4.push(r);
 const routes=c4.finish().pool;
 if(routes.length!==518)throw Error('g4 pool drift '+routes.length);
+const originalEvaluate=engine.evaluate;
+let evaluateCallsPerPortfolio=0;
+engine.evaluate=(...args)=>{evaluateCallsPerPortfolio++;return originalEvaluate(...args)};
+planner.withPortfolio(routes[0]);
+engine.evaluate=originalEvaluate;
+if(evaluateCallsPerPortfolio!==54)throw Error('combined portfolio must evaluate 54 unique mares, got '+evaluateCallsPerPortfolio);
 for(const r of routes){
   const actual=planner.withPortfolio(r).portfolio,expected=reference(r.finalChild);
   if(JSON.stringify(actual)!==JSON.stringify(expected))throw Error('portfolio mismatch '+r.id);
@@ -61,4 +67,4 @@ const expected={population:enriched.length,paretoCount:front.length,routes:front
 const actual=planner.portfolioPareto(routes,5);
 if(actual.population!==expected.population||actual.paretoCount!==expected.paretoCount)throw Error('pareto count drift');
 if(JSON.stringify(actual.routes.map(x=>x.id))!==JSON.stringify(expected.routes.map(x=>x.id)))throw Error('pareto ordering drift');
-console.log(JSON.stringify({passed:true,pool:routes.length,cohorts:{spst120:c120.length,spst130:c130.length},paretoCount:actual.paretoCount,portfolioMatch:true,paretoMatch:true},null,2));
+console.log(JSON.stringify({passed:true,pool:routes.length,cohorts:{spst120:c120.length,spst130:c130.length},evaluateCallsPerPortfolio,paretoCount:actual.paretoCount,portfolioMatch:true,paretoMatch:true},null,2));

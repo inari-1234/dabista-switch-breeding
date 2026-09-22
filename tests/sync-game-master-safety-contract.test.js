@@ -1,0 +1,30 @@
+'use strict';
+const fs=require('fs');
+const w=fs.readFileSync('.github/workflows/sync-game-master.yml','utf8');
+function section(start,end){
+  const a=w.indexOf('\n  '+start+':\n');
+  if(a<0)throw Error('missing '+start+' job');
+  const b=end? w.indexOf('\n  '+end+':\n',a+1):w.length;
+  if(end&&b<0)throw Error('missing '+end+' job');
+  return w.slice(a,b<0?w.length:b);
+}
+if(!/permissions:\n  contents: read/.test(w))throw Error('workflow default must be contents: read');
+const build=section('build','validate');
+const validate=section('validate','commit');
+const commit=section('commit',null);
+if(!build.includes('vm.runInContext'))throw Error('external tool extraction moved unexpectedly');
+if(/contents:\s*write/.test(build))throw Error('build job must not have write permission');
+if(/git push/.test(build))throw Error('build job must never push');
+if(!build.includes('actions/upload-artifact@v4'))throw Error('build artifact handoff missing');
+if(!/needs:\s*build/.test(validate)||!/contents:\s*read/.test(validate))throw Error('validate job must depend on build with read permission');
+if(!validate.includes('Pre-push breeding regressions'))throw Error('pre-push regressions missing');
+if(!validate.includes('breed-portfolio-optimization-regression.test.js'))throw Error('portfolio pre-push regression missing');
+if(!/needs:\s*validate/.test(commit))throw Error('commit must depend on validation');
+if(!commit.includes("github.ref == 'refs/heads/main'"))throw Error('commit job must be main-only');
+if(!/contents:\s*write/.test(commit))throw Error('commit job must be the only write boundary');
+if(/vm\.runInContext|urlopen\(|ds96_11\.js/.test(commit))throw Error('untrusted upstream execution leaked into write job');
+if(!commit.includes('Ensure main has not moved'))throw Error('main race guard missing');
+if(!commit.includes('git push origin HEAD:main'))throw Error('explicit non-force main push missing');
+const writeCount=(w.match(/contents:\s*write/g)||[]).length;
+if(writeCount!==1)throw Error('expected exactly one write permission boundary, got '+writeCount);
+console.log(JSON.stringify({passed:true,writeBoundaries:writeCount,buildReadOnly:true,validateBeforeCommit:true,mainRaceGuard:true},null,2));
