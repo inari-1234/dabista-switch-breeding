@@ -101,7 +101,15 @@ function theoryFilter(){
 function nitroFilter(){
   return $('#breedNitroFilter')?.value||'all';
 }
+function ensureStyle(){
+  if($('#breedIntegrationStyle'))return;
+  const s=document.createElement('style');
+  s.id='breedIntegrationStyle';
+  s.textContent='.breed-integration-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.breed-future-overview{margin-top:10px}.breed-future-head,.breed-future-row{display:grid;grid-template-columns:1.15fr 1.25fr 1fr;gap:6px;align-items:start}.breed-future-head{font-size:9px;color:#66736c;padding:4px 0;border-bottom:1px solid #dce2dd}.breed-future-row{font-size:10px;padding:6px 0;border-bottom:1px solid #e5ebe7}.breed-pair-details,.breed-future-detail{margin:7px 0;font-size:10px}.breed-pair-details summary,.breed-future-detail summary{cursor:pointer}.breed-danger-list>summary{cursor:pointer}@media(max-width:520px){.breed-integration-tools{grid-template-columns:1fr}.breed-future-head,.breed-future-row{grid-template-columns:1fr 1.15fr}.breed-future-head span:last-child,.breed-future-row span:last-child{grid-column:2}.breed-future-row b{grid-row:1 / span 2}}';
+  document.head.appendChild(s);
+}
 function ensureControls(){
+  ensureStyle();
   const controls=$('#breed .breed-controls');
   if(!controls)return;
   let cat=$('#breedCategory');
