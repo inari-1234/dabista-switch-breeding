@@ -11,45 +11,55 @@ const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: 
 
 for(const token of ['tier-elite','tier-high','tier-upper','tier-middle','tier-rebuild','tier-unknown'])need(v27,token,'mare tier tone');
 need(v27,'.mare-tier{padding:7px 11px;font-size:14px','mare tier prominence');
-need(v27,'今の育成方針','mare primary action cue');
-need(v27,'他の目的・補強方針・直仔データを見る','mare secondary-details collapse');
-need(v27,'<span class="mare-tier">\${esc(a.tier)}</span>','mare textual tier label');
+need(v27,'この牝馬を使う理由','mare decision reason');
+need(v27,'カード色＝母能力帯','mare color meaning');
+need(v27,'順位・他目的・血統評価を見る','mare secondary details collapse');
+need(v27,'何代で締めるか比較','generation purpose');
+need(v27,'おすすめ世代を決める','generation single primary action');
+need(v27,'generationSection.hidden=true','manual generation selector must be hidden from primary flow');
+need(v27,'if(notice)notice.hidden=true','technical generation notice must not be primary');
+need(v27,'if(run)run.hidden=true','separate manual design button must not duplicate the primary flow');
+need(v27,'generation-compare','generation comparison must stay compact');
+need(v27,'generation-key-reason','recommended generation must show a concise reason');
+if(v27.includes('世代推奨は勝率・産駒能力の確率予測ではありません。安全配合'))throw Error('long generation disclaimer must not remain in primary result');
 if(/\.mare-tier\{[^}]*font-size:(?:8|9)px/.test(v27))throw Error('mare tier regressed to tiny text');
 
 for(const token of ['function mareBand(','function productionContext(','function compareProductionForMare(','function rankProductionRoutes(','function recommendationCue('])need(advisor,token,'mare-aware recommendation');
 need(advisor,"key='longshot';label='一発狙い'","C/C longshot label");
-need(advisor,"if(band==='middle')return stable==='B'?3:stable==='A'?2:stable==='C'?1:0","middle stability context");
 need(advisor,"const middleMain=band==='middle'&&practical&&stable!=='C'","middle main lane must exclude Stable C upside");
-need(advisor,"if(band==='rebuild')return stable==='C'?3:stable==='B'?2:stable==='A'?1:0","rebuild stable-C context");
 
-for(const token of ['rankProductionRoutes','recommendationCue','本命候補','この軸 ','sale-cue-headline','sale-reason-chip','詳しい根拠・世代別データを見る'])need(v26,token,'sale recommendation hierarchy');
-need(v26,'「強馬生産型」が本命軸です','main-axis explanation');
-need(v26,'上振れ枠 ','risk candidate must not be mislabeled as main recommendation');
-need(v26,'総合点には合算しません','six-axis separation');
+need(v26,'331頭中 ','all mare data visibility');
+need(v26,'件を表示・選択できます','all mare data visibility count');
+need(v26,'色＝推薦度','recommendation color legend');
+need(v26,'緑：本命','main color semantics');
+need(v26,'黄：上振れ','upside color semantics');
+need(v26,'白：参考','reference color semantics');
+need(v26,'参考軸を見る（SP上限・クロス・ST・バランス・血統価値）','secondary axes must be collapsed');
+need(v26,"const tone=isMain?","non-main axes must not own recommendation colors");
+need(v26,"父実績C・安定Cのため本命外","C/C reference warning");
 need(v26,'function createMareProductionCollector(','sale production recommendations must be collected across the scanned generation');
-need(v26,'renderResults({base:finalBase,portfolio,productionRoutes,','sale render must receive full-scan mare-aware production routes');
-if(/productionSource=result\.base\.shortlists\?\.production\|\|result\.base\.profiles/.test(v26))throw Error('sale production recommendation regressed to old shortlist-only source');
 
 need(breed,"advisor?.compareProductionForMare","breed production mare-aware comparator");
-need(breed,'function createFutureProductionCollector(','breed future production must collect mare-aware routes across each scanned generation');
-need(breed,"profile==='production'?production2","breed future status must use full-scan mare-aware production route");
-need(breed,"advisor?.recommendationCue","breed concise reason cue");
-need(breed,'本命軸 ','breed main-axis label');
-need(breed,'上振れ枠 ','breed risk candidates must be visibly separated from main lane');
-need(breed,'この軸 ','breed non-main axis label');
-need(breed,'現在Pairの詳しい根拠を見る','breed details collapse');
+need(breed,'function createFutureProductionCollector(','breed future production must remain full-scan');
+need(breed,"const tone=isMain?","breed non-main axes must be visually neutral");
+need(breed,"父実績C・安定Cのため本命外","breed C/C reference warning");
+need(breed,'カード色＝推薦度：緑は本命、黄は上振れ、白は参考軸','breed color legend');
+need(breed,'function renderFutureOverview(result){}','separate six-axis future overview must stay removed');
+need(breed,"profile=selectedCategory()","future result must focus on the selected category");
+if(breed.includes("overview.className='card breed-future-overview'"))throw Error('six-category overview card must not return to primary UI');
 
-for(const token of ['tone-solid','tone-balance','tone-ceiling','tone-upside','tone-longshot'])need(css,token,'route color tone');
-need(css,'.breed-cue-headline{font-size:13px!important}','breed reason prominence');
-need(css,'.sale-cue-headline{font-size:13px!important}','sale reason prominence');
+need(css,'.sale-route.tone-neutral','reference sale cards must have a neutral style');
+need(css,'.breed-integrated-card.tone-neutral','reference breed cards must have a neutral style');
+need(css,'.sale-other-axes','secondary axes container');
 
 console.log(JSON.stringify({
   passed:true,
   contract:{
-    mare:'whole-card tier tone + large textual tier + primary strategy; details collapsed',
-    sale:'main production axis collects mare-aware routes across the full scanned generation; each card shows role/reason before details',
-    breed:'same mare-aware full-scan production comparison and reason cues',
-    accessibility:'color is redundant; tier/risk/axis labels remain textual',
-    scoring:'six axes stay separate; no seventh overall score'
+    mare:'decision reason first; full rank data collapsed; card color means ability band',
+    generation:'automatic recommendation first; manual generation choice hidden; comparison compact',
+    sale:'main production recommendations visible; five reference axes collapsed',
+    breed:'green/yellow/white mean recommendation role, never category; C/C reference is explicit',
+    future:'selected category only in primary UI; six-category table removed',
+    scoring:'six axes remain separate internally; no seventh overall score'
   }
 },null,2));
