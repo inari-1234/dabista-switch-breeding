@@ -35,13 +35,24 @@
     return out;
   }
 
+  const preparedAncestorCache=new WeakMap();
+  function prepareAncestor(a){
+    if(!Array.isArray(a))return{canon:[],key:[]};
+    const sig=a.map(x=>String(x??'')).join('\u001f');
+    const got=preparedAncestorCache.get(a);
+    if(got&&got.sig===sig)return got.value;
+    const value={canon:a.map(canon),key:a.map(key)};
+    preparedAncestorCache.set(a,{sig,value});
+    return value;
+  }
+
   function collectRawCrosses(sire,mare){
     if(!sire||!mare||!validAnc(sire.ancestor)||!validAnc(mare.ancestor))return[];
-    const out=[];
-    for(let i=0;i<mare.ancestor.length;i++){
-      if(canon(sire.name)&&canon(sire.name)===canon(mare.ancestor[i]))out.push({name:mare.ancestor[i],sireGen:1,mareGen:depth(i),sireIndex:-1,mareIndex:i,directSire:true});
-      for(let j=0;j<sire.ancestor.length;j++){
-        if(canon(sire.ancestor[j])&&canon(sire.ancestor[j])===canon(mare.ancestor[i]))out.push({name:sire.ancestor[j],sireGen:depth(j),mareGen:depth(i),sireIndex:j,mareIndex:i,directSire:false});
+    const sa=sire.ancestor,ma=mare.ancestor,S=prepareAncestor(sa),M=prepareAncestor(ma),sireName=canon(sire.name),out=[];
+    for(let i=0;i<ma.length;i++){
+      if(sireName&&sireName===M.canon[i])out.push({name:ma[i],sireGen:1,mareGen:depth(i),sireIndex:-1,mareIndex:i,directSire:true});
+      for(let j=0;j<sa.length;j++){
+        if(S.canon[j]&&S.canon[j]===M.canon[i])out.push({name:sa[j],sireGen:depth(j),mareGen:depth(i),sireIndex:j,mareIndex:i,directSire:false});
       }
     }
     return out;
@@ -50,22 +61,23 @@
   function danger(sire,mare){
     const sa=sire?.ancestor||[],ma=mare?.ancestor||[];
     if(!validAnc(sa)||!validAnc(ma))return{available:false,inbreedCount:0,kiken:false,tyokiken:false,dangerous:false,effectiveCrosses:[],rawCrosses:[],reason:'15祖先不足'};
-    const blocked=new Set(),effective=[];let cnt=0,tyokiken=false,stop2=false,direct=null,twoByTwo=null;
+    const S=prepareAncestor(sa),M=prepareAncestor(ma),sireName=canon(sire?.name),blocked=new Set(),effective=[],raw=[];let cnt=0,tyokiken=false,stop2=false,direct=null,twoByTwo=null;
     for(let i=0;i<ma.length;i++){
-      if(canon(sire.name)&&canon(sire.name)===canon(ma[i])){
-        tyokiken=true;stop2=true;
-        if(!direct)direct={name:ma[i],sireGen:1,mareGen:depth(i),sireIndex:-1,mareIndex:i,directSire:true};
+      const directMatch=!!sireName&&sireName===M.canon[i];
+      if(directMatch){
+        const x={name:ma[i],sireGen:1,mareGen:depth(i),sireIndex:-1,mareIndex:i,directSire:true};
+        raw.push(x);tyokiken=true;stop2=true;
+        if(!direct)direct=x;
       }
-      if(stop2)continue;
+      const allowEffective=!stop2;
       for(let j=0;j<sa.length;j++){
-        if(blocked.has(j+','+i))continue;
-        if(canon(sa[j])&&canon(sa[j])===canon(ma[i])){
-          cnt++;
-          const x={name:sa[j],sireGen:depth(j),mareGen:depth(i),sireIndex:j,mareIndex:i,directSire:false};
-          effective.push(x);
-          if(i===0&&j===0){tyokiken=true;if(!twoByTwo)twoByTwo=x}
-          for(const lock of descendantLocks(i,j))blocked.add(lock);
-        }
+        if(!S.canon[j]||S.canon[j]!==M.canon[i])continue;
+        const x={name:sa[j],sireGen:depth(j),mareGen:depth(i),sireIndex:j,mareIndex:i,directSire:false};
+        raw.push(x);
+        if(!allowEffective||blocked.has(j+','+i))continue;
+        cnt++;effective.push(x);
+        if(i===0&&j===0){tyokiken=true;if(!twoByTwo)twoByTwo=x}
+        for(const lock of descendantLocks(i,j))blocked.add(lock);
       }
     }
     const kiken=cnt>6;
@@ -73,7 +85,7 @@
     if(direct)reasons.push(`${direct.name} 1×${direct.mareGen}`);
     if(twoByTwo)reasons.push(`${twoByTwo.name} 2×2`);
     if(kiken)reasons.push(`有効クロス${cnt}本`);
-    return{available:true,inbreedCount:cnt,kiken,tyokiken,dangerous:kiken||tyokiken,effectiveCrosses:effective,rawCrosses:collectRawCrosses(sire,mare),directSireCross:direct,twoByTwo,reason:reasons.join(' / ')};
+    return{available:true,inbreedCount:cnt,kiken,tyokiken,dangerous:kiken||tyokiken,effectiveCrosses:effective,rawCrosses:raw,directSireCross:direct,twoByTwo,reason:reasons.join(' / ')};
   }
 
   function theoryFlags(sire,mare){
@@ -115,11 +127,12 @@
 
     function calcNitro(a,b){
       if(!validAnc(a)||!validAnc(b))return null;
-      const seen=new Set(),factors=[];let sp=0,st=0,pw=0;
-      for(const name of [...a,...b]){
-        const k=key(name);if(!k||seen.has(k))continue;seen.add(k);
+      const A=prepareAncestor(a),B=prepareAncestor(b),seen=new Set(),factors=[];let sp=0,st=0,pw=0;
+      const names=[...a,...b],keys=[...A.key,...B.key];
+      for(let i=0;i<keys.length;i++){
+        const k=keys[i];if(!k||seen.has(k))continue;seen.add(k);
         const e=effectMap.get(k);if(!e)continue;
-        const dsp=(e.short||0)*2+(e.speed||0),dst=(e.guts||0)+(e.long||0)-(e.short||0),dp=e.power||0;
+        const name=names[i],dsp=(e.short||0)*2+(e.speed||0),dst=(e.guts||0)+(e.long||0)-(e.short||0),dp=e.power||0;
         sp+=dsp;st+=dst;pw+=dp;
         factors.push({name,dsp,dst,dp,short:e.short||0,speed:e.speed||0,power:e.power||0,guts:e.guts||0,long:e.long||0});
       }
@@ -128,11 +141,11 @@
 
     function elaborate(sire,mare,dangerResult){
       if(!sire||!mare||!validAnc(sire.ancestor)||!validAnc(mare.ancestor))return{available:false,raw:false,effective:false,evidence:[],knownDifference:false};
-      const evidence=[];
+      const evidence=[],S=prepareAncestor(sire.ancestor),M=prepareAncestor(mare.ancestor);
       const directKey=key(sire.name)+'|'+key(mare.name),direct=directSet.get(directKey);
       if(direct)evidence.push({kind:'direct-exception',source:'upstream-kakutei',sire:sire.name,mare:mare.name,raw:direct.raw||null});
       for(let i=0;i<7;i++)for(let j=0;j<7;j++){
-        const p=pairSet.get(key(sire.ancestor[i])+'|'+key(mare.ancestor[j]));
+        const p=pairSet.get(S.key[i]+'|'+M.key[j]);
         if(p)evidence.push({kind:'confirmed-pair',source:'kotta-pairs',a:p.a,b:p.b,sireAncestorIndex:i,mareAncestorIndex:j});
       }
       const dedup=[],seen=new Set();
