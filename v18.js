@@ -51,6 +51,7 @@ function updateTheoryStatus(){
   el.innerHTML=`<b>${esc(h.name)}</b> の面白用系統：${codeText(m.omoshiroSystems)}。候補種牡馬ごとに「面白」「見事」「完璧」をゲーム内系統データから判定します。完璧は面白＋見事の同時成立で、追加ボーナスはありません。`;
 }
 function candidateName(card){
+  if(card.dataset.sireName)return card.dataset.sireName;
   const b=card.querySelector('b');if(!b)return'';
   return b.textContent.replace(/^\s*\d+\.\s*/,'').trim();
 }
