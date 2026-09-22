@@ -1,6 +1,6 @@
 {
-  "version": "1.18.0",
-  "build": "2026.09.21-44",
-  "releasedAt": "2026-09-21T21:32:00+09:00",
-  "message": "全ファイル再監査に基づき、CI回帰範囲・release wiring・legacy fallback・asset cache整合性を強化"
+  "version": "1.19.0",
+  "build": "2026.09.22-45",
+  "releasedAt": "2026-09-22T11:30:00+09:00",
+  "message": "配合タブをPair Index基盤へ統合し、6カテゴリ将来性・固定初手父3代全探索・4代compact bridge・復元DB整合性を追加"
 }
