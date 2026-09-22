@@ -259,18 +259,19 @@
         spst:known?val(stats.sp)+val(stats.st):null
       };
     }
-    function crossEffectSummary(pair){
+    function pairCrossSummaries(pair){
       const eff=pair?.danger?.effectiveCrosses||[],factors=pair?.nitro?.factors||[];
-      const fm=new Map(factors.map(x=>[key(x.name),x])),seen=new Set(),names=[];
+      const fm=new Map(factors.map(x=>[key(x.name),x])),seen=new Set(),names=[],speedNames=[];
       let short=0,speed=0,power=0,guts=0,long=0;
       for(const x of eff){
         const k=key(x.name);if(!k||seen.has(k))continue;seen.add(k);
         const f=fm.get(k);if(!f)continue;
         const sh=val(f.short),sp=val(f.speed),pw=val(f.power),gu=val(f.guts),lo=val(f.long);
+        if(sh||sp)speedNames.push(x.name);
         if(!sh&&!sp&&!pw&&!gu&&!lo)continue;
         short+=sh;speed+=sp;power+=pw;guts+=gu;long+=lo;names.push(x.name);
       }
-      return{
+      const effect={
         anyAbility:names.length>0,names,
         short,speed,power,guts,long,
         speedSupport:short>0||speed>0,
@@ -281,19 +282,13 @@
         stNitroContribution:long+guts-short,
         pwNitroContribution:power
       };
+      return{
+        effect,
+        speed:{has:speedNames.length>0,count:speedNames.length,short,speed,effect:effect.spNitroContribution,names:speedNames}
+      };
     }
-    function speedCrossSummary(pair){
-      const fx=crossEffectSummary(pair);
-      const names=[];
-      const eff=pair?.danger?.effectiveCrosses||[],factors=pair?.nitro?.factors||[];
-      const fm=new Map(factors.map(x=>[key(x.name),x])),seen=new Set();
-      for(const x of eff){
-        const k=key(x.name);if(!k||seen.has(k))continue;seen.add(k);
-        const f=fm.get(k);if(!f)continue;
-        if(val(f.short)||val(f.speed))names.push(x.name);
-      }
-      return{has:names.length>0,count:names.length,short:fx.short,speed:fx.speed,effect:fx.spNitroContribution,names};
-    }
+    function crossEffectSummary(pair){return pairCrossSummaries(pair).effect}
+    function speedCrossSummary(pair){return pairCrossSummaries(pair).speed}
     function compactEffectPath(items){
       const path=(items||[]).map((item,i)=>{
         const fx=item?.danger?crossEffectSummary(item):(item||{});
@@ -329,11 +324,11 @@
       };
     }
     function compactFinal(pair,sireRecord){
-      const n=pair.nitro||{},t=pair.theory||{},ss=statsForSire(sireRecord.name)||{};
+      const n=pair.nitro||{},t=pair.theory||{},ss=statsForSire(sireRecord.name)||{},cross=pairCrossSummaries(pair);
       return{
         sp:val(n.sp),st:val(n.st),pw:val(n.pw),
-        speedCross:speedCrossSummary(pair),
-        crossEffects:crossEffectSummary(pair),
+        speedCross:cross.speed,
+        crossEffects:cross.effect,
         theory:{interesting:!!t.interesting,magnificent:!!t.magnificent,perfect:!!t.perfect},
         elaborate:!!pair.elaborate?.effective,
         sireStats:{record:ss.record||'-',guts:ss.guts||'-',stable:ss.stable||'-',minD:val(ss.minD),maxD:val(ss.maxD),price:val(ss.price)}
@@ -357,6 +352,40 @@
         finalChild:pair.child
       };
     }
+    function materialSpeedThrough(base){
+      const prev=base?.materialSpeedCross||{},last=base?.final?.speedCross||{},active=!!last.has;
+      return{
+        has:!!prev.has||active,
+        stages:val(prev.stages)+(active?1:0),
+        count:val(prev.count)+(active?val(last.count):0),
+        short:val(prev.short)+(active?val(last.short):0),
+        speed:val(prev.speed)+(active?val(last.speed):0),
+        effect:val(prev.effect)+(active?val(last.effect):0)
+      };
+    }
+    function materialLongThrough(base){
+      const prev=base?.materialLongCross||{},last=base?.final?.crossEffects||{},active=!!last.longDistance;
+      return{
+        has:!!prev.has||active,
+        stages:val(prev.stages)+(active?1:0),
+        names:active?[...new Set([...(prev.names||[]),...(last.names||[])])]:[...(prev.names||[])]
+      };
+    }
+    function extendRoute(base,sireRecord,pair,method){
+      const name=sireRecord.name,generation=(base?.sires?.length||0)+1,final=compactFinal(pair,sireRecord),sp=final.speedCross,fx=final.crossEffects;
+      return{
+        id:(base.id?base.id+'__':'')+key(name),
+        sires:[...(base.sires||[]),name],
+        generation,
+        method,
+        final,
+        speedCrossPath:[...(base.speedCrossPath||[]),{generation,has:!!sp.has,count:val(sp.count),short:val(sp.short),speed:val(sp.speed),effect:val(sp.effect),names:[...(sp.names||[])]}],
+        materialSpeedCross:materialSpeedThrough(base),
+        crossEffectPath:[...(base.crossEffectPath||[]),{...fx,names:[...(fx.names||[])],generation}],
+        materialLongCross:materialLongThrough(base),
+        finalChild:pair.child
+      };
+    }
     function safe(pair){return !!pair&&!pair.danger?.kiken&&!pair.danger?.tyokiken}
     function evaluateDirectPair(mareInput,sireInput){
       const m=typeof mareInput==='string'?mare(mareInput):mareInput;
@@ -369,11 +398,7 @@
       if(!baseRoute?.finalChild||baseRoute.sires?.length!==1)return;
       for(const s2 of stallions){
         const p2=engine.evaluate(s2,baseRoute.finalChild);if(!safe(p2)||!p2.child)continue;
-        yield routeFrom(
-          [...baseRoute.sires,s2.name],p2,'exact-two-generation',
-          [...(baseRoute.speedCrossPath||[]),p2],
-          [...(baseRoute.crossEffectPath||[]),p2]
-        );
+        yield extendRoute(baseRoute,s2,p2,'exact-two-generation');
       }
     }
     function createDirectPairIndex(mareInput){
@@ -428,11 +453,7 @@
         if(!base?.finalChild||base.sires?.length!==2)continue;
         for(const s3 of stallions){
           const p3=engine.evaluate(s3,base.finalChild);if(!safe(p3)||!p3.child)continue;
-          yield routeFrom(
-            [...base.sires,s3.name],p3,'conditional-three-generation-preview',
-            [...(base.speedCrossPath||[]),p3],
-            [...(base.crossEffectPath||[]),p3]
-          );
+          yield extendRoute(base,s3,p3,'conditional-three-generation-preview');
         }
       }
     }
@@ -442,11 +463,7 @@
         if(!base?.finalChild||base.sires?.length!==3)continue;
         for(const s4 of stallions){
           const p4=engine.evaluate(s4,base.finalChild);if(!safe(p4)||!p4.child)continue;
-          yield routeFrom(
-            [...base.sires,s4.name],p4,'conditional-four-generation-preview',
-            [...(base.speedCrossPath||[]),p4],
-            [...(base.crossEffectPath||[]),p4]
-          );
+          yield extendRoute(base,s4,p4,'conditional-four-generation-preview');
         }
       }
     }
