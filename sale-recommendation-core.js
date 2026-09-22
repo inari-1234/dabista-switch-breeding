@@ -433,6 +433,98 @@
       };
     }
 
+    function mareBand(assessment){
+      if(!assessment?.abilityKnown)return'unknown';
+      const p=val(assessment?.ranks?.spst?.topPercent,100);
+      if(p<=25)return'high';
+      if(p<=60)return'middle';
+      return'rebuild';
+    }
+    function stabilityPreference(stable,band){
+      if(band==='high')return stable==='A'?3:stable==='B'?2:stable==='C'?1:0;
+      if(band==='middle')return stable==='B'?3:stable==='A'?2:stable==='C'?1:0;
+      if(band==='rebuild')return stable==='C'?3:stable==='B'?2:stable==='A'?1:0;
+      return stable==='B'?3:stable==='C'?2:stable==='A'?1:0;
+    }
+    function productionContext(route,assessment){
+      const f=route?.final||{},ss=f.sireStats||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
+      const record=String(ss.record||'?'),stable=String(ss.stable||'?'),recordGrade=grade(record),band=mareBand(assessment);
+      const multi=(route?.sires||[]).length>1;
+      const speedSupport=!multi||!!f.speedCross?.has||!!route?.materialSpeedCross?.has;
+      const viable=sp>=15&&st>=5,eliteLine=sp>=17&&st>=5,practical=viable&&recordGrade>=2;
+      const stableRank=stabilityPreference(stable,band);
+      const vector=[
+        bool(speedSupport),
+        bool(practical),
+        bool(viable),
+        recordGrade,
+        bool(eliteLine),
+        stableRank,
+        sp,st,grade(ss.guts),pw,
+        bool(f.speedCross?.has),val(route?.materialSpeedCross?.stages),
+        bool(f.theory?.magnificent),bool(f.elaborate),bool(f.theory?.interesting)
+      ];
+      let key='conditional',label='条件付き',headline='条件を確認して比較';
+      if(record==='C'&&stable==='C'){
+        key='longshot';label='一発狙い';headline='上振れ幅はあるが本命より再現性を優先しない';
+      }else if(record==='C'){
+        key='low-record';label='血統値先行';headline='血統値は魅力だが父実績Cを許容する候補';
+      }else if(stable==='C'){
+        key=band==='rebuild'?'rebuild-upside':'upside';
+        label=band==='rebuild'?'再建の上振れ':'上振れ寄り';
+        headline=band==='rebuild'?'低めの母から上振れを狙う候補':'実績は確保しつつ振れ幅を取る候補';
+      }else if(band==='high'&&stable==='A'){
+        key='preserve';label='母能力活用';headline='高い母能力を再現しながら伸ばす候補';
+      }else if(recordGrade>=2&&stable==='B'){
+        key='solid';label='本命・標準';headline='実績と安定のバランスを取りやすい候補';
+      }else if(recordGrade>=2){
+        key='solid';label='堅実候補';headline='実績を確保して再現性を優先する候補';
+      }
+      const reasons=[];
+      if(viable)reasons.push('SP15/ST5');
+      if(eliteLine)reasons.push('SP17/ST5');
+      if(record!=='?')reasons.push('実績'+record);
+      if(stable!=='?')reasons.push('安定'+stable);
+      if(f.speedCross?.has)reasons.push('最終SPクロス');
+      else if(route?.materialSpeedCross?.has)reasons.push('途中SP補強');
+      return{band,key,label,headline,reasons,vector,viable,eliteLine,practical,record,stable,recordGrade,stableRank,speedSupport};
+    }
+    function compareProductionForMare(assessment){
+      return(a,b)=>{
+        const A=productionContext(a,assessment).vector,B=productionContext(b,assessment).vector;
+        for(let i=0;i<Math.max(A.length,B.length);i++){const d=(B[i]||0)-(A[i]||0);if(d)return d}
+        return planner.compareProfile('production')(a,b);
+      };
+    }
+    function rankProductionRoutes(routes,assessment,limit=3){
+      return[...(routes||[])].sort(compareProductionForMare(assessment)).slice(0,limit);
+    }
+    function recommendationCue(route,profile,assessment){
+      if(!route)return{key:'neutral',label:'比較候補',headline:'評価候補',reasons:[]};
+      const f=routeFacts(route),reasons=[];
+      if(profile==='production'){
+        const p=productionContext(route,assessment);
+        return{key:p.key,label:p.label,headline:p.headline,reasons:p.reasons.slice(0,4)};
+      }
+      if(profile==='sp'){
+        reasons.push('SP '+f.sp);if(f.st>=5)reasons.push('ST '+f.st);if(f.record!=='?')reasons.push('実績'+f.record);
+        return{key:'ceiling',label:'SP上限候補',headline:'SP上限を伸ばす血統候補',reasons:reasons.slice(0,4)};
+      }
+      if(profile==='speedCross'){
+        reasons.push('SP '+f.sp);if(f.speedCross)reasons.push('SPクロス');if(f.materialSpeedCross)reasons.push('途中SP補強');if(f.record!=='?')reasons.push('実績'+f.record);
+        return{key:'ceiling',label:'SPクロス候補',headline:'SP系クロスで上限を補強する候補',reasons:reasons.slice(0,4)};
+      }
+      if(profile==='st'){
+        reasons.push('ST '+f.st);if(f.longDistanceCross)reasons.push('長距離クロス');if(f.distance2400)reasons.push('2400m+父');if(f.record!=='?')reasons.push('実績'+f.record);
+        return{key:'distance',label:'ST候補',headline:'ST・距離側を補強する候補',reasons:reasons.slice(0,4)};
+      }
+      if(profile==='balance'){
+        if(f.sp>=15&&f.st>=5)reasons.push('SP15/ST5');reasons.push('SP+ST '+f.spst);if(f.record!=='?')reasons.push('実績'+f.record);
+        return{key:'balance',label:'バランス候補',headline:'SP/STを両立する候補',reasons:reasons.slice(0,4)};
+      }
+      return{key:'neutral',label:'比較候補',headline:'別軸で比較する候補',reasons};
+    }
+
     function materialUpgradeReasons(prev,next,goal,assessment){
       if(!prev||!next)return next?['比較対象となる次世代候補が成立']: [];
       const a=routeFacts(prev),b=routeFacts(next),reasons=[];
@@ -724,7 +816,7 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,routeForGoal,routeFacts,productionQuality,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
+      directUseLabels,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,recommendationCue,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
       profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
     };
   }
