@@ -383,6 +383,7 @@
         speedCross:bool(x.has),speedCrossCount:val(x.count),speedCrossEffect:val(x.effect),shortCross:val(x.short),speedOnlyCross:val(x.speed),
         materialSpeedCross:bool(mx.has),materialSpeedCrossStages:val(mx.stages),materialSpeedCrossCount:val(mx.count),
         materialLongCross:bool(ml.has),materialLongCrossStages:val(ml.stages),materialLongCrossNames:[...(ml.names||[])],
+        materialShortDistance:bool(route?.materialShortDistance?.has),materialShortDistanceStages:val(route?.materialShortDistance?.stages),materialShortDistanceBestMinD:val(route?.materialShortDistance?.bestMinD),
         minD:val(ss.minD),maxD:val(ss.maxD),distance2400:val(ss.maxD)>=2400,long2400:val(ss.maxD)>=2400,
         longDistanceCross:bool(f.crossEffects?.longDistance),gutsCross:bool(f.crossEffects?.gutsSupport),powerCross:bool(f.crossEffects?.powerSupport),abilityCross:bool(f.crossEffects?.anyAbility),
         distanceEvidence:val(ss.maxD)>=2400?(f.crossEffects?.longDistance?3:2):(f.crossEffects?.longDistance?1:0),
@@ -470,8 +471,11 @@
       const finalCross=!!f.speedCross?.has;
       const materialCross=!!route?.materialSpeedCross?.has;
       const theorySupport=!!f.theory?.magnificent||!!f.elaborate;
+      const materialShort=shortDistanceRelevant&&!!route?.materialShortDistance?.has;
+      const materialShortBest=val(route?.materialShortDistance?.bestMinD);
       const compensationSignals={
         shortDistance:shortDistanceRelevant&&shortTier>=2,
+        intermediateShortDistance:materialShort,
         strongNitro,
         balancedNitro,
         finalCross,
@@ -489,6 +493,7 @@
         recordGrade,
         stableRank,
         shortDistanceRelevant?shortTier:0,
+        bool(materialShort),materialShortBest?Math.max(0,1300-materialShortBest):0,
         bool(strongNitro),bool(balancedNitro),
         sp,st,pw,
         bool(finalCross),val(route?.materialSpeedCross?.stages),
@@ -510,6 +515,7 @@
       if(record!=='?')reasons.push('実績'+record);
       if(stable!=='?')reasons.push('安定'+stable);
       if(shortDistanceRelevant&&shortTier)reasons.push('距離下限'+minD+'m');
+      if(materialShort)reasons.push('途中短距離父'+materialShortBest+'m');
       if(eliteLine)reasons.push('SP17/ST5');
       else if(viable)reasons.push('SP15/ST5');
       if(f.speedCross?.has)reasons.push('最終SPクロス');
@@ -518,6 +524,7 @@
         band,key,label,headline,reasons,vector,viable,eliteLine,practical,middleMain,
         record,stable,recordGrade,stableRank,speedSupport,
         spNeedsSupport,shortDistanceRelevant,minD,maxD,shortTier,distanceEvidence,
+        materialShort,materialShortBest,
         compensationSignals,compensationCount,requiredSignals,overrideEligible
       };
     }
@@ -545,6 +552,7 @@
         if(p.recordGrade>b.recordGrade)add(advantages,'実績'+p.record+'が本命より上');
         if(p.stableRank>b.stableRank)add(advantages,'安定'+p.stable+'で再現性寄り');
         if(p.shortDistanceRelevant&&p.shortTier>b.shortTier)add(advantages,'距離下限'+p.minD+'mでSP側を狙う');
+        if(p.materialShort&&(!b.materialShort||p.materialShortBest<(b.materialShortBest||9999)))add(advantages,'途中'+p.materialShortBest+'m父でSP側の選抜機会');
         if(f.sp>bf.sp)add(advantages,'SPニトロ +'+(f.sp-bf.sp));
         if(f.st>bf.st)add(advantages,'STニトロ +'+(f.st-bf.st));
         if(f.pw>bf.pw)add(advantages,'PWニトロ +'+(f.pw-bf.pw));
@@ -560,7 +568,7 @@
       }
       let roleKey='balanced',roleLabel=rank===0?'総合本命':'別強み';
       if(p.record==='C'||p.stable==='C'){roleKey='upside';roleLabel='上振れ'}
-      else if(p.shortDistanceRelevant&&p.shortTier>=2&&(rank===0||p.shortTier>b.shortTier)){roleKey='speed';roleLabel='SP伝達重視'}
+      else if(p.shortDistanceRelevant&&((p.shortTier>=2&&(rank===0||p.shortTier>b.shortTier))||(rank>0&&p.materialShort&&(!b.materialShort||p.materialShortBest<(b.materialShortBest||9999))))){roleKey='speed';roleLabel='SP伝達重視'}
       else if(rank>0&&p.recordGrade>b.recordGrade){roleKey='record';roleLabel='実績重視'}
       else if(rank===0&&p.record==='A'){roleKey='record';roleLabel='実績重視'}
       else if(f.speedCross||f.materialSpeedCross){roleKey='speed';roleLabel='SP補強'}
@@ -587,7 +595,17 @@
         let pick=pool.findIndex(r=>{
           const final=r?.sires?.[r.sires.length-1]||'';
           const cue=productionCandidateCue(r,selected[0],assessment,selected.length);
-          return !usedFinal.has(final)&&cue.advantages.some(x=>!x.includes('近い条件'));
+          const p=productionContext(r,assessment),b=productionContext(selected[0],assessment);
+          const f=routeFacts(r),bf=routeFacts(selected[0]);
+          const meaningful=
+            p.recordGrade>b.recordGrade||
+            (p.shortDistanceRelevant&&p.shortTier>b.shortTier)||
+            (p.materialShort&&(!b.materialShort||p.materialShortBest<(b.materialShortBest||9999)))||
+            f.sp>bf.sp||f.st>=bf.st+2||f.pw>=bf.pw+2||
+            (f.speedCross&&!bf.speedCross)||
+            f.materialSpeedCrossStages>bf.materialSpeedCrossStages||
+            (f.magnificent&&!bf.magnificent)||(f.elaborate&&!bf.elaborate);
+          return !usedFinal.has(final)&&meaningful;
         });
         if(pick<0)pick=pool.findIndex(r=>!usedFinal.has(r?.sires?.[r.sires.length-1]||''));
         if(pick<0)pick=0;
