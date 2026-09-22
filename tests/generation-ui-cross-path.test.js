@@ -240,8 +240,8 @@ const unknownLabel=advisor.recommendGeneration({
   goal:'arc',assessment:unknownAssessment,
   generations:{1:{summary:{bestRoute:fakeRoute(0,15,6)}}}
 }).label;
-assert.ok(unknownLabel.startsWith('血統上は直仔')&&unknownLabel.includes('確認前提')&&!unknownLabel.includes('直仔推奨'),
-  'unknown mare generation label must remain a bloodline assessment, not a confirmed recommendation');
+assert.strictEqual(unknownLabel,'血統上は直仔条件付き（能力/根拠確認前提）',
+  'unknown mare with quantitative Arc bloodline but missing distance support must stay conditional, not a confirmed recommendation');
 const unknownBelowLabel=advisor.recommendGeneration({
   goal:'arc',assessment:unknownAssessment,
   generations:{1:{summary:{bestRoute:fakeRoute(0,8,14)}}}
