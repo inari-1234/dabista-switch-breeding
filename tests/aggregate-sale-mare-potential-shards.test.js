@@ -19,6 +19,7 @@ const focus={};
 const samples={};
 const tradeoffs={bc:{},rebuild:{}};
 const rebuildFreedomAudit={};
+const rebuildFreedomTrial={};
 function mergeTradeoff(dst,src){
   for(const [k,v] of Object.entries(src||{})){
     if(k==='samples'&&Array.isArray(v)){
@@ -52,6 +53,7 @@ for(const file of files){
   mergeTradeoff(tradeoffs.bc,x.tradeoffs?.bc);
   mergeTradeoff(tradeoffs.rebuild,x.tradeoffs?.rebuild);
   mergeTradeoff(rebuildFreedomAudit,x.rebuildFreedomAudit);
+  mergeTradeoff(rebuildFreedomTrial,x.rebuildFreedomTrial);
   for(const [k,arr] of Object.entries(x.samples||{})){
     samples[k]??=[];
     for(const item of arr)if(samples[k].length<8)samples[k].push(item);
@@ -81,6 +83,7 @@ console.log(JSON.stringify({
   preferredMatrix,
   tradeoffs,
   rebuildFreedomAudit,
+  rebuildFreedomTrial,
   focus,
   samples
 },null,2));
