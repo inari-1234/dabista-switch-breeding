@@ -110,10 +110,10 @@ function inject(){
  style();
  const card=document.createElement('div');card.className='card';card.id='salePlanner';
  card.innerHTML=`
-  <div class="sale-head"><div><h3 class="section-title">セリ牝馬から設計</h3><p class="muted">繁殖牝馬331頭から、国内176種牡馬だけを種付け候補として探索します。外国種牡馬38頭は血統解析には使いますが、種付け候補には出しません。</p></div><span class="badge gold">Switch版限定</span></div>
+  <div class="sale-head"><div><h3 class="section-title">繁殖牝馬331頭から選ぶ</h3><p class="muted">検索で絞り込み、目的に合う牝馬から配合を設計します。</p></div><span class="badge gold">331頭登録</span></div>
   <div class="sale-controls">
-    <div class="field"><label>繁殖牝馬を検索</label><input id="saleMareSearch" type="search" placeholder="牝馬名を入力"></div>
-    <div class="field"><label>繁殖牝馬</label><select id="saleMareSelect"></select></div>
+    <div class="field"><label>牝馬名で検索</label><input id="saleMareSearch" type="search" placeholder="牝馬名を入力"></div>
+    <div class="field"><label>繁殖牝馬</label><select id="saleMareSelect"></select><div id="saleMareCount" class="sale-method"></div></div>
   </div>
   <div id="saleMareSummary" class="sale-mare-summary">繁殖牝馬マスタを読み込み中…</div>
   <div id="saleGoalSection"><label>目的</label><div class="sale-seg" id="saleGoalButtons">${goalButtons()}</div></div>
@@ -182,12 +182,14 @@ function fillMares(){
  const keep=db.salePlanner.mare||'エイスト';
  if(!names.length){
   sel.innerHTML='<option value="">該当なし</option>';
+  const count=$('#saleMareCount');if(count)count.textContent='331頭中 0件';
   $('#saleMareSummary').textContent='検索条件に一致する繁殖牝馬がありません。';
   resetGenerationSelection();signalMareContext('search-empty','');
   if($('#runSalePlanner'))$('#runSalePlanner').disabled=true;
   return;
  }
  sel.innerHTML=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
+ const count=$('#saleMareCount');if(count)count.textContent=`331頭中 ${names.length}件を表示・選択できます`;
  if(names.includes(keep)){
   sel.value=keep;
   if(previousUiMare!==keep)signalMareContext('search-restore',keep);
@@ -314,17 +316,22 @@ function routeHtml(route,index,goal,profile){
  const cue=recommendationAdvisor?.recommendationCue?.(route,profile,assessment)||{key:'neutral',label:'比較候補',headline:'評価候補',reasons:[]};
  const f=route.final||{},sx=f.speedCross||{},method=route.method==='conditional-four-generation-preview'?'4代目は条件付き仮プレビュー':route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'全探索範囲';
  const speedBadge=sx.has?'<span class="sale-reason-chip">SPクロス '+fmt(sx.count)+'</span>':'';
- const reasons=(cue.reasons||[]).slice(0,4).map(v=>'<span class="sale-reason-chip">'+esc(v)+'</span>').join('')+speedBadge;
+ const stats=f.sireStats||{},cc=stats.record==='C'&&stats.stable==='C';
+ const extra=cc?'<span class="sale-reason-chip">実績C・安定C</span>':'';
+ const reasons=(cue.reasons||[]).slice(0,3).map(v=>'<span class="sale-reason-chip">'+esc(v)+'</span>').join('')+speedBadge+extra;
  const risky=['upside','rebuild-upside','longshot','low-record'].includes(cue.key);
- const rankLabel=profile==='production'
+ const isMain=profile==='production';
+ const rankLabel=isMain
   ?(risky?'上振れ枠 '+(index+1):(index===0?'本命候補':'有力候補 '+(index+1)))
-  :'この軸 '+(index+1)+'位';
- const tone=['solid','preserve','balance','distance','ceiling','upside','rebuild-upside','longshot','low-record'].includes(cue.key)?cue.key:'neutral';
+  :'参考軸 '+(index+1)+'位';
+ const tone=isMain?(['solid','preserve','upside','rebuild-upside','longshot','low-record'].includes(cue.key)?cue.key:'neutral'):'neutral';
+ const displayLabel=!isMain&&cc?'参考候補':cue.label;
+ const displayHeadline=!isMain&&cc?cue.headline+'。父実績C・安定Cのため本命外':cue.headline;
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
  const detail=productionHtml(route)+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'');
- return '<div class="sale-route tone-'+esc(tone)+'"><div class="sale-route-cue"><span class="sale-rank-label">'+esc(rankLabel)+'</span><span class="sale-cue-badge">'+esc(cue.label)+'</span></div>'+
-  '<div class="sale-cue-headline">'+esc(cue.headline)+'</div>'+
+ return '<div class="sale-route tone-'+esc(tone)+'"><div class="sale-route-cue"><span class="sale-rank-label">'+esc(rankLabel)+'</span><span class="sale-cue-badge">'+esc(displayLabel)+'</span></div>'+
+  '<div class="sale-cue-headline">'+esc(displayHeadline)+'</div>'+
   '<div class="sale-reason-row">'+reasons+'</div>'+
   '<div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div>'+
   '<div class="row"><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span><span class="sale-axis-note">'+esc(method)+'</span></div>'+
@@ -445,13 +452,18 @@ function renderResults(result){
  const productionSource=result.productionRoutes?.length?result.productionRoutes:(result.base.shortlists?.production||result.base.profiles?.production||[]);
  const production=recommendationAdvisor?.rankProductionRoutes?.(productionSource,assessment,3)||result.base.profiles?.production||[];
  const profiles={...result.base.profiles,production,sire:result.portfolio.routes};
- $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice"><b>見方：</b>「強馬生産型」が本命軸です。他の5軸はSP上限・クロス・ST・バランス・血統価値を別々に確認する候補で、総合点には合算しません。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
+ const otherOrder=order.filter(p=>p!=='production');
+ const mainHtml=profileHtml('production',profiles.production,goal,result.portfolioScope);
+ const otherHtml=otherOrder.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
+ $('#salePlannerResults').innerHTML=`<div class="card sale-decision-head"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜本命配合</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}</span></div>${caution}<div class="sale-color-legend"><b>色＝推薦度</b><span>緑：本命</span><span>黄：上振れ</span><span>白：参考</span></div><details class="sale-profile-detail"><summary>探索条件を見る</summary><div class="sale-method">${esc(method)}</div></details></div>`+
+ mainHtml+
+ `<details class="sale-other-axes"><summary>参考軸を見る（SP上限・クロス・ST・バランス・血統価値）</summary><div class="sale-other-axes-body">${otherHtml}</div></details>`;
 }
 async function runDesign(){
  if(!planner)return;
  const name=$('#saleMareSelect')?.value;if(!name)return;
  const gen=+db.salePlanner.generation;
- if(![1,2,3,4].includes(gen)){const p=$('#salePlannerProgress');if(p)p.textContent='世代が未選択です。世代診断を実行するか、直仔・2代・3代・4代を手動で選択してください。';return}
+ if(![1,2,3,4].includes(gen)){const p=$('#salePlannerProgress');if(p)p.textContent='先に「おすすめ世代を決める」を実行してください。';return}
  db.salePlanner.mare=name;save();const seq=++runSeq,btn=$('#runSalePlanner');btn.disabled=true;
  $('#salePlannerResults').innerHTML='';$('#salePlannerProgress').textContent='設計を開始します…';
  try{
