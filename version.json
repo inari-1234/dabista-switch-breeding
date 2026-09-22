@@ -1,6 +1,6 @@
 {
-  "version": "1.19.0",
-  "build": "2026.09.22-45",
-  "releasedAt": "2026-09-22T11:30:00+09:00",
-  "message": "配合タブをPair Index基盤へ統合し、6カテゴリ将来性・固定初手父3代全探索・4代compact bridge・復元DB整合性を追加"
+  "version": "1.19.1",
+  "build": "2026.09.22-46",
+  "releasedAt": "2026-09-22T17:42:00+09:00",
+  "message": "配合将来探索を高速化し、凝った配合索引化・collector/route summary再利用・portfolio重複評価削減を追加"
 }

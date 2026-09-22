@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BUILD=window.APP_BUILD||'2026.09.22-45',core=window.DABISTA_BREEDING_CORE;
+const BUILD=window.APP_BUILD||'2026.09.22-46',core=window.DABISTA_BREEDING_CORE;
 const host={version:1,status:'loading',ready:null,error:null};window.DABISTA_BREEDING_ENGINE=host;
 if(!core){host.status='failed';host.error='breeding-core missing';window.APP_ERRORS?.push({at:new Date().toISOString(),message:host.error});return}
 const json=async path=>{const u=new URL(path,location.href);u.searchParams.set('_',BUILD);const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error(path+' HTTP '+r.status);return r.json()};
