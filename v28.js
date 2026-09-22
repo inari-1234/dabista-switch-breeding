@@ -53,17 +53,17 @@ async function readiness(){
 function gate(f,goal){
  const speed=!!(f.speedCross||f.materialSpeedCross);
  if(goal==='arc'){
-   const qualified=f.sp>=14&&f.st>=6,strong=f.sp>=15&&f.st>=6;
-   return{qualified,strong,supported:qualified&&f.recordBPlus&&f.distanceEvidence>0,
+   const qualified=f.sp>=14&&f.st>=6,strong=f.sp>=15&&f.st>=6,bloodline=qualified&&f.distanceEvidence>0;
+   return{qualified,strong,bloodline,supported:bloodline&&f.recordBPlus,
      reason:strong?'SP15/ST6以上':qualified?'SP14/ST6以上':'SP/ST未達'};
  }
  if(goal==='bc'){
-   const qualified=f.sp>=17&&f.st>=5&&speed,strong=f.sp>=18&&f.st>=5&&speed;
-   return{qualified,strong,supported:qualified&&f.recordBPlus,
+   const qualified=f.sp>=17&&f.st>=5&&speed,strong=f.sp>=18&&f.st>=5&&speed,bloodline=qualified;
+   return{qualified,strong,bloodline,supported:bloodline&&f.recordBPlus,
      reason:strong?'SP18/ST5＋SP補強':qualified?'SP17/ST5＋SP補強':'BC条件未達'};
  }
  const qualified=f.sp>=15&&f.st>=5,strong=f.sp>=17&&f.st>=5;
- return{qualified,strong,supported:qualified,reason:strong?'SP17/ST5以上':'SP15/ST5以上'};
+ return{qualified,strong,bloodline:qualified,supported:qualified,reason:strong?'SP17/ST5以上':'SP15/ST5以上'};
 }
 function maternalPercent(row,goal){
  const r=row.assessment?.ranks;
@@ -105,15 +105,17 @@ function rowHtml(row,goal){
 function renderReverse(){
  const goal=$('#horseUseGoal')?.value||'arc',box=$('#horseUseResults'),st=$('#horseUseStatus');
  if(!box||!st)return;
- const supported=sortRows(activeRows.filter(r=>gate(r.facts,goal).supported),goal);
- const known=supported.filter(r=>r.assessment?.abilityKnown),unknown=supported.filter(r=>!r.assessment?.abilityKnown);
- st.textContent='安全Pair '+activeRows.length+'件 / 危険除外 '+activeUnsafe+'件 / 条件一致 '+supported.length+'件（能力既知 '+known.length+' / 未判明 '+unknown.length+'）';
- const knownHtml=known.slice(0,12).map(r=>rowHtml(r,goal)).join('');
- const unknownHtml=unknown.slice(0,8).map(r=>rowHtml(r,goal)).join('');
+ const bloodline=sortRows(activeRows.filter(r=>gate(r.facts,goal).bloodline),goal);
+ const confirmed=bloodline.filter(r=>gate(r.facts,goal).supported&&r.assessment?.abilityKnown);
+ const provisional=bloodline.filter(r=>!gate(r.facts,goal).supported||!r.assessment?.abilityKnown);
+ const strict=bloodline.filter(r=>gate(r.facts,goal).supported);
+ st.textContent='安全Pair '+activeRows.length+'件 / 危険除外 '+activeUnsafe+'件 / 血統条件一致 '+bloodline.length+'件 / 厳格条件一致 '+strict.length+'件';
+ const knownHtml=confirmed.slice(0,12).map(r=>rowHtml(r,goal)).join('');
+ const provisionalHtml=provisional.slice(0,10).map(r=>rowHtml(r,goal)).join('');
  box.innerHTML=
-   '<div class="horse-match-section"><h3>能力既知＋条件一致</h3>'+(knownHtml||'<div class="empty">該当なし</div>')+'</div>'+
-   '<div class="horse-match-section"><h3>血統候補（母能力未判明）</h3>'+(unknownHtml||'<div class="empty">該当なし</div>')+'</div>'+
-   '<p class="muted" style="margin-top:9px">表示は条件一致候補です。能力未判明馬を既知馬と同じ順位へ混ぜず、繁殖SP/ST/PWを推定しません。</p>';
+   '<div class="horse-match-section"><h3>厳格条件一致（母能力既知）</h3>'+(knownHtml||'<div class="empty">該当なし</div>')+'</div>'+
+   '<div class="horse-match-section"><h3>血統候補（能力確認待ち・父実績条件外を含む）</h3>'+(provisionalHtml||'<div class="empty">該当なし</div>')+'</div>'+
+   '<p class="muted" style="margin-top:9px">能力未判明馬や父実績未登録を厳格一致と同じ扱いにせず、血統候補として分離します。繁殖SP/ST/PWは推定しません。</p>';
 }
 function defaultAssessment(advisor,name){return advisor?.mareAssessment?.(name)||null}
 function ownedAssessment(advisor,h){
