@@ -9,6 +9,11 @@ const D=JSON.parse(fs.readFileSync('data/elaborate-direct-exceptions.json','utf8
 const IV=JSON.parse(fs.readFileSync('data/planner-inheritance-validation.json','utf8'));
 const kd=(IV.samples||[]).filter(x=>x?.sire&&x?.mare&&x?.ours?.kc!==x?.oracle?.k).map(x=>({sire:x.sire,mare:x.mare}));
 const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elaborateKnownDifferences:kd});
+const integration=fs.readFileSync('breed-integration.js','utf8');
+
+if(!/tf==='cross'&&\(d\.effectiveCrosses\|\|\[\]\)\.length>0/.test(integration)){
+ throw Error('integration cross filter must use effectiveCrosses');
+}
 
 const mareNames=['エイスト','スプリングスイーツ','フィットレオタード','ミニミニデート','ワカヒルメ'];
 const byName=new Map(T.stallions.map(x=>[x.name,x]));
@@ -29,7 +34,7 @@ const filters={
  extra:{
   all:p=>true,
   elaborate:p=>!!p.elaborate?.effective,
-  cross:p=>(p.danger?.rawCrosses||[]).length>0,
+  cross:p=>(p.danger?.effectiveCrosses||[]).length>0,
   safe:p=>!p.danger?.kiken&&!p.danger?.tyokiken
  },
  nitro:{
@@ -57,7 +62,7 @@ for(const mare of mares){
       const t=p.theory||{};
       ok=name==='all'||(name==='any'&&(t.interesting||t.magnificent))||(name==='interesting'&&t.interesting)||(name==='magnificent'&&t.magnificent)||(name==='perfect'&&t.perfect);
     }else if(group==='extra'){
-      const d=p.danger||{},e=p.elaborate||{},xs=d.rawCrosses||[];
+      const d=p.danger||{},e=p.elaborate||{},xs=d.effectiveCrosses||[];
       ok=name==='all'||(name==='elaborate'&&e.effective)||(name==='cross'&&xs.length>0)||(name==='safe'&&!d.kiken&&!d.tyokiken);
     }else{
       const n=engine.calcNitro(s.ancestor,mare.ancestor);
@@ -75,11 +80,11 @@ for(const mare of mares){
 if(mismatch)throw Error('filter mismatch '+mismatch);
 console.log(JSON.stringify({
  passed:true,
- method:'single evaluatePair cache vs legacy repeated per-filter calculations',
+ method:'single evaluatePair cache vs repeated per-filter calculations using current UI semantics',
  mares:mares.length,
  stallions:176,
  filterComparisons:checked,
  mismatch,
  summaries,
- conclusion:'Pair cache can preserve current theory/extra/nitro filter semantics, including a derived homebred mare.'
+ conclusion:'Pair cache preserves current theory/effective-cross/nitro filter semantics, including a derived homebred mare.'
 },null,2));
