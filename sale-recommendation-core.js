@@ -567,12 +567,21 @@
         if(!advantages.length)add(advantages,'本命と近い条件の別血統ルート');
       }
       let roleKey='balanced',roleLabel=rank===0?'総合本命':'別強み';
+      const recordAdv=rank>0&&p.recordGrade>b.recordGrade;
+      const speedAdv=rank>0&&(
+        (p.shortDistanceRelevant&&p.shortTier>b.shortTier)||
+        (p.materialShort&&(!b.materialShort||p.materialShortBest<(b.materialShortBest||9999)))||
+        f.sp>bf.sp||(f.speedCross&&!bf.speedCross)||
+        f.materialSpeedCrossStages>bf.materialSpeedCrossStages
+      );
+      const nitroAdv=rank>0&&(f.st>=bf.st+2||f.pw>=bf.pw+2);
       if(p.record==='C'||p.stable==='C'){roleKey='upside';roleLabel='上振れ'}
-      else if(p.shortDistanceRelevant&&((p.shortTier>=2&&(rank===0||p.shortTier>b.shortTier))||(rank>0&&p.materialShort&&(!b.materialShort||p.materialShortBest<(b.materialShortBest||9999))))){roleKey='speed';roleLabel='SP伝達重視'}
-      else if(rank>0&&p.recordGrade>b.recordGrade){roleKey='record';roleLabel='実績重視'}
+      else if(recordAdv){roleKey='record';roleLabel='実績重視'}
+      else if(speedAdv){roleKey='speed';roleLabel='SP補強'}
+      else if(nitroAdv){roleKey='nitro';roleLabel='ニトロ重視'}
+      else if(rank===0&&p.shortDistanceRelevant&&(p.shortTier>=2||p.materialShort)){roleKey='speed';roleLabel='SP伝達重視'}
       else if(rank===0&&p.record==='A'){roleKey='record';roleLabel='実績重視'}
-      else if(f.speedCross||f.materialSpeedCross){roleKey='speed';roleLabel='SP補強'}
-      else if(rank>0&&(f.sp>bf.sp||f.st>bf.st||f.pw>bf.pw)){roleKey='nitro';roleLabel='ニトロ重視'}
+      else if(rank===0&&(f.speedCross||f.materialSpeedCross)){roleKey='speed';roleLabel='SP補強'}
       const lead=advantages.slice(0,2).join('＋');
       const headline=rank===0
         ?lead+'を軸に本命化'
