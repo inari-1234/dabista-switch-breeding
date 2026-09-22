@@ -491,7 +491,7 @@ function loadFuture(firstSire){
       lruSet(continuationCache,key,result,CONTINUATION_CACHE_LIMIT);
       return result;
     }finally{
-      pending.delete(key);
+      if(pending.get(key)===token)pending.delete(key);
     }
   })();
   token.promise=promise;
