@@ -137,12 +137,33 @@ if(Object.keys(categories).length!==6)throw Error('six categories required');
 if(mare==='アマリン'&&assessment?.abilityKnown)throw Error('unknown mare ability regression');
 if(mare!=='アマリン'&&!assessment?.abilityKnown)throw Error('known mare unexpectedly unknown '+mare);
 
+const formalFuture={};
+for(const p of profiles){
+ const routes=Object.fromEntries([1,2,3,4].map(g=>[g,generations[g].profiles[p]]));
+ const x=advisor.profileFutureStatus({profile:p,routes});
+ formalFuture[p]={generation:x.generation,state:x.state,fit:{
+   arc:advisor.goalFit(x.selectedRoute,'arc').key,
+   bc:advisor.goalFit(x.selectedRoute,'bc').key,
+   rebuild:advisor.goalFit(x.selectedRoute,'rebuild').key
+ }};
+ if(x.generation!==categories[p].latestMaterialGeneration||x.state!==categories[p].state)throw Error(mare+' formal future mismatch '+p+' '+JSON.stringify({formal:formalFuture[p],diagnostic:categories[p]}));
+ if(JSON.stringify(x.transitions.map(t=>t.kind))!==JSON.stringify(categories[p].transitions.map(t=>t.kind)))throw Error(mare+' formal transition mismatch '+p);
+ const expectedKey=categories[p].selected?planner.routeKey({sires:categories[p].selected.sires}):null;
+ const gotKey=x.selectedRoute?planner.routeKey(x.selectedRoute):null;
+ if(gotKey!==expectedKey)throw Error(mare+' formal selected route mismatch '+p+' '+gotKey+' vs '+expectedKey);
+}
+const formalSire=advisor.profileFutureStatus({profile:'sire',portfolios});
+formalFuture.sire={generation:formalSire.generation,state:formalSire.state,fit:{stallion:advisor.goalFit(null,'stallion').key}};
+if(formalSire.generation!==categories.sire.latestMaterialGeneration||formalSire.state!==categories.sire.state)throw Error(mare+' formal sire future mismatch');
+if(JSON.stringify(formalSire.transitions.map(t=>t.kind))!==JSON.stringify(categories.sire.transitions.map(t=>t.kind)))throw Error(mare+' formal sire transitions mismatch');
+if(JSON.stringify(formalSire.selectedPortfolio)!==JSON.stringify(categories.sire.selected))throw Error(mare+' formal sire portfolio mismatch');
+
 const output={
  passed:true,mare,first,
  assessment:{abilityKnown:assessment?.abilityKnown||false,tier:assessment?.tier||'未判明',strategy:advisor.mareStrategy(mare)?.label||''},
  directProduction:{sires:firstRoute.sires,facts:facts(firstRoute)},
  counts:{two:r2.count,three:r3.count,four:r4.count,thirdBases:b3.length,fourthBases:b4.length},
- categories
+ categories,formalFuture
 };
 if(process.env.OUTPUT_FILE)fs.writeFileSync(process.env.OUTPUT_FILE,JSON.stringify(output,null,2));
 console.log(JSON.stringify(output,null,2));
