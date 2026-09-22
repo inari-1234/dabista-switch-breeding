@@ -221,7 +221,7 @@ function renderCard(entry,rank,profile,goal){
   const status=currentFutureStatus(entry.sire,profile);
   const fit=advisor.goalFit(r,goal);
   const future=futureDisplay(status);
-  const rankText=profile==='sire'?'候補':String(rank)+'.';
+  const rankText=String(rank)+'.';
   const portfolioNote=profile==='sire'?'<div class="muted">血統価値型は直配合だけで単一順位を確定せず、詳細診断のportfolioで比較します。</div>':'';
   return '<div class="card breed-integrated-card" data-sire-name="'+esc(entry.sire)+'">'+
     '<div class="row"><div><b>'+rankText+' '+esc(entry.sire)+'</b><div class="muted">'+esc(PROFILE_FALLBACK[profile])+' / '+esc(GOAL_LABELS[goal])+'</div></div><div class="score">'+esc(fit.label)+'</div></div>'+
