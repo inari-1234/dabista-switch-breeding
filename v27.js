@@ -153,7 +153,7 @@ function renderMareAdvice(){
  const strategyAxis=strategy
   ?(strategy.improve?.length?'補強：'+strategy.improve.join('・')
     :strategy.relativeAdjust?.length?'相対調整：'+strategy.relativeAdjust.join('・')+'（弱点扱いではない）'
-    :'補強：明確な不足なし')
+    :'明確な補強対象なし')
   :'';
  box.innerHTML=`
    <div class="mare-advice-head">
