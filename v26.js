@@ -347,10 +347,109 @@ function routeHtml(route,index,goal,profile,baseline=null){
   '<details class="sale-route-details"><summary>詳しい根拠・世代別データを見る</summary><div class="sale-method" style="margin-top:6px">途中世代の繁殖SP/ST/PWは仮定していません。</div>'+detail+'</details>'+
   '<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
 }
-function bridgeStageHtml(st){
+let routeRegisterState=null;
+function routePedigree(record){return record?.ancestor||record?.ancestor15||[]}
+function sameRoutePedigree(a,b){
+ const A=routePedigree(a),B=routePedigree(b);
+ if(A.length!==15||B.length!==15)return false;
+ const key=engine?.core?.key||((x)=>String(x||'').normalize('NFKC').trim().toLowerCase());
+ return A.every((x,i)=>key(x)===key(B[i]));
+}
+function routeStagePrefix(ctx,generation){return (ctx?.route?.sires||[]).slice(0,generation)}
+function routeStageRegistered(ctx,generation){
+ const key=engine?.core?.key||((x)=>String(x||'').normalize('NFKC').trim().toLowerCase());
+ const sires=routeStagePrefix(ctx,generation).map(key);
+ return (db.horses||[]).filter(h=>{
+   const s=h?.routeSource;if(s?.type!=='sale-route'||Number(s.generation)!==Number(generation))return false;
+   if(key(s.startMare)!==key(ctx.mare))return false;
+   const hs=(s.sires||[]).map(key);return hs.length===sires.length&&hs.every((x,i)=>x===sires[i]);
+ });
+}
+function matchingPreviousMares(ctx,generation){
+ if(generation<=1)return[];
+ const expected=ctx?.x?.stages?.[generation-2]?.child;if(!expected)return[];
+ return (db.horses||[]).filter(h=>h?.role==='broodmare'&&sameRoutePedigree(engine?.resolveHorse?.(h),expected));
+}
+function ensureRouteRegisterDialog(){
+ let d=$('#routeRegisterDlg');if(d)return d;
+ d=document.createElement('dialog');d.id='routeRegisterDlg';d.innerHTML=`
+  <form id="routeRegisterForm" class="route-register-form">
+   <div class="route-register-head"><div><small>配合結果から牧場DBへ</small><h2>この産駒を登録</h2></div><button type="button" class="secondary" data-route-register-cancel>閉じる</button></div>
+   <div id="routeRegisterSummary" class="route-register-summary"></div>
+   <label>馬名</label><input id="routeRegisterName" required autocomplete="off" placeholder="ゲーム内で付けた馬名">
+   <label>登録区分</label><select id="routeRegisterRole"><option value="broodmare">繁殖牝馬</option><option value="sire-candidate">種牡馬候補</option></select>
+   <div id="routeRegisterDamWrap" style="display:none"><label>この世代の母馬</label><select id="routeRegisterDam"></select></div>
+   <div id="routeRegisterParents" class="route-register-parents"></div>
+   <div id="routeRegisterWarning" class="route-register-warning"></div>
+   <div class="route-register-actions"><button type="button" class="secondary" data-route-register-cancel>取消</button><button type="submit" class="primary" id="saveRouteRegister">登録</button></div>
+  </form>`;
+ document.body.appendChild(d);
+ if(!$('#routeRegisterStyle')){const s=document.createElement('style');s.id='routeRegisterStyle';s.textContent=`
+  #routeRegisterDlg{width:min(560px,calc(100vw - 20px));max-height:88dvh;overflow:hidden;padding:0;border:0;border-radius:18px}
+  .route-register-form{max-height:88dvh;overflow:auto;padding:16px;padding-bottom:84px}
+  .route-register-head{position:sticky;top:-16px;z-index:4;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff;padding:14px 0 10px;margin-top:-2px;border-bottom:1px solid #e3ebe7}
+  .route-register-head h2{margin:2px 0 0;font-size:20px}.route-register-head small{font-size:10px;color:#66736c;font-weight:800}
+  .route-register-summary,.route-register-parents,.route-register-warning{margin-top:10px;padding:10px;border-radius:11px;background:#f3f7f4;font-size:11px;line-height:1.5}
+  .route-register-warning{background:#fff7e5;color:#69521d}.route-register-warning:empty{display:none}
+  .route-register-actions{position:sticky;bottom:-68px;z-index:5;display:flex;justify-content:flex-end;gap:8px;margin:18px -16px -68px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #dfe8e3;backdrop-filter:blur(8px)}
+  @media(max-width:520px){#routeRegisterDlg{width:calc(100vw - 12px);max-height:92dvh}.route-register-form{max-height:92dvh;padding:12px;padding-bottom:82px}.route-register-head{top:-12px}.route-register-actions{margin-left:-12px;margin-right:-12px}}
+ `;document.head.appendChild(s)}
+ d.querySelectorAll('[data-route-register-cancel]').forEach(b=>b.onclick=()=>d.close());
+ $('#routeRegisterForm').onsubmit=saveRouteRegistration;
+ return d;
+}
+function openRouteRegister(ctx,generation){
+ const d=ensureRouteRegisterDialog(),stage=ctx?.x?.stages?.[generation-1];if(!stage)return;
+ routeRegisterState={ctx,generation,stage};
+ $('#routeRegisterForm').reset();$('#routeRegisterName').value='';
+ $('#routeRegisterRole').value=(generation<ctx.x.stages.length||ctx.goal!=='stallion')?'broodmare':'sire-candidate';
+ const prior=routeStageRegistered(ctx,generation);
+ $('#routeRegisterSummary').innerHTML='<b>'+generation+'代目：'+esc(stage.sire)+'</b><br>'+esc(ctx.mare)+' → '+routeStagePrefix(ctx,generation).map(esc).join(' → ')+(prior.length?'<br>同じ世代を登録済み：'+prior.map(x=>esc(x.name)).join('、'):'');
+ const damWrap=$('#routeRegisterDamWrap'),dam=$('#routeRegisterDam'),warn=$('#routeRegisterWarning'),saveBtn=$('#saveRouteRegister');
+ if(generation===1){
+   damWrap.style.display='none';dam.innerHTML='';
+   $('#routeRegisterParents').innerHTML='<b>父</b> '+esc(stage.sire)+'<br><b>母</b> '+esc(ctx.mare);
+   warn.textContent='父・母・15祖先は配合エンジンから自動保存します。SP/ST/PWは血統上のニトロであり、この馬自身の繁殖能力値としては登録しません。';saveBtn.disabled=false;
+ }else{
+   const mares=matchingPreviousMares(ctx,generation);damWrap.style.display='block';
+   dam.innerHTML='<option value="">前世代の登録牝馬を選択</option>'+mares.map(h=>'<option value="'+esc(h.id)+'">'+esc(h.name)+'</option>').join('');
+   if(mares.length===1)dam.value=mares[0].id;
+   $('#routeRegisterParents').innerHTML='<b>父</b> '+esc(stage.sire)+'<br><b>母</b> 前世代で実際に選抜・登録した牝馬を使用';
+   warn.textContent=mares.length?'前世代と同じ15祖先を持つ登録牝馬だけを候補にしています。':'先に'+(generation-1)+'代目の牝馬をこのルートから登録してください。';
+   saveBtn.disabled=!mares.length;dam.onchange=()=>{saveBtn.disabled=!dam.value};
+ }
+ d.showModal();setTimeout(()=>$('#routeRegisterName')?.focus(),80);
+}
+function saveRouteRegistration(e){
+ e.preventDefault();const s=routeRegisterState;if(!s)return;
+ const {ctx,generation,stage}=s,name=$('#routeRegisterName').value.trim(),role=$('#routeRegisterRole').value;
+ if(!name)return;
+ const key=engine?.core?.key||((x)=>String(x||'').normalize('NFKC').trim().toLowerCase());
+ if((db.horses||[]).some(h=>key(h.name)===key(name))){$('#routeRegisterWarning').textContent='同名の登録馬があります。別の馬名にしてください。';return}
+ const mother=generation===1?ensureSaleMareForBreed(ctx.mare):(db.horses||[]).find(h=>h.id===$('#routeRegisterDam').value);
+ const resolved=engine?.resolveHorse?.(mother);if(!resolved){$('#routeRegisterWarning').textContent='母馬の15祖先を解決できません。前世代の登録内容を確認してください。';return}
+ const x=planner?.evaluateDirectPair?.(resolved,stage.sire);
+ if(!x?.safe||!x.route?.finalChild){$('#routeRegisterWarning').textContent='この父母の組合せを安全な配合として再現できません。登録を中止しました。';return}
+ const child=x.route.finalChild,a=routePedigree(child);
+ if(a.length!==15){$('#routeRegisterWarning').textContent='産駒の15祖先を生成できません。登録を中止しました。';return}
+ const h={
+   id:crypto.randomUUID(),name,sex:role==='broodmare'?'牝':'牡',role,roleMemo:'配合ルートから登録',
+   generation:'配合ルート '+generation+'代目',sire:stage.sire,dam:mother.name||ctx.mare,
+   minD:'',maxD:'',record:'-',guts:'-',stable:'-',starts:'',g1:'',
+   note:'配合ルート：'+ctx.mare+' / '+routeStagePrefix(ctx,generation).join(' → '),
+   ancestor15:[...a],omoshiroCode:String(child.omoshiro||''),migotoCode:String(child.migoto||''),theorySource:'route-registration',
+   routeSource:{type:'sale-route',startMare:ctx.mare,goal:ctx.goal,generation,sires:routeStagePrefix(ctx,generation)}
+ };
+ db.horses.push(h);save();window.renderHorses?.();window.renderBreed?.();
+ $('#routeRegisterDlg').close();renderRouteBreedBridge(ctx,ensureSaleMareForBreed(ctx.mare));
+}
+
+function bridgeStageHtml(st,ctx,total){
  const n=st.nitro||{},ss=st.sireStats||{},cross=st.speedCross?.has?'SPクロスあり':'SPクロスなし';
+ const registered=routeStageRegistered(ctx,st.generation),reg=registered.length?'<div class="sale-method">登録済み：'+registered.map(x=>esc(x.name)).join('、')+'</div>':'';
  return '<div class="route-bridge-stage"><div class="row"><b>'+st.generation+'代目：'+esc(st.sire)+'</b><span class="sale-chip">'+esc(cross)+'</span></div>'+
   '<div class="sale-reason-row"><span class="sale-reason-chip">SP '+fmt(n.sp)+'</span><span class="sale-reason-chip">ST '+fmt(n.st)+'</span><span class="sale-reason-chip">PW '+fmt(n.pw)+'</span><span class="sale-reason-chip">実績'+esc(ss.record||'-')+'・安定'+esc(ss.stable||'-')+'</span></div>'+
+  reg+'<button type="button" class="primary route-register-btn" data-route-register-stage="'+st.generation+'">'+(st.generation<total?'この世代の牝馬を登録':'この産駒を牧場DBへ登録')+'</button>'+
   '<details class="sale-route-details"><summary>クロス・配合理論の根拠を見る</summary><div class="sale-method">'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m / 底力'+esc(ss.guts||'-')+'</div><div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</details></div>';
 }
 function renderRouteBreedBridge(ctx,syncedHorse){
@@ -360,8 +459,9 @@ function renderRouteBreedBridge(ctx,syncedHorse){
  const syncNote=syncedHorse
   ?'<div class="sale-method">起点牝馬「'+esc(ctx.mare)+'」を配合確認用に同期済みです。下の通常候補欄もこの牝馬を選択した状態にしています。</div>'
   :'<div class="notice">起点牝馬を通常候補欄へ同期できなかったため、ルート判定はこの連携カードの表示を基準にしてください。</div>';
- card.innerHTML='<div class="row"><div><span class="badge gold">選んだ配合ルート</span><h3 class="section-title" style="margin-top:7px">'+esc(ctx.mare)+'</h3></div><button type="button" class="secondary" id="closeRouteBridge">閉じる</button></div><div class="route-bridge-path">'+ctx.route.sires.map(esc).join(' → ')+'</div><div class="sale-method">各世代は要点だけ表示しています。詳しいクロス根拠は必要な世代だけ開けます。</div>'+ctx.x.stages.map(bridgeStageHtml).join('')+'<details class="sale-route-details"><summary>連携・最終父の操作</summary>'+syncNote+'<button type="button" class="secondary route-breed-link" id="filterFinalSire">最終父を候補欄で検索</button></details>';
+ card.innerHTML='<div class="row"><div><span class="badge gold">選んだ配合ルート</span><h3 class="section-title" style="margin-top:7px">'+esc(ctx.mare)+'</h3></div><button type="button" class="secondary" id="closeRouteBridge">閉じる</button></div><div class="route-bridge-path">'+ctx.route.sires.map(esc).join(' → ')+'</div><div class="sale-method">各世代の産駒をそのまま牧場DBへ登録できます。詳しいクロス根拠は必要な世代だけ開けます。</div>'+ctx.x.stages.map(st=>bridgeStageHtml(st,ctx,ctx.x.stages.length)).join('')+'<details class="sale-route-details"><summary>連携・最終父の操作</summary>'+syncNote+'<button type="button" class="secondary route-breed-link" id="filterFinalSire">最終父を候補欄で検索</button></details>';
  $('#closeRouteBridge').onclick=()=>card.remove();
+ card.querySelectorAll('[data-route-register-stage]').forEach(b=>b.onclick=()=>openRouteRegister(ctx,Number(b.dataset.routeRegisterStage)));
  $('#filterFinalSire').onclick=()=>{
   const q=$('#stallionSearch');if(!q)return;
   q.value=ctx.route.sires[ctx.route.sires.length-1]||'';
