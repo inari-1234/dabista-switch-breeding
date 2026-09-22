@@ -295,7 +295,10 @@ function routeHtml(route,index,goal,profile){
  const f=route.final||{},sx=f.speedCross||{},method=route.method==='conditional-four-generation-preview'?'4代目は条件付き仮プレビュー':route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'全探索範囲';
  const speedBadge=sx.has?'<span class="sale-reason-chip">SPクロス '+fmt(sx.count)+'</span>':'';
  const reasons=(cue.reasons||[]).slice(0,4).map(v=>'<span class="sale-reason-chip">'+esc(v)+'</span>').join('')+speedBadge;
- const rankLabel=profile==='production'?(index===0?'本命候補':'本命候補 '+(index+1)):'この軸 '+(index+1)+'位';
+ const risky=['upside','rebuild-upside','longshot','low-record'].includes(cue.key);
+ const rankLabel=profile==='production'
+  ?(risky?'上振れ枠 '+(index+1):(index===0?'本命候補':'有力候補 '+(index+1)))
+  :'この軸 '+(index+1)+'位';
  const tone=['solid','preserve','balance','distance','ceiling','upside','rebuild-upside','longshot','low-record'].includes(cue.key)?cue.key:'neutral';
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
