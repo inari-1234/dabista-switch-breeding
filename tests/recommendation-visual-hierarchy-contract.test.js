@@ -6,6 +6,8 @@ const v27=fs.readFileSync('v27.js','utf8');
 const breed=fs.readFileSync('breed-integration.js','utf8');
 const advisor=fs.readFileSync('sale-recommendation-core.js','utf8');
 const css=fs.readFileSync('ui-refresh.css','utf8');
+const v24=fs.readFileSync('v24.js','utf8');
+const v25=fs.readFileSync('v25.js','utf8');
 
 const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: '+token)};
 
@@ -38,6 +40,11 @@ need(v26,'参考軸を見る（SP上限・クロス・ST・バランス・血統
 need(v26,"const tone=isMain?","non-main axes must not own recommendation colors");
 need(v26,"父実績C・安定Cのため本命外","C/C reference warning");
 need(v26,'function createMareProductionCollector(','sale production recommendations must be collected across the scanned generation');
+need(v26,'クロス・配合理論の根拠を見る','route bridge evidence must be collapsed per generation');
+need(v26,'連携・最終父の操作','route bridge actions must be secondary');
+need(v24,'<div id="rebuildBody" hidden aria-hidden="true"></div>','legacy four-mare research body must stay hidden');
+need(v24,'<div hidden aria-hidden="true"><select id="rebuildGoal"','legacy four-mare starter controls must stay hidden');
+need(v25,"card.hidden=true;card.setAttribute('aria-hidden','true')",'legacy manual nitro simulator must stay hidden');
 
 need(breed,"advisor?.compareProductionForMare","breed production mare-aware comparator");
 need(breed,'function createFutureProductionCollector(','breed future production must remain full-scan');
@@ -56,7 +63,7 @@ console.log(JSON.stringify({
   passed:true,
   contract:{
     mare:'decision reason first; full rank data collapsed; card color means ability band',
-    generation:'automatic recommendation first; manual generation choice hidden; comparison compact',
+    generation:'automatic recommendation first; manual generation choice and legacy four-mare/nitro tools hidden; comparison compact',
     sale:'main production recommendations visible; five reference axes collapsed',
     breed:'green/yellow/white mean recommendation role, never category; C/C reference is explicit',
     future:'selected category only in primary UI; six-category table removed',
