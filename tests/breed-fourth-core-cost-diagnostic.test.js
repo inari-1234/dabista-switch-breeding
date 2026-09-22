@@ -106,6 +106,59 @@ const evaluate=bench('evaluate',(s,m)=>!!engine.evaluate(s,m)?.child);
 const ab=alternatingAB(6);
 const abSpeedupPct=Math.round((1-ab.newMedianMs/ab.oldMedianMs)*1000)/10;
 
+
+const oldEngine={...engine,elaborate:oldElaborate,evaluate:oldEvaluate};
+const oldPlanner=sale.create({engine:oldEngine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
+function deepRun(p){
+  const m=p.mare('エイスト'),d=p.evaluateDirectPair(m,first);
+  if(!d.safe||!d.route)throw Error('deep direct unavailable');
+  const t0=process.hrtime.bigint(),twoRoutes=[...p.iterateTwoFromDirect(d.route)];
+  const c3=p.createCollector({topN:16,poolN:96}),b4=p.createFourthBridgeCollector();let n3=0;
+  for(const r of p.iterateThirdPreview(m,twoRoutes)){n3++;c3.push(r);b4.push(r)}
+  const g3=c3.finish(),bridge=b4.finish();
+  const c4=p.createCollector({topN:16,poolN:96});let n4=0;
+  for(const r of p.iterateFourthPreview(m,bridge.bases)){n4++;c4.push(r)}
+  const g4=c4.finish(),ms=Number(process.hrtime.bigint()-t0)/1e6;
+  const sig=r=>({
+    id:r.id,sires:r.sires,final:r.final,
+    materialSpeedCross:r.materialSpeedCross,crossEffectPath:r.crossEffectPath,
+    materialLongCross:r.materialLongCross
+  });
+  return{
+    ms,
+    counts:{two:twoRoutes.length,three:n3,bridgeBases:bridge.bases.length,four:n4,g3Pool:g3.pool.length,g4Pool:g4.pool.length},
+    g3:JSON.stringify(g3.pool.map(sig)),
+    bridge:JSON.stringify(bridge.bases.map(sig)),
+    g4:JSON.stringify(g4.pool.map(sig))
+  };
+}
+function deepAB(){
+  const oldTimes=[],newTimes=[];let reference=null;
+  for(const order of [['old','new'],['new','old']]){
+    for(const kind of order){
+      const x=deepRun(kind==='old'?oldPlanner:planner);
+      if(!reference)reference=x;
+      else{
+        if(JSON.stringify(x.counts)!==JSON.stringify(reference.counts))throw Error('deep count mismatch '+kind);
+        if(x.g3!==reference.g3)throw Error('deep g3 pool mismatch '+kind);
+        if(x.bridge!==reference.bridge)throw Error('deep bridge mismatch '+kind);
+        if(x.g4!==reference.g4)throw Error('deep g4 pool mismatch '+kind);
+      }
+      (kind==='old'?oldTimes:newTimes).push(x.ms);
+    }
+  }
+  return{
+    oldMs:oldTimes.map(x=>Math.round(x*10)/10),
+    newMs:newTimes.map(x=>Math.round(x*10)/10),
+    oldMedianMs:Math.round(median(oldTimes)*10)/10,
+    newMedianMs:Math.round(median(newTimes)*10)/10,
+    counts:reference.counts
+  };
+}
+
+const deep=deepAB();
+const deepSpeedupPct=Math.round((1-deep.newMedianMs/deep.oldMedianMs)*1000)/10;
+
 const parts=[danger,theory,elaborate,nitro,child];
 const partSum=parts.reduce((a,x)=>a+x.ms,0);
 console.log(JSON.stringify({
@@ -115,6 +168,8 @@ console.log(JSON.stringify({
   elaborateMismatch,
   alternatingAB:ab,
   abSpeedupPct,
+  deepAB:deep,
+  deepSpeedupPct,
   evaluateSpeedupPct:Math.round((1-evaluate.ms/evaluateReference.ms)*1000)/10,
   partSharePct:Object.fromEntries(parts.map(x=>[x.name,Math.round(x.ms/partSum*1000)/10])),
   note:'Parts are isolated hot-loop measurements on the same 64 bridge bases; evaluate is measured separately, so partSum is diagnostic rather than additive wall time.'
