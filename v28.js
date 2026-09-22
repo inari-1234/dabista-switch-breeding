@@ -126,14 +126,14 @@ function nextStepFor(row,goal){
  nextStepCache.set(cacheKey,result);
  return result;
 }
-function rowHtml(row,goal){
+function rowHtml(row,goal,includeNext=false){
  const reasons=matchReasons(row,goal).map(x=>'<span>'+esc(x)+'</span>').join('');
  const a=row.assessment,known=!!a?.abilityKnown;
  const detail=known
    ?'母能力 '+esc(a.tier||'既知')+' / SP順位上位'+Number(a.ranks?.sp?.topPercent||0)+'% / SP+ST順位上位'+Number(a.ranks?.spst?.topPercent||0)+'%'
    :(row.realNote||'繁殖能力は未判明。血統Pairのみで候補判定しています。');
- const next=nextStepFor(row,goal);
- const nextHtml=next?.advance
+ const next=includeNext?nextStepFor(row,goal):null;
+ const nextHtml=!includeNext?'':next?.advance
    ?'<div class="horse-match-next"><b>次代候補：</b>'+esc(next.sire)+' ｜ SP '+Number(next.facts?.sp||0)+' / ST '+Number(next.facts?.st||0)+'<br>'+esc(next.reason)+'</div>'
    :'<div class="horse-match-next"><b>次代延長根拠：</b>現時点では明確な上積みなし</div>';
  return '<div class="horse-match '+(row.owned?'owned':'')+'"><div class="horse-match-head"><b>'+esc(row.name)+'</b><span class="horse-match-tag">'+esc(row.owned?'牧場':'セリ')+'</span></div><div class="horse-match-reasons">'+reasons+'</div><div class="horse-match-note">'+detail+'</div>'+nextHtml+'</div>'
@@ -146,8 +146,8 @@ function renderReverse(){
  const provisional=bloodline.filter(r=>!gate(r.facts,goal).supported||!r.assessment?.abilityKnown);
  const strict=bloodline.filter(r=>gate(r.facts,goal).supported);
  st.textContent='安全Pair '+activeRows.length+'件 / 危険除外 '+activeUnsafe+'件 / 血統条件一致 '+bloodline.length+'件 / 厳格条件一致 '+strict.length+'件';
- const knownHtml=confirmed.slice(0,12).map(r=>rowHtml(r,goal)).join('');
- const provisionalHtml=provisional.slice(0,10).map(r=>rowHtml(r,goal)).join('');
+ const knownHtml=confirmed.slice(0,12).map((r,i)=>rowHtml(r,goal,i<4)).join('');
+ const provisionalHtml=provisional.slice(0,10).map((r,i)=>rowHtml(r,goal,i<3)).join('');
  box.innerHTML=
    '<div class="horse-match-section"><h3>厳格条件一致（母能力既知）</h3>'+(knownHtml||'<div class="empty">該当なし</div>')+'</div>'+
    '<div class="horse-match-section"><h3>血統候補（能力確認待ち・父実績条件外を含む）</h3>'+(provisionalHtml||'<div class="empty">該当なし</div>')+'</div>'+
@@ -194,7 +194,7 @@ async function buildReverse(h){
    }
    activeHorse=h;activeRows=rows;activeUnsafe=unsafe;activePlanner=planner;activeAdvisor=advisor;nextStepCache.clear();
    const stats=h.record||h.guts||h.stable?('実績'+(h.record||'-')+'・底力'+(h.guts||'-')+'・安定'+(h.stable||'-')):'父能力未登録';
-   $('#horseUseSummary').innerHTML='<b>'+esc(h.name)+'</b> ｜ '+esc(stats)+(h.minD&&h.maxD?' / '+Number(h.minD)+'–'+Number(h.maxD)+'m':'')+'<br><span class="muted">凱旋門・BC・繁殖再建で成立条件を切り替えます。表示上位は次代候補まで確認します。第7の総合点は作りません。</span>';
+   $('#horseUseSummary').innerHTML='<b>'+esc(h.name)+'</b> ｜ '+esc(stats)+(h.minD&&h.maxD?' / '+Number(h.minD)+'–'+Number(h.maxD)+'m':'')+'<br><span class="muted">凱旋門・BC・繁殖再建で成立条件を切り替えます。表示上位7件は次代候補まで確認します。第7の総合点は作りません。</span>';
    renderReverse();
  }catch(e){
    $('#horseUseSummary').innerHTML='<b>配合利用できません。</b><br>'+esc(String(e.message||e));
