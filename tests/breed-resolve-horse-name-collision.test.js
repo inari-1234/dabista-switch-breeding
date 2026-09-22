@@ -52,6 +52,15 @@ require('../breeding-engine.js');
   const master=e.master('エイスト');
   if(!master||JSON.stringify(a.ancestor)===JSON.stringify(master.ancestor))throw Error('collision fixture did not separate farm/master pedigree');
 
+  const staleDerived={
+    id:'derived-cache',name:'自家製キャッシュ馬',sex:'牡',role:'sire-candidate',
+    sire:'バゴ',dam:'エイスト',ancestor15:Array(15).fill('STALE'),theorySource:'derived'
+  };
+  global.db={horses:[staleDerived]};
+  const refreshed=e.resolveHorse(staleDerived);
+  if(!refreshed||refreshed.kind!=='child'||refreshed.ancestor[0]!=='バゴ')throw Error('derived pedigree cache was not recomputed '+JSON.stringify(refreshed));
+  if(refreshed.ancestor.includes('STALE'))throw Error('stale derived ancestor leaked after parent-based recompute');
+
   const restored={
     id:'restored-mare',name:'復元牝馬',sex:'牝',
     ancestor15:[...customAncestor],omoshiroCode:master.omoshiro,migotoCode:master.migoto
@@ -66,6 +75,7 @@ require('../breeding-engine.js');
     custom:{kind:a.kind,firstAncestor:a.ancestor[0]},
     legacyFallback:{name:b.name,source:b.theorySource},
     masterRef:{name:c.name,source:c.theorySource},
-    restoreRebind:{name:afterRestore.name,source:afterRestore.theorySource}
+    restoreRebind:{name:afterRestore.name,source:afterRestore.theorySource},
+    derivedCacheRefresh:{name:refreshed.name,firstAncestor:refreshed.ancestor[0],source:refreshed.theorySource}
   },null,2));
 })().catch(e=>{console.error(e);process.exit(1)});
