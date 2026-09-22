@@ -31,8 +31,18 @@ must('integration',[
   /breedTheoryFilter/,
   /breedNitroFilter/,
   /pairDetailsHtml/,
-  /DABISTA_BREED_FUTURE/
+  /DABISTA_BREED_FUTURE/,
+  /releaseLegacyBreedUi/,
+  /DABISTA_BREED_LEGACY_CLEANUPS/
 ],'integration ownership');
+
+for(const file of ['v18','v19']){
+  if(!files[file].includes('DABISTA_BREED_LEGACY_CLEANUPS'))throw Error(file+' missing takeover cleanup registry');
+  if(!files[file].includes('removeEventListener')||!files[file].includes('disconnect()'))throw Error(file+' does not release legacy breed listeners/observer');
+}
+for(const file of ['v20','v21','v25']){
+  if(!/if\(!window\.DABISTA_BREED_PAIR_INDEX\)\{[\s\S]{0,1400}(addEventListener|MutationObserver)/.test(files[file]))throw Error(file+' still registers integrated breed UI hooks without takeover guard');
+}
 
 const preservedResponsibilities={
   v18:['master pedigree guidance/autofill','diagnostic export/update/support'],

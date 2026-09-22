@@ -27,6 +27,8 @@ function apply(){
 }
 function run(){if(engine)apply();else window.DABISTA_BREEDING_ENGINE?.ready?.then(e=>{engine=e;apply()}).catch(()=>{})}
 const style=document.createElement('style');style.textContent='.v21-hidden{display:none!important}';document.head.appendChild(style);
-$('#breedMare')?.addEventListener('change',()=>setTimeout(run,100));$('#stallionSearch')?.addEventListener('input',()=>setTimeout(run,100));const target=$('#breedCandidates');if(target)new MutationObserver(()=>queueMicrotask(run)).observe(target,{childList:true});setTimeout(run,1800);setTimeout(run,3100);
+if(!window.DABISTA_BREED_PAIR_INDEX){
+ $('#breedMare')?.addEventListener('change',()=>setTimeout(run,100));$('#stallionSearch')?.addEventListener('input',()=>setTimeout(run,100));const target=$('#breedCandidates');if(target)new MutationObserver(()=>queueMicrotask(run)).observe(target,{childList:true});setTimeout(run,1800);setTimeout(run,3100);
+}
 function newer(a,b){const A=String(a).split('.').map(Number),B=String(b).split('.').map(Number);for(let i=0;i<3;i++){if((A[i]||0)!==(B[i]||0))return(A[i]||0)>(B[i]||0)}return false}async function check(show=false){try{const u=new URL('version.json',location.href);u.searchParams.set('_',Date.now());const r=await fetch(u,{cache:'no-store'}),v=await r.json();if(newer(v.version,V)||v.build!==BUILD){$('#updateText').textContent=`最新版 v${v.version} / ${v.build} があります`;$('#updatebar').classList.add('show')}else{$('#updatebar').classList.remove('show');if(show)alert(`最新版です\nv${V} / ${BUILD}`)}}catch{if(show)alert('更新確認に失敗しました。')}}setTimeout(()=>{if($('#refreshBtn'))$('#refreshBtn').onclick=()=>check(true);check(false)},3400);
 })();

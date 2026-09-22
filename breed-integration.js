@@ -120,6 +120,14 @@ function theoryFilter(){
 function nitroFilter(){
   return $('#breedNitroFilter')?.value||'all';
 }
+function releaseLegacyBreedUi(){
+  const cleanups=window.DABISTA_BREED_LEGACY_CLEANUPS;
+  if(!Array.isArray(cleanups)||!cleanups.length)return;
+  while(cleanups.length){
+    const cleanup=cleanups.shift();
+    try{cleanup?.()}catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'breed-legacy-cleanup: '+String(e)})}
+  }
+}
 function ensureStyle(){
   if($('#breedIntegrationStyle'))return;
   const s=document.createElement('style');
@@ -128,6 +136,7 @@ function ensureStyle(){
   document.head.appendChild(s);
 }
 function ensureControls(){
+  releaseLegacyBreedUi();
   ensureStyle();
   document.querySelector('.theory-tools')?.remove();
   const controls=$('#breed .breed-controls');

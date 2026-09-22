@@ -35,11 +35,22 @@ function installTheoryControls(){
   const box=document.createElement('div');box.className='theory-tools';
   box.innerHTML=`<label>配合理論フィルター</label><select id="theoryFilter"><option value="all">すべて表示</option><option value="any">面白・見事のどちらか成立</option><option value="interesting">面白い配合</option><option value="magnificent">見事な配合</option><option value="perfect">完璧な配合</option></select><div id="theoryStatus" class="theory-status">配合理論マスタを読み込み中…</div>`;
   const search=$('#stallionSearch');search?.insertAdjacentElement('afterend',box);
-  $('#theoryFilter').onchange=decorateBreedCards;
-  $('#breedMare')?.addEventListener('change',()=>setTimeout(decorateBreedCards,0));
-  $('#breedGoal')?.addEventListener('change',()=>setTimeout(decorateBreedCards,0));
-  $('#stallionSearch')?.addEventListener('input',()=>setTimeout(decorateBreedCards,0));
-  const target=$('#breedCandidates');if(target)new MutationObserver(()=>queueMicrotask(decorateBreedCards)).observe(target,{childList:true});
+  const filter=$('#theoryFilter'),mareEl=$('#breedMare'),goalEl=$('#breedGoal'),searchEl=$('#stallionSearch');
+  const onMare=()=>setTimeout(decorateBreedCards,0),onGoal=()=>setTimeout(decorateBreedCards,0),onSearch=()=>setTimeout(decorateBreedCards,0);
+  if(filter)filter.onchange=decorateBreedCards;
+  mareEl?.addEventListener('change',onMare);
+  goalEl?.addEventListener('change',onGoal);
+  searchEl?.addEventListener('input',onSearch);
+  const target=$('#breedCandidates'),observer=target?new MutationObserver(()=>queueMicrotask(decorateBreedCards)):null;
+  observer?.observe(target,{childList:true});
+  const cleanups=window.DABISTA_BREED_LEGACY_CLEANUPS||(window.DABISTA_BREED_LEGACY_CLEANUPS=[]);
+  cleanups.push(()=>{
+    if(filter&&filter.onchange===decorateBreedCards)filter.onchange=null;
+    mareEl?.removeEventListener('change',onMare);
+    goalEl?.removeEventListener('change',onGoal);
+    searchEl?.removeEventListener('input',onSearch);
+    observer?.disconnect();
+  });
 }
 function updateTheoryStatus(){
   const el=$('#theoryStatus'),filter=$('#theoryFilter');if(!el)return;
