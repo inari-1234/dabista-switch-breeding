@@ -45,7 +45,38 @@ function style(){
  .generation-step b{display:block;font-size:9px}.generation-step span{display:block;margin-top:2px;color:#617169;font-size:8px;line-height:1.45}
  .generation-action{margin-top:8px;width:100%}
  .advisor-note{margin-top:7px;padding:7px;border-radius:8px;background:#f1f5f2;font-size:8px;line-height:1.5;color:#66736c}
- @media(max-width:420px){.mare-ranks{grid-template-columns:repeat(2,1fr)}.generation-grid{grid-template-columns:1fr}.mare-use{grid-template-columns:1fr 1fr}}
+ .mare-advice{transition:border-color .15s ease,background .15s ease}
+ .mare-advice.tier-elite{border-color:#8fc8aa;background:linear-gradient(145deg,#edf8f2,#f9fcfa)}
+ .mare-advice.tier-high{border-color:#9fc3e6;background:linear-gradient(145deg,#eef5fc,#fafcff)}
+ .mare-advice.tier-upper{border-color:#a9d3ca;background:linear-gradient(145deg,#eef8f6,#fbfdfc)}
+ .mare-advice.tier-middle{border-color:#e1c46f;background:linear-gradient(145deg,#fff8e5,#fffdf7)}
+ .mare-advice.tier-rebuild{border-color:#dfb283;background:linear-gradient(145deg,#fff4e8,#fffaf5)}
+ .mare-advice.tier-unknown{border-color:#cfd7d3;background:linear-gradient(145deg,#f3f5f4,#fafbfa)}
+ .mare-advice-head{align-items:center}
+ .mare-advice-head h4{font-size:17px;line-height:1.2;letter-spacing:-.02em}
+ .mare-advice-head small{display:block;margin-top:4px;font-size:10px}
+ .mare-tier{padding:7px 11px;font-size:14px;font-weight:900;white-space:nowrap}
+ .tier-high .mare-tier{background:#e4effa;color:#285d91}
+ .tier-upper .mare-tier{background:#dff1ed;color:#24685a}
+ .tier-middle .mare-tier{background:#fff0bd;color:#76540c}
+ .tier-rebuild .mare-tier{background:#ffe7cf;color:#875118}
+ .tier-unknown .mare-tier{background:#e7ece9;color:#596660}
+ .mare-priority{margin-top:9px;padding:10px 11px;border-radius:10px;background:rgba(255,255,255,.78);border:1px solid rgba(90,120,105,.16)}
+ .mare-priority small{display:block;font-size:9px;font-weight:800;color:#65766e}
+ .mare-priority b{display:block;margin-top:2px;font-size:13px;line-height:1.4;color:#243f33}
+ .mare-ranks{gap:6px}
+ .mare-rank{padding:8px 5px;background:rgba(255,255,255,.82);border:1px solid rgba(80,110,95,.10)}
+ .mare-rank>span{display:block;font-size:9px;font-weight:900;color:#60736a}
+ .mare-rank b{font-size:17px;margin-top:2px}
+ .mare-rank small{font-size:9px;line-height:1.35}
+ .mare-goal-now{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:8px;padding:10px 11px;border-radius:10px;background:#fff;border:1px solid rgba(70,105,88,.14)}
+ .mare-goal-now span{font-size:10px;font-weight:800;color:#60736a}
+ .mare-goal-now b{font-size:12px;text-align:right;color:#254b39}
+ .mare-detail{margin-top:8px;border-top:1px solid rgba(90,120,105,.16);padding-top:7px}
+ .mare-detail>summary{cursor:pointer;font-size:10px;font-weight:800;color:#53675e}
+ .mare-detail .advisor-note{font-size:9px}
+ .mare-direct{font-size:9px}
+ @media(max-width:420px){.mare-ranks{grid-template-columns:repeat(2,1fr)}.generation-grid{grid-template-columns:1fr}.mare-use{grid-template-columns:1fr 1fr}.mare-advice-head h4{font-size:16px}.mare-tier{font-size:13px}}
  `;document.head.appendChild(s)
 }
 function fmtRank(r){
@@ -57,39 +88,58 @@ function directSnapshot(name){
  for(const r of planner.iterateDirect(name))advisor.addRoute(sum,r);
  return sum
 }
+function mareTierTone(a){
+ if(!a?.abilityKnown)return'unknown';
+ const p=Number(a?.ranks?.spst?.topPercent||100);
+ if(p<=5)return'elite';
+ if(p<=15)return'high';
+ if(p<=35)return'upper';
+ if(p<=60)return'middle';
+ return'rebuild';
+}
+function mareRankCell(label,r){
+ if(!r)return`<div class="mare-rank"><span>${esc(label)}</span><b>—</b><small>未判明</small></div>`;
+ return `<div class="mare-rank"><span>${esc(label)}</span><b>${r.value}</b><small>${r.rank}/${r.total}位・上位${r.topPercent}%</small></div>`;
+}
 function renderMareAdvice(){
  const box=$('#saleMareRecommendation'),name=$('#saleMareSelect')?.value;
  if(!box||!advisor)return;
- if(!name){box.innerHTML='<div class="muted">検索条件に一致する繁殖牝馬がありません。</div>';return}
+ if(!name){box.className='mare-advice tier-unknown';box.innerHTML='<div class="muted">検索条件に一致する繁殖牝馬がありません。</div>';return}
  const a=advisor.mareAssessment(name);
- if(!a){box.innerHTML='<div class="muted">牝馬評価を取得できませんでした。</div>';return}
+ if(!a){box.className='mare-advice tier-unknown';box.innerHTML='<div class="muted">牝馬評価を取得できませんでした。</div>';return}
  const direct=directSnapshot(name),use=advisor.directUseLabels(a,direct),strategy=advisor.mareStrategy(name),goal=window.db?.salePlanner?.goal||'arc';
- const tierClass=a.abilityKnown?'':' unknown';
+ const tone=mareTierTone(a),goalNames={arc:'凱旋門賞',bc:'BC長期',rebuild:'繁殖再建',stallion:'自家製種牡馬'};
+ box.className='mare-advice tier-'+tone;
  const rankHtml=a.abilityKnown?
    `<div class="mare-ranks">
-     <div class="mare-rank">${fmtRank(a.ranks.sp)}<small>繁殖SP</small></div>
-     <div class="mare-rank">${fmtRank(a.ranks.st)}<small>繁殖ST</small></div>
-     <div class="mare-rank">${fmtRank(a.ranks.pw)}<small>繁殖PW</small></div>
-     <div class="mare-rank">${fmtRank(a.ranks.spst)}<small>SP+ST</small></div>
+     ${mareRankCell('繁殖SP',a.ranks.sp)}
+     ${mareRankCell('繁殖ST',a.ranks.st)}
+     ${mareRankCell('繁殖PW',a.ranks.pw)}
+     ${mareRankCell('SP+ST',a.ranks.spst)}
    </div>`:
-   '<div class="advisor-note"><b>繁殖能力：未判明</b><br>能力既知298頭の順位には含めません。0を低能力として扱いません。</div>';
+   '<div class="advisor-note"><b>繁殖能力は未判明</b> — 0を低能力として扱わず、血統評価だけを続けます。</div>';
+ const currentUse=use?.[goal]||'評価保留';
  box.innerHTML=`
    <div class="mare-advice-head">
-    <div><h4>この繁殖牝馬の基礎評価</h4><small>${esc(a.archetype)} / 能力既知 ${advisor.knownAbilityCount}頭で比較</small></div>
-    <span class="mare-tier${tierClass}">${esc(a.tier)}</span>
+    <div><h4>${esc(name)}</h4><small>${esc(a.archetype)} / 能力既知 ${advisor.knownAbilityCount}頭で比較</small></div>
+    <span class="mare-tier">${esc(a.tier)}</span>
    </div>
+   ${strategy?`<div class="mare-priority"><small>今の育成方針</small><b>${esc(strategy.priority)}</b></div>`:''}
    ${rankHtml}
-   ${strategy?`<div class="advisor-note"><b>母の補強方針：${esc(strategy.label)}</b><br>${esc(strategy.priority)}<br><span style="display:block;margin-top:3px">維持したい能力：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / 補強したい能力：${strategy.improve.length?esc(strategy.improve.join('・')):'—'}</span></div>`:''}
-   <div class="mare-use-title">目的別の直仔・母評価（事前）</div>
-   <div class="mare-use">
-    <div class="${goal==='arc'?'selected':''}"><b>凱旋門賞</b><span>${esc(use.arc)}</span></div>
-    <div class="${goal==='bc'?'selected':''}"><b>BC長期</b><span>${esc(use.bc)}</span></div>
-    <div class="${goal==='rebuild'?'selected':''}"><b>繁殖再建</b><span>${esc(use.rebuild)}</span></div>
-    <div class="${goal==='stallion'?'selected':''}"><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
-   </div>
-   <div class="advisor-note">ここは直仔の到達性と母能力から見た事前メモです。正式な推奨世代は「おすすめ配合世代を診断」で決定します。</div>
-   <div class="mare-direct">直仔の安全配合 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 凱旋門SP/ST基準 ${direct.arcQuantitative||0}件 / 基準内父実績 A/B/C ${direct.arcRecordA||0}/${direct.arcRecordB||0}/${direct.arcRecordC||0} / 2400m対応父 ${direct.long2400}件 / 長距離クロス ${direct.longDistanceCross||0}件 / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
-   <div class="advisor-note">${esc(a.note)} 「基礎評価」は母能力と直仔の血統到達性を分けて判定しています。</div>`;
+   <div class="mare-goal-now"><span>${esc(goalNames[goal]||goal)}</span><b>${esc(currentUse)}</b></div>
+   <details class="mare-detail">
+    <summary>他の目的・補強方針・直仔データを見る</summary>
+    ${strategy?`<div class="advisor-note"><b>補強タイプ：${esc(strategy.label)}</b><br>維持：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / 補強：${strategy.improve.length?esc(strategy.improve.join('・')):'—'}</div>`:''}
+    <div class="mare-use-title">目的別の事前評価</div>
+    <div class="mare-use">
+     <div class="${goal==='arc'?'selected':''}"><b>凱旋門賞</b><span>${esc(use.arc)}</span></div>
+     <div class="${goal==='bc'?'selected':''}"><b>BC長期</b><span>${esc(use.bc)}</span></div>
+     <div class="${goal==='rebuild'?'selected':''}"><b>繁殖再建</b><span>${esc(use.rebuild)}</span></div>
+     <div class="${goal==='stallion'?'selected':''}"><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
+    </div>
+    <div class="mare-direct">直仔安全 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 凱旋門SP/ST基準 ${direct.arcQuantitative||0}件 / 基準内父実績 A/B/C ${direct.arcRecordA||0}/${direct.arcRecordB||0}/${direct.arcRecordC||0} / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
+    <div class="advisor-note">${esc(a.note)}</div>
+   </details>`;
 }
 function invalidateGeneration(message='条件を変更したため、世代診断を更新してください。'){
  diagSeq++;
