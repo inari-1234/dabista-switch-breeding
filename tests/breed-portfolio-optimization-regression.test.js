@@ -16,6 +16,8 @@ const key=engine.key,mareMap=new Map(T.broodmares.map(x=>[key(x.name),x]));
 const known=s=>!!s&&!((+s.sp||0)===0&&(+s.st||0)===0&&(+s.pw||0)===0);
 const c120=M.filter(known).filter(x=>(+x.sp||0)+(+x.st||0)>=120).map(x=>mareMap.get(key(x.name))).filter(Boolean);
 const c130=M.filter(known).filter(x=>(+x.sp||0)+(+x.st||0)>=130).map(x=>mareMap.get(key(x.name))).filter(Boolean);
+if(c120.length!==54||c130.length!==22)throw Error('portfolio cohort count drift '+c120.length+'/'+c130.length);
+if(c130.some(x=>!c120.includes(x)))throw Error('spst130 must remain a subset of spst120');
 const safe=p=>!!p&&!p.danger?.kiken&&!p.danger?.tyokiken;
 const empty=n=>({population:n,safe:0,sp15st5:0,sp17st5:0,interesting:0,magnificent:0,perfect:0,elaborate:0,maxSp:0,maxSt:0,maxSpSt:0});
 function add(out,p){
