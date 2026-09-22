@@ -308,21 +308,36 @@
       };
     }
     function safe(pair){return !!pair&&!pair.danger?.kiken&&!pair.danger?.tyokiken}
+    function evaluateDirectPair(mareInput,sireInput){
+      const m=typeof mareInput==='string'?mare(mareInput):mareInput;
+      const s=typeof sireInput==='string'?sire(sireInput):sireInput;
+      if(!m||!s)return{mare:m||null,sire:s||null,pair:null,safe:false,route:null};
+      const pair=engine.evaluate(s,m),ok=safe(pair);
+      return{mare:m,sire:s,pair,safe:ok,route:ok?routeFrom([s.name],pair,'exact-direct',[pair]):null};
+    }
+    function* iterateTwoFromDirect(baseRoute){
+      if(!baseRoute?.finalChild||baseRoute.sires?.length!==1)return;
+      for(const s2 of stallions){
+        const p2=engine.evaluate(s2,baseRoute.finalChild);if(!safe(p2)||!p2.child)continue;
+        yield routeFrom(
+          [...baseRoute.sires,s2.name],p2,'exact-two-generation',
+          [...(baseRoute.speedCrossPath||[]),p2],
+          [...(baseRoute.crossEffectPath||[]),p2]
+        );
+      }
+    }
     function* iterateDirect(mareInput){
       const m=typeof mareInput==='string'?mare(mareInput):mareInput;if(!m)return;
       for(const s of stallions){
-        const p=engine.evaluate(s,m);if(!safe(p))continue;
-        yield routeFrom([s.name],p,'exact-direct',[p]);
+        const x=evaluateDirectPair(m,s);if(!x.route)continue;
+        yield x.route;
       }
     }
     function* iterateTwo(mareInput){
       const m=typeof mareInput==='string'?mare(mareInput):mareInput;if(!m)return;
       for(const s1 of stallions){
-        const p1=engine.evaluate(s1,m);if(!safe(p1)||!p1.child)continue;
-        for(const s2 of stallions){
-          const p2=engine.evaluate(s2,p1.child);if(!safe(p2)||!p2.child)continue;
-          yield routeFrom([s1.name,s2.name],p2,'exact-two-generation',[p1,p2]);
-        }
+        const x=evaluateDirectPair(m,s1);if(!x.route)continue;
+        yield* iterateTwoFromDirect(x.route);
       }
     }
     function replay(mareInput,sires){
@@ -440,7 +455,7 @@
       knownAbilityCount:broodmareStats.filter(abilityKnown).length,
       unknownAbilityCount:broodmareStats.filter(x=>!abilityKnown(x)).length,
       cohorts:{spst120:cohort120.length,spst130:cohort130.length},
-      mare,sire,mareInfo,statsForSire,iterateDirect,iterateTwo,iterateThirdPreview,iterateFourthPreview,
+      mare,sire,mareInfo,statsForSire,evaluateDirectPair,iterateDirect,iterateTwo,iterateTwoFromDirect,iterateThirdPreview,iterateFourthPreview,
       replay,expandRoute,createCollector,createFourthBridgeCollector,diversifiedPool,withPortfolio,portfolioPareto,
       profileLabels:PROFILE_LABELS,profileCriteria:PROFILE_CRITERIA,goalLabels:GOAL_LABELS,goalOrder,
       abilityKnown,routeKey,compareProfile,compareFourthBridge
