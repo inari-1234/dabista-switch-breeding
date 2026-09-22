@@ -9,7 +9,7 @@ db.salePlanner=db.salePlanner||{mare:'エイスト',goal:'arc',generation:0,gene
 db.salePlanner.generation=0;db.salePlanner.generationSource='unset';
 
 function save(){window.saveFarm?.()}
-function invalidateResults(msg='条件を変更しました。もう一度「この条件で設計」を実行してください。'){
+function invalidateResults(msg=''){
  runSeq++;
  const out=$('#salePlannerResults');if(out)out.innerHTML='';
  const p=$('#salePlannerProgress');if(p)p.textContent=msg;
@@ -33,6 +33,11 @@ function style(){
  .sale-profile{border-left:4px solid #dce2dd}
  .sale-profile h3{margin:0 0 3px}
  .sale-route{border:1px solid #dce2dd;border-radius:11px;padding:10px;margin:9px 0;background:#fbfcfa}
+ .sale-route.tone-main{border-color:#70ad8e;background:#f0f8f4}
+ .sale-route.tone-record{border-color:#91b6d7;background:#f3f8fc}
+ .sale-route.tone-speed{border-color:#b7a4dc;background:#f8f5fc}
+ .sale-route.tone-nitro{border-color:#8cbeb4;background:#f1f8f6}
+ .sale-route.tone-upside{border-color:#d8b56d;background:#fff8e9}
  .sale-route-title{display:flex;justify-content:space-between;gap:8px;align-items:center}
  .sale-path{font-size:12px;font-weight:700;line-height:1.5;margin:6px 0}
  .sale-stage{margin-top:8px;padding:9px;border-radius:9px;background:#f1f5f2;font-size:11px;line-height:1.55}
@@ -119,7 +124,7 @@ function inject(){
   <div id="saleGoalSection"><label>目的</label><div class="sale-seg" id="saleGoalButtons">${goalButtons()}</div></div>
   <div id="saleGenerationSection"><label>診断結果／比較する世代</label><div class="sale-seg gens" id="saleGenButtons">${genButtons()}</div><div id="saleGenerationState" class="sale-generation-state"></div></div>
   <div id="salePlannerNotice" class="notice">直仔は176頭全探索、2代は安全な1代目から約3万ルートを全探索します。3代は2代目の多軸候補、4代は3代目の多軸候補を起点にした条件付きプレビューです。</div>
-  <div class="actions"><button class="primary" id="runSalePlanner">この条件で設計</button></div>
+  <div class="actions"><button class="primary" id="runSalePlanner">本命配合を表示</button></div>
   <div id="salePlannerProgress" class="sale-progress"></div>
  `;
  const intro=$('#rebuild .card');intro?.insertAdjacentElement('afterend',card);
@@ -128,7 +133,7 @@ function inject(){
  $('#saleMareSearch').oninput=()=>{invalidateResults('検索条件を変更しました。');fillMares()};
  $('#saleMareSelect').onchange=()=>{setPlannerMare($('#saleMareSelect').value,'select');invalidateResults()};
  $('#saleGoalButtons').onclick=e=>{const b=e.target.closest('[data-sale-goal]');if(!b)return;db.salePlanner.goal=b.dataset.saleGoal;resetGenerationSelection();save();paintButtons();renderNotice();invalidateResults()};
- $('#saleGenButtons').onclick=e=>{const b=e.target.closest('[data-sale-gen]');if(!b)return;setGeneration(+b.dataset.saleGen,'manual');invalidateResults('手動で世代を選択しました。「選択した世代を詳しく設計」で確認できます。')};
+ $('#saleGenButtons').onclick=e=>{const b=e.target.closest('[data-sale-gen]');if(!b)return;setGeneration(+b.dataset.saleGen,'manual');invalidateResults('選択世代を変更しました。')};
  $('#runSalePlanner').onclick=runDesign;
  $('#rebuildStarter')?.addEventListener('change',()=>{
   const n=$('#rebuildStarter').value;if(!planner?.mare(n))return;
@@ -168,9 +173,9 @@ function paintButtons(){
  });
  const st=$('#saleGenerationState');
  if(st){
-  if(!db.salePlanner.generation)st.textContent='未選択：「おすすめ配合世代を診断」を実行するか、比較したい世代を手動で選択してください。';
+  if(!db.salePlanner.generation)st.textContent='未選択：おすすめ世代を決めてください。';
   else if(db.salePlanner.generationSource==='diagnosis')st.textContent='世代診断の推奨を選択中です。';
-  else st.textContent='手動選択中です。世代診断の推奨とは別に比較できます。';
+  else st.textContent='比較のため別世代を選択中です。';
  }
 }
 function fillMares(){
@@ -310,23 +315,27 @@ function productionHtml(route){
  const warnings=(q.warnings||[]).slice(0,3).map(x=>'<span class="production-warning">⚠ '+esc(x)+'</span>').join('');
  return '<div class="production-quality '+esc(q.key)+'"><b>強馬生産条件：'+esc(q.label)+'｜実績'+esc(q.record)+'・安定'+esc(q.stable)+'</b>'+(notes?'<div>'+notes+'</div>':'')+warnings+'</div>';
 }
-function routeHtml(route,index,goal,profile){
+function routeHtml(route,index,goal,profile,baseline=null){
  const x=planner.expandRoute(db.salePlanner.mare,route,goal);if(!x)return'';
  const assessment=recommendationAdvisor?.mareAssessment?.(db.salePlanner.mare)||null;
- const cue=recommendationAdvisor?.recommendationCue?.(route,profile,assessment)||{key:'neutral',label:'比較候補',headline:'評価候補',reasons:[]};
+ const cue=profile==='production'
+  ?(recommendationAdvisor?.productionCandidateCue?.(route,baseline||route,assessment,index)||recommendationAdvisor?.recommendationCue?.(route,profile,assessment))
+  :recommendationAdvisor?.recommendationCue?.(route,profile,assessment);
+ const safeCue=cue||{key:'neutral',label:'比較候補',headline:'評価候補',reasons:[]};
  const f=route.final||{},sx=f.speedCross||{},method=route.method==='conditional-four-generation-preview'?'4代目は条件付き仮プレビュー':route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'全探索範囲';
- const speedBadge=sx.has?'<span class="sale-reason-chip">SPクロス '+fmt(sx.count)+'</span>':'';
  const stats=f.sireStats||{},cc=stats.record==='C'&&stats.stable==='C';
- const extra=cc?'<span class="sale-reason-chip">実績C・安定C</span>':'';
- const reasons=(cue.reasons||[]).slice(0,3).map(v=>'<span class="sale-reason-chip">'+esc(v)+'</span>').join('')+speedBadge+extra;
- const risky=['upside','rebuild-upside','longshot','low-record'].includes(cue.key);
+ const chipValues=[...(safeCue.reasons||[]),sx.has?'SPクロス '+fmt(sx.count):null,cc?'実績C・安定C':null].filter(Boolean);
+ const reasons=[...new Set(chipValues)].slice(0,5).map(v=>'<span class="sale-reason-chip">'+esc(v)+'</span>').join('');
  const isMain=profile==='production';
+ const risky=safeCue.key==='upside'||cc;
  const rankLabel=isMain
-  ?(risky?'上振れ枠 '+(index+1):(index===0?'本命候補':'有力候補 '+(index+1)))
+  ?(index===0?(risky?'本命候補（上振れ）':'本命候補'):'別強み候補 '+(index+1))
   :'参考軸 '+(index+1)+'位';
- const tone=isMain?(['solid','preserve','upside','rebuild-upside','longshot','low-record'].includes(cue.key)?cue.key:'neutral'):'neutral';
- const displayLabel=!isMain&&cc?'参考候補':cue.label;
- const displayHeadline=!isMain&&cc?cue.headline+'。父実績C・安定Cのため本命外':cue.headline;
+ const tone=isMain
+  ?(index===0?(risky?'upside':'main'):(['record','speed','nitro','upside'].includes(safeCue.key)?safeCue.key:'neutral'))
+  :'neutral';
+ const displayLabel=!isMain&&cc?'参考候補':safeCue.label;
+ const displayHeadline=!isMain&&cc?safeCue.headline+'。父実績C・安定Cのため本命外':safeCue.headline;
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
  const detail=productionHtml(route)+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'');
@@ -338,7 +347,6 @@ function routeHtml(route,index,goal,profile){
   '<details class="sale-route-details"><summary>詳しい根拠・世代別データを見る</summary><div class="sale-method" style="margin-top:6px">途中世代の繁殖SP/ST/PWは仮定していません。</div>'+detail+'</details>'+
   '<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
 }
-
 function bridgeStageHtml(st){
  const n=st.nitro||{},ss=st.sireStats||{},cross=st.speedCross?.has?'SPクロスあり':'SPクロスなし';
  return '<div class="route-bridge-stage"><div class="row"><b>'+st.generation+'代目：'+esc(st.sire)+'</b><span class="sale-chip">'+esc(cross)+'</span></div>'+
@@ -423,7 +431,7 @@ function openRouteInBreed(id){
 
 function profileHtml(profile,routes,goal,scope){
  const label=planner.profileLabels[profile],criteria=profile==='production'
-  ?'SP15/ST5とSP補強経路を確認 → 父実績A/Bを実用候補として優先 → 母能力に応じて安定性を文脈比較（高能力母はA寄り・中位母はBを標準・再建帯はCの上振れも活用） → SP/ST・クロスを比較'
+  ?'父実績はA>B>Cを強い基礎差として評価。SP/STニトロ・速力/短距離クロス・距離下限（1000/1200m側）・配合理論・安定を加味し、他要素の上積みが明確な場合だけB/CがAを逆転します。'
   :planner.profileCriteria[profile];
  if(!routes?.length){
   const empty=profile==='speedCross'
@@ -439,7 +447,8 @@ function profileHtml(profile,routes,goal,scope){
   balance:'SP/STの両立を優先する候補',
   sire:'将来自家製種牡馬としての血統汎用性'
  };
- return `<div class="card sale-profile"><div class="sale-profile-head"><h3>${esc(label)}</h3><span class="sale-axis-note">${esc(axisNotes[profile]||'別軸評価')}</span></div>${routes.map((r,i)=>routeHtml(r,i,goal,profile)).join('')}<details class="sale-profile-detail"><summary>この軸の並び順・評価範囲</summary><div class="sale-method" style="margin-top:5px">${esc(criteria)}</div>${profile==='sire'?`<div class="sale-method">${esc(scope)}</div>`:''}</details></div>`
+ const baseline=routes[0]||null;
+ return `<div class="card sale-profile"><div class="sale-profile-head"><h3>${esc(label)}</h3><span class="sale-axis-note">${esc(axisNotes[profile]||'別軸評価')}</span></div>${routes.map((r,i)=>routeHtml(r,i,goal,profile,baseline)).join('')}<details class="sale-profile-detail"><summary>この軸の並び順・評価範囲</summary><div class="sale-method" style="margin-top:5px">${esc(criteria)}</div>${profile==='sire'?`<div class="sale-method">${esc(scope)}</div>`:''}</details></div>`
 }
 
 function renderResults(result){
@@ -452,12 +461,12 @@ function renderResults(result){
  const caution=!info.abilityKnown?'<div class="notice"><b>繁殖能力未判明：</b>母能力を含む総合評価は保留。血統・ニトロ・配合理論だけで候補を表示しています。</div>':'';
  const assessment=recommendationAdvisor?.mareAssessment?.(db.salePlanner.mare)||null;
  const productionSource=result.productionRoutes?.length?result.productionRoutes:(result.base.shortlists?.production||result.base.profiles?.production||[]);
- const production=recommendationAdvisor?.rankProductionRoutes?.(productionSource,assessment,3)||result.base.profiles?.production||[];
+ const production=recommendationAdvisor?.selectProductionRecommendations?.(productionSource,assessment,3)||recommendationAdvisor?.rankProductionRoutes?.(productionSource,assessment,3)||result.base.profiles?.production||[];
  const profiles={...result.base.profiles,production,sire:result.portfolio.routes};
  const otherOrder=order.filter(p=>p!=='production');
  const mainHtml=profileHtml('production',profiles.production,goal,result.portfolioScope);
  const otherHtml=otherOrder.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
- $('#salePlannerResults').innerHTML=`<div class="card sale-decision-head"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜本命配合</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}</span></div>${caution}<div class="sale-color-legend"><b>色＝推薦度</b><span>緑：本命</span><span>黄：上振れ</span><span>白：参考</span></div><details class="sale-profile-detail"><summary>探索条件を見る</summary><div class="sale-method">${esc(method)}</div></details></div>`+
+ $('#salePlannerResults').innerHTML=`<div class="card sale-decision-head"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜本命配合</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}</span></div>${caution}<div class="sale-color-legend"><b>色＝候補の役割</b><span>緑：本命</span><span>青：実績</span><span>紫：SP補強</span><span>青緑：ニトロ</span><span>黄：上振れ</span><span>白：参考軸</span></div><details class="sale-profile-detail"><summary>探索条件を見る</summary><div class="sale-method">${esc(method)}</div></details></div>`+
  mainHtml+
  `<details class="sale-other-axes"><summary>参考軸を見る（SP上限・クロス・ST・バランス・血統価値）</summary><div class="sale-other-axes-body"><div class="sale-method">参考5軸は別評価で、総合点には合算しません。</div>${otherHtml}</div></details>`;
 }
