@@ -11,6 +11,7 @@ const v20=read('v20.js');
 const v21=read('v21.js');
 const v25=read('v25.js');
 const v26=read('v26.js');
+const v28=read('v28.js');
 const breedingEngine=read('breeding-engine.js');
 const idx=read('index.html');
 const version=JSON.parse(read('version.json'));
@@ -28,7 +29,7 @@ for(const p of ['v15.js','v16.js','v18.js','v26.js']){
   assert.strictEqual((legacy.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,0,p+' must not auto-check updates');
 }
 
-for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js']){
+for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js','v28.js']){
   const c=read(p);
   assert.ok(c.includes("V=window.APP_VERSION||'1.19.1'"),p+' must use shared APP_VERSION');
   assert.ok(c.includes("BUILD=window.APP_BUILD||'2026.09.23-50'"),p+' must use shared APP_BUILD');
@@ -71,6 +72,7 @@ assert.ok(idx.includes('sale-planner-core.js?v=1.19.1-b50'),'sale planner core c
 assert.ok(idx.includes('sale-recommendation-core.js?v=1.19.1-b50'),'sale recommendation core cache key');
 assert.ok(idx.includes('v26.js?v=1.19.1-b50'),'v26 cache key');
 assert.ok(idx.includes('v27.js?v=1.19.1-b50'),'v27 cache key');
+assert.ok(idx.includes('v28.js?v=1.19.1-b50'),'v28 cache key');
 
 console.log(JSON.stringify({
   passed:true,
