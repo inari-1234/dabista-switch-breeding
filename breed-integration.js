@@ -458,37 +458,70 @@ function renderFutureProgress(token){
   const slot=findFutureSlot(token.firstSire);
   if(slot&&activeSire===token.firstSire)slot.innerHTML='<div class="notice"><b>将来探索中：</b>'+esc(token.progress||'処理中')+'<br><span class="muted">3代は固定初手父で全探索、4代は条件付きcompact bridgeです。</span></div>';
 }
-function futureHtml(result){
+function futureRowsHtml(result){
   const goal=selectedGoal();
-  const rows=PROFILES.map(profile=>{
+  return PROFILES.map(profile=>{
     const st=result.statuses?.[profile];
     const label=planner.profileLabels?.[profile]||PROFILE_FALLBACK[profile];
     const fit=fitLabelForStatus(st,goal,profile);
-    return '<div style="display:grid;grid-template-columns:1.15fr 1.25fr 1fr;gap:6px;padding:6px 0;border-bottom:1px solid #e5ebe7;font-size:10px"><b>'+esc(label)+'</b><span>'+esc(futureDisplay(st))+'</span><span>'+esc(fit)+'</span></div>';
+    return '<div class="breed-future-row"><b>'+esc(label)+'</b><span>'+esc(futureDisplay(st))+'</span><span>'+esc(fit)+'</span></div>';
   }).join('');
-  const m=result.meta||{};
-  return '<div class="notice" style="margin-top:8px"><b>'+esc(result.firstSire)+' 起点のカテゴリ別将来性</b>'+
-    '<div style="margin-top:6px">'+rows+'</div>'+
+}
+function selectedRouteDetail(profile,status){
+  if(profile==='sire')return '<span class="muted">血統価値はportfolioで別軸評価。</span>';
+  const r=status?.selectedRoute;
+  if(!r)return '<span class="muted">評価ルートなし</span>';
+  const f=r.final||{};
+  const path=(r.sires||[]).join(' → ');
+  return '<b>'+esc(path||'直配合')+'</b> ｜ SP '+Number(f.sp||0)+' / ST '+Number(f.st||0)+' / PW '+Number(f.pw||0);
+}
+function transitionDetail(status){
+  const ts=status?.transitions||[];
+  const meaningful=ts.filter(x=>x.kind!=='none');
+  if(!meaningful.length)return '<span class="muted">直配合から有意な追加改善なし。</span>';
+  return meaningful.map(x=>'<div><b>'+Number(x.to)+'代：</b>'+esc(x.kind==='material'?'有意改善':x.kind==='tradeoff'?'別方向の補強 / tradeoff':'微差')+(x.reasons?.length?' — '+esc(x.reasons.join('／')):'')+'</div>').join('');
+}
+function renderFutureOverview(result){
+  const box=$('#breedFutureOverview');
+  if(!box)return;
+  box.innerHTML='<div class="row"><b>カテゴリ別・将来性比較</b><span class="badge gold">'+esc(result.firstSire)+'起点</span></div>'+
+    '<div class="breed-future-head"><span>カテゴリ</span><span>将来性</span><span>目的適合</span></div>'+
+    futureRowsHtml(result)+
+    '<p class="muted">※3代は固定初手父で全探索。4代は検証済みcompact bridgeによる条件付き探索です。「将来性」と「目的達成」は別判定です。</p>';
+}
+function futureHtml(result){
+  const goal=selectedGoal(),m=result.meta||{};
+  const details=PROFILES.map(profile=>{
+    const st=result.statuses?.[profile],label=planner.profileLabels?.[profile]||PROFILE_FALLBACK[profile];
+    const fit=fitLabelForStatus(st,goal,profile);
+    return '<details class="breed-future-detail"><summary><b>'+esc(label)+'</b> ｜ '+esc(futureDisplay(st))+' ｜ '+esc(fit)+'</summary>'+
+      '<div class="muted" style="margin-top:6px;line-height:1.55">'+selectedRouteDetail(profile,st)+'<br>'+transitionDetail(st)+'</div></details>';
+  }).join('');
+  return '<div class="notice" style="margin-top:8px"><b>'+esc(result.firstSire)+' 起点の6カテゴリ診断</b>'+
+    '<div style="margin-top:6px">'+futureRowsHtml(result)+'</div>'+
     '<div class="muted" style="margin-top:6px">2代：固定父から正確探索 '+Number(m.generation2?.safeCount||0).toLocaleString()+
     '件 / 3代：固定父全探索 '+Number(m.generation3?.safeCount||0).toLocaleString()+
-    '件 / 4代：条件付きcompact bridge '+Number(m.generation4?.safeCount||0).toLocaleString()+'件。※3～4代は中間牝馬の実能力選抜が前提です。</div></div>';
+    '件 / 4代：条件付きcompact bridge '+Number(m.generation4?.safeCount||0).toLocaleString()+'件。</div>'+
+    '<div style="margin-top:7px">'+details+'</div>'+
+    '<div class="muted">※3～4代は中間牝馬の実能力を確認し、能力上位個体を選抜できた場合に進む前提です。</div></div>';
 }
 function renderCachedFutureIntoActive(){
   if(!activeSire)return;
-  const slot=findFutureSlot(activeSire);
-  if(!slot)return;
   const key=continuationKey(currentFingerprint,activeSire);
   const cached=continuationCache.get(key);
   if(cached){
-    slot.innerHTML=futureHtml(cached);
+    renderFutureOverview(cached);
+    const status=cached.statuses?.[selectedCategory()];
+    const marker=[...document.querySelectorAll('[data-card-future]')].find(x=>x.dataset.cardFuture===activeSire);
+    if(marker)marker.textContent=futureDisplay(status);
+    const slot=findFutureSlot(activeSire);
+    if(slot)slot.innerHTML=futureHtml(cached);
     return;
   }
   const token=pending.get(key);
-  if(token){
-    renderFutureProgress(token);
-    return;
-  }
-  slot.innerHTML='';
+  if(token){renderFutureProgress(token);return}
+  const slot=findFutureSlot(activeSire);
+  if(slot)slot.innerHTML='';
 }
 async function boot(){
   if(bootPromise)return bootPromise;
