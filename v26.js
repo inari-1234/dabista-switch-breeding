@@ -457,7 +457,7 @@ function renderResults(result){
  const otherHtml=otherOrder.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
  $('#salePlannerResults').innerHTML=`<div class="card sale-decision-head"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜本命配合</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}</span></div>${caution}<div class="sale-color-legend"><b>色＝推薦度</b><span>緑：本命</span><span>黄：上振れ</span><span>白：参考</span></div><details class="sale-profile-detail"><summary>探索条件を見る</summary><div class="sale-method">${esc(method)}</div></details></div>`+
  mainHtml+
- `<details class="sale-other-axes"><summary>参考軸を見る（SP上限・クロス・ST・バランス・血統価値）</summary><div class="sale-other-axes-body">${otherHtml}</div></details>`;
+ `<details class="sale-other-axes"><summary>参考軸を見る（SP上限・クロス・ST・バランス・血統価値）</summary><div class="sale-other-axes-body"><div class="sale-method">参考5軸は別評価で、総合点には合算しません。</div>${otherHtml}</div></details>`;
 }
 async function runDesign(){
  if(!planner)return;
