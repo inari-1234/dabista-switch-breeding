@@ -23,12 +23,14 @@ need(advisor,"if(band==='rebuild')return stable==='C'?3:stable==='B'?2:stable===
 
 for(const token of ['rankProductionRoutes','recommendationCue','本命候補','この軸 ','sale-cue-headline','sale-reason-chip','詳しい根拠・世代別データを見る'])need(v26,token,'sale recommendation hierarchy');
 need(v26,'「強馬生産型」が本命軸です','main-axis explanation');
+need(v26,'上振れ枠 ','risk candidate must not be mislabeled as main recommendation');
 need(v26,'総合点には合算しません','six-axis separation');
 if(!/productionSource=result\.base\.shortlists\?\.production/.test(v26))throw Error('production rerank must use retained production shortlist rather than already-truncated top3');
 
 need(breed,"advisor?.compareProductionForMare","breed production mare-aware comparator");
 need(breed,"advisor?.recommendationCue","breed concise reason cue");
 need(breed,'本命軸 ','breed main-axis label');
+need(breed,'上振れ枠 ','breed risk candidates must be visibly separated from main lane');
 need(breed,'この軸 ','breed non-main axis label');
 need(breed,'現在Pairの詳しい根拠を見る','breed details collapse');
 
