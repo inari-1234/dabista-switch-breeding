@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BUILD='2026.09.20-34',core=window.DABISTA_BREEDING_CORE,db=window.db;
+const BUILD='2026.09.20-34',core=window.DABISTA_BREEDING_CORE;
 const host={version:1,status:'loading',ready:null,error:null};window.DABISTA_BREEDING_ENGINE=host;
 if(!core){host.status='failed';host.error='breeding-core missing';window.APP_ERRORS?.push({at:new Date().toISOString(),message:host.error});return}
 const json=async path=>{const u=new URL(path,location.href);u.searchParams.set('_',BUILD);const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error(path+' HTTP '+r.status);return r.json()};
@@ -19,7 +19,7 @@ host.ready=(async()=>{
  const pedigreeRecord=name=>{const p=pedigreeMap.get(core.key(name));return p?cloneRecord(p,p.kind==='pedigree-stallion'?'pedigree-analysis-only':'pedigree-master'):null};
  const stallionStats=name=>stallionStatsMap.get(core.key(name))||null;
  const mareStats=name=>mareStatsMap.get(core.key(name))||null;
- function findDbHorse(name){return db?.horses?.find(x=>core.key(x.name)===core.key(name))||null}
+ function findDbHorse(name){return window.db?.horses?.find(x=>core.key(x.name)===core.key(name))||null}
  function resolveHorse(h,stack=new Set()){
   if(!h)return null;
   if(typeof h==='string')return master(h)||resolveHorse(findDbHorse(h),stack);
