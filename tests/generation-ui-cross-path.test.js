@@ -45,6 +45,12 @@ assert.ok(roseReasons[0].headline.includes('SP/ST')&&roseReasons[0].headline.inc
 assert.ok(roseReasons[1].headline.includes('SP上限'),'BC reason must expose SP ceiling');
 assert.ok(roseReasons[2].headline.includes('次代'),'rebuild reason must expose next-generation broodmare value');
 assert.ok(roseReasons[3].headline.includes('血統汎用性'),'stallion reason must expose future sire bloodline utility');
+const fitArcReason=advisor.goalMareReason('フィットレオタード','arc',direct);
+assert.notStrictEqual(
+  roseReasons[0].reasons.slice(0,2).join('|'),
+  fitArcReason.reasons.slice(0,2).join('|'),
+  'the same Arc goal must expose mare-specific visible reasons when the selected mare changes'
+);
 const roseQuick=advisor.quickSaleOutlook('ローズティンテッド',roseDirect);
 assert.ok(roseQuick.label&&roseQuick.goalLabels.arc&&roseQuick.goalLabels.bc,'sale quick view must expose an immediate non-numeric outlook and purpose labels');
 assert.ok(!Object.prototype.hasOwnProperty.call(roseQuick,'score'),'sale quick view must not introduce a seventh weighted score');
