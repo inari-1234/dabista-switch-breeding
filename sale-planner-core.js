@@ -189,12 +189,22 @@
   }
   function compareFourthBridge(kind){return(a,b)=>cmpVec(fourthBridgeVector(a,kind),fourthBridgeVector(b,kind))}
   function createFourthBridgeCollector({generalN=64,speedCrossN=320,bridgeAN=0,bridgeDN=144}={}){
-    const official={sp:[],speedCross:[],production:[],st:[],balance:[],theory:[]},bridgeA=[],bridgeD=[];
+    const official={
+      sp:createRankedBucket(generalN,r=>finalVector(r,'sp')),
+      speedCross:createRankedBucket(speedCrossN,r=>finalVector(r,'speedCross')),
+      production:createRankedBucket(generalN,r=>finalVector(r,'production')),
+      st:createRankedBucket(generalN,r=>finalVector(r,'st')),
+      balance:createRankedBucket(generalN,r=>finalVector(r,'balance')),
+      theory:createRankedBucket(generalN,r=>finalVector(r,'theory'))
+    };
+    const bridgeA=createRankedBucket(bridgeAN,r=>fourthBridgeVector(r,'A'));
+    const bridgeD=createRankedBucket(bridgeDN,r=>fourthBridgeVector(r,'D'));
     let count=0;
     const cfg={generalN,speedCrossN,bridgeAN,bridgeDN};
     return{
       push(route){
         count++;
+        const k=routeKey(route);
         for(const p of Object.keys(official)){
           if(p==='speedCross'&&!route?.final?.speedCross?.has)continue;
           if(p==='production'){
@@ -202,21 +212,22 @@
             const speedSupport=!!route?.final?.speedCross?.has||!!route?.materialSpeedCross?.has;
             if(multi&&!speedSupport)continue;
           }
-          insertTop(official[p],route,compareProfile(p),p==='speedCross'?speedCrossN:generalN);
+          official[p].push(route,k);
         }
-        if(bridgeAN>0)insertTop(bridgeA,route,compareFourthBridge('A'),bridgeAN);
-        if(bridgeDN>0)insertTop(bridgeD,route,compareFourthBridge('D'),bridgeDN);
+        if(bridgeAN>0)bridgeA.push(route,k);
+        if(bridgeDN>0)bridgeD.push(route,k);
       },
       get count(){return count},
       finish(){
-        const m=new Map();
-        for(const list of Object.values(official))for(const r of list)m.set(routeKey(r),r);
-        for(const r of bridgeA)m.set(routeKey(r),r);
-        for(const r of bridgeD)m.set(routeKey(r),r);
+        const lists=Object.fromEntries(Object.keys(official).map(p=>[p,official[p].routes()]));
+        const a=bridgeA.routes(),d=bridgeD.routes(),m=new Map();
+        for(const list of Object.values(lists))for(const r of list)m.set(routeKey(r),r);
+        for(const r of a)m.set(routeKey(r),r);
+        for(const r of d)m.set(routeKey(r),r);
         return{
           count,config:{...cfg},bases:[...m.values()],
-          sourceCounts:Object.fromEntries(Object.entries(official).map(([k,v])=>[k,v.length])),
-          bridgeCounts:{A:bridgeA.length,D:bridgeD.length}
+          sourceCounts:Object.fromEntries(Object.entries(lists).map(([k,v])=>[k,v.length])),
+          bridgeCounts:{A:a.length,D:d.length}
         };
       }
     };
