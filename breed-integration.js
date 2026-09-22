@@ -286,22 +286,38 @@ function theoryText(pair){
   if(e.effective)a.push('凝った');
   return a.length?a.join('・'):'追加理論なし';
 }
+function currentMareAssessment(){
+  return currentResolvedMare&&advisor?.mareAssessment?.(currentResolvedMare.name)||null;
+}
+function currentAbilityKnown(){
+  return !!currentMareAssessment()?.abilityKnown;
+}
 function futureDisplay(status){
   if(!status)return '未診断';
+  const known=currentAbilityKnown();
   const trans=status.transitions||[];
   if(status.state==='early-complete'){
-    if(trans.some(x=>x.kind==='tradeoff'))return '別方向の補強あり / トレードオフ';
-    if(trans.some(x=>x.kind==='minor'))return '微差';
+    if(trans.some(x=>x.kind==='tradeoff'))return known?'別方向の補強あり / トレードオフ':'血統上の別方向補強あり / トレードオフ';
+    if(trans.some(x=>x.kind==='minor'))return known?'微差':'血統上の微差';
+    return known?'追加有意改善なし / 早期完成':'血統上の追加有意改善なし';
   }
-  return FUTURE_STATE_LABELS[status.state]||'未診断';
+  const base=FUTURE_STATE_LABELS[status.state]||'未診断';
+  return known?base:(base==='未診断'?base:'血統上：'+base);
 }
 function currentFutureStatus(sire,profile){
   const result=continuationCache.get(continuationKey(currentFingerprint,sire));
   return result?.statuses?.[profile]||null;
 }
-function fitLabelForStatus(status,goal,profile){
+function fitLabelForRoute(route,goal,profile){
   if(profile==='sire')return advisor.goalFit(null,'stallion').label;
-  return advisor.goalFit(status?.selectedRoute||null,goal).label;
+  const fit=advisor.goalFit(route||null,goal);
+  if(currentAbilityKnown())return fit.label;
+  if(fit.key==='unavailable')return '能力未評価';
+  const bloodline=fit.key==='strong'?'強基準':fit.key==='qualified'?'基準到達':fit.key==='below'?'未達':'未評価';
+  return '能力未評価（血統：'+bloodline+'）';
+}
+function fitLabelForStatus(status,goal,profile){
+  return fitLabelForRoute(status?.selectedRoute||null,goal,profile);
 }
 function pairDetailsHtml(entry){
   const p=entry.pair||{},d=p.danger||{},t=p.theory||{},e=p.elaborate||{},n=p.nitro||{};
@@ -318,16 +334,16 @@ function pairDetailsHtml(entry){
 function renderCard(entry,rank,profile,goal){
   const r=entry.currentRoute,f=r?.final||{},n=entry.pair?.nitro||{};
   const status=currentFutureStatus(entry.sire,profile);
-  const fit=advisor.goalFit(r,goal);
+  const fitLabel=fitLabelForRoute(r,goal,profile);
   const future=futureDisplay(status);
   const rankText=profile==='sire'?'候補':String(rank)+'.';
   const portfolioNote=profile==='sire'?'<div class="muted">血統価値型は直配合だけで単一順位を作りません。候補名順で表示し、将来診断のportfolioで評価します。</div>':'';
   return '<div class="card breed-integrated-card" data-sire-name="'+esc(entry.sire)+'">'+
-    '<div class="row"><div><b>'+rankText+' '+esc(entry.sire)+'</b><div class="muted">'+esc(PROFILE_FALLBACK[profile])+' / '+esc(GOAL_LABELS[goal])+'</div></div><div class="score">'+esc(fit.label)+'</div></div>'+
+    '<div class="row"><div><b>'+rankText+' '+esc(entry.sire)+'</b><div class="muted">'+esc(PROFILE_FALLBACK[profile])+' / '+esc(GOAL_LABELS[goal])+'</div></div><div class="score">'+esc(fitLabel)+'</div></div>'+
     '<div class="grid"><div class="stat"><b>'+Number(n.sp||0)+'</b><small>SPニトロ</small></div><div class="stat"><b>'+Number(n.st||0)+'</b><small>STニトロ</small></div><div class="stat"><b>'+Number(n.pw||0)+'</b><small>PWニトロ</small></div></div>'+
     '<p class="muted">'+esc(theoryText(entry.pair))+' / 実績'+esc(f.sireStats?.record||'-')+'・底力'+esc(f.sireStats?.guts||'-')+'・安定'+esc(f.sireStats?.stable||'-')+'</p>'+
     portfolioNote+
-    '<div class="notice"><b>選択カテゴリの将来性：</b><span data-card-future="'+esc(entry.sire)+'">'+esc(future)+'</span><br><b>現在配合の目的適合：</b>'+esc(fit.label)+'</div>'+
+    '<div class="notice"><b>選択カテゴリの将来性：</b><span data-card-future="'+esc(entry.sire)+'">'+esc(future)+'</span><br><b>現在配合の目的適合：</b>'+esc(fitLabel)+'</div>'+
     pairDetailsHtml(entry)+
     '<button type="button" class="secondary" data-breed-future="'+esc(entry.sire)+'">2～4代の将来性を診断</button>'+
     '<div class="breed-future-slot" data-future-sire="'+esc(entry.sire)+'"></div>'+
