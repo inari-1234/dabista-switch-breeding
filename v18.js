@@ -30,6 +30,7 @@ function pairTheory(m,s){
 function codeText(a){return(a||[]).join('・')||'未判定'}
 
 function installTheoryControls(){
+  if(window.DABISTA_BREED_PAIR_INDEX)return;
   const first=$('#breed .card');if(!first||$('#theoryFilter'))return;
   const box=document.createElement('div');box.className='theory-tools';
   box.innerHTML=`<label>配合理論フィルター</label><select id="theoryFilter"><option value="all">すべて表示</option><option value="any">面白・見事のどちらか成立</option><option value="interesting">面白い配合</option><option value="magnificent">見事な配合</option><option value="perfect">完璧な配合</option></select><div id="theoryStatus" class="theory-status">配合理論マスタを読み込み中…</div>`;
@@ -57,6 +58,7 @@ function candidateName(card){
 }
 let decorating=false;
 function decorateBreedCards(){
+  if(window.DABISTA_BREED_PAIR_INDEX)return;
   if(decorating)return;decorating=true;
   try{
     updateTheoryStatus();
