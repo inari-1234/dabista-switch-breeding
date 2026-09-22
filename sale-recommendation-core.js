@@ -680,6 +680,49 @@
       };
     }
 
+    function bcUpgradeGate(prev,next){
+      if(!prev||!next)return{allowed:!!next,requiredSignals:0,compensationCount:0,recordDrop:0,qualified:false,signals:{}};
+      const a=routeFacts(prev),b=routeFacts(next);
+      const aSpeed=!!(a.speedCross||a.materialSpeedCross),bSpeed=!!(b.speedCross||b.materialSpeedCross);
+      const aq=a.sp>=17&&a.st>=5&&aSpeed,bq=b.sp>=17&&b.st>=5&&bSpeed;
+      const as=aq&&a.sp>=18,bs=bq&&b.sp>=18;
+      const recordDrop=Math.max(0,a.recordGrade-b.recordGrade),axisFloor=b.sp>=a.sp-1&&b.st>=a.st-1;
+      const signals={
+        qualityGain:(!aq&&bq)||(aq&&!as&&bs),
+        spAxisGain:b.sp>=a.sp+2&&b.st>=a.st-1,
+        speedSupportGain:((!aSpeed&&bSpeed)||(b.materialSpeedCrossStages>a.materialSpeedCrossStages)||(b.speedCrossCount>a.speedCrossCount))&&b.st>=a.st-1,
+        theoryGain:((!a.magnificent&&b.magnificent)||(!a.elaborate&&b.elaborate))&&axisFloor
+      };
+      const compensationCount=Object.values(signals).filter(Boolean).length;
+      const requiredSignals=recordDrop>=2?3:recordDrop===1?2:0;
+      return{
+        allowed:bq&&(requiredSignals===0||compensationCount>=requiredSignals),
+        requiredSignals,compensationCount,recordDrop,qualified:bq,signals
+      };
+    }
+
+    function rebuildUpgradeGate(prev,next){
+      if(!prev||!next)return{allowed:!!next,requiredSignals:0,compensationCount:0,recordDrop:0,qualified:false,signals:{}};
+      const a=routeFacts(prev),b=routeFacts(next);
+      const aq=a.sp>=15&&a.st>=5,bq=b.sp>=15&&b.st>=5;
+      const aSpeed=!!(a.speedCross||a.materialSpeedCross),bSpeed=!!(b.speedCross||b.materialSpeedCross);
+      const aLong=!!(a.longDistanceCross||a.materialLongCross),bLong=!!(b.longDistanceCross||b.materialLongCross);
+      const recordDrop=Math.max(0,a.recordGrade-b.recordGrade);
+      const signals={
+        qualityGain:!aq&&bq,
+        spstGain:b.spst>=a.spst+3&&b.sp>=a.sp-1&&b.st>=a.st-1,
+        speedSupportGain:((!aSpeed&&bSpeed)||(b.materialSpeedCrossStages>a.materialSpeedCrossStages))&&b.spst>=a.spst-1,
+        longSupportGain:((!aLong&&bLong)||(b.materialLongCrossStages>a.materialLongCrossStages))&&b.spst>=a.spst-1,
+        theoryGain:((!a.magnificent&&b.magnificent)||(!a.elaborate&&b.elaborate))&&b.spst>=a.spst-1
+      };
+      const compensationCount=Object.values(signals).filter(Boolean).length;
+      const requiredSignals=recordDrop>=2?3:recordDrop===1?2:0;
+      return{
+        allowed:bq&&(requiredSignals===0||compensationCount>=requiredSignals),
+        requiredSignals,compensationCount,recordDrop,qualified:bq,signals
+      };
+    }
+
     function materialUpgradeReasons(prev,next,goal,assessment){
       if(!prev||!next)return next?['比較対象となる次世代候補が成立']: [];
       const a=routeFacts(prev),b=routeFacts(next),reasons=[];
@@ -703,7 +746,8 @@
         if(b.sp>=a.sp+2&&b.st>=Math.max(3,a.st-1))reasons.push(`SPを${a.sp}→${b.sp}へ伸ばし、ST低下を抑制`);
         if(!a.magnificent&&b.magnificent&&(b.speedCross||b.materialSpeedCross)&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('見事配合とSP系クロスを新たに両立し、SP/STもほぼ維持');
         addMaterialSupport();
-        return reasons;
+        const gate=bcUpgradeGate(prev,next);
+        return gate.allowed?reasons:[];
       }
       if(goal==='arc'){
         const ta=a.sp>=14&&a.st>=6, tb=b.sp>=14&&b.st>=6;
@@ -748,7 +792,8 @@
         if(!a.magnificent&&b.magnificent&&matchedCross&&b.spst>=a.spst-1)reasons.push('見事配合と母の不足能力に合う有効クロスを新たに両立し、母系能力もほぼ維持');
         addMaterialSupport();
         addMaterialLongSupport();
-        return reasons;
+        const gate=rebuildUpgradeGate(prev,next);
+        return gate.allowed?reasons:[];
       }
       if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('速力/短距離クロスを新たに成立');
       if(b.sp>=a.sp+2)reasons.push(`SPを${a.sp}→${b.sp}へ上積み`);
@@ -849,9 +894,12 @@
         return{key:'conditional',label:'凱旋門：数値到達・距離根拠要確認'};
       }
       if(goal==='bc'){
-        if(f.sp>=18&&f.st>=5&&speedPath)return{key:'strong',label:'BC：強基準'};
-        if(f.sp>=17&&f.st>=5&&speedPath)return{key:'qualified',label:'BC：基準到達'};
-        return{key:'below',label:'BC：未達'};
+        const quantitative=f.sp>=17&&f.st>=5&&speedPath,strong=f.sp>=18&&f.st>=5&&speedPath;
+        if(!quantitative)return{key:'below',label:'BC：未達'};
+        if(f.recordBPlus)return strong
+          ?{key:'strong',label:'BC：強基準'}
+          :{key:'qualified',label:'BC：基準到達'};
+        return{key:'conditional',label:'BC：数値/補強到達・父実績要確認'};
       }
       if(goal==='rebuild'){
         if(f.sp>=15&&f.st>=5)return{key:'qualified',label:'再建：基準到達'};
@@ -1048,7 +1096,7 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,goalMareReason,quickSaleOutlook,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,arcUpgradeGate,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
+      directUseLabels,goalMareReason,quickSaleOutlook,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,arcUpgradeGate,bcUpgradeGate,rebuildUpgradeGate,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
       profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
     };
   }
