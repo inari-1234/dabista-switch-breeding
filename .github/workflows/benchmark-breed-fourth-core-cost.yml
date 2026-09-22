@@ -22,3 +22,5 @@ jobs:
         run: node --check tests/breed-fourth-core-cost-diagnostic.test.js
       - name: Fourth-generation core cost
         run: node tests/breed-fourth-core-cost-diagnostic.test.js
+      - name: Exact3 and compact4 stage timing
+        run: node tests/breed-exact3-stage-timing-diagnostic.test.js
