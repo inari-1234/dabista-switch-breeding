@@ -46,6 +46,7 @@ on:
       - 'tests/sync-game-master-safety-contract.test.js'
       - 'tests/breed-portfolio-optimization-regression.test.js'
       - 'tests/production-mare-context-regression.test.js'
+      - 'tests/recommendation-visual-hierarchy-contract.test.js'
       - 'tests/magnificent-cross-utility-diagnostic.test.js'
       - 'tests/st-cross-2400-utility-diagnostic.test.js'
       - 'tests/theory-ranking-delta-diagnostic.test.js'
@@ -331,6 +332,7 @@ jobs:
         run: |
           node tests/breed-portfolio-optimization-regression.test.js
           node tests/production-mare-context-regression.test.js
+          node tests/recommendation-visual-hierarchy-contract.test.js
 
       - name: Master sync safety contract
         run: |
