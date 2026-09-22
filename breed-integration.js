@@ -141,7 +141,7 @@ function ensureControls(){
     notice.insertAdjacentElement('afterend',overview);
   }
   if(goal){
-    const want=canonicalGoal(goal.value);
+    const want=canonicalGoal(db.breedPlanner.goal||goal.value);
     if([...goal.options].some(o=>o.value===want))goal.value=want;
   }
   if(mare)mare.onchange=()=>{
@@ -308,9 +308,19 @@ function renderNotice(resolved,index){
     return;
   }
   const assessment=advisor?.mareAssessment?.(resolved.name)||null;
-  const ability=assessment?.abilityKnown===false?'繁殖能力：未判明（血統将来性のみ評価）':'';
-  info.innerHTML='<b>選択牝馬：</b>'+esc(resolved.name)+' ｜ 安全 '+Number(index?.safeCount||0)+' / 危険 '+Number(index?.unsafeCount||0)+' '+(ability?'｜ '+esc(ability):'')+
-    '<br><span class="muted">現在Pair評価と2～4代将来性は分離します。3代は固定初手父で全探索、4代は条件付きcompact bridgeです。</span>';
+  let ability='';
+  if(!assessment){
+    ability='<b>現在の母能力：</b>能力未評価（自家製／マスタ外）。血統将来性は評価可能。';
+  }else if(!assessment.abilityKnown){
+    ability='<b>現在の母能力：</b>未判明。SP/ST/PW=0を弱評価へ使わず、血統将来性だけを評価。';
+  }else{
+    const s=assessment.stats||{},r=assessment.ranks||{};
+    ability='<b>現在の母能力：</b>SP '+Number(s.sp||0)+' / ST '+Number(s.st||0)+' / PW '+Number(s.pw||0)+
+      ' ｜ SP順位 '+Number(r.sp?.rank||0)+' / 298・ST順位 '+Number(r.st?.rank||0)+' / 298・PW順位 '+Number(r.pw?.rank||0)+' / 298';
+  }
+  info.innerHTML='<b>選択牝馬：</b>'+esc(resolved.name)+' ｜ 安全 '+Number(index?.safeCount||0)+' / 危険 '+Number(index?.unsafeCount||0)+
+    '<br>'+ability+
+    '<br><span class="muted">現在能力・現在Pair・2～4代の血統将来性・目的適合は別々に表示します。3代は固定初手父で全探索、4代は条件付きcompact bridgeです。</span>';
 }
 function renderBreed(){
   populateMares();
