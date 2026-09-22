@@ -148,7 +148,7 @@ jobs:
           pedigree=json.loads(Path('data/pedigree-master.json').read_text(encoding='utf-8'))
           assert (v['version'],v['build']) == ('1.19.0','2026.09.22-45')
           assert "const APP_VERSION='1.19.0';" in app and "const APP_BUILD='2026.09.22-45';" in app
-          assert "BUILD=window.APP_BUILD||'2026.09.21-44'" in versioned['v26.js']
+          assert "BUILD=window.APP_BUILD||'2026.09.22-45'" in versioned['v26.js']
           assert direct['count'] == 33 and len(direct['pairs']) == 33
           assert pedigree['schemaVersion'] == 4
           assert pedigree['domesticStallionCount'] == 176

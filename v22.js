@@ -1,5 +1,5 @@
 (()=>{
-const V=window.APP_VERSION||'1.18.0',BUILD=window.APP_BUILD||'2026.09.21-44',db=window.db,$=s=>document.querySelector(s),norm=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
+const V=window.APP_VERSION||'1.19.0',BUILD=window.APP_BUILD||'2026.09.22-45',db=window.db,$=s=>document.querySelector(s),norm=s=>String(s||'').normalize('NFKC').trim().replace(/[\s・･]/g,'').toLowerCase();if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
 const KNOWN={
  'イナリシャトル':{screenType:'pedigree-cross',sire:'バゴ',dam:'イナリワルツ',damSire:'ワイルドラッシュ',ancestor15:['バゴ','Nashwan','ワイルドラッシュ','Blushing Groom','Nureyev','Wild Again','マンハッタンカフェ','Red God','Bustino','Northern Dancer','Mr. Prospector','Icecapade','Plugged Nickle','サンデーサイレンス','Storm Cat'],crosses:[{name:'Nearctic',sireGen:5,mareGen:5},{name:'Halo',sireGen:5,mareGen:5}],source:'image-confirmed-2026-09-16'}
 };

@@ -1,5 +1,5 @@
 (()=>{
-const V=window.APP_VERSION||'1.18.0',BUILD=window.APP_BUILD||'2026.09.21-44',KEY='dabistaFarmV1';
+const V=window.APP_VERSION||'1.19.0',BUILD=window.APP_BUILD||'2026.09.22-45',KEY='dabistaFarmV1';
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 const db=window.db;
 if(!db||!Array.isArray(db.horses))return;
