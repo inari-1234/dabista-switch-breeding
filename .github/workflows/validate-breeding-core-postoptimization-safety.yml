@@ -1,0 +1,23 @@
+name: Validate post-optimization breeding core safety
+
+on:
+  push:
+    paths:
+      - 'tests/breeding-core-postoptimization-safety.test.js'
+      - '.github/workflows/validate-breeding-core-postoptimization-safety.yml'
+      - 'breeding-core.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breeding-core-postoptimization-safety.test.js
+      - name: Optimized core mutation and raw-cross safety
+        run: node tests/breeding-core-postoptimization-safety.test.js
