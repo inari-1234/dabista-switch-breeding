@@ -92,6 +92,23 @@ const rebuildStrongComp=gateRoute({sp:15,st:10,record:'B',materialSpeed:true});
 assert.strictEqual(advisor.rebuildUpgradeGate(rebuildPrev,rebuildWeakComp).allowed,false,'rebuild A→B must not pass on threshold gain alone');
 assert.strictEqual(advisor.rebuildUpgradeGate(rebuildPrev,rebuildStrongComp).allowed,true,'rebuild A→B may pass with multiple independent compensation signals');
 
+const freedomBase={population:176,safe:175,sp15st5:10,sp17st5:3,speedQualified:8,magnificent:0,perfect:0,elaborate:0};
+const freedomLoss={population:176,safe:173,sp15st5:3,sp17st5:0,speedQualified:3,magnificent:1,perfect:0,elaborate:57};
+const rebuildFreedomPrev={...gateRoute({sp:15,st:7,record:'B'}),rebuildFreedom:freedomBase};
+const rebuildFreedomLoss={...gateRoute({sp:18,st:8,record:'B'}),rebuildFreedom:freedomLoss};
+assert.strictEqual(advisor.rebuildFreedomGate(rebuildFreedomPrev,rebuildFreedomLoss).allowed,false,
+ 'rebuild must block a numerically stronger generation that materially destroys future practical mating options');
+assert.deepStrictEqual(advisor.materialUpgradeReasons(rebuildFreedomPrev,rebuildFreedomLoss,'rebuild',null),[],
+ 'large elaborate-count gain alone must not compensate for lost future SP15/SP-cross mating freedom');
+
+const freedomEmpty={population:176,safe:174,sp15st5:0,sp17st5:0,speedQualified:0,magnificent:0,perfect:0,elaborate:2};
+const freedomGain={population:176,safe:174,sp15st5:4,sp17st5:0,speedQualified:3,magnificent:0,perfect:0,elaborate:13};
+const rebuildFreedomStart={...gateRoute({sp:7,st:10,record:'B'}),rebuildFreedom:freedomEmpty};
+const rebuildFreedomGain={...gateRoute({sp:15,st:8,record:'C'}),rebuildFreedom:freedomGain};
+const freedomReasons=advisor.materialUpgradeReasons(rebuildFreedomStart,rebuildFreedomGain,'rebuild',null);
+assert.ok(freedomReasons.some(x=>x.includes('SP15/ST5成立相手')&&x.includes('SPクロス付き成立相手')),
+ 'rebuild may extend despite sire-record loss when practical future broodmare options materially expand');
+
 const unknownBelowRec=advisor.recommendGeneration({
   goal:'arc',
   assessment:unknown,
