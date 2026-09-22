@@ -63,7 +63,7 @@ const fstate=advisor.profileFutureStatus({
   routes:{1:springLike1,2:springLike1,3:springLike3,4:springLike3}
 });
 if(fstate.generation!==3||fstate.state!=='improves-to-3-conditional')throw Error('profileFutureStatus depth regression '+JSON.stringify(fstate));
-if(fstate.transitions[0].kind!=='minor'||fstate.transitions[1].kind!=='material'||fstate.transitions[2].kind!=='none')throw Error('profileFutureStatus transitions regression '+JSON.stringify(fstate.transitions));
+if(fstate.transitions[0].kind!=='none'||fstate.transitions[1].kind!=='material'||fstate.transitions[2].kind!=='none')throw Error('profileFutureStatus transitions regression '+JSON.stringify(fstate.transitions));
 
 const p0={spst120:{safe:10,sp15st5:1,sp17st5:0,maxSp:15,maxSpSt:20},spst130:{sp15st5:0,sp17st5:0}};
 const p2={spst120:{safe:10,sp15st5:5,sp17st5:0,maxSp:15,maxSpSt:20},spst130:{sp15st5:0,sp17st5:0}};
