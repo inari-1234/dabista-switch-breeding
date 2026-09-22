@@ -1,20 +1,6 @@
 name: Diagnose breed fixed-sire category future status
 
 on:
-  push:
-    paths:
-      - 'tests/breed-fixed-sire-category-future-status.test.js'
-      - '.github/workflows/diagnose-breed-fixed-sire-category-future-status.yml'
-      - 'sale-planner-core.js'
-      - 'sale-recommendation-core.js'
-      - 'breeding-core.js'
-      - 'data/theory-master.json'
-      - 'data/stallions.json'
-      - 'data/default-broodmares.json'
-      - 'data/nitro-effects.json'
-      - 'data/kotta-pairs.json'
-      - 'data/elaborate-direct-exceptions.json'
-      - 'data/planner-inheritance-validation.json'
   workflow_dispatch:
 
 permissions:

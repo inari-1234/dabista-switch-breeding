@@ -1,20 +1,6 @@
 name: Diagnose breed fixed first-sire future
 
 on:
-  push:
-    paths:
-      - 'tests/breed-fixed-first-sire-future-diagnostic.test.js'
-      - '.github/workflows/diagnose-breed-fixed-first-sire-future.yml'
-      - 'sale-planner-core.js'
-      - 'sale-recommendation-core.js'
-      - 'breeding-core.js'
-      - 'data/theory-master.json'
-      - 'data/stallions.json'
-      - 'data/default-broodmares.json'
-      - 'data/nitro-effects.json'
-      - 'data/kotta-pairs.json'
-      - 'data/elaborate-direct-exceptions.json'
-      - 'data/planner-inheritance-validation.json'
   workflow_dispatch:
 
 permissions:

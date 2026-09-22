@@ -1,16 +1,6 @@
 name: Diagnose breed legacy migration contract
 
 on:
-  push:
-    paths:
-      - 'tests/breed-legacy-migration-contract.test.js'
-      - '.github/workflows/diagnose-breed-legacy-migration-contract.yml'
-      - 'v18.js'
-      - 'v19.js'
-      - 'v20.js'
-      - 'v21.js'
-      - 'v25.js'
-      - 'breed-helper.js'
   workflow_dispatch:
 
 permissions:

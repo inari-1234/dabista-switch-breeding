@@ -1,11 +1,6 @@
 name: Diagnose breed integration load order
 
 on:
-  push:
-    paths:
-      - 'tests/breed-integration-load-order-contract.test.js'
-      - '.github/workflows/diagnose-breed-integration-load-order.yml'
-      - 'index.html'
   workflow_dispatch:
 
 permissions:

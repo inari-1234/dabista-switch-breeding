@@ -1,13 +1,6 @@
 name: Diagnose breed integration regression scope
 
 on:
-  push:
-    paths:
-      - 'tests/breed-integration-regression-scope-contract.test.js'
-      - '.github/workflows/diagnose-breed-integration-regression-scope.yml'
-      - '.github/workflows/validate-common-engine.yml'
-      - '.github/workflows/validate-sale-planner.yml'
-      - 'breed-integration.js'
   workflow_dispatch:
 
 permissions:

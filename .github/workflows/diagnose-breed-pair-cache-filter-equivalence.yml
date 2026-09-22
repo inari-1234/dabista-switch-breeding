@@ -1,16 +1,6 @@
 name: Diagnose breed pair-cache filter equivalence
 
 on:
-  push:
-    paths:
-      - 'tests/breed-pair-cache-filter-equivalence.test.js'
-      - '.github/workflows/diagnose-breed-pair-cache-filter-equivalence.yml'
-      - 'breeding-core.js'
-      - 'data/theory-master.json'
-      - 'data/nitro-effects.json'
-      - 'data/kotta-pairs.json'
-      - 'data/elaborate-direct-exceptions.json'
-      - 'data/planner-inheritance-validation.json'
   workflow_dispatch:
 
 permissions:

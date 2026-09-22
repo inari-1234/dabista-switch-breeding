@@ -1,13 +1,6 @@
 name: Diagnose breed goal canonicalization
 
 on:
-  push:
-    paths:
-      - 'tests/breed-goal-canonicalization-contract.test.js'
-      - '.github/workflows/diagnose-breed-goal-canonicalization.yml'
-      - 'index.html'
-      - 'v26.js'
-      - 'breed-helper.js'
   workflow_dispatch:
 
 permissions:

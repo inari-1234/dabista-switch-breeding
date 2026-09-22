@@ -1,10 +1,6 @@
 name: Diagnose breed future UI labels
 
 on:
-  push:
-    paths:
-      - 'tests/breed-future-ui-labels-diagnostic.test.js'
-      - '.github/workflows/diagnose-breed-future-ui-labels.yml'
   workflow_dispatch:
 
 permissions:

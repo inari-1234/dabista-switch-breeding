@@ -1,10 +1,6 @@
 name: Diagnose breed future mobile density
 
 on:
-  push:
-    paths:
-      - 'tests/breed-future-mobile-density-diagnostic.test.js'
-      - '.github/workflows/diagnose-breed-future-mobile-density.yml'
   workflow_dispatch:
 
 permissions:
