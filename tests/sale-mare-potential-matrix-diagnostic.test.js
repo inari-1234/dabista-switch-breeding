@@ -134,7 +134,7 @@ if(focus['エイスト']&&focus['エイスト'].band!=='high')throw Error('Eist 
 if(focus['フィットレオタード']&&focus['フィットレオタード'].band!=='middle')throw Error('Fit ability band');
 if(focus['ワカヒルメ']&&focus['ワカヒルメ'].band!=='low')throw Error('Wakahirume ability band');
 if(focus['ミムラス']&&(focus['ミムラス'].band!=='low'||focus['ミムラス'].goals.arc.status!=='direct-supported'))throw Error('low-ability/high-pedigree edge case');
-if(focus['エトワルセリータ']&&(focus['エトワルセリータ'].band!=='high'||![1,2].includes(focus['エトワルセリータ'].goals.arc.recommendedGeneration)))throw Error('high-ability/staged edge case '+JSON.stringify(focus['エトワルセリータ'].goals.arc));
+if(focus['エトワルセリータ']&&(focus['エトワルセリータ'].band!=='high'||focus['エトワルセリータ'].goals.arc.recommendedGeneration!==1))throw Error('high-ability/Arc-compensation-gate edge case '+JSON.stringify(focus['エトワルセリータ'].goals.arc));
 if(focus['スプリングスイーツ']&&focus['スプリングスイーツ'].goals.arc.recommendedGeneration!==1)throw Error('Spring Arc generation regression');
 if(focus['エイスト']&&focus['エイスト'].goals.arc.recommendedGeneration!==1)throw Error('Eist Arc generation regression');
 if(focus['フィットレオタード']&&focus['フィットレオタード'].goals.arc.recommendedGeneration!==2)throw Error('Fit Arc generation regression');
