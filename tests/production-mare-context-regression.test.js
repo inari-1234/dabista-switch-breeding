@@ -36,7 +36,9 @@ const high={abilityKnown:true,ranks:{spst:{topPercent:10}}};
 const low={abilityKnown:true,ranks:{spst:{topPercent:80}}};
 
 const midPractical=fake({record:'B',stable:'B',sp:15,st:5});
+const midUpside=fake({record:'A',stable:'C',sp:19,st:7});
 const midLongshot=fake({record:'C',stable:'C',sp:19,st:7});
+assert.ok(advisor.compareProductionForMare(middle)(midPractical,midUpside)<0,'middle mare main lane must prefer Stable A/B practical route over Stable C upside even when the upside sire has record A');
 assert.ok(advisor.compareProductionForMare(middle)(midPractical,midLongshot)<0,'middle mare must prefer practical A/B-record route over C/C longshot when both are viable');
 assert.strictEqual(advisor.productionContext(midLongshot,middle).key,'longshot');
 assert.strictEqual(advisor.productionContext(midLongshot,middle).label,'一発狙い');
