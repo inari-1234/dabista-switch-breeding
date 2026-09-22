@@ -5,6 +5,7 @@ function cardName(c){return c.dataset.sireName||c.querySelector('b')?.textConten
 let engine=null,busy=false;
 function theorySourceLabel(x){return x==='switch-master'?'Switch版マスタ':x?.startsWith('parent-code-inheritance')?'親コードから正確に継承':x==='legacy-persisted-systems'?'旧版で保存済み系統':'コード未確定'}
 function apply(){
+ if(window.DABISTA_BREED_PAIR_INDEX)return;
  if(!engine||busy)return;busy=true;
  try{
   const h=breedHorseById($('#breedMare')?.value),m=engine.resolveHorse(h),filter=$('#theoryFilter');
