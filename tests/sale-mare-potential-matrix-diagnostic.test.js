@@ -60,7 +60,9 @@ function addGoal(bucket,route,facts,goal){
   bucket.best=advisor.betterGoalRoute(bucket.best,route,goal);
 }
 function statusFor(direct,two,goal,assessment){
-  const reasons=advisor.materialUpgradeReasons(direct.best,two.best,goal,assessment);
+  const directBest=goal==='rebuild'&&direct.best?planner.withRebuildFreedom(direct.best):direct.best;
+  const twoBest=goal==='rebuild'&&two.best?planner.withRebuildFreedom(two.best):two.best;
+  const reasons=advisor.materialUpgradeReasons(directBest,twoBest,goal,assessment);
   if(direct.supported>0)return{status:'direct-supported',upgrade:reasons};
   if(direct.strong>0||direct.qualified>0)return{status:'direct-conditional',upgrade:reasons};
   if(reasons.length&&two.supported>0)return{status:'two-supported',upgrade:reasons};
