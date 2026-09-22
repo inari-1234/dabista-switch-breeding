@@ -323,6 +323,10 @@ jobs:
           }));
           NODE
 
+      - name: Portfolio optimization regression
+        run: |
+          node tests/breed-portfolio-optimization-regression.test.js
+
       - name: Mare-aware selection regression
         run: |
           node tests/mare-aware-selection-guidance.test.js
