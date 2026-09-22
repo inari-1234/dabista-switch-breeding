@@ -23,3 +23,5 @@ jobs:
         run: node --check tests/breed-fourth-collector-cost-diagnostic.test.js
       - name: Fourth-generation collector cost
         run: node tests/breed-fourth-collector-cost-diagnostic.test.js
+      - name: Exact3 and compact4 stage timing
+        run: node tests/breed-exact3-stage-timing-diagnostic.test.js
