@@ -37,6 +37,19 @@ let activeSire='';
 const pairCache=new Map();
 const continuationCache=new Map();
 const pending=new Map();
+const PAIR_CACHE_LIMIT=4;
+const CONTINUATION_CACHE_LIMIT=12;
+
+function lruGet(map,key){
+  if(!map.has(key))return null;
+  const v=map.get(key);map.delete(key);map.set(key,v);return v;
+}
+function lruSet(map,key,value,limit){
+  if(map.has(key))map.delete(key);
+  map.set(key,value);
+  while(map.size>limit)map.delete(map.keys().next().value);
+  return value;
+}
 
 function syncDb(){
   db=window.db||db;
@@ -173,7 +186,9 @@ function ensureControls(){
     box.addEventListener('click',e=>{
       const b=e.target.closest('[data-breed-future]');
       if(!b)return;
-      activeSire=b.dataset.breedFuture||'';
+      const nextSire=b.dataset.breedFuture||'';
+      if(nextSire!==activeSire)cancelOtherContinuations(nextSire);
+      activeSire=nextSire;
       renderCachedFutureIntoActive();
       loadFuture(activeSire).then(result=>{
         if(!result)return;
@@ -204,11 +219,9 @@ function setLineage(fp,resolved){
   return true;
 }
 function getPairIndex(resolved,fp){
-  const k=pairKey(fp);
-  if(pairCache.has(k))return pairCache.get(k);
-  const index=planner.createDirectPairIndex(resolved);
-  pairCache.set(k,index);
-  return index;
+  const k=pairKey(fp),cached=lruGet(pairCache,k);
+  if(cached)return cached;
+  return lruSet(pairCache,k,planner.createDirectPairIndex(resolved),PAIR_CACHE_LIMIT);
 }
 function compareRoutes(profile,a,b){
   if(profile==='sire')return 0;
@@ -448,10 +461,19 @@ async function buildContinuation(firstSire,token){
     }
   };
 }
+function cancelOtherContinuations(keepSire=''){
+  for(const [key,token] of pending){
+    if(token.fingerprint===currentFingerprint&&token.firstSire!==keepSire){
+      token.cancelled=true;
+      pending.delete(key);
+    }
+  }
+}
 function loadFuture(firstSire){
   if(!planner||!currentResolvedMare||!firstSire)return Promise.resolve(null);
   const key=continuationKey(currentFingerprint,firstSire);
-  if(continuationCache.has(key))return Promise.resolve(continuationCache.get(key));
+  const cached=lruGet(continuationCache,key);
+  if(cached)return Promise.resolve(cached);
   if(pending.has(key))return pending.get(key).promise;
   const token={
     key,
@@ -466,7 +488,7 @@ function loadFuture(firstSire){
     try{
       const result=await buildContinuation(firstSire,token);
       checkToken(token);
-      continuationCache.set(key,result);
+      lruSet(continuationCache,key,result,CONTINUATION_CACHE_LIMIT);
       return result;
     }finally{
       pending.delete(key);
@@ -534,7 +556,7 @@ function futureHtml(result){
 function renderCachedFutureIntoActive(){
   if(!activeSire)return;
   const key=continuationKey(currentFingerprint,activeSire);
-  const cached=continuationCache.get(key);
+  const cached=lruGet(continuationCache,key);
   if(cached){
     renderFutureOverview(cached);
     const status=cached.statuses?.[selectedCategory()];
