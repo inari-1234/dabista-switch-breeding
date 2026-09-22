@@ -76,6 +76,24 @@ function style(){
  .mare-detail>summary{cursor:pointer;font-size:10px;font-weight:800;color:#53675e}
  .mare-detail .advisor-note{font-size:9px}
  .mare-direct{font-size:9px}
+ .mare-why{margin-top:9px;padding:11px 12px;border-radius:11px;background:rgba(255,255,255,.86);border:1px solid rgba(70,105,88,.14)}
+ .mare-why small{display:block;font-size:9px;font-weight:900;color:#687970}
+ .mare-why b{display:block;margin-top:3px;font-size:13px;line-height:1.45;color:#203d30}
+ .mare-scoreline{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+ .mare-scoreline span,.mare-scoreline b{padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.82);border:1px solid rgba(80,110,95,.10);font-size:10px}
+ .mare-scoreline b{font-size:11px;color:#244b39}
+ .mare-color-note{font-size:8px!important;color:#738077!important}
+ .generation-compare{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px}
+ .generation-compare-card{border:1px solid #dfe7e3;border-radius:10px;background:#fff;padding:9px}
+ .generation-compare-card.recommended{border-color:#70ad8e;background:#edf7f2;box-shadow:0 0 0 1px #70ad8e inset}
+ .generation-compare-card span{display:block;font-size:9px;font-weight:900;color:#65766e}
+ .generation-compare-card b{display:block;margin-top:3px;font-size:13px;color:#234b38}
+ .generation-compare-card small{display:block;margin-top:2px;font-size:8px;color:#6a7871}
+ .generation-key-reason{margin-top:8px;padding:10px 11px;border-radius:10px;background:#f3f7f5}
+ .generation-key-reason b{display:block;font-size:11px;color:#264f3c}
+ .generation-key-reason ul{margin:5px 0 0;padding-left:17px;font-size:9px;line-height:1.5;color:#53675e}
+ .generation-tech{margin-top:8px}
+ .generation-tech>summary{cursor:pointer;font-size:9px;font-weight:800;color:#65766e}
  @media(max-width:420px){.mare-ranks{grid-template-columns:repeat(2,1fr)}.generation-grid{grid-template-columns:1fr}.mare-use{grid-template-columns:1fr 1fr}.mare-advice-head h4{font-size:16px}.mare-tier{font-size:13px}}
  `;document.head.appendChild(s)
 }
@@ -101,6 +119,14 @@ function mareRankCell(label,r){
  if(!r)return`<div class="mare-rank"><span>${esc(label)}</span><b>—</b><small>未判明</small></div>`;
  return `<div class="mare-rank"><span>${esc(label)}</span><b>${r.value}</b><small>${r.rank}/${r.total}位・上位${r.topPercent}%</small></div>`;
 }
+function mareDecisionText(a,strategy,goal){
+ const tone=mareTierTone(a),improve=(strategy?.improve||[]).slice(0,2).join('・')||'弱点';
+ if(!a?.abilityKnown)return'能力は未判明です。血統だけで候補を比較し、能力値0を弱さとして扱いません。';
+ if(tone==='elite'||tone==='high')return'上位母です。能力を崩さず、'+improve+'だけを補う配合を優先します。';
+ if(tone==='upper')return'中上位母です。母の長所を残しながら、'+improve+'を補う配合を優先します。';
+ if(tone==='middle')return'中位母です。一発狙いより、実績・安定A/Bの父で'+improve+'を底上げする配合を本命にします。';
+ return'再建向きの母です。上振れより、次代に残しやすいSP/STバランスを優先します。';
+}
 function renderMareAdvice(){
  const box=$('#saleMareRecommendation'),name=$('#saleMareSelect')?.value;
  if(!box||!advisor)return;
@@ -110,25 +136,26 @@ function renderMareAdvice(){
  const direct=directSnapshot(name),use=advisor.directUseLabels(a,direct),strategy=advisor.mareStrategy(name),goal=window.db?.salePlanner?.goal||'arc';
  const tone=mareTierTone(a),goalNames={arc:'凱旋門賞',bc:'BC長期',rebuild:'繁殖再建',stallion:'自家製種牡馬'};
  box.className='mare-advice tier-'+tone;
- const rankHtml=a.abilityKnown?
-   `<div class="mare-ranks">
+ const rankHtml=a.abilityKnown
+  ?`<div class="mare-scoreline"><span>SP ${a.ranks.sp?.value??'—'}</span><span>ST ${a.ranks.st?.value??'—'}</span><span>PW ${a.ranks.pw?.value??'—'}</span><b>SP+ST ${a.ranks.spst?.value??'—'}</b></div>`
+  :'<div class="mare-scoreline"><b>能力未判明</b></div>';
+ const currentUse=use?.[goal]||'評価保留';
+ const decision=mareDecisionText(a,strategy,goal);
+ box.innerHTML=`
+   <div class="mare-advice-head">
+    <div><h4>${esc(name)}</h4><small>能力既知 ${advisor.knownAbilityCount}頭で比較</small><small class="mare-color-note">カード色＝母能力帯</small></div>
+    <span class="mare-tier">${esc(a.tier)}</span>
+   </div>
+   <div class="mare-why"><small>この牝馬を使う理由｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision)}</b></div>
+   ${rankHtml}
+   <details class="mare-detail">
+    <summary>順位・他目的・血統評価を見る</summary>
+    ${a.abilityKnown?`<div class="mare-ranks">
      ${mareRankCell('繁殖SP',a.ranks.sp)}
      ${mareRankCell('繁殖ST',a.ranks.st)}
      ${mareRankCell('繁殖PW',a.ranks.pw)}
      ${mareRankCell('SP+ST',a.ranks.spst)}
-   </div>`:
-   '<div class="advisor-note"><b>繁殖能力は未判明</b> — 0を低能力として扱わず、血統評価だけを続けます。</div>';
- const currentUse=use?.[goal]||'評価保留';
- box.innerHTML=`
-   <div class="mare-advice-head">
-    <div><h4>${esc(name)}</h4><small>${esc(a.archetype)} / 能力既知 ${advisor.knownAbilityCount}頭で比較</small></div>
-    <span class="mare-tier">${esc(a.tier)}</span>
-   </div>
-   ${strategy?`<div class="mare-priority"><small>今の育成方針</small><b>${esc(strategy.priority)}</b></div>`:''}
-   ${rankHtml}
-   <div class="mare-goal-now"><span>${esc(goalNames[goal]||goal)}</span><b>${esc(currentUse)}</b></div>
-   <details class="mare-detail">
-    <summary>他の目的・補強方針・直仔データを見る</summary>
+    </div>`:''}
     ${strategy?`<div class="advisor-note"><b>補強タイプ：${esc(strategy.label)}</b><br>維持：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / 補強：${strategy.improve.length?esc(strategy.improve.join('・')):'—'}</div>`:''}
     <div class="mare-use-title">目的別の事前評価</div>
     <div class="mare-use">
@@ -137,7 +164,7 @@ function renderMareAdvice(){
      <div class="${goal==='rebuild'?'selected':''}"><b>繁殖再建</b><span>${esc(use.rebuild)}</span></div>
      <div class="${goal==='stallion'?'selected':''}"><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
     </div>
-    <div class="mare-direct">直仔安全 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 凱旋門SP/ST基準 ${direct.arcQuantitative||0}件 / 基準内父実績 A/B/C ${direct.arcRecordA||0}/${direct.arcRecordB||0}/${direct.arcRecordC||0} / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
+    <div class="mare-direct">直仔安全 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
     <div class="advisor-note">${esc(a.note)}</div>
    </details>`;
 }
@@ -170,25 +197,13 @@ function bestFacts(result,goal){
  return{route,facts:advisor.routeFacts(route)}
 }
 function generationCard(n,g,goal,recommended){
- const b=bestFacts(g,goal),f=b.facts,s=g.summary,label=n===1?'直仔':n+'代';
- const assessment=advisor.mareAssessment($('#saleMareSelect')?.value||'');
- const pq=advisor.productionQuality?.(b.route,assessment);
- const method=n>=3?'条件付きプレビュー':'全探索';
- const distanceLabel=f.distanceEvidence>=3?'2400m+父＋長距離クロス':f.distanceEvidence===2?'2400m+父':f.distanceEvidence===1?'長距離クロスで補完':'要実馬確認';
- return `<div class="generation-card ${recommended===n?'recommended':''}">
-  <h5>${recommended===n?'★ ':''}${label} <small>${method}</small></h5>
-  <div class="gmetric"><span>代表SP/ST</span><b>${f.sp}/${f.st}</b></div>
-  <div class="gmetric"><span>最大SP</span><b>${s.maxSp}</b></div>
-  <div class="gmetric"><span>最大SP+ST</span><b>${s.maxSpSt}</b></div>
-  <div class="gmetric"><span>SP15/ST5</span><b>${s.sp15st5}</b></div>
-  <div class="gmetric"><span>SP17/ST5</span><b>${s.sp17st5}</b></div>
-  <div class="gmetric"><span>締め父</span><b>${esc(f.record||'?')}/${esc(f.stable||'?')}</b></div>
-  ${pq?`<div class="gmetric"><span>強馬生産条件</span><b>${esc(pq.label)}</b></div>`:''}
-  ${goal==='arc'?`<div class="gmetric"><span>最終距離根拠</span><b>${esc(distanceLabel)}</b></div>`:''}
-  ${n>1?`<div class="gmetric"><span>途中SPクロス</span><b>${f.materialSpeedCrossStages||0}世代</b></div>`:''}
-  ${n>1&&goal==='arc'?`<div class="gmetric"><span>途中長距離クロス</span><b>${f.materialLongCrossStages||0}世代</b></div>`:''}
-  <small>安全ルート ${s.count.toLocaleString()}件 / 見事 ${s.magnificent} / 完璧 ${s.perfect} / 凝った ${s.elaborate}</small>
- </div>`
+ const b=bestFacts(g,goal),f=b.facts,label=n===1?'直仔':n+'代';
+ const method=n>=3?'条件付き':'全探索';
+ return `<div class="generation-compare-card ${recommended===n?'recommended':''}">
+  <span>${recommended===n?'★ おすすめ':'比較'}｜${label}</span>
+  <b>SP/ST ${f.sp}/${f.st}</b>
+  <small>SP+ST ${f.spst}・${method}</small>
+ </div>`;
 }
 function recommendationDetail(name,goal,rec){
  const chosen=rec.routes?.[rec.generation],direct=rec.routes?.[1];
@@ -196,27 +211,15 @@ function recommendationDetail(name,goal,rec){
  const expanded=planner.expandRoute(name,chosen,goal);
  if(!expanded)return'';
  const a=advisor.routeFacts(direct),b=advisor.routeFacts(chosen);
- const dSp=b.sp-a.sp,dSt=b.st-a.st,dSum=b.spst-a.spst;
- const signed=n=>n>0?'+'+n:String(n);
- const goalRule=goal==='arc'?'凱旋門ではSP/STを基礎に、最終父実績はA>B>Cの強弱として比較します。実績Aや2400m対応を単独の必須条件にはせず、2400m対応は強い距離根拠、長距離クロスは補完根拠として扱います。'
-  :goal==='bc'?'BCではSP17/ST5とSP系補強経路を確認したうえで、最終父の実績と多世代時の安定特性を比較します。実績・安定だけ、SPクロスだけのどちらにも寄せません。'
-  :goal==='rebuild'?'繁殖再建では一頭の最大値より、次代に残しやすいSP/STバランスを優先します。'
-  :'自家製種牡馬では高能力繁殖牝馬群への血統汎用性を優先します。';
- const steps=expanded.stages.map(st=>{
-   const adv=advisor.selectionAdvice(name,goal,st,expanded.stages.length);
-   if(!adv)return'';
-   return '<div class="generation-step"><b>'+st.generation+'代目｜'+esc(adv.phase)+'</b><span>'+esc(adv.headline)+'。'+esc(adv.body)+'</span></div>';
- }).join('');
  const label=rec.generation===1?'直仔':rec.generation+'代';
  const transition=rec.generation===4?rec.transitions?.to4:rec.generation===3?rec.transitions?.to3:rec.generation===2?rec.transitions?.to2:null;
- const decisionReasons=transition?.reasons||[];
- const fromLabel=transition?.from===3?'3代':transition?.from===2?'2代':'直仔';
- const decision=decisionReasons.length
-  ?'<div class="generation-decision"><b>'+fromLabel+'→'+label+'を選ぶ決め手</b><ul>'+decisionReasons.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>'
-  :'<div class="generation-decision"><b>'+label+'を選ぶ理由</b><ul><li>追加世代による明確な上積み条件がないため、短い世代を優先します。</li></ul></div>';
- return '<div class="generation-why"><strong>なぜ'+label+'なのか</strong>'+decision+'<div class="generation-delta">直仔代表 → '+label+'代表：SP '+a.sp+'→'+b.sp+'（'+signed(dSp)+'） / ST '+a.st+'→'+b.st+'（'+signed(dSt)+'） / SP+ST '+a.spst+'→'+b.spst+'（'+signed(dSum)+'）<br>'+esc(goalRule)+'</div><div class="generation-timeline">'+steps+'</div></div>';
+ const reasons=(transition?.reasons?.length?transition.reasons:rec.reasons||[]).slice(0,2);
+ const reasonHtml=reasons.length?reasons.map(x=>'<li>'+esc(x)+'</li>').join(''):'<li>追加世代の上積みが小さいため、短い世代を優先します。</li>';
+ return '<div class="generation-key-reason"><b>なぜ'+label+'？</b><ul>'+reasonHtml+'</ul></div>'+
+  '<details class="generation-tech"><summary>比較データ・探索条件を見る</summary>'+
+  '<div class="advisor-note">直仔 SP/ST '+a.sp+'/'+a.st+' → '+label+' '+b.sp+'/'+b.st+'。3代・4代は条件付き探索で、中間牝馬の実能力は出生前に仮定しません。</div>'+
+  '</details>';
 }
-
 async function runGenerationAdvisor(){
  if(!advisor||!planner)return;
  const name=$('#saleMareSelect')?.value,goal=window.db?.salePlanner?.goal||'arc';
@@ -257,12 +260,10 @@ async function runGenerationAdvisor(){
   const goalLabel=planner.goalLabels[goal]||goal;
   $('#generationAdvisorResult').innerHTML=`
    <div class="generation-result">
-    <div class="generation-pick"><b>${esc(goalLabel)}：${esc(rec.label)}</b><span>${rec.conditional?'3代・4代は条件付き探索です。':''} 短い世代で十分なら無理に代重ねしない判定です。</span></div>
-    <div class="generation-grid">${generationCard(1,generations[1],goal,rec.generation)}${generationCard(2,generations[2],goal,rec.generation)}${generationCard(3,generations[3],goal,rec.generation)}${generationCard(4,generations[4],goal,rec.generation)}</div>
+    <div class="generation-pick"><span>おすすめ世代</span><b>${esc(rec.label)}</b></div>
+    <div class="generation-compare">${generationCard(1,generations[1],goal,rec.generation)}${generationCard(2,generations[2],goal,rec.generation)}${generationCard(3,generations[3],goal,rec.generation)}${generationCard(4,generations[4],goal,rec.generation)}</div>
     ${recommendationDetail(name,goal,rec)}
-    <ul class="generation-reasons">${rec.reasons.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>
-    <button class="primary generation-action" type="button" id="applyRecommendedGeneration">${rec.generation===1?'直仔':rec.generation+'代'}で詳しく設計する</button>
-    <div class="advisor-note">世代推奨は勝率・産駒能力の確率予測ではありません。安全配合、最終ニトロ、SPクロス、最終父の実績・安定、距離適性、配合理論と、代重ねに必要な実馬選抜回数を分けて比較した設計判断です。3代は前世代の多軸候補、4代は3代目の一般多軸候補にSPクロス深掘りとbridge候補を加えて展開する条件付きプレビューで、全176³・176⁴最適解とは表示しません。</div>
+    <button class="primary generation-action" type="button" id="applyRecommendedGeneration">おすすめ${rec.generation===1?'直仔':rec.generation+'代'}で本命配合を見る</button>
    </div>`;
   $('#applyRecommendedGeneration').onclick=()=>{
     window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
@@ -284,12 +285,12 @@ function inject(){
  if(goalSection)goalSection.insertAdjacentElement('afterend',mareBox);else summary?.insertAdjacentElement('afterend',mareBox);
  const notice=$('#salePlannerNotice'),generationSection=$('#saleGenerationSection');
  const gen=document.createElement('div');gen.id='saleGenerationAdvisor';gen.className='generation-advisor';
- gen.innerHTML=`<h4>おすすめ配合世代を診断</h4><p>直仔・2代・3代・4代を横断して、「どこで締めるのが妥当か」を比較します。深い世代を自動的に高評価にはしません。</p><button type="button" class="secondary" id="runGenerationAdvisor">直仔・2代・3代・4代を比較</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
- if(generationSection)generationSection.insertAdjacentElement('beforebegin',gen);else notice?.insertAdjacentElement('beforebegin',gen);
- const run=$('#runSalePlanner');if(run)run.textContent='選択した世代を詳しく設計';
+ gen.innerHTML=`<h4>何代で締めるか比較</h4><p>直仔・2代・3代・4代を同条件で比較し、おすすめ世代を1つ決めます。</p><button type="button" class="secondary" id="runGenerationAdvisor">おすすめ世代を決める</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
+ if(generationSection){generationSection.hidden=true;generationSection.insertAdjacentElement('beforebegin',gen)}else notice?.insertAdjacentElement('beforebegin',gen);
+ if(notice)notice.hidden=true;
+ const run=$('#runSalePlanner');if(run)run.hidden=true;
  window.addEventListener('dabista:sale-mare-context',()=>{setTimeout(renderMareAdvice,0);invalidateGeneration('繁殖牝馬を変更したため、世代診断を更新してください。')});
  $('#saleGoalButtons')?.addEventListener('click',e=>{if(e.target.closest('[data-sale-goal]'))setTimeout(()=>{renderMareAdvice();invalidateGeneration('目的を変更したため、世代診断を更新してください。')},0)});
- $('#saleGenButtons')?.addEventListener('click',e=>{if(!e.target.closest('[data-sale-gen]'))return;setTimeout(()=>{if($('#generationAdvisorResult')?.innerHTML)$('#generationAdvisorProgress').textContent='手動で別世代を選択中です。診断結果は比較基準として残しています。'},0)});
  $('#runGenerationAdvisor').onclick=runGenerationAdvisor;
  renderMareAdvice();
 }
