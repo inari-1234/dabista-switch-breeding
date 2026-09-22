@@ -398,7 +398,6 @@ function renderBreed(){
   db.breedPlanner.goal=goal;
   const lists=filteredEntries(currentPairIndex,profile,q);
   if(activeSire&&!lists.ranked.some(e=>e.sire===activeSire)){
-    cancelOtherContinuations('');
     activeSire='';
     clearFutureOverview();
   }

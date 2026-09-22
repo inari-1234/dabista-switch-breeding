@@ -1,4 +1,6 @@
 'use strict';
+const fs=require('fs');
+const runtime=fs.readFileSync('breed-integration.js','utf8');
 
 function makeState(){
   let lineageKey='none',epoch=0;
@@ -60,6 +62,13 @@ if(b1.key===b2.key)throw Error('first sire not in continuation key');
 // Explicit cancellation must reject pending result.
 s.cancelLineage();
 if(s.commit(b1.token,{stale:true}))throw Error('cancelled result committed');
+
+const hiddenActive=runtime.match(/if\(activeSire&&!lists\.ranked\.some\(e=>e\.sire===activeSire\)\)\{([\s\S]{0,220}?)\}/);
+if(!hiddenActive)throw Error('runtime hidden-active branch missing');
+if(hiddenActive[1].includes('cancelOtherContinuations'))throw Error('runtime cancels continuation on category/search/filter view change');
+if(!hiddenActive[1].includes("activeSire=''")||!hiddenActive[1].includes('clearFutureOverview()'))throw Error('runtime must clear hidden active UI without discarding scan');
+if(!/if\(goal\)goal\.onchange=\(\)=>\{[\s\S]{0,220}window\.renderBreed\(\)/.test(runtime))throw Error('goal view handler missing');
+if(!/if\(cat\)cat\.onchange=\(\)=>\{[\s\S]{0,220}window\.renderBreed\(\)/.test(runtime))throw Error('category view handler missing');
 
 const contract={
   continuationKey:['resolved mare/pedigree fingerprint','fixed first sire'],

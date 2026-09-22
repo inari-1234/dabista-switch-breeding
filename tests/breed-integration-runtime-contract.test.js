@@ -31,7 +31,9 @@ if(!src.includes('cancelOtherContinuations(nextSire)'))throw Error('first-sire s
 if(!src.includes('clearFutureOverview()'))throw Error('stale future overview reset missing');
 if(!/currentPairIndex=null;\s*activeSire='';\s*clearFutureOverview\(\);\s*epoch\+\+/.test(src))throw Error('lineage change must clear old future overview before advancing epoch');
 if(!/if\(nextSire!==activeSire\)\{[\s\S]{0,180}clearFutureOverview\(\)/.test(src))throw Error('first-sire switch must clear previous overview while new scan starts');
-if(!/if\(activeSire&&!lists\.ranked\.some\(e=>e\.sire===activeSire\)\)[\s\S]{0,180}clearFutureOverview\(\)/.test(src))throw Error('filtered-out active sire must not leave stale overview');
+const hiddenActive=src.match(/if\(activeSire&&!lists\.ranked\.some\(e=>e\.sire===activeSire\)\)\{([\s\S]{0,220}?)\}/);
+if(!hiddenActive||!hiddenActive[1].includes('clearFutureOverview()'))throw Error('filtered-out active sire must not leave stale overview');
+if(hiddenActive[1].includes('cancelOtherContinuations'))throw Error('view filtering/category changes must not cancel reusable continuation scan');
 if(!src.includes('if(pending.get(key)===token)pending.delete(key)'))throw Error('pending cleanup must not delete a restarted same-key scan');
 
 console.log(JSON.stringify({

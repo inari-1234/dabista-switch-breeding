@@ -37,6 +37,7 @@ on:
       - 'tests/breed-integration-load-order-contract.test.js'
       - 'tests/breed-legacy-migration-contract.test.js'
       - 'tests/breed-integration-runtime-contract.test.js'
+      - 'tests/breed-async-continuation-state-contract.test.js'
       - 'tests/breed-current-ranking-mare-dependence.test.js'
       - 'tests/magnificent-cross-utility-diagnostic.test.js'
       - 'tests/st-cross-2400-utility-diagnostic.test.js'
@@ -113,6 +114,7 @@ jobs:
           node --check tests/breed-integration-load-order-contract.test.js
           node --check tests/breed-legacy-migration-contract.test.js
           node --check tests/breed-integration-runtime-contract.test.js
+          node --check tests/breed-async-continuation-state-contract.test.js
           node --check tests/breed-current-ranking-mare-dependence.test.js
           node --check tests/magnificent-cross-utility-diagnostic.test.js
           node --check tests/st-cross-2400-utility-diagnostic.test.js
@@ -175,6 +177,7 @@ jobs:
           node tests/breed-integration-load-order-contract.test.js
           node tests/breed-legacy-migration-contract.test.js
           node tests/breed-integration-runtime-contract.test.js
+          node tests/breed-async-continuation-state-contract.test.js
           node tests/breed-current-ranking-mare-dependence.test.js
 
       - name: Transient sale mare wiring regression
