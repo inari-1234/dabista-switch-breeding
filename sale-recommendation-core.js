@@ -383,7 +383,7 @@
         speedCross:bool(x.has),speedCrossCount:val(x.count),speedCrossEffect:val(x.effect),shortCross:val(x.short),speedOnlyCross:val(x.speed),
         materialSpeedCross:bool(mx.has),materialSpeedCrossStages:val(mx.stages),materialSpeedCrossCount:val(mx.count),
         materialLongCross:bool(ml.has),materialLongCrossStages:val(ml.stages),materialLongCrossNames:[...(ml.names||[])],
-        maxD:val(ss.maxD),distance2400:val(ss.maxD)>=2400,long2400:val(ss.maxD)>=2400,
+        minD:val(ss.minD),maxD:val(ss.maxD),distance2400:val(ss.maxD)>=2400,long2400:val(ss.maxD)>=2400,
         longDistanceCross:bool(f.crossEffects?.longDistance),gutsCross:bool(f.crossEffects?.gutsSupport),powerCross:bool(f.crossEffects?.powerSupport),abilityCross:bool(f.crossEffects?.anyAbility),
         distanceEvidence:val(ss.maxD)>=2400?(f.crossEffects?.longDistance?3:2):(f.crossEffects?.longDistance?1:0),
         record:String(ss.record||'?'),stable:String(ss.stable||'?'),guts:String(ss.guts||'?'),
@@ -441,10 +441,18 @@
       return'rebuild';
     }
     function stabilityPreference(stable,band){
-      if(band==='high')return stable==='A'?3:stable==='B'?2:stable==='C'?1:0;
-      if(band==='middle')return stable==='B'?3:stable==='A'?2:stable==='C'?1:0;
-      if(band==='rebuild')return stable==='C'?3:stable==='B'?2:stable==='A'?1:0;
-      return stable==='B'?3:stable==='C'?2:stable==='A'?1:0;
+      if(band==='high')return stable==='A'?3:stable==='B'?2:stable==='C'?0:0;
+      if(band==='middle')return stable==='B'?3:stable==='A'?2:stable==='C'?0:0;
+      if(band==='rebuild')return stable==='B'?3:stable==='A'?1:stable==='C'?0:0;
+      return stable==='B'?2:stable==='A'?2:stable==='C'?0:0;
+    }
+    function shortDistanceTier(minD){
+      const d=val(minD,0);
+      if(!d)return 0;
+      if(d<=1000)return 3;
+      if(d<=1200)return 2;
+      if(d<=1400)return 1;
+      return 0;
     }
     function productionContext(route,assessment){
       const f=route?.final||{},ss=f.sireStats||{},sp=val(f.sp),st=val(f.st),pw=val(f.pw);
@@ -453,39 +461,55 @@
       const speedSupport=!multi||!!f.speedCross?.has||!!route?.materialSpeedCross?.has;
       const viable=sp>=15&&st>=5,eliteLine=sp>=17&&st>=5,practical=viable&&recordGrade>=2;
       const stableRank=stabilityPreference(stable,band);
-      const middleMain=band==='middle'&&practical&&stable!=='C';
-      const tail=[
-        sp,st,grade(ss.guts),pw,
+      const spNeedsSupport=!!assessment?.abilityKnown&&(val(assessment?.ranks?.sp?.topPercent,100)>45||val(assessment?.ranks?.spst?.topPercent,100)>60);
+      const shortDistanceRelevant=band==='middle'||band==='rebuild'||spNeedsSupport;
+      const minD=val(ss.minD),maxD=val(ss.maxD),shortTier=shortDistanceTier(minD);
+      const distanceEvidence=shortDistanceRelevant?shortTier:0;
+      const nitroEvidence=Math.max(0,sp-15)*1.5+Math.max(0,st-5)*0.75+Math.max(0,pw)*0.25;
+      const crossEvidence=(f.speedCross?.has?3:0)+(route?.materialSpeedCross?.has?2:0);
+      const theoryEvidence=(f.theory?.magnificent?2:0)+(f.elaborate?1:0)+(f.theory?.interesting?0.5:0);
+      const recordEvidence=recordGrade*8;
+      const stabilityEvidence=stableRank;
+      const eliteEvidence=eliteLine?2:0;
+      const evidenceScore=recordEvidence+stabilityEvidence+nitroEvidence+crossEvidence+theoryEvidence+distanceEvidence+eliteEvidence;
+      const middleMain=band==='middle'&&practical;
+      const vector=[
+        bool(speedSupport),
+        bool(viable),
+        evidenceScore,
+        recordGrade,
+        stableRank,
+        shortDistanceRelevant?shortTier:0,
+        sp,st,pw,
         bool(f.speedCross?.has),val(route?.materialSpeedCross?.stages),
         bool(f.theory?.magnificent),bool(f.elaborate),bool(f.theory?.interesting)
       ];
-      const vector=band==='middle'
-        ?[bool(speedSupport),bool(practical),bool(viable),bool(middleMain),bool(eliteLine),stableRank,recordGrade,...tail]
-        :[bool(speedSupport),bool(practical),bool(viable),recordGrade,bool(eliteLine),stableRank,...tail];
-      let key='conditional',label='条件付き',headline='条件を確認して比較';
+      let key='conditional',label='条件付き',headline='複数要素を比較する候補';
       if(record==='C'&&stable==='C'){
-        key='longshot';label='一発狙い';headline='上振れ幅はあるが本命より再現性を優先しない';
+        key='longshot';label='上振れ枠';headline='実績C・安定Cを許容する代わりに明確な血統上積みが必要';
       }else if(record==='C'){
-        key='low-record';label='血統値先行';headline='血統値は魅力だが父実績Cを許容する候補';
+        key='low-record';label='血統値先行';headline='実績Cの不利をニトロ・クロス・距離適性で補えるか比較';
       }else if(stable==='C'){
-        key=band==='rebuild'?'rebuild-upside':'upside';
-        label=band==='rebuild'?'再建の上振れ':'上振れ寄り';
-        headline=band==='rebuild'?'低めの母から上振れを狙う候補':'実績は確保しつつ振れ幅を取る候補';
-      }else if(band==='high'&&stable==='A'){
-        key='preserve';label='母能力活用';headline='高い母能力を再現しながら伸ばす候補';
-      }else if(recordGrade>=2&&stable==='B'){
-        key='solid';label='本命・標準';headline='実績と安定のバランスを取りやすい候補';
-      }else if(recordGrade>=2){
-        key='solid';label='堅実候補';headline='実績を確保して再現性を優先する候補';
+        key='upside';label='上振れ寄り';headline='実績を確保しつつ安定Cの振れ幅を取る候補';
+      }else if(record==='A'){
+        key='solid';label='実績重視';headline='実績Aを強い土台として他要素を比較';
+      }else if(record==='B'){
+        key='solid';label='実績B・比較';headline='実績Aとの差を他要素の明確な上積みで補えるか比較';
       }
       const reasons=[];
-      if(viable)reasons.push('SP15/ST5');
-      if(eliteLine)reasons.push('SP17/ST5');
       if(record!=='?')reasons.push('実績'+record);
       if(stable!=='?')reasons.push('安定'+stable);
+      if(shortDistanceRelevant&&shortTier)reasons.push('距離下限'+minD+'m');
+      if(eliteLine)reasons.push('SP17/ST5');
+      else if(viable)reasons.push('SP15/ST5');
       if(f.speedCross?.has)reasons.push('最終SPクロス');
       else if(route?.materialSpeedCross?.has)reasons.push('途中SP補強');
-      return{band,key,label,headline,reasons,vector,viable,eliteLine,practical,middleMain,record,stable,recordGrade,stableRank,speedSupport};
+      return{
+        band,key,label,headline,reasons,vector,viable,eliteLine,practical,middleMain,
+        record,stable,recordGrade,stableRank,speedSupport,
+        spNeedsSupport,shortDistanceRelevant,minD,maxD,shortTier,distanceEvidence,
+        nitroEvidence,crossEvidence,theoryEvidence,recordEvidence,stabilityEvidence,evidenceScore
+      };
     }
     function compareProductionForMare(assessment){
       return(a,b)=>{
@@ -494,8 +518,72 @@
         return planner.compareProfile('production')(a,b);
       };
     }
+    function productionCandidateCue(route,baseline,assessment,rank=0){
+      const p=productionContext(route,assessment),f=routeFacts(route);
+      const b=baseline?productionContext(baseline,assessment):p,bf=baseline?routeFacts(baseline):f;
+      const advantages=[],tradeoffs=[];
+      const add=(arr,x)=>{if(x&&!arr.includes(x))arr.push(x)};
+      if(rank===0){
+        if(p.record==='A')add(advantages,'実績A');
+        if(p.shortDistanceRelevant&&p.shortTier>=2)add(advantages,'距離下限'+p.minD+'m');
+        if(f.speedCross)add(advantages,'最終SPクロス');
+        else if(f.materialSpeedCross)add(advantages,'途中SP補強');
+        if(f.sp>=17)add(advantages,'SPニトロ'+f.sp);
+        if(f.magnificent)add(advantages,'見事配合');
+        if(!advantages.length)add(advantages,'SP/ST '+f.sp+'/'+f.st);
+      }else{
+        if(p.recordGrade>b.recordGrade)add(advantages,'実績'+p.record+'が本命より上');
+        if(p.stableRank>b.stableRank)add(advantages,'安定'+p.stable+'で再現性寄り');
+        if(p.shortDistanceRelevant&&p.shortTier>b.shortTier)add(advantages,'距離下限'+p.minD+'mでSP側を狙う');
+        if(f.sp>bf.sp)add(advantages,'SPニトロ +'+(f.sp-bf.sp));
+        if(f.st>bf.st)add(advantages,'STニトロ +'+(f.st-bf.st));
+        if(f.pw>bf.pw)add(advantages,'PWニトロ +'+(f.pw-bf.pw));
+        if(f.speedCross&&!bf.speedCross)add(advantages,'最終SPクロスあり');
+        if(f.materialSpeedCrossStages>bf.materialSpeedCrossStages)add(advantages,'途中SP補強が多い');
+        if(f.magnificent&&!bf.magnificent)add(advantages,'見事配合');
+        if(f.elaborate&&!bf.elaborate)add(advantages,'凝った配合');
+        if(p.recordGrade<b.recordGrade)add(tradeoffs,'実績'+p.record+'は本命より下');
+        if(p.stableRank<b.stableRank)add(tradeoffs,'安定'+p.stable+'は再現性で不利');
+        if(f.sp<bf.sp)add(tradeoffs,'SPニトロ -'+(bf.sp-f.sp));
+        if(f.st<bf.st)add(tradeoffs,'STニトロ -'+(bf.st-f.st));
+        if(!advantages.length)add(advantages,'本命と近い条件の別血統ルート');
+      }
+      let roleKey='balanced',roleLabel=rank===0?'総合本命':'別強み';
+      if(p.record==='C'||p.stable==='C'){roleKey='upside';roleLabel='上振れ'}
+      else if(p.shortDistanceRelevant&&p.shortTier>=2&&(rank===0||p.shortTier>b.shortTier)){roleKey='speed';roleLabel='SP伝達重視'}
+      else if(rank>0&&p.recordGrade>b.recordGrade){roleKey='record';roleLabel='実績重視'}
+      else if(rank===0&&p.record==='A'){roleKey='record';roleLabel='実績重視'}
+      else if(f.speedCross||f.materialSpeedCross){roleKey='speed';roleLabel='SP補強'}
+      else if(rank>0&&(f.sp>bf.sp||f.st>bf.st||f.pw>bf.pw)){roleKey='nitro';roleLabel='ニトロ重視'}
+      const lead=advantages.slice(0,2).join('＋');
+      const headline=rank===0
+        ?lead+'を軸に本命化'
+        :lead+(tradeoffs.length?'。'+tradeoffs[0]+'と引き換え':'');
+      return{
+        key:roleKey,label:roleLabel,headline,
+        reasons:[...advantages.slice(0,2),...tradeoffs.slice(0,1)],
+        advantages,tradeoffs
+      };
+    }
     function rankProductionRoutes(routes,assessment,limit=3){
       return[...(routes||[])].sort(compareProductionForMare(assessment)).slice(0,limit);
+    }
+    function selectProductionRecommendations(routes,assessment,limit=3){
+      const sorted=[...(routes||[])].sort(compareProductionForMare(assessment));
+      if(sorted.length<=1)return sorted.slice(0,limit);
+      const selected=[sorted[0]],usedFinal=new Set([sorted[0]?.sires?.[sorted[0].sires.length-1]||'']);
+      const pool=sorted.slice(1,Math.min(sorted.length,16));
+      while(selected.length<limit&&pool.length){
+        let pick=pool.findIndex(r=>{
+          const final=r?.sires?.[r.sires.length-1]||'';
+          const cue=productionCandidateCue(r,selected[0],assessment,selected.length);
+          return !usedFinal.has(final)&&cue.advantages.some(x=>!x.includes('近い条件'));
+        });
+        if(pick<0)pick=pool.findIndex(r=>!usedFinal.has(r?.sires?.[r.sires.length-1]||''));
+        if(pick<0)pick=0;
+        const r=pool.splice(pick,1)[0];selected.push(r);usedFinal.add(r?.sires?.[r.sires.length-1]||'');
+      }
+      return selected.slice(0,limit);
     }
     function recommendationCue(route,profile,assessment){
       if(!route)return{key:'neutral',label:'比較候補',headline:'評価候補',reasons:[]};
@@ -814,7 +902,7 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,recommendationCue,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
+      directUseLabels,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
       profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
     };
   }
