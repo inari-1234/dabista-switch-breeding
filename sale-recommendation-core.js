@@ -536,6 +536,108 @@
       return portfolioUpgradeReasons(prev,next).length>0;
     }
 
+    function profileUpgradeReasons(profile,prev,next){
+      if(!prev||!next)return next?['比較対象となる次世代候補が成立']:[];
+      const a=routeFacts(prev),b=routeFacts(next),reasons=[];
+      if(profile==='sp'){
+        if(b.sp>=a.sp+2)reasons.push(`SPを${a.sp}→${b.sp}へ明確に上積み`);
+        else if(b.sp>a.sp&&b.st>=a.st-1)reasons.push(`STをほぼ維持してSPを${a.sp}→${b.sp}へ上積み`);
+        if(!a.magnificent&&b.magnificent&&b.speedCross&&b.sp>=a.sp-1)reasons.push('見事配合と最終SPクロスを新たに両立');
+        return reasons;
+      }
+      if(profile==='speedCross'){
+        if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('最終配合でSPクロスを新たに成立');
+        if(b.sp>=a.sp+2)reasons.push(`SPを${a.sp}→${b.sp}へ明確に上積み`);
+        if(b.materialSpeedCrossStages>a.materialSpeedCrossStages)reasons.push(`中間SP補強工程を${a.materialSpeedCrossStages}→${b.materialSpeedCrossStages}へ増加`);
+        if(b.speedCrossCount>a.speedCrossCount)reasons.push(`最終SPクロス本数を${a.speedCrossCount}→${b.speedCrossCount}へ増加`);
+        return reasons;
+      }
+      if(profile==='production'){
+        const a15=a.sp>=15&&a.st>=5,b15=b.sp>=15&&b.st>=5,a17=a.sp>=17&&a.st>=5,b17=b.sp>=17&&b.st>=5;
+        if(!a15&&b15)reasons.push('SP15/ST5ラインへ新たに到達');
+        if(!a17&&b17)reasons.push('SP17/ST5ラインへ新たに到達');
+        if(b.recordGrade>a.recordGrade&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push(`最終父の実績を${a.record}→${b.record}へ改善し、SP/STをほぼ維持`);
+        if(!a.materialSpeedCross&&b.materialSpeedCross)reasons.push('中間世代のSP補強経路を新たに確保');
+        if(b.sp>=a.sp+2&&b.st>=a.st-1)reasons.push(`STを維持しながらSPを${a.sp}→${b.sp}へ上積み`);
+        return reasons;
+      }
+      if(profile==='st'){
+        if(b.st>=a.st+2&&b.sp>=a.sp-1)reasons.push(`SPを維持しながらSTを${a.st}→${b.st}へ上積み`);
+        if(!a.longDistanceCross&&b.longDistanceCross&&b.sp>=a.sp-1)reasons.push('最終配合で長距離クロスを新たに成立');
+        if(!a.materialLongCross&&b.materialLongCross&&b.sp>=a.sp-1)reasons.push('中間世代のST補強経路を新たに確保');
+        if(!a.distance2400&&b.distance2400&&b.sp>=a.sp-1)reasons.push('SPをほぼ維持したまま2400m対応の父根拠を追加');
+        return reasons;
+      }
+      if(profile==='balance'){
+        const a15=a.sp>=15&&a.st>=5,b15=b.sp>=15&&b.st>=5;
+        if(!a15&&b15)reasons.push('SP15/ST5ラインへ新たに到達');
+        if(b.spst>=a.spst+3&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push(`SP/STを双方ほぼ維持しながら合計を${a.spst}→${b.spst}へ上積み`);
+        return reasons;
+      }
+      return reasons;
+    }
+    function profileTransition(profile,prev,next){
+      if(profile==='sire')return{kind:'none',reasons:[]};
+      if(!prev||!next)return{kind:next?'material':'none',reasons:next?['比較対象となる次世代候補が成立']:[]};
+      const compare=planner.compareProfile(profile),reasons=profileUpgradeReasons(profile,prev,next),cmp=compare(next,prev);
+      if(cmp<0&&reasons.length)return{kind:'material',reasons};
+      if(cmp<0)return{kind:'minor',reasons:[]};
+      if(reasons.length)return{kind:'tradeoff',reasons};
+      return{kind:'none',reasons:[]};
+    }
+    function goalFit(route,goal){
+      if(goal==='stallion')return{key:'separate',label:'血統価値：別軸評価'};
+      if(!route)return{key:'unavailable',label:'未評価'};
+      const f=routeFacts(route),speedPath=!!(f.speedCross||f.materialSpeedCross);
+      if(goal==='arc'){
+        if(f.sp>=15&&f.st>=6)return{key:'strong',label:'凱旋門：強基準'};
+        if(f.sp>=14&&f.st>=6)return{key:'qualified',label:'凱旋門：基準到達'};
+        return{key:'below',label:'凱旋門：未達'};
+      }
+      if(goal==='bc'){
+        if(f.sp>=18&&f.st>=5&&speedPath)return{key:'strong',label:'BC：強基準'};
+        if(f.sp>=17&&f.st>=5&&speedPath)return{key:'qualified',label:'BC：基準到達'};
+        return{key:'below',label:'BC：未達'};
+      }
+      if(goal==='rebuild'){
+        if(f.sp>=15&&f.st>=5)return{key:'qualified',label:'再建：基準到達'};
+        return{key:'below',label:'再建：未達'};
+      }
+      return{key:'unknown',label:'目的未設定'};
+    }
+    function profileFutureStatus({profile,routes={},portfolios={}}={}){
+      const stateFor=g=>g<=0?'unavailable':g===1?'early-complete':g===2?'improves-to-2':g===3?'improves-to-3-conditional':'improves-to-4-conditional';
+      const transitions=[];
+      if(profile==='sire'){
+        const portfolioAt=g=>{
+          const x=portfolios?.[g];
+          if(!x)return null;
+          if(x.spst120||x.spst130)return x;
+          return x.routes?.[0]?.portfolio||null;
+        };
+        let selected=portfolioAt(1),latest=selected?1:0;
+        for(let g=2;g<=4;g++){
+          const next=portfolioAt(g),reasons=portfolioUpgradeReasons(selected,next),kind=reasons.length?'material':'none';
+          transitions.push({to:g,kind,reasons});
+          if(kind==='material'){selected=next;latest=g}
+        }
+        return{
+          profile,label:planner.profileLabels?.[profile]||profile,generation:latest,state:stateFor(latest),
+          transitions,selectedPortfolio:selected,selectedRoute:null,facts:null
+        };
+      }
+      let selected=routes?.[1]||null,latest=selected?1:0;
+      for(let g=2;g<=4;g++){
+        const next=routes?.[g]||null,q=profileTransition(profile,selected,next);
+        transitions.push({to:g,...q});
+        if(q.kind==='material'){selected=next;latest=g}
+      }
+      return{
+        profile,label:planner.profileLabels?.[profile]||profile,generation:latest,state:stateFor(latest),
+        transitions,selectedRoute:selected,selectedPortfolio:null,facts:selected?routeFacts(selected):null
+      };
+    }
+
     function directUseLabels(assessment,summary){
       if(!assessment)return{};
       if(!assessment.abilityKnown)return{
@@ -622,7 +724,8 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,routeForGoal,routeFacts,productionQuality,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade
+      directUseLabels,routeForGoal,routeFacts,productionQuality,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
+      profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
     };
   }
   return{version:1,create,known};
