@@ -23,9 +23,15 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [0,1,2,3,4]
     steps:
       - uses: actions/checkout@v4
       - name: Static syntax
         run: node --check tests/breed-prepared-singlepass-exact3-benchmark.test.js
       - name: Cached single-pass danger exact3 benchmark
+        env:
+          CASE_INDEX: ${{ matrix.case }}
         run: node tests/breed-prepared-singlepass-exact3-benchmark.test.js
