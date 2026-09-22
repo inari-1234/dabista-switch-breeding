@@ -753,6 +753,7 @@ window.DABISTA_BREED_PAIR_INDEX={
 window.DABISTA_BREED_FUTURE={
   version:1,
   load:loadFuture,
+  async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}},
   getCached(sire){return continuationCache.get(continuationKey(currentFingerprint,sire))||null},
   state(){return{fingerprint:currentFingerprint,epoch,pending:[...pending.keys()],cached:[...continuationCache.keys()],ownedSireCount:this.ownedSireCount||0}},
   planner:null,
