@@ -28,6 +28,12 @@ const planner=plannerCore.create({
  broodmareStats:mareData.broodmares||[]
 });
 const advisor=advisorCore.create({planner,broodmareStats:mareData.broodmares||[]});
+assert.deepStrictEqual(
+  Object.keys(planner.profileLabels),
+  ['sp','speedCross','production','st','balance','sire'],
+  'planner must keep exactly the six public evaluation axes'
+);
+assert.strictEqual(Object.keys(planner.profileLabels).length,6,'a seventh umbrella evaluation axis must not be added');
 
 assert.strictEqual(advisor.knownAbilityCount,298);
 assert.strictEqual(advisor.totalMareCount,331);
