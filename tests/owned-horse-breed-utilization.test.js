@@ -2,6 +2,7 @@
 const fs=require('fs');
 const core=require('../breeding-core.js');
 const sale=require('../sale-planner-core.js');
+const reco=require('../sale-recommendation-core.js');
 
 const T=JSON.parse(fs.readFileSync('data/theory-master.json','utf8'));
 const S=JSON.parse(fs.readFileSync('data/stallions.json','utf8')).stallions;
@@ -34,6 +35,16 @@ if(!exact.safe||!exact.route?.finalChild)throw Error('owned sire exact route can
 const portfolio=planner.withPortfolio(exact.route).portfolio?.spst120;
 if(!portfolio||portfolio.population!==54)throw Error('owned sire portfolio cohort drift '+JSON.stringify(portfolio));
 
+const advisor=reco.create({planner,broodmareStats:M});
+const mareAssessment=advisor.mareAssessment('スプリングスイーツ');
+const nextStarted=Date.now();let nextSafe=0,nextMaterial=0;
+for(const r of planner.iterateTwoFromDirect(exact.route)){
+  nextSafe++;
+  if(advisor.materialUpgradeReasons(exact.route,r,'bc',mareAssessment).length)nextMaterial++;
+}
+const nextRuntimeMs=Date.now()-nextStarted;
+if(nextSafe<=0)throw Error('owned sire next-generation scan produced no safe routes');
+
 const ui=fs.readFileSync('breed-integration.js','utf8');
 for(const token of [
   'function farmSirePool()',
@@ -56,6 +67,7 @@ console.log(JSON.stringify({
   candidatePool:{domestic:176,withOwned:planner.stallionCount},
   compactIndex:true,
   exactOwnedSireReconstruction:true,
+  nextGeneration:{safeRoutes:nextSafe,materialRoutes:nextMaterial,runtimeMs:nextRuntimeMs},
   portfolioCohort:portfolio.population,
   farmMareBoundary:'real-race evidence remains separate from breeding SP/ST/PW',
   sireOrdering:'portfolio facts, not alphabetical'
