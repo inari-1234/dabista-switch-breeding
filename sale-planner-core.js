@@ -493,47 +493,63 @@
         }))
       };
     }
+    function emptyPortfolio(population){
+      return{population,safe:0,sp15st5:0,sp17st5:0,interesting:0,magnificent:0,perfect:0,elaborate:0,maxSp:0,maxSt:0,maxSpSt:0};
+    }
+    function addPortfolio(out,pair){
+      if(!safe(pair))return;
+      out.safe++;
+      const sp=val(pair.nitro?.sp),st=val(pair.nitro?.st);
+      if(sp>=15&&st>=5)out.sp15st5++;
+      if(sp>=17&&st>=5)out.sp17st5++;
+      if(pair.theory?.interesting)out.interesting++;
+      if(pair.theory?.magnificent)out.magnificent++;
+      if(pair.theory?.perfect)out.perfect++;
+      if(pair.elaborate?.effective)out.elaborate++;
+      out.maxSp=Math.max(out.maxSp,sp);out.maxSt=Math.max(out.maxSt,st);out.maxSpSt=Math.max(out.maxSpSt,sp+st);
+    }
     function portfolio(child,cohort){
-      const out={population:cohort.length,safe:0,sp15st5:0,sp17st5:0,interesting:0,magnificent:0,perfect:0,elaborate:0,maxSp:0,maxSt:0,maxSpSt:0};
+      const out=emptyPortfolio(cohort.length);
       if(!child)return out;
-      for(const m of cohort){
-        const p=engine.evaluate(child,m);if(!safe(p))continue;
-        out.safe++;
-        const sp=val(p.nitro?.sp),st=val(p.nitro?.st);
-        if(sp>=15&&st>=5)out.sp15st5++;
-        if(sp>=17&&st>=5)out.sp17st5++;
-        if(p.theory?.interesting)out.interesting++;
-        if(p.theory?.magnificent)out.magnificent++;
-        if(p.theory?.perfect)out.perfect++;
-        if(p.elaborate?.effective)out.elaborate++;
-        out.maxSp=Math.max(out.maxSp,sp);out.maxSt=Math.max(out.maxSt,st);out.maxSpSt=Math.max(out.maxSpSt,sp+st);
-      }
+      for(const m of cohort)addPortfolio(out,engine.evaluate(child,m));
       return out;
     }
+    const cohort130Set=new Set(cohort130);
+    function combinedPortfolio(child){
+      const p120=emptyPortfolio(cohort120.length),p130=emptyPortfolio(cohort130.length);
+      if(!child)return{spst120:p120,spst130:p130};
+      for(const m of cohort120){
+        const pair=engine.evaluate(child,m);
+        addPortfolio(p120,pair);
+        if(cohort130Set.has(m))addPortfolio(p130,pair);
+      }
+      return{spst120:p120,spst130:p130};
+    }
     function withPortfolio(route){
-      return{...route,portfolio:{spst120:portfolio(route.finalChild,cohort120),spst130:portfolio(route.finalChild,cohort130)}};
+      return{...route,portfolio:combinedPortfolio(route.finalChild)};
     }
     function portfolioVector(route){
       const a=route.portfolio?.spst120||{},b=route.portfolio?.spst130||{};
       return[val(a.safe),val(a.sp15st5),val(a.sp17st5),val(a.interesting),val(a.magnificent),val(a.perfect),val(a.elaborate),val(b.sp15st5),val(b.sp17st5),val(a.maxSp),val(a.maxSpSt)];
     }
-    function dominates(a,b){
-      const A=portfolioVector(a),B=portfolioVector(b);
+    function dominatesVector(A,B){
       let better=false;
       for(let i=0;i<A.length;i++){if(A[i]<B[i])return false;if(A[i]>B[i])better=true}
       return better;
     }
+    function portfolioSortVector(route){
+      const a=route.portfolio?.spst120||{},b=route.portfolio?.spst130||{};
+      return[
+        val(a.sp17st5),val(a.sp15st5),val(a.safe),
+        val(b.sp17st5),val(b.sp15st5),val(a.maxSpSt),val(a.maxSp)
+      ];
+    }
     function portfolioPareto(routes,limit=5){
       const enriched=(routes||[]).map(withPortfolio);
-      const front=enriched.filter((r,i)=>!enriched.some((x,j)=>j!==i&&dominates(x,r)));
-      front.sort((a,b)=>cmpVec([
-        val(a.portfolio.spst120.sp17st5),val(a.portfolio.spst120.sp15st5),val(a.portfolio.spst120.safe),
-        val(a.portfolio.spst130.sp17st5),val(a.portfolio.spst130.sp15st5),val(a.portfolio.spst120.maxSpSt),val(a.portfolio.spst120.maxSp)
-      ],[
-        val(b.portfolio.spst120.sp17st5),val(b.portfolio.spst120.sp15st5),val(b.portfolio.spst120.safe),
-        val(b.portfolio.spst130.sp17st5),val(b.portfolio.spst130.sp15st5),val(b.portfolio.spst120.maxSpSt),val(b.portfolio.spst120.maxSp)
-      ]));
-      return{population:enriched.length,paretoCount:front.length,routes:front.slice(0,limit)};
+      const rows=enriched.map(route=>({route,vector:portfolioVector(route),sortVector:portfolioSortVector(route)}));
+      const front=rows.filter((r,i)=>!rows.some((x,j)=>j!==i&&dominatesVector(x.vector,r.vector)));
+      front.sort((a,b)=>cmpVec(a.sortVector,b.sortVector));
+      return{population:enriched.length,paretoCount:front.length,routes:front.slice(0,limit).map(x=>x.route)};
     }
     function diversifiedPool(collector){return collector.pool()}
     function goalOrder(goal){return GOAL_ORDER[goal]||GOAL_ORDER.arc}
