@@ -58,8 +58,9 @@ require('../breeding-engine.js');
   };
   global.db={horses:[staleDerived]};
   const refreshed=e.resolveHorse(staleDerived);
-  if(!refreshed||refreshed.kind!=='child'||refreshed.ancestor[0]!=='バゴ')throw Error('derived pedigree cache was not recomputed '+JSON.stringify(refreshed));
+  if(!refreshed||refreshed.kind!=='homebred-derived'||refreshed.ancestor[0]!=='バゴ')throw Error('derived pedigree cache was not recomputed '+JSON.stringify(refreshed));
   if(refreshed.ancestor.includes('STALE'))throw Error('stale derived ancestor leaked after parent-based recompute');
+  if(refreshed.theorySource!=='parent-code-inheritance')throw Error('derived pedigree cache source was not refreshed '+JSON.stringify(refreshed));
 
   const restored={
     id:'restored-mare',name:'復元牝馬',sex:'牝',
@@ -76,6 +77,6 @@ require('../breeding-engine.js');
     legacyFallback:{name:b.name,source:b.theorySource},
     masterRef:{name:c.name,source:c.theorySource},
     restoreRebind:{name:afterRestore.name,source:afterRestore.theorySource},
-    derivedCacheRefresh:{name:refreshed.name,firstAncestor:refreshed.ancestor[0],source:refreshed.theorySource}
+    derivedCacheRefresh:{name:refreshed.name,kind:refreshed.kind,firstAncestor:refreshed.ancestor[0],source:refreshed.theorySource}
   },null,2));
 })().catch(e=>{console.error(e);process.exit(1)});
