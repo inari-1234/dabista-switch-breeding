@@ -992,7 +992,7 @@
       const improveList=strategy?.improve||[],relativeList=strategy?.relativeAdjust||[];
       const adjustment=improveList.length
         ?'補強：'+improveList.join('・')
-        :relativeList.length?'相対調整：'+relativeList.join('・')+'（弱点扱いではない）':'明確な不足軸なし';
+        :relativeList.length?'相対調整：'+relativeList.join('・')+'（弱点扱いではない）':'明確な補強対象なし';
       const pre=use?.[goal]||'評価保留',reasons=[];
       if(goal==='arc'){
         if(!a.abilityKnown){
