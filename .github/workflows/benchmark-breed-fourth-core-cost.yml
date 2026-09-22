@@ -6,6 +6,7 @@ on:
       - candidate/sale-mare-potential-ui
     paths:
       - '.github/workflows/benchmark-breed-fourth-core-cost.yml'
+      - 'breeding-core.js'
   workflow_dispatch:
 
 permissions:

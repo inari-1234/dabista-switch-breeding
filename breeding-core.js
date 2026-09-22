@@ -115,9 +115,13 @@
   function create(config={}){
     const effects=config.effects||[];
     const effectMap=new Map(effects.map(x=>[key(x.name),x]));
-    const pairSet=new Map();
+    const pairSet=new Map(),pairRows=new Map();
     for(const p of config.elaboratePairs||[]){
-      const k=key(p.a)+'|'+key(p.b);if(!pairSet.has(k))pairSet.set(k,p);
+      const a=key(p.a),b=key(p.b),k=a+'|'+b;
+      if(pairSet.has(k))continue;
+      pairSet.set(k,p);
+      let row=pairRows.get(a);if(!row){row=new Map();pairRows.set(a,row)}
+      row.set(b,p);
     }
     const directSet=new Map();
     for(const p of config.directElaboratePairs||[]){
@@ -144,9 +148,12 @@
       const evidence=[],S=prepareAncestor(sire.ancestor),M=prepareAncestor(mare.ancestor);
       const directKey=key(sire.name)+'|'+key(mare.name),direct=directSet.get(directKey);
       if(direct)evidence.push({kind:'direct-exception',source:'upstream-kakutei',sire:sire.name,mare:mare.name,raw:direct.raw||null});
-      for(let i=0;i<7;i++)for(let j=0;j<7;j++){
-        const p=pairSet.get(S.key[i]+'|'+M.key[j]);
-        if(p)evidence.push({kind:'confirmed-pair',source:'kotta-pairs',a:p.a,b:p.b,sireAncestorIndex:i,mareAncestorIndex:j});
+      for(let i=0;i<7;i++){
+        const row=pairRows.get(S.key[i]);if(!row)continue;
+        for(let j=0;j<7;j++){
+          const p=row.get(M.key[j]);
+          if(p)evidence.push({kind:'confirmed-pair',source:'kotta-pairs',a:p.a,b:p.b,sireAncestorIndex:i,mareAncestorIndex:j});
+        }
       }
       const dedup=[],seen=new Set();
       for(const e of evidence){const k=JSON.stringify([e.kind,e.sire,e.mare,e.a,e.b,e.sireAncestorIndex,e.mareAncestorIndex]);if(!seen.has(k)){seen.add(k);dedup.push(e)}}
