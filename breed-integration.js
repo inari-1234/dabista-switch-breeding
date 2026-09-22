@@ -139,7 +139,7 @@ function ensureStyle(){
   if($('#breedIntegrationStyle'))return;
   const s=document.createElement('style');
   s.id='breedIntegrationStyle';
-  s.textContent='.breed-integration-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.breed-future-overview{margin-top:10px}.breed-future-head,.breed-future-row{display:grid;grid-template-columns:1.15fr 1.25fr 1fr;gap:6px;align-items:start}.breed-future-head{font-size:9px;color:#66736c;padding:4px 0;border-bottom:1px solid #dce2dd}.breed-future-row{font-size:10px;padding:6px 0;border-bottom:1px solid #e5ebe7}.breed-pair-details,.breed-future-detail{margin:7px 0;font-size:10px}.breed-pair-details summary,.breed-future-detail summary{cursor:pointer}.breed-danger-list>summary{cursor:pointer}@media(max-width:520px){.breed-integration-tools{grid-template-columns:1fr}.breed-future-head,.breed-future-row{grid-template-columns:1fr 1.15fr}.breed-future-head span:last-child,.breed-future-row span:last-child{grid-column:2}.breed-future-row b{grid-row:1 / span 2}}';
+  s.textContent='.breed-integration-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.breed-card-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.breed-card-head>div{display:grid;gap:2px}.breed-rank-label{font-size:9px;font-weight:900;color:#60736a}.breed-card-head b{font-size:15px}.breed-cue-badge{padding:4px 7px;border-radius:999px;background:#e8eee9;font-size:9px;font-weight:900;white-space:nowrap}.breed-cue-headline{margin:6px 0;font-size:12px;font-weight:900;line-height:1.4}.breed-reason-row{display:flex;flex-wrap:wrap;gap:4px;margin:5px 0 7px}.breed-reason-chip{padding:3px 6px;border-radius:999px;background:#edf2ef;font-size:8px;font-weight:800;color:#52655c}.breed-card-details{margin:7px 0}.breed-card-details>summary{cursor:pointer;font-size:10px;font-weight:800;color:#53675e}.breed-quick-fit{margin:7px 0}.breed-future-overview{margin-top:10px}.breed-future-head,.breed-future-row{display:grid;grid-template-columns:1.15fr 1.25fr 1fr;gap:6px;align-items:start}.breed-future-head{font-size:9px;color:#66736c;padding:4px 0;border-bottom:1px solid #dce2dd}.breed-future-row{font-size:10px;padding:6px 0;border-bottom:1px solid #e5ebe7}.breed-pair-details,.breed-future-detail{margin:7px 0;font-size:10px}.breed-pair-details summary,.breed-future-detail summary{cursor:pointer}.breed-danger-list>summary{cursor:pointer}@media(max-width:520px){.breed-integration-tools{grid-template-columns:1fr}.breed-future-head,.breed-future-row{grid-template-columns:1fr 1.15fr}.breed-future-head span:last-child,.breed-future-row span:last-child{grid-column:2}.breed-future-row b{grid-row:1 / span 2}}';
   document.head.appendChild(s);
 }
 function ensureControls(){
@@ -245,6 +245,10 @@ function getPairIndex(resolved,fp){
 }
 function compareRoutes(profile,a,b){
   if(profile==='sire')return 0;
+  if(profile==='production'){
+    const assessment=currentMareAssessment();
+    if(assessment&&advisor?.compareProductionForMare)return advisor.compareProductionForMare(assessment)(a.currentRoute,b.currentRoute);
+  }
   return planner.compareProfile(profile)(a.currentRoute,b.currentRoute);
 }
 function filteredEntries(index,profile,q){
@@ -335,18 +339,25 @@ function pairDetailsHtml(entry){
 }
 function renderCard(entry,rank,profile,goal){
   const r=entry.currentRoute,f=r?.final||{},n=entry.pair?.nitro||{};
+  const assessment=currentMareAssessment();
+  const cue=profile==='sire'
+    ?{key:'neutral',label:'血統価値候補',headline:'将来の相手牝馬群への汎用性を別軸で確認',reasons:[]}
+    :(advisor?.recommendationCue?.(r,profile,assessment)||{key:'neutral',label:'比較候補',headline:'この軸の評価候補',reasons:[]});
   const status=currentFutureStatus(entry.sire,profile);
   const fitLabel=fitLabelForRoute(r,goal,profile);
   const future=futureDisplay(status);
-  const rankText=profile==='sire'?'候補':String(rank)+'.';
-  const portfolioNote=profile==='sire'?'<div class="muted">血統価値型は直配合だけで単一順位を作りません。候補名順で表示し、将来診断のportfolioで評価します。</div>':'';
-  return '<div class="card breed-integrated-card" data-sire-name="'+esc(entry.sire)+'">'+
-    '<div class="row"><div><b>'+rankText+' '+esc(entry.sire)+'</b><div class="muted">'+esc(PROFILE_FALLBACK[profile])+' / '+esc(GOAL_LABELS[goal])+'</div></div></div>'+
+  const rankText=profile==='production'?'本命軸 '+rank+'位':profile==='sire'?'血統価値候補':'この軸 '+rank+'位';
+  const tone=['solid','preserve','balance','distance','ceiling','upside','rebuild-upside','longshot','low-record'].includes(cue.key)?cue.key:'neutral';
+  const reasons=(cue.reasons||[]).slice(0,4).map(x=>'<span class="breed-reason-chip">'+esc(x)+'</span>').join('');
+  const portfolioNote=profile==='sire'?'<div class="muted">直配合だけで順位を決めず、将来診断のportfolioで血統汎用性を評価します。</div>':'';
+  return '<div class="card breed-integrated-card tone-'+esc(tone)+'" data-sire-name="'+esc(entry.sire)+'">'+
+    '<div class="breed-card-head"><div><span class="breed-rank-label">'+esc(rankText)+'</span><b>'+esc(entry.sire)+'</b></div><span class="breed-cue-badge">'+esc(cue.label)+'</span></div>'+
+    '<div class="breed-cue-headline">'+esc(cue.headline)+'</div>'+
+    (reasons?'<div class="breed-reason-row">'+reasons+'</div>':'')+
     '<div class="grid"><div class="stat"><b>'+Number(n.sp||0)+'</b><small>SPニトロ</small></div><div class="stat"><b>'+Number(n.st||0)+'</b><small>STニトロ</small></div><div class="stat"><b>'+Number(n.pw||0)+'</b><small>PWニトロ</small></div></div>'+
-    '<p class="muted">'+esc(theoryText(entry.pair))+' / 実績'+esc(f.sireStats?.record||'-')+'・底力'+esc(f.sireStats?.guts||'-')+'・安定'+esc(f.sireStats?.stable||'-')+'</p>'+
     portfolioNote+
-    '<div class="notice"><b>選択カテゴリの将来性：</b><span data-card-future="'+esc(entry.sire)+'">'+esc(future)+'</span><br><b>現在配合の目的適合：</b>'+esc(fitLabel)+'</div>'+
-    pairDetailsHtml(entry)+
+    '<div class="notice breed-quick-fit"><b>将来性：</b><span data-card-future="'+esc(entry.sire)+'">'+esc(future)+'</span><br><b>'+esc(GOAL_LABELS[goal])+'：</b>'+esc(fitLabel)+'</div>'+
+    '<details class="breed-card-details"><summary>現在Pairの詳しい根拠を見る</summary><div class="muted" style="margin-top:6px">実績'+esc(f.sireStats?.record||'-')+'・底力'+esc(f.sireStats?.guts||'-')+'・安定'+esc(f.sireStats?.stable||'-')+' / '+esc(theoryText(entry.pair))+'</div>'+pairDetailsHtml(entry)+'</details>'+
     '<button type="button" class="secondary" data-breed-future="'+esc(entry.sire)+'">2～4代の将来性を診断</button>'+
     '<div class="breed-future-slot" data-future-sire="'+esc(entry.sire)+'"></div>'+
   '</div>';
