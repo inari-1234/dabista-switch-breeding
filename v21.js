@@ -3,9 +3,10 @@ const V=window.APP_VERSION||'1.18.0',BUILD=window.APP_BUILD||'2026.09.21-44',db=
 let engine=null,busy=false;
 const breedHorseById=id=>window.getBreedHorseById?.(id)||db.horses.find(x=>x.id===id)||null
 function cardName(c){return c.dataset.sireName||c.querySelector('b')?.textContent.replace(/^\s*\d+\.\s*/,'').trim()||''}
-function controls(){if($('#v21Filter'))return;const box=$('.theory-tools');if(!box)return;const w=document.createElement('div');w.style.marginTop='8px';w.innerHTML='<label>公式配合理論・追加フィルター</label><select id="v21Filter"><option value="all">すべて</option><option value="elaborate">凝った配合</option><option value="cross">クロスあり</option><option value="safe">危険・超危険を除外</option></select><div style="font-size:10px;line-height:1.45;margin-top:5px;color:#66736c">危険判定は祖先内包クロスを除外した有効クロスで判定。凝った配合は812成立確認ペア＋直接例外を根拠別に判定します。</div>';box.appendChild(w);$('#v21Filter').onchange=()=>setTimeout(run,0)}
+function controls(){if(window.DABISTA_BREED_PAIR_INDEX)return;if($('#v21Filter'))return;const box=$('.theory-tools');if(!box)return;const w=document.createElement('div');w.style.marginTop='8px';w.innerHTML='<label>公式配合理論・追加フィルター</label><select id="v21Filter"><option value="all">すべて</option><option value="elaborate">凝った配合</option><option value="cross">クロスあり</option><option value="safe">危険・超危険を除外</option></select><div style="font-size:10px;line-height:1.45;margin-top:5px;color:#66736c">危険判定は祖先内包クロスを除外した有効クロスで判定。凝った配合は812成立確認ペア＋直接例外を根拠別に判定します。</div>';box.appendChild(w);$('#v21Filter').onchange=()=>setTimeout(run,0)}
 function evidenceText(e){if(!e)return'';if(e.kind==='direct-exception')return`直接成立例外：${esc(e.sire)} × ${esc(e.mare)}`;return`成立確認ペア：${esc(e.a)} × ${esc(e.b)}`}
 function apply(){
+ if(window.DABISTA_BREED_PAIR_INDEX)return;
  if(!engine||busy)return;busy=true;
  try{
   controls();const h=breedHorseById($('#breedMare')?.value),m=engine.resolveHorse(h),f=$('#v21Filter')?.value||'all';
