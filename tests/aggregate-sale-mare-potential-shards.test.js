@@ -21,14 +21,16 @@ const tradeoffs={bc:{},rebuild:{}};
 const rebuildFreedomAudit={};
 function mergeTradeoff(dst,src){
   for(const [k,v] of Object.entries(src||{})){
-    if(k==='samples'){
+    if(k==='samples'&&Array.isArray(v)){
       dst.samples??=[];
-      for(const item of v||[])if(dst.samples.length<24)dst.samples.push(item);
+      for(const item of v)if(dst.samples.length<24)dst.samples.push(item);
     }else if(typeof v==='number'){
       dst[k]=(dst[k]||0)+v;
     }else if(v&&typeof v==='object'){
-      dst[k]??={};
-      mergeTradeoff(dst[k],v);
+      dst[k]??=Array.isArray(v)?[]:{};
+      if(Array.isArray(v)){
+        for(const item of v)if(dst[k].length<24)dst[k].push(item);
+      }else mergeTradeoff(dst[k],v);
     }
   }
 }
