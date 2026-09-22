@@ -1,16 +1,6 @@
 name: Diagnose exhaustive prepared-core equivalence
 
 on:
-  push:
-    paths:
-      - 'tests/breed-prepared-core-exhaustive-equivalence.test.js'
-      - '.github/workflows/diagnose-breed-prepared-core-exhaustive-equivalence.yml'
-      - 'breeding-core.js'
-      - 'data/theory-master.json'
-      - 'data/nitro-effects.json'
-      - 'data/kotta-pairs.json'
-      - 'data/elaborate-direct-exceptions.json'
-      - 'data/planner-inheritance-validation.json'
   workflow_dispatch:
 
 permissions:

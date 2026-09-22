@@ -1,10 +1,6 @@
 name: Diagnose prepared cache mutation safety
 
 on:
-  push:
-    paths:
-      - 'tests/breed-prepared-cache-mutation-contract.test.js'
-      - '.github/workflows/diagnose-breed-prepared-cache-mutation.yml'
   workflow_dispatch:
 
 permissions:

@@ -1,21 +1,6 @@
 name: Diagnose sale mare third generation
 
 on:
-  push:
-    paths:
-      - 'tests/sale-mare-third-generation-matrix-diagnostic.test.js'
-      - 'tests/aggregate-sale-mare-third-generation-shards.test.js'
-      - '.github/workflows/diagnose-sale-mare-third-generation.yml'
-      - 'sale-planner-core.js'
-      - 'sale-recommendation-core.js'
-      - 'breeding-core.js'
-      - 'data/theory-master.json'
-      - 'data/stallions.json'
-      - 'data/default-broodmares.json'
-      - 'data/nitro-effects.json'
-      - 'data/kotta-pairs.json'
-      - 'data/elaborate-direct-exceptions.json'
-      - 'data/planner-inheritance-validation.json'
   workflow_dispatch:
 
 permissions:

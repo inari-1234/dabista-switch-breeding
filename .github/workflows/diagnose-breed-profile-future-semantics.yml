@@ -1,12 +1,6 @@
 name: Diagnose breed profile future semantics
 
 on:
-  push:
-    paths:
-      - 'tests/breed-profile-future-semantics-contract.test.js'
-      - '.github/workflows/diagnose-breed-profile-future-semantics.yml'
-      - 'sale-recommendation-core.js'
-      - 'sale-planner-core.js'
   workflow_dispatch:
 
 permissions:

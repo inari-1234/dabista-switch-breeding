@@ -1,21 +1,6 @@
 name: Diagnose sale category future potential
 
 on:
-  push:
-    paths:
-      - 'tests/sale-category-future-potential-diagnostic.test.js'
-      - 'tests/aggregate-sale-category-future-potential.test.js'
-      - '.github/workflows/diagnose-sale-category-future-potential.yml'
-      - 'sale-planner-core.js'
-      - 'sale-recommendation-core.js'
-      - 'breeding-core.js'
-      - 'data/theory-master.json'
-      - 'data/stallions.json'
-      - 'data/default-broodmares.json'
-      - 'data/nitro-effects.json'
-      - 'data/kotta-pairs.json'
-      - 'data/elaborate-direct-exceptions.json'
-      - 'data/planner-inheritance-validation.json'
   workflow_dispatch:
 
 permissions:

@@ -1,11 +1,6 @@
 name: Diagnose breeding-core optimization boundary
 
 on:
-  push:
-    paths:
-      - 'tests/breeding-core-optimization-boundary-contract.test.js'
-      - '.github/workflows/diagnose-breeding-core-optimization-boundary.yml'
-      - 'breeding-core.js'
   workflow_dispatch:
 
 permissions:
