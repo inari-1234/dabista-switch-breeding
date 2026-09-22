@@ -181,7 +181,7 @@ jobs:
           sale_core=Path('sale-planner-core.js').read_text(encoding='utf-8')
           assert 'SPクロス補強型' in sale_core
           assert 'speedCross' in sale_core
-          assert '6軸は合算' in Path('v26.js').read_text(encoding='utf-8')
+          assert '総合点には合算しません' in Path('v26.js').read_text(encoding='utf-8')
           assert idx.count('<section') == idx.count('</section>')
           ui_js=Path('ui-refresh.js').read_text(encoding='utf-8')
           ui_css=Path('ui-refresh.css').read_text(encoding='utf-8')
