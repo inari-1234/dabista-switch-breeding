@@ -5,6 +5,7 @@ const read=p=>fs.readFileSync(p,'utf8');
 const app=read('app.js');
 const helper=read('breed-helper.js');
 const v15=read('v15.js');
+const v16=read('v16.js');
 const v18=read('v18.js');
 const v19=read('v19.js');
 const v20=read('v20.js');
@@ -62,6 +63,18 @@ for(const [p,c] of [['v15.js',v15],['v18.js',v18],['v19.js',v19],['v20.js',v20],
 }
 assert.ok(v15.includes('15祖先内蔵'));
 assert.ok(v15.includes('馬DB・バックアップJSONには保存されません'));
+
+assert.ok(v16.includes('function installCompactHorseForm()'),'compact horse form installer missing');
+assert.ok(v16.includes('horse-form-sticky-head'),'sticky save/cancel header missing');
+assert.ok(v16.includes('血統を詳しく入力・自動補完'),'pedigree details must be collapsible');
+assert.ok(v16.includes('距離・実績・戦績・メモ'),'performance details must be collapsible');
+assert.ok(v16.includes("form.requestSubmit()"),'top save action must submit without scrolling to form bottom');
+assert.ok(v26.includes('function openRouteRegister(ctx,generation)'),'route offspring registration action missing');
+assert.ok(v26.includes("role==='broodmare'?'牝':'牡'"),'route registration must support broodmare and sire-candidate roles');
+assert.ok(v26.includes('ancestor15:[...a]'),'route registration must persist exact 15-ancestor pedigree');
+assert.ok(v26.includes("SP/ST/PWは血統上のニトロ"),'route registration must not mislabel pedigree nitro as horse ability');
+assert.ok(v26.includes('matchingPreviousMares(ctx,generation)'),'multi-generation registration must require the actual prior broodmare pedigree');
+assert.ok(v26.includes('この産駒を牧場DBへ登録'),'route bridge registration CTA missing');
 
 assert.ok(idx.includes('breed-helper.js?v=1.19.1-b51'),'breed-helper.js cache key');
 for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js']){
