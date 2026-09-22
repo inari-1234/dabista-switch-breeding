@@ -15,6 +15,9 @@ const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: 
 for(const token of ['tier-elite','tier-high','tier-upper','tier-middle','tier-rebuild','tier-unknown'])need(v27,token,'mare tier tone');
 need(v27,'.mare-tier{padding:7px 11px;font-size:14px','mare tier prominence');
 need(v27,'この牝馬を使う理由','mare decision reason');
+need(v27,'セリ即判定','sale quick future cue');
+need(v27,'直仔血統＋母能力の即時判定','quick view must disclose its scope');
+need(v27,'第7の総合点は作らず','quick view must not become a weighted overall score');
 need(v27,'カード色＝母能力帯','mare color meaning');
 need(v27,'順位・他目的・血統評価を見る','mare secondary details collapse');
 need(v27,'何代で締めるか比較','generation purpose');
@@ -33,10 +36,14 @@ if(v27.includes('世代推奨は勝率・産駒能力の確率予測ではあり
 if(/\.mare-tier\{[^}]*font-size:(?:8|9)px/.test(v27))throw Error('mare tier regressed to tiny text');
 
 for(const token of [
-  'function mareBand(','function productionContext(','function compareProductionForMare(',
+  'function mareBand(','function goalMareReason(','function quickSaleOutlook(','function productionContext(','function compareProductionForMare(',
   'function productionCandidateCue(','function selectProductionRecommendations(','function shortDistanceTier('
 ])need(advisor,token,'mare-aware production recommendation');
 need(advisor,"const requiredSignals=record==='A'?2:record==='B'?3:record==='C'?4:99","record A>B>C must require progressively stronger evidence to overturn");
+need(advisor,"凱旋門はSP/STを守り、距離根拠を持つ配合へつなぐ","Arc mare reason must be purpose-specific");
+need(advisor,"BCはSP上限と速力・短距離クロスの経路を優先","BC mare reason must be purpose-specific");
+need(advisor,"繁殖再建は完成馬より、次代で使いやすい母系を作る","rebuild mare reason must be purpose-specific");
+need(advisor,"自家製種牡馬は産駒能力だけでなく、後代で使える血統汎用性を作る","stallion mare reason must be purpose-specific");
 need(advisor,'const overrideEligible=compensationCount>=requiredSignals','production reversal must use an explicit evidence gate rather than a weighted overall score');
 if(advisor.includes('evidenceScore='))throw Error('production ranking must not collapse evidence into a weighted overall score');
 need(advisor,"if(d<=1000)return 3","1000m lower-bound SP evidence");

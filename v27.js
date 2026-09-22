@@ -83,6 +83,11 @@ function style(){
  .mare-scoreline span,.mare-scoreline b{padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.82);border:1px solid rgba(80,110,95,.10);font-size:10px}
  .mare-scoreline b{font-size:11px;color:#244b39}
  .mare-color-note{font-size:8px!important;color:#738077!important}
+ .mare-why-detail{display:block;margin-top:4px;font-size:9px;line-height:1.45;color:#62736a}
+ .sale-quick{margin-top:9px;padding:10px 11px;border-radius:11px;background:#f7faf8;border:1px solid rgba(70,105,88,.14)}
+ .sale-quick-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.sale-quick-head small{font-size:9px;font-weight:900;color:#687970}.sale-quick-head b{font-size:12px;color:#1f4a37;text-align:right}
+ .sale-quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:7px}.sale-quick-grid>div{padding:7px 8px;border-radius:8px;background:#fff;border:1px solid rgba(80,110,95,.10)}.sale-quick-grid small{display:block;font-size:8px;font-weight:900;color:#66766e}.sale-quick-grid span{display:block;margin-top:2px;font-size:9px;font-weight:800;line-height:1.35;color:#294a3b}
+ .sale-quick-signals{margin-top:7px;font-size:8px;line-height:1.45;color:#65766e}.sale-quick-note{margin-top:5px;font-size:8px;line-height:1.4;color:#7a817d}
  .generation-compare{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px}
  .generation-compare-card{display:block;width:100%;text-align:left;border:1px solid #dfe7e3;border-radius:10px;background:#fff;padding:9px;cursor:pointer;color:inherit}
  .generation-compare-card.recommended{border-color:#9bc7b0;background:#f3f9f6}
@@ -121,13 +126,11 @@ function mareRankCell(label,r){
  if(!r)return`<div class="mare-rank"><span>${esc(label)}</span><b>—</b><small>未判明</small></div>`;
  return `<div class="mare-rank"><span>${esc(label)}</span><b>${r.value}</b><small>${r.rank}/${r.total}位・上位${r.topPercent}%</small></div>`;
 }
-function mareDecisionText(a,strategy,goal){
- const tone=mareTierTone(a),improve=(strategy?.improve||[]).slice(0,2).join('・')||'弱点';
- if(!a?.abilityKnown)return'能力は未判明です。血統だけで候補を比較し、能力値0を弱さとして扱いません。';
- if(tone==='elite'||tone==='high')return'上位母です。能力を崩さず、'+improve+'だけを補う配合を優先します。';
- if(tone==='upper')return'中上位母です。母の長所を残しながら、'+improve+'を補う配合を優先します。';
- if(tone==='middle')return'中位母です。父実績Aを強く評価し、'+improve+'・ニトロ・クロス・短距離側の距離適性で明確に上回る場合だけB/Cを逆転候補にします。';
- return'再建向きの母です。父実績Aを基準に、SP/ST底上げ・短距離側の距離適性・クロスで明確な利点がある場合だけB/Cや安定Cを採用します。';
+function mareDecisionText(name,goal,direct){
+ return advisor.goalMareReason(name,goal,direct);
+}
+function quickGoalCell(label,value){
+ return `<div><small>${esc(label)}</small><span>${esc(value||'評価保留')}</span></div>`;
 }
 function renderMareAdvice(){
  const box=$('#saleMareRecommendation'),name=$('#saleMareSelect')?.value;
@@ -142,14 +145,21 @@ function renderMareAdvice(){
   ?`<div class="mare-scoreline"><span>SP ${a.ranks.sp?.value??'—'}</span><span>ST ${a.ranks.st?.value??'—'}</span><span>PW ${a.ranks.pw?.value??'—'}</span><b>SP+ST ${a.ranks.spst?.value??'—'}</b></div>`
   :'<div class="mare-scoreline"><b>能力未判明</b></div>';
  const currentUse=use?.[goal]||'評価保留';
- const decision=mareDecisionText(a,strategy,goal);
+ const decision=mareDecisionText(name,goal,direct),quick=advisor.quickSaleOutlook(name,direct);
+ const quickSignals=(quick.signals||[]).map(x=>esc(x)).join(' / ');
  box.innerHTML=`
    <div class="mare-advice-head">
     <div><h4>${esc(name)}</h4><small>能力既知 ${advisor.knownAbilityCount}頭で比較</small><small class="mare-color-note">カード色＝母能力帯</small></div>
     <span class="mare-tier">${esc(a.tier)}</span>
    </div>
-   <div class="mare-why"><small>この牝馬を使う理由｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision)}</b></div>
+   <div class="mare-why"><small>この牝馬を使う理由｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span></div>
    ${rankHtml}
+   <div class="sale-quick">
+    <div class="sale-quick-head"><small>セリ即判定</small><b>${esc(quick.label)}</b></div>
+    <div class="sale-quick-grid">${quickGoalCell('凱旋門',quick.goalLabels?.arc)}${quickGoalCell('BC',quick.goalLabels?.bc)}${quickGoalCell('繁殖再建',quick.goalLabels?.rebuild)}${quickGoalCell('自家製種牡馬',quick.goalLabels?.stallion)}</div>
+    <div class="sale-quick-signals">${quickSignals}</div>
+    <div class="sale-quick-note">直仔血統＋母能力の即時判定です。第7の総合点は作らず、正式な何代先までの価値は下の世代診断で確認します。<br>${esc(quick.caution)}</div>
+   </div>
    <details class="mare-detail">
     <summary>順位・他目的・血統評価を見る</summary>
     ${a.abilityKnown?`<div class="mare-ranks">

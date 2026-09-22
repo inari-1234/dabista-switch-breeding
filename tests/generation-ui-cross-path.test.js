@@ -30,6 +30,21 @@ const use=advisor.directUseLabels(fit,direct);
 assert.strictEqual(use.arc,'直仔候補（距離根拠要確認）','pre-diagnosis label should keep a numerically viable direct Arc route as a candidate while exposing uncertain distance evidence');
 assert.ok(!use.arc.includes('推奨'),'only the generation advisor may publish a generation recommendation');
 
+// Purpose-specific mare reasons must actually change when the user changes the goal.
+const rose=advisor.mareAssessment('ローズティンテッド');
+assert.ok(rose?.abilityKnown&&rose.stats.sp===64&&rose.stats.st===54,'Rose Tinted screenshot fixture must remain stable');
+const roseDirect=advisor.emptySummary('rose-direct');
+for(const r of planner.iterateDirect('ローズティンテッド'))advisor.addRoute(roseDirect,r);
+const roseReasons=['arc','bc','rebuild','stallion'].map(g=>advisor.goalMareReason('ローズティンテッド',g,roseDirect));
+assert.strictEqual(new Set(roseReasons.map(x=>x.headline)).size,4,'changing the goal must change the visible reason, not only the goal label');
+assert.ok(roseReasons[0].headline.includes('SP/ST')&&roseReasons[0].headline.includes('距離'),'Arc reason must expose SP/ST and distance evidence');
+assert.ok(roseReasons[1].headline.includes('SP上限'),'BC reason must expose SP ceiling');
+assert.ok(roseReasons[2].headline.includes('次代'),'rebuild reason must expose next-generation broodmare value');
+assert.ok(roseReasons[3].headline.includes('血統汎用性'),'stallion reason must expose future sire bloodline utility');
+const roseQuick=advisor.quickSaleOutlook('ローズティンテッド',roseDirect);
+assert.ok(roseQuick.label&&roseQuick.goalLabels.arc&&roseQuick.goalLabels.bc,'sale quick view must expose an immediate non-numeric outlook and purpose labels');
+assert.ok(!Object.prototype.hasOwnProperty.call(roseQuick,'score'),'sale quick view must not introduce a seventh weighted score');
+
 function fakeRoute(materialStages,sp=15,st=6,longStages=0){
   return{
     final:{
@@ -193,6 +208,14 @@ assert.ok(eliteStDirectional.some(x=>x.includes('STを8→10')),
   'elite SP-dominant profile may extend when the identified ST axis materially improves');
 
 const unknownAssessment=advisor.mareAssessment('アマリン');
+const unknownDirect=advisor.emptySummary('unknown-direct');
+for(const r of planner.iterateDirect('アマリン'))advisor.addRoute(unknownDirect,r);
+const unknownQuick=advisor.quickSaleOutlook('アマリン',unknownDirect);
+assert.strictEqual(unknownQuick.abilityKnown,false,'unknown mare quick view must preserve unknown ability');
+assert.ok(unknownQuick.label.includes('能力未判明'),'unknown mare quick view must state uncertainty explicitly');
+assert.ok(unknownQuick.caution.includes('価格から能力値を確定しません'),'price must never be converted into a confirmed hidden ability value');
+const unknownGoal=advisor.goalMareReason('アマリン','bc',unknownDirect);
+assert.ok(unknownGoal.headline.includes('母能力を仮定せず'),'unknown mare goal reason must not infer SP deficiency');
 const unknownUpgrade=advisor.materialUpgradeReasons(fakeRoute(0),fakeRoute(1),'arc',unknownAssessment);
 assert.ok(!unknownUpgrade.some(x=>x.includes('中間世代で速力/短距離クロス')),'unknown mare must not be treated as SP-deficient when recommending a deeper generation');
 const unknownFinalCross=advisor.materialUpgradeReasons(
@@ -305,6 +328,9 @@ assert.ok(v27.includes('aria-pressed'),'generation card selection must expose bu
 assert.ok(v27.includes('手動で比較中（自動推奨は'),'manual override must keep the automatic recommendation visible');
 assert.ok(v27.includes('選択した')&&v27.includes('で本命配合を見る'),'manual generation must be directly actionable');
 assert.ok(v27.includes('この牝馬を使う理由'),'mare card must explain why the mare is used');
+assert.ok(v27.includes('セリ即判定'),'mare card must provide an at-a-glance sale decision panel');
+assert.ok(v27.includes('quickSaleOutlook'),'sale quick panel must come from the shared recommendation core');
+assert.ok(v27.includes('goalMareReason'),'purpose-specific mare reason must come from the shared recommendation core');
 assert.ok(v27.includes('カード色＝母能力帯'),'mare color meaning must be explicit');
 assert.ok(v27.includes('.mare-tier{padding:7px 11px;font-size:14px'),'ability tier must remain prominent');
 assert.ok(v27.includes('tier-middle'),'middle-tier mares must retain a distinct whole-card tone');

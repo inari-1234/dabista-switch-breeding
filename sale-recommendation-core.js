@@ -882,6 +882,74 @@
       };
     }
 
+    function goalMareReason(name,goal='arc',summary){
+      const a=mareAssessment(name),strategy=mareStrategy(name),s=summary||emptySummary('direct');
+      if(!a)return{goal,key:'unavailable',headline:'牝馬評価を取得できません',detail:'',reasons:[]};
+      const use=directUseLabels(a,s),preserve=(strategy?.preserve||[]).join('・')||'強み',improve=(strategy?.improve||[]).join('・')||'不足軸';
+      const pre=use?.[goal]||'評価保留',reasons=[];
+      if(goal==='arc'){
+        if(!a.abilityKnown){
+          reasons.push('能力未判明なのでSP/ST不足とは決めつけない','SP14/ST6・距離根拠・父実績を血統側で確認');
+          return{goal,key:'arc',headline:'凱旋門は母能力を仮定せず、SP/STと2400m側の根拠で判断',detail:'直仔事前評価：'+pre,reasons};
+        }
+        reasons.push('維持：'+preserve,'補強：'+improve,'直仔事前評価：'+pre);
+        return{goal,key:'arc',headline:'凱旋門はSP/STを守り、距離根拠を持つ配合へつなぐ',detail:'最終父の距離適性・STニトロ・長距離クロスを分けて確認します。',reasons};
+      }
+      if(goal==='bc'){
+        if(!a.abilityKnown){
+          reasons.push('能力未判明なのでSP不足とは決めつけない','SP17/ST5とSP系補強経路を血統側で確認');
+          return{goal,key:'bc',headline:'BCは母能力を仮定せず、SP上限とSP補強経路で判断',detail:'直仔事前評価：'+pre,reasons};
+        }
+        reasons.push('SP上限を優先','維持：'+preserve,'直仔事前評価：'+pre);
+        return{goal,key:'bc',headline:'BCはSP上限と速力・短距離クロスの経路を優先',detail:'STを極端に落とさず、SP17/ST5以上へ届く血統を比較します。',reasons};
+      }
+      if(goal==='rebuild'){
+        if(!a.abilityKnown){
+          reasons.push('能力値0を低能力として扱わない','ニトロ・有効クロス・次代の使いやすさを確認');
+          return{goal,key:'rebuild',headline:'繁殖再建は能力未判明のままでも、母系の血統素材価値を比較できる',detail:'直仔事前評価：'+pre,reasons};
+        }
+        reasons.push('次代へ残す強み：'+preserve,'補強：'+improve,'直仔事前評価：'+pre);
+        return{goal,key:'rebuild',headline:'繁殖再建は完成馬より、次代で使いやすい母系を作る',detail:'母能力を落とさず、ニトロ・有効クロス・配合理論を次代へ残せるかを見ます。',reasons};
+      }
+      if(!a.abilityKnown){
+        reasons.push('能力値は未判明のまま保持','将来種牡馬として使える血統の広さを世代別に比較');
+        return{goal:'stallion',key:'stallion',headline:'自家製種牡馬は母能力より、将来の血統汎用性を別軸で確認',detail:'能力推定値は作らず、世代診断のportfolioで判断します。',reasons};
+      }
+      reasons.push('母の強み：'+preserve,'将来の血統汎用性を世代別に比較','直仔だけで完成扱いしない');
+      return{goal:'stallion',key:'stallion',headline:'自家製種牡馬は産駒能力だけでなく、後代で使える血統汎用性を作る',detail:'SP/STと血統の広さを分離し、世代診断のportfolioで比較します。',reasons};
+    }
+
+    function quickSaleOutlook(name,summary){
+      const a=mareAssessment(name),s=summary||emptySummary('direct');
+      if(!a)return{key:'unavailable',label:'評価不可',abilityKnown:false,signals:[],goalLabels:{}};
+      const goalLabels=directUseLabels(a,s),signals=[];
+      if(s.arcSupportedA>0)signals.push('凱旋門向け・実績A＋距離根拠あり');
+      else if(s.arcQuantitative>0)signals.push('凱旋門SP/ST基準へ届く直仔候補あり');
+      if(s.sp17st5>0)signals.push('BC目安SP17/ST5以上あり');
+      if(s.recordA>0)signals.push('実績Aで締められる直仔候補あり');
+      if(s.maxSp>=18)signals.push('直仔最大SPニトロ '+s.maxSp);
+      if(s.maxSpSt>=24)signals.push('直仔最大SP+ST '+s.maxSpSt);
+      let key='development',label='代重ね比較向き';
+      if(!a.abilityKnown){
+        key=(s.arcQuantitative>0||s.sp17st5>0)?'unknown-pedigree':'unknown';
+        label=key==='unknown-pedigree'?'能力未判明・血統は比較価値あり':'能力未判明・血統から判断';
+      }else if(a.ranks?.spst?.topPercent<=25&&(s.arcQuantitative>0||s.sp17st5>0)){
+        key='direct-value';label='直仔から検討価値あり';
+      }else if(s.arcQuantitative>0||s.sp17st5>0){
+        key='conditional';label='配合次第で有望';
+      }else if(a.ranks?.spst?.topPercent<=60){
+        key='staged';label='2代以上も比較価値あり';
+      }else{
+        key='rebuild';label='再建素材として比較';
+      }
+      if(!signals.length)signals.push(a.abilityKnown?'母能力と代重ね余地を比較':'能力値を仮定せず血統条件を比較');
+      return{
+        key,label,abilityKnown:a.abilityKnown,tier:a.tier,goalLabels,
+        signals:signals.slice(0,3),
+        caution:a.abilityKnown?'総合点ではなく、目的別条件と世代診断で最終判断します。':'SP/ST/PWは未判明のまま保持し、価格から能力値を確定しません。'
+      };
+    }
+
     function recommendGeneration({goal='arc',assessment,generations,portfolios}={}){
       const g1=generations?.[1],g2=generations?.[2],g3=generations?.[3],g4=generations?.[4];
       const r1=g1?.summary?.bestRoute||routeForGoal(g1?.result,goal);
@@ -944,7 +1012,7 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
+      directUseLabels,goalMareReason,quickSaleOutlook,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
       profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
     };
   }
