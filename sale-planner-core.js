@@ -326,6 +326,27 @@
         );
       }
     }
+    function createDirectPairIndex(mareInput){
+      const m=typeof mareInput==='string'?mare(mareInput):mareInput;
+      if(!m)return{mare:null,entries:[],currentRoutes:[],safeCount:0,unsafeCount:0,get:()=>null};
+      const entries=[],currentRoutes=[],bySire=new Map();let safeCount=0,unsafeCount=0;
+      for(const s of stallions){
+        const x=evaluateDirectPair(m,s);
+        const pair=x.pair?{...x.pair,child:null}:null;
+        const currentRoute=x.route?{...x.route,finalChild:null}:null;
+        const entry={sire:s.name,sireStats:statsForSire(s.name)||null,safe:x.safe,pair,currentRoute};
+        entries.push(entry);bySire.set(key(s.name),entry);
+        if(currentRoute){currentRoutes.push(currentRoute);safeCount++}else unsafeCount++;
+      }
+      return{
+        mare:m,entries,currentRoutes,safeCount,unsafeCount,
+        get(sireInput){
+          const name=typeof sireInput==='string'?sireInput:sireInput?.name;
+          return bySire.get(key(name))||null;
+        }
+      };
+    }
+
     function* iterateDirect(mareInput){
       const m=typeof mareInput==='string'?mare(mareInput):mareInput;if(!m)return;
       for(const s of stallions){
@@ -455,7 +476,7 @@
       knownAbilityCount:broodmareStats.filter(abilityKnown).length,
       unknownAbilityCount:broodmareStats.filter(x=>!abilityKnown(x)).length,
       cohorts:{spst120:cohort120.length,spst130:cohort130.length},
-      mare,sire,mareInfo,statsForSire,evaluateDirectPair,iterateDirect,iterateTwo,iterateTwoFromDirect,iterateThirdPreview,iterateFourthPreview,
+      mare,sire,mareInfo,statsForSire,evaluateDirectPair,createDirectPairIndex,iterateDirect,iterateTwo,iterateTwoFromDirect,iterateThirdPreview,iterateFourthPreview,
       replay,expandRoute,createCollector,createFourthBridgeCollector,diversifiedPool,withPortfolio,portfolioPareto,
       profileLabels:PROFILE_LABELS,profileCriteria:PROFILE_CRITERIA,goalLabels:GOAL_LABELS,goalOrder,
       abilityKnown,routeKey,compareProfile,compareFourthBridge
