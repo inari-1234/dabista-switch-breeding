@@ -59,7 +59,7 @@ function gate(f,goal){
  }
  if(goal==='bc'){
    const qualified=f.sp>=17&&f.st>=5&&speed,strong=f.sp>=18&&f.st>=5&&speed,bloodline=qualified;
-   return{qualified,strong,bloodline,supported:bloodline&&f.recordBPlus,
+   return{qualified,strong,bloodline,supported:qualified&&f.recordBPlus,
      reason:strong?'SP18/ST5＋SP補強':qualified?'SP17/ST5＋SP補強':'BC条件未達'};
  }
  const qualified=f.sp>=15&&f.st>=5,strong=f.sp>=17&&f.st>=5;
