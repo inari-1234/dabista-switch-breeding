@@ -37,11 +37,16 @@
 
   const preparedAncestorCache=new WeakMap();
   function prepareAncestor(a){
-    if(!Array.isArray(a))return{canon:[],key:[]};
+    if(!Array.isArray(a))return{canon:[],key:[],canonIndex:new Map()};
     const sig=a.map(x=>String(x??'')).join('\u001f');
     const got=preparedAncestorCache.get(a);
     if(got&&got.sig===sig)return got.value;
-    const value={canon:a.map(canon),key:a.map(key)};
+    const canonValues=a.map(canon),keyValues=a.map(key),canonIndex=new Map();
+    for(let i=0;i<canonValues.length;i++){
+      const k=canonValues[i];if(!k)continue;
+      const list=canonIndex.get(k);if(list)list.push(i);else canonIndex.set(k,[i]);
+    }
+    const value={canon:canonValues,key:keyValues,canonIndex};
     preparedAncestorCache.set(a,{sig,value});
     return value;
   }
@@ -51,9 +56,8 @@
     const sa=sire.ancestor,ma=mare.ancestor,S=prepareAncestor(sa),M=prepareAncestor(ma),sireName=canon(sire.name),out=[];
     for(let i=0;i<ma.length;i++){
       if(sireName&&sireName===M.canon[i])out.push({name:ma[i],sireGen:1,mareGen:depth(i),sireIndex:-1,mareIndex:i,directSire:true});
-      for(let j=0;j<sa.length;j++){
-        if(S.canon[j]&&S.canon[j]===M.canon[i])out.push({name:sa[j],sireGen:depth(j),mareGen:depth(i),sireIndex:j,mareIndex:i,directSire:false});
-      }
+      const matches=S.canonIndex.get(M.canon[i])||[];
+      for(const j of matches)out.push({name:sa[j],sireGen:depth(j),mareGen:depth(i),sireIndex:j,mareIndex:i,directSire:false});
     }
     return out;
   }
@@ -70,8 +74,8 @@
         if(!direct)direct=x;
       }
       const allowEffective=!stop2;
-      for(let j=0;j<sa.length;j++){
-        if(!S.canon[j]||S.canon[j]!==M.canon[i])continue;
+      const matches=S.canonIndex.get(M.canon[i])||[];
+      for(const j of matches){
         const x={name:sa[j],sireGen:depth(j),mareGen:depth(i),sireIndex:j,mareIndex:i,directSire:false};
         raw.push(x);
         if(!allowEffective||blocked.has(j+','+i))continue;
