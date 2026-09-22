@@ -27,7 +27,7 @@ need(v26,'「強馬生産型」が本命軸です','main-axis explanation');
 need(v26,'上振れ枠 ','risk candidate must not be mislabeled as main recommendation');
 need(v26,'総合点には合算しません','six-axis separation');
 need(v26,'function createMareProductionCollector(','sale production recommendations must be collected across the scanned generation');
-need(v26,'productionRoutes:productionRoutes','sale render must receive full-scan mare-aware production routes');
+need(v26,'renderResults({base:finalBase,portfolio,productionRoutes,','sale render must receive full-scan mare-aware production routes');
 if(/productionSource=result\.base\.shortlists\?\.production\|\|result\.base\.profiles/.test(v26))throw Error('sale production recommendation regressed to old shortlist-only source');
 
 need(breed,"advisor?.compareProductionForMare","breed production mare-aware comparator");
