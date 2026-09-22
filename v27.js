@@ -10,7 +10,7 @@ function style(){
  .mare-advice{margin-top:8px;border:1px solid #d8e5de;border-radius:12px;background:#fbfcfb;padding:10px}
  .mare-advice-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
  .mare-advice-head h4{margin:0;font-size:12px}.mare-advice-head small{font-size:9px;color:#66736c}
- .mare-tier{display:inline-block;padding:4px 7px;border-radius:999px;background:#dcefe3;color:#1b5a35;font-size:9px;font-weight:700}
+ .mare-tier{display:inline-block;padding:7px 11px;border-radius:999px;background:#dcefe3;color:#1b5a35;font-size:14px;font-weight:900;white-space:nowrap}
  .mare-tier.unknown{background:#fff0c9;color:#6f5200}
  .mare-ranks{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}
  .mare-rank{background:#f2f6f3;border-radius:8px;padding:7px 4px;text-align:center}
