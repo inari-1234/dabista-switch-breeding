@@ -429,7 +429,7 @@ function openRouteInBreed(id){
  },80);
 }
 
-function profileHtml(profile,routes,goal,scope){
+function profileHtml(profile,routes,goal,scope,recordAReference=null){
  const label=planner.profileLabels[profile],criteria=profile==='production'
   ?'父実績はA>B>Cを強い基礎差として評価。SP/STニトロ・速力/短距離クロス・距離下限（1000/1200m側）・配合理論・安定を加味し、他要素の上積みが明確な場合だけB/CがAを逆転します。'
   :planner.profileCriteria[profile];
@@ -448,7 +448,10 @@ function profileHtml(profile,routes,goal,scope){
   sire:'将来自家製種牡馬としての血統汎用性'
  };
  const baseline=routes[0]||null;
- return `<div class="card sale-profile"><div class="sale-profile-head"><h3>${esc(label)}</h3><span class="sale-axis-note">${esc(axisNotes[profile]||'別軸評価')}</span></div>${routes.map((r,i)=>routeHtml(r,i,goal,profile,baseline)).join('')}<details class="sale-profile-detail"><summary>この軸の並び順・評価範囲</summary><div class="sale-method" style="margin-top:5px">${esc(criteria)}</div>${profile==='sire'?`<div class="sale-method">${esc(scope)}</div>`:''}</details></div>`
+ return `<div class="card sale-profile"><div class="sale-profile-head"><h3>${esc(label)}</h3><span class="sale-axis-note">${esc(axisNotes[profile]||'別軸評価')}</span></div>${routes.map((r,i)=>{
+  const reference=i===0&&profile==='production'&&r?.final?.sireStats?.record!=='A'&&recordAReference?recordAReference:baseline;
+  return routeHtml(r,i,goal,profile,reference);
+ }).join('')}<details class="sale-profile-detail"><summary>この軸の並び順・評価範囲</summary><div class="sale-method" style="margin-top:5px">${esc(criteria)}</div>${profile==='sire'?`<div class="sale-method">${esc(scope)}</div>`:''}</details></div>`
 }
 
 function renderResults(result){
@@ -463,8 +466,9 @@ function renderResults(result){
  const productionSource=result.productionRoutes?.length?result.productionRoutes:(result.base.shortlists?.production||result.base.profiles?.production||[]);
  const production=recommendationAdvisor?.selectProductionRecommendations?.(productionSource,assessment,3)||recommendationAdvisor?.rankProductionRoutes?.(productionSource,assessment,3)||result.base.profiles?.production||[];
  const profiles={...result.base.profiles,production,sire:result.portfolio.routes};
+ const recordAReference=productionSource.find(r=>r?.final?.sireStats?.record==='A')||null;
  const otherOrder=order.filter(p=>p!=='production');
- const mainHtml=profileHtml('production',profiles.production,goal,result.portfolioScope);
+ const mainHtml=profileHtml('production',profiles.production,goal,result.portfolioScope,recordAReference);
  const otherHtml=otherOrder.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
  $('#salePlannerResults').innerHTML=`<div class="card sale-decision-head"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜本命配合</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}</span></div>${caution}<div class="sale-color-legend"><b>色＝候補の役割</b><span>緑：本命</span><span>青：実績</span><span>紫：SP補強</span><span>青緑：ニトロ</span><span>黄：上振れ</span><span>白：参考軸</span></div><details class="sale-profile-detail"><summary>探索条件を見る</summary><div class="sale-method">${esc(method)}</div></details></div>`+
  mainHtml+
