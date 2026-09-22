@@ -95,6 +95,12 @@ function selectedCategory(){
 function searchText(){
   return norm($('#stallionSearch')?.value).toLowerCase();
 }
+function theoryFilter(){
+  return $('#breedTheoryFilter')?.value||'all';
+}
+function nitroFilter(){
+  return $('#breedNitroFilter')?.value||'all';
+}
 function ensureControls(){
   const controls=$('#breed .breed-controls');
   if(!controls)return;
@@ -108,6 +114,23 @@ function ensureControls(){
   }
   cat.value=selectedCategory();
   const mare=$('#breedMare'),goal=$('#breedGoal'),search=$('#stallionSearch');
+  if(search&&!$('#breedIntegrationTools')){
+    const tools=document.createElement('div');
+    tools.id='breedIntegrationTools';
+    tools.className='breed-integration-tools';
+    tools.innerHTML='<div class="field"><label>配合理論</label><select id="breedTheoryFilter"><option value="all">指定なし</option><option value="any">面白・見事</option><option value="interesting">面白</option><option value="magnificent">見事</option><option value="perfect">完璧</option><option value="elaborate">凝った</option><option value="cross">有効クロスあり</option></select></div><div class="field"><label>現在Pairニトロ</label><select id="breedNitroFilter"><option value="all">指定なし</option><option value="sp15">SP 15以上</option><option value="sp18">SP 18以上</option><option value="st5">ST 5以上</option><option value="bal">SP 15以上＋ST 5以上</option></select></div>';
+    search.insertAdjacentElement('afterend',tools);
+    $('#breedTheoryFilter').onchange=()=>window.renderBreed();
+    $('#breedNitroFilter').onchange=()=>window.renderBreed();
+  }
+  const notice=$('#breedNotice');
+  if(notice&&!$('#breedFutureOverview')){
+    const overview=document.createElement('div');
+    overview.id='breedFutureOverview';
+    overview.className='card breed-future-overview';
+    overview.innerHTML='<b>カテゴリ別・将来性比較</b><p class="muted">候補カードで「2～4代の将来性を診断」を開くと、同じ初手父を6カテゴリ横断で比較します。</p>';
+    notice.insertAdjacentElement('afterend',overview);
+  }
   if(goal){
     const want=canonicalGoal(goal.value);
     if([...goal.options].some(o=>o.value===want))goal.value=want;
@@ -179,12 +202,28 @@ function compareRoutes(profile,a,b){
 function filteredEntries(index,profile,q){
   const safe=index.entries.filter(e=>e.safe&&e.currentRoute);
   const unsafe=index.entries.filter(e=>!e.safe&&e.pair);
-  let ranked=safe;
+  const tf=theoryFilter(),nf=nitroFilter();
+  const filterPair=e=>{
+    const p=e.pair||{},t=p.theory||{},d=p.danger||{},n=p.nitro||{};
+    const theoryOk=tf==='all'
+      ||(tf==='any'&&(t.interesting||t.magnificent))
+      ||(tf==='interesting'&&t.interesting)
+      ||(tf==='magnificent'&&t.magnificent)
+      ||(tf==='perfect'&&t.perfect)
+      ||(tf==='elaborate'&&p.elaborate?.effective)
+      ||(tf==='cross'&&(d.effectiveCrosses||[]).length>0);
+    const nitroOk=nf==='all'
+      ||(nf==='sp15'&&Number(n.sp||0)>=15)
+      ||(nf==='sp18'&&Number(n.sp||0)>=18)
+      ||(nf==='st5'&&Number(n.st||0)>=5)
+      ||(nf==='bal'&&Number(n.sp||0)>=15&&Number(n.st||0)>=5);
+    return theoryOk&&nitroOk;
+  };
+  let ranked=safe.filter(filterPair);
   if(profile==='speedCross')ranked=ranked.filter(e=>!!e.currentRoute?.final?.speedCross?.has);
-  if(profile!=='sire')ranked=[...ranked].sort((a,b)=>compareRoutes(profile,a,b));
-  if(q){
-    ranked=ranked.filter(e=>e.sire.toLowerCase().includes(q));
-  }
+  if(profile==='sire')ranked=[...ranked].sort((a,b)=>a.sire.localeCompare(b.sire,'ja'));
+  else ranked=[...ranked].sort((a,b)=>compareRoutes(profile,a,b));
+  if(q)ranked=ranked.filter(e=>e.sire.toLowerCase().includes(q));
   const unsafeFiltered=q?unsafe.filter(e=>e.sire.toLowerCase().includes(q)):unsafe;
   return{ranked,unsafe:unsafeFiltered};
 }
