@@ -507,6 +507,7 @@
           crosses:x.pair.danger?.rawCrosses||[],
           speedCross:speedCrossSummary(x.pair),
           crossEffects:crossEffectSummary(x.pair),
+          child:x.pair.child,
           selection:i<r.stages.length-1?selectionCondition(goal,i+1):null
         }))
       };
