@@ -735,6 +735,48 @@
       };
     }
 
+    function rebuildFreedomFacts(route){return route?.rebuildFreedom||null}
+    function rebuildFreedomGate(prev,next){
+      const a=rebuildFreedomFacts(prev),b=rebuildFreedomFacts(next);
+      if(!a||!b)return{available:false,allowed:true,severeLoss:false,highValueComp:false,delta:null};
+      const delta={
+        safe:val(b.safe)-val(a.safe),
+        sp15:val(b.sp15st5)-val(a.sp15st5),
+        sp17:val(b.sp17st5)-val(a.sp17st5),
+        speedQualified:val(b.speedQualified)-val(a.speedQualified),
+        magnificent:val(b.magnificent)-val(a.magnificent),
+        perfect:val(b.perfect)-val(a.perfect),
+        elaborate:val(b.elaborate)-val(a.elaborate)
+      };
+      const severeLoss=delta.safe<=-5||delta.sp15<=-4||delta.sp17<=-2||delta.speedQualified<=-3;
+      const highValueComp=delta.sp17>=2||delta.perfect>=1||(delta.magnificent>=2&&delta.sp15>=-1&&delta.speedQualified>=-1);
+      return{available:true,allowed:!severeLoss||highValueComp,severeLoss,highValueComp,delta};
+    }
+    function rebuildFreedomUpgradeReasons(prev,next){
+      const a=rebuildFreedomFacts(prev),b=rebuildFreedomFacts(next);
+      if(!a||!b)return[];
+      const af=routeFacts(prev),bf=routeFacts(next);
+      if(!(bf.sp>=15&&bf.st>=5))return[];
+      const gate=rebuildFreedomGate(prev,next);if(!gate.allowed)return[];
+      const d=gate.delta||{},reasons=[];
+      if(d.sp15>=4&&d.speedQualified>=3&&d.sp17>=0){
+        reasons.push(`次代でSP15/ST5成立相手が${val(a.sp15st5)}→${val(b.sp15st5)}、SPクロス付き成立相手が${val(a.speedQualified)}→${val(b.speedQualified)}へ増加`);
+      }
+      if(d.sp17>=2&&d.speedQualified>=0){
+        reasons.push(`次代でSP17/ST5以上の成立相手が${val(a.sp17st5)}→${val(b.sp17st5)}へ増加`);
+      }
+      if(d.perfect>=1&&d.sp15>=-1&&d.speedQualified>=-1){
+        reasons.push(`次代で完璧配合の成立相手が${val(a.perfect)}→${val(b.perfect)}へ増加し、実用配合数もほぼ維持`);
+      }
+      if(d.magnificent>=2&&d.sp15>=-1&&d.speedQualified>=-1){
+        reasons.push(`次代で見事配合の成立相手が${val(a.magnificent)}→${val(b.magnificent)}へ増加し、実用配合数もほぼ維持`);
+      }
+      if(d.safe>=5&&d.sp15>=0&&d.speedQualified>=0){
+        reasons.push(`次代で安全に組める種牡馬が${val(a.safe)}→${val(b.safe)}へ増加`);
+      }
+      return reasons;
+    }
+
     function materialUpgradeReasons(prev,next,goal,assessment){
       if(!prev||!next)return next?['比較対象となる次世代候補が成立']: [];
       const a=routeFacts(prev),b=routeFacts(next),reasons=[];
@@ -804,8 +846,10 @@
         if(!a.magnificent&&b.magnificent&&matchedCross&&b.spst>=a.spst-1)reasons.push('見事配合と母の不足能力に合う有効クロスを新たに両立し、母系能力もほぼ維持');
         addMaterialSupport();
         addMaterialLongSupport();
-        const gate=rebuildUpgradeGate(prev,next);
-        return gate.allowed?reasons:[];
+        const gate=rebuildUpgradeGate(prev,next),freedomGate=rebuildFreedomGate(prev,next),freedomReasons=rebuildFreedomUpgradeReasons(prev,next);
+        if(!freedomGate.allowed)return[];
+        if(!gate.allowed&&!freedomReasons.length)return[];
+        return[...new Set([...reasons,...freedomReasons])];
       }
       if(!a.speedCross&&b.speedCross&&b.sp>=a.sp-1)reasons.push('速力/短距離クロスを新たに成立');
       if(b.sp>=a.sp+2)reasons.push(`SPを${a.sp}→${b.sp}へ上積み`);
@@ -1059,10 +1103,12 @@
 
     function recommendGeneration({goal='arc',assessment,generations,portfolios}={}){
       const g1=generations?.[1],g2=generations?.[2],g3=generations?.[3],g4=generations?.[4];
-      const r1=g1?.summary?.bestRoute||routeForGoal(g1?.result,goal);
-      const r2=g2?.summary?.bestRoute||routeForGoal(g2?.result,goal);
-      const r3=g3?.summary?.bestRoute||routeForGoal(g3?.result,goal);
-      const r4=g4?.summary?.bestRoute||routeForGoal(g4?.result,goal);
+      const rawR1=g1?.summary?.bestRoute||routeForGoal(g1?.result,goal);
+      const rawR2=g2?.summary?.bestRoute||routeForGoal(g2?.result,goal);
+      const rawR3=g3?.summary?.bestRoute||routeForGoal(g3?.result,goal);
+      const rawR4=g4?.summary?.bestRoute||routeForGoal(g4?.result,goal);
+      const enrichRebuild=route=>goal==='rebuild'&&route&&planner?.withRebuildFreedom?planner.withRebuildFreedom(route):route;
+      const r1=enrichRebuild(rawR1),r2=enrichRebuild(rawR2),r3=enrichRebuild(rawR3),r4=enrichRebuild(rawR4);
       let recommended=1,reasons=[],conditional=false;
       const transitions={to2:{from:1,to:2,reasons:[]},to3:{from:1,to:3,reasons:[]},to4:{from:1,to:4,reasons:[]}};
       if(goal==='stallion'){
@@ -1129,7 +1175,7 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,goalMareReason,quickSaleOutlook,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,arcUpgradeGate,bcUpgradeGate,rebuildUpgradeGate,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
+      directUseLabels,goalMareReason,quickSaleOutlook,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,arcUpgradeGate,bcUpgradeGate,rebuildUpgradeGate,rebuildFreedomGate,rebuildFreedomUpgradeReasons,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
       profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
     };
   }
