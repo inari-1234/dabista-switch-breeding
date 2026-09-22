@@ -653,6 +653,33 @@
       return{key:'neutral',label:'比較候補',headline:'別軸で比較する候補',reasons};
     }
 
+    function arcUpgradeGate(prev,next){
+      if(!prev||!next)return{allowed:!!next,requiredSignals:0,compensationCount:0,recordDrop:0,distanceDrop:0,signals:{}};
+      const a=routeFacts(prev),b=routeFacts(next);
+      const aq=a.sp>=14&&a.st>=6,bq=b.sp>=14&&b.st>=6;
+      const recordDrop=Math.max(0,a.recordGrade-b.recordGrade),distanceDrop=Math.max(0,a.distanceEvidence-b.distanceEvidence);
+      const axisFloor=b.sp>=a.sp-1&&b.st>=a.st-1;
+      const signals={
+        targetGain:!aq&&bq,
+        recordGain:b.recordGrade>a.recordGrade&&axisFloor,
+        speedSupportGain:((!a.speedCross&&b.speedCross)||(b.materialSpeedCrossStages>a.materialSpeedCrossStages))&&axisFloor,
+        longSupportGain:((!a.longDistanceCross&&b.longDistanceCross)||(b.materialLongCrossStages>a.materialLongCrossStages))&&axisFloor,
+        spAxisGain:b.sp>=a.sp+2&&b.st>=a.st-1,
+        stAxisGain:b.st>=a.st+2&&b.sp>=a.sp-1,
+        theoryGain:(!a.magnificent&&b.magnificent||!a.elaborate&&b.elaborate)&&axisFloor
+      };
+      const compensationCount=Object.values(signals).filter(Boolean).length;
+      let requiredSignals=0;
+      if(recordDrop>0)requiredSignals=Math.max(requiredSignals,recordDrop>=2?3:2);
+      if(distanceDrop>0)requiredSignals=Math.max(requiredSignals,2);
+      if(recordDrop>0&&distanceDrop>0)requiredSignals=Math.max(requiredSignals,recordDrop>=2?4:3);
+      const preservesQualified=!(aq&&!bq);
+      return{
+        allowed:preservesQualified&&(requiredSignals===0||compensationCount>=requiredSignals),
+        requiredSignals,compensationCount,recordDrop,distanceDrop,preservesQualified,signals
+      };
+    }
+
     function materialUpgradeReasons(prev,next,goal,assessment){
       if(!prev||!next)return next?['比較対象となる次世代候補が成立']: [];
       const a=routeFacts(prev),b=routeFacts(next),reasons=[];
@@ -707,7 +734,8 @@
         if(!a.magnificent&&b.magnificent&&magnificentRelevant&&b.spst>=a.spst-1&&b.sp>=a.sp-1&&b.st>=a.st-1)reasons.push('見事配合と母の補強軸に合うクロスを新たに両立し、SP/STもほぼ維持');
         addMaterialSupport();
         addMaterialLongSupport();
-        return reasons;
+        const gate=arcUpgradeGate(prev,next);
+        return gate.allowed?reasons:[];
       }
       if(goal==='rebuild'){
         const ta=a.sp>=15&&a.st>=5, tb=b.sp>=15&&b.st>=5;
@@ -1001,7 +1029,9 @@
       if(assessment&&!assessment.abilityKnown)reasons.push('起点牝馬の繁殖能力が未判明なので、母能力を含む総合判断は保留です。');
       return{
         generation:recommended,
-        label:recommended===1?'直仔推奨':recommended===2?'2代推奨':recommended===3?'3代候補（条件付き）':'4代候補（条件付き）',
+        label:assessment&&!assessment.abilityKnown
+          ?(recommended===1?'血統上は直仔候補（能力確認前提）':recommended===2?'血統上2代候補（能力確認前提）':recommended===3?'血統上3代候補（能力確認前提）':'血統上4代候補（能力確認前提）')
+          :(recommended===1?'直仔推奨':recommended===2?'2代推奨':recommended===3?'3代候補（条件付き）':'4代候補（条件付き）'),
         conditional,
         reasons,
         transitions,
@@ -1012,7 +1042,7 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,goalMareReason,quickSaleOutlook,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
+      directUseLabels,goalMareReason,quickSaleOutlook,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,arcUpgradeGate,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
       profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
     };
   }
