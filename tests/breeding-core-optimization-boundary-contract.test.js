@@ -11,7 +11,7 @@ if(JSON.stringify(topKeys)!==JSON.stringify(expectedTop))throw Error('top-level 
 
 const engine=core.create({effects:[],elaboratePairs:[],directElaboratePairs:[],elaborateKnownDifferences:[]});
 const engineKeys=Object.keys(engine).sort();
-const expectedEngine=['calcNitro','canon','create','danger','decodeCode','depth','deriveChild','deriveChildAncestor','elaborate','encodeSystems','evaluate','key','theoryFlags','version'].sort();
+const expectedEngine=['calcNitro','canon','danger','decodeCode','depth','deriveChild','deriveChildAncestor','elaborate','encodeSystems','evaluate','key','theoryFlags','version'].sort();
 if(JSON.stringify(engineKeys)!==JSON.stringify(expectedEngine))throw Error('created-engine API drift '+JSON.stringify({engineKeys,expectedEngine}));
 
 const forbiddenPublic=['prepareHorse','prepared','preparedCache','dangerPrepared','calcNitroPrepared'];
