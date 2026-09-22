@@ -160,14 +160,14 @@ jobs:
           assert 'ui-refresh.js?v=1.19.1-b46' in idx
           assert idx.index('breeding-engine.js?v=1.19.1-b46') < idx.index('sale-planner-core.js?v=1.19.1-b46') < idx.index('sale-recommendation-core.js?v=1.19.1-b46') < idx.index('breed-integration.js?v=1.19.1-b46') < idx.index('v26.js?v=1.19.1-b46') < idx.index('v27.js?v=1.19.1-b46')
           assert 'v23.js' not in idx
-          assert '繁殖能力：未判明' in v26
+          assert '能力未判明' in v26
           assert '<summary><b>血統15祖先</b></summary>' in v26
           assert '全176³の最適解とは表示しません' in v26
           assert 'SP+ST≥120 / ≥130' in v26
           sale_core=Path('sale-planner-core.js').read_text(encoding='utf-8')
           assert 'SPクロス補強型' in sale_core
           assert 'speedCross' in sale_core
-          assert '6軸は合算' in v26
+          assert '総合点には合算しません' in v26
           ui_js=Path('ui-refresh.js').read_text(encoding='utf-8')
           ui_css=Path('ui-refresh.css').read_text(encoding='utf-8')
           assert 'addInlineBtn' in ui_js, 'inline mobile add action missing'
