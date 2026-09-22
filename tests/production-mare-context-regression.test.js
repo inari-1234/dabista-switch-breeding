@@ -64,7 +64,8 @@ const strongB=fake({
 assert.ok(advisor.compareProductionForMare(middle)(strongB,equalA)<0,'record B may beat A only when nitro/cross/theory/short-distance evidence is materially stronger');
 const strongBCtx=advisor.productionContext(strongB,middle);
 assert.ok(strongBCtx.shortDistanceRelevant&&strongBCtx.shortTier>=2,'1000m lower bound must become SP-side evidence for an SP-needy/middle mare');
-assert.ok(strongBCtx.crossEvidence>=5&&strongBCtx.nitroEvidence>0,'B-over-A fixture must contain explicit compensating evidence');
+assert.ok(strongBCtx.overrideEligible,'B-over-A fixture must satisfy the explicit override gate');
+assert.ok(strongBCtx.compensationSignals.strongNitro&&strongBCtx.compensationSignals.finalCross&&strongBCtx.compensationSignals.materialCross,'B-over-A fixture must expose concrete nitro/cross reasons');
 
 // C/C is not banned. It may win only when the bloodline upside is materially stronger.
 const weakAB=fake({record:'A',stable:'B',sp:15,st:5,pw:1,minD:1600,speedCross:true,sire:'堅実A父'});
