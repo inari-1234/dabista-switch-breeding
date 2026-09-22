@@ -1,19 +1,6 @@
 name: Diagnose breed direct portfolio cost
 
 on:
-  push:
-    paths:
-      - 'tests/breed-direct-portfolio-cost-diagnostic.test.js'
-      - '.github/workflows/diagnose-breed-direct-portfolio-cost.yml'
-      - 'sale-planner-core.js'
-      - 'breeding-core.js'
-      - 'data/theory-master.json'
-      - 'data/stallions.json'
-      - 'data/default-broodmares.json'
-      - 'data/nitro-effects.json'
-      - 'data/kotta-pairs.json'
-      - 'data/elaborate-direct-exceptions.json'
-      - 'data/planner-inheritance-validation.json'
   workflow_dispatch:
 
 permissions:

@@ -1,12 +1,6 @@
 name: Diagnose breed direct evaluation call count
 
 on:
-  push:
-    paths:
-      - 'tests/breed-direct-evaluation-call-count-diagnostic.test.js'
-      - '.github/workflows/diagnose-breed-direct-evaluation-call-count.yml'
-      - 'sale-planner-core.js'
-      - 'breeding-core.js'
   workflow_dispatch:
 
 permissions:

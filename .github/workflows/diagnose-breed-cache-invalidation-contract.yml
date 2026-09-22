@@ -1,10 +1,6 @@
 name: Diagnose breed cache invalidation contract
 
 on:
-  push:
-    paths:
-      - 'tests/breed-cache-invalidation-contract.test.js'
-      - '.github/workflows/diagnose-breed-cache-invalidation-contract.yml'
   workflow_dispatch:
 
 permissions:

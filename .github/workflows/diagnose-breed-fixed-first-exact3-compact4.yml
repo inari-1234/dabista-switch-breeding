@@ -1,19 +1,6 @@
 name: Diagnose fixed-first exact3 compact4
 
 on:
-  push:
-    paths:
-      - 'tests/breed-fixed-first-exact3-compact4-diagnostic.test.js'
-      - '.github/workflows/diagnose-breed-fixed-first-exact3-compact4.yml'
-      - 'sale-planner-core.js'
-      - 'breeding-core.js'
-      - 'data/theory-master.json'
-      - 'data/stallions.json'
-      - 'data/default-broodmares.json'
-      - 'data/nitro-effects.json'
-      - 'data/kotta-pairs.json'
-      - 'data/elaborate-direct-exceptions.json'
-      - 'data/planner-inheritance-validation.json'
   workflow_dispatch:
 
 permissions:

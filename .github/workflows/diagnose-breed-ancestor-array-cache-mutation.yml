@@ -1,10 +1,6 @@
 name: Diagnose ancestor-array cache mutation safety
 
 on:
-  push:
-    paths:
-      - 'tests/breed-ancestor-array-cache-mutation-contract.test.js'
-      - '.github/workflows/diagnose-breed-ancestor-array-cache-mutation.yml'
   workflow_dispatch:
 
 permissions:

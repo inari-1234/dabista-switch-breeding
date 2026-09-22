@@ -1,10 +1,6 @@
 name: Diagnose async breed continuation state
 
 on:
-  push:
-    paths:
-      - 'tests/breed-async-continuation-state-contract.test.js'
-      - '.github/workflows/diagnose-breed-async-continuation-state.yml'
   workflow_dispatch:
 
 permissions:
