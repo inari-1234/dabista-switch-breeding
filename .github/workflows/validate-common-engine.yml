@@ -30,6 +30,7 @@ on:
       - 'tests/breed-pair-cache-filter-equivalence.test.js'
       - 'tests/breed-fixed-first-optimized-matrix.test.js'
       - 'tests/breed-future-ui-labels-diagnostic.test.js'
+      - 'tests/breed-future-mobile-density-diagnostic.test.js'
       - 'tests/breed-cache-invalidation-contract.test.js'
       - 'tests/breed-goal-canonicalization-contract.test.js'
       - 'tests/breed-integration-load-order-contract.test.js'
@@ -106,6 +107,7 @@ jobs:
           node --check tests/breed-pair-cache-filter-equivalence.test.js
           node --check tests/breed-fixed-first-optimized-matrix.test.js
           node --check tests/breed-future-ui-labels-diagnostic.test.js
+          node --check tests/breed-future-mobile-density-diagnostic.test.js
           node --check tests/breed-cache-invalidation-contract.test.js
           node --check tests/breed-goal-canonicalization-contract.test.js
           node --check tests/breed-integration-load-order-contract.test.js
@@ -182,6 +184,7 @@ jobs:
           node tests/breed-pair-cache-filter-equivalence.test.js
           node tests/breed-fixed-first-optimized-matrix.test.js
           node tests/breed-future-ui-labels-diagnostic.test.js
+          node tests/breed-future-mobile-density-diagnostic.test.js
           node tests/breed-cache-invalidation-contract.test.js
           node tests/breed-goal-canonicalization-contract.test.js
           node tests/breed-integration-load-order-contract.test.js
