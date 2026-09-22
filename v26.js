@@ -393,7 +393,9 @@ function openRouteInBreed(id){
 }
 
 function profileHtml(profile,routes,goal,scope){
- const label=planner.profileLabels[profile],criteria=planner.profileCriteria[profile];
+ const label=planner.profileLabels[profile],criteria=profile==='production'
+  ?'SP15/ST5とSP補強経路を確認 → 父実績A/Bを実用候補として優先 → 母能力に応じて安定性を文脈比較（高能力母はA寄り・中位母はBを標準・再建帯はCの上振れも活用） → SP/ST・クロスを比較'
+  :planner.profileCriteria[profile];
  if(!routes?.length){
   const empty=profile==='speedCross'
    ?'この探索範囲では安全なSPクロス候補がありません。'
