@@ -227,6 +227,26 @@ function previewBases(shortlists,maxEach=12){
  }
  return out
 }
+function createMareProductionCollector(assessment,limit=24){
+ const cmp=recommendationAdvisor?.compareProductionForMare?.(assessment)||planner.compareProfile('production');
+ const list=[],keys=new Set();
+ return{
+  push(route){
+   if(!route)return;
+   const key=planner.routeKey(route);
+   if(keys.has(key))return;
+   let i=0;while(i<list.length&&cmp(list[i],route)<=0)i++;
+   if(list.length>=limit&&i>=limit)return;
+   list.splice(i,0,route);keys.add(key);
+   if(list.length>limit){const drop=list.pop();keys.delete(planner.routeKey(drop))}
+  },
+  routes(){return list.slice()}
+ };
+}
+function fanoutCollector(...collectors){
+ const active=collectors.filter(Boolean);
+ return active.length?{push(route){for(const c of active)c.push(route)}}:null;
+}
 async function scanIterator(iter,collector,seq,label,sideCollector=null){
  let n=0;
  for(const r of iter){
@@ -422,7 +442,7 @@ function renderResults(result){
   :`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索し、3代目を${result.previewBaseCount3}本から条件付き探索後、${result.previewBaseCount4}本の3代bridge候補から4代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`;
  const caution=!info.abilityKnown?'<div class="notice"><b>繁殖能力未判明：</b>母能力を含む総合評価は保留。血統・ニトロ・配合理論だけで候補を表示しています。</div>':'';
  const assessment=recommendationAdvisor?.mareAssessment?.(db.salePlanner.mare)||null;
- const productionSource=result.base.shortlists?.production||result.base.profiles?.production||[];
+ const productionSource=result.productionRoutes?.length?result.productionRoutes:(result.base.shortlists?.production||result.base.profiles?.production||[]);
  const production=recommendationAdvisor?.rankProductionRoutes?.(productionSource,assessment,3)||result.base.profiles?.production||[];
  const profiles={...result.base.profiles,production,sire:result.portfolio.routes};
  $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice"><b>見方：</b>「強馬生産型」が本命軸です。他の5軸はSP上限・クロス・ST・バランス・血統価値を別々に確認する候補で、総合点には合算しません。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
@@ -435,26 +455,31 @@ async function runDesign(){
  db.salePlanner.mare=name;save();const seq=++runSeq,btn=$('#runSalePlanner');btn.disabled=true;
  $('#salePlannerResults').innerHTML='';$('#salePlannerProgress').textContent='設計を開始します…';
  try{
+  const assessment=recommendationAdvisor?.mareAssessment?.(name)||null;
   const baseCollector=planner.createCollector({topN:3,poolN:24});
-  let baseSafe=0,directAll=[];
+  const baseProduction=createMareProductionCollector(assessment,24);
+  let productionRoutes=baseProduction.routes(),baseSafe=0,directAll=[];
   if(gen===1){
-   for(const r of planner.iterateDirect(name)){baseCollector.push(r);directAll.push(r);baseSafe++}
+   for(const r of planner.iterateDirect(name)){baseCollector.push(r);baseProduction.push(r);directAll.push(r);baseSafe++}
   }else{
-   baseSafe=await scanIterator(planner.iterateTwo(name),baseCollector,seq,'2代全探索');
+   baseSafe=await scanIterator(planner.iterateTwo(name),baseCollector,seq,'2代全探索',baseProduction);
   }
-  const base=baseCollector.finish();
+  const base=baseCollector.finish();productionRoutes=baseProduction.routes();
   let finalBase=base,safeCount=baseSafe,previewBaseCount3=0,previewBaseCount4=0,thirdSafeCount=0,portfolioSource,portfolioScope;
   if(gen>=3){
-   const bases3=previewBases(base.shortlists,12);previewBaseCount3=bases3.length;
+   const shortlists={...base.shortlists,production:productionRoutes};
+   const bases3=previewBases(shortlists,12);previewBaseCount3=bases3.length;
    const c3=planner.createCollector({topN:3,poolN:18});
+   const p3=createMareProductionCollector(assessment,24);
    const bridge4=gen===4?planner.createFourthBridgeCollector():null;
-   thirdSafeCount=await scanIterator(planner.iterateThirdPreview(name,bases3),c3,seq,'3代条件付きプレビュー',bridge4);
-   const r3=c3.finish();
+   thirdSafeCount=await scanIterator(planner.iterateThirdPreview(name,bases3),c3,seq,'3代条件付きプレビュー',fanoutCollector(bridge4,p3));
+   const r3=c3.finish();productionRoutes=p3.routes();
    if(gen===4){
     const bridge4Result=bridge4.finish(),bases4=bridge4Result.bases;previewBaseCount4=bases4.length;
     const c4=planner.createCollector({topN:3,poolN:16});
-    safeCount=await scanIterator(planner.iterateFourthPreview(name,bases4),c4,seq,'4代bridge条件付きプレビュー');
-    finalBase=c4.finish();portfolioSource=finalBase.pool;
+    const p4=createMareProductionCollector(assessment,24);
+    safeCount=await scanIterator(planner.iterateFourthPreview(name,bases4),c4,seq,'4代bridge条件付きプレビュー',p4);
+    finalBase=c4.finish();productionRoutes=p4.routes();portfolioSource=finalBase.pool;
     portfolioScope=`4代目条件付き候補プール ${portfolioSource.length}件。2代目までは全探索、3代目は多軸候補探索、4代目はSPクロス深掘り＋bridge候補から展開し、全176⁴探索ではありません。`;
    }else{
     safeCount=thirdSafeCount;finalBase=r3;portfolioSource=finalBase.pool;
@@ -468,7 +493,7 @@ async function runDesign(){
   $('#salePlannerProgress').textContent='自家製種牡馬としての血統汎用性をSP+ST≥120 / ≥130の2母集団で比較中…';await yieldUi();
   const portfolio=planner.portfolioPareto(portfolioSource,3);
   if(seq!==runSeq)return;
-  renderResults({base:finalBase,portfolio,safeCount,baseSafeCount:baseSafe,previewBaseCount3,previewBaseCount4,thirdSafeCount,portfolioScope});
+  renderResults({base:finalBase,portfolio,productionRoutes,safeCount,baseSafeCount:baseSafe,previewBaseCount3,previewBaseCount4,thirdSafeCount,portfolioScope});
   $('#salePlannerProgress').textContent=`設計完了：${gen===4?'4代目は条件付き仮プレビューです。':gen===3?'3代目は条件付き仮プレビューです。':'対象範囲を全探索しました。'}`;
  }catch(e){
   if(String(e).includes('cancelled'))return;
