@@ -346,7 +346,8 @@ function renderCard(entry,rank,profile,goal){
   const status=currentFutureStatus(entry.sire,profile);
   const fitLabel=fitLabelForRoute(r,goal,profile);
   const future=futureDisplay(status);
-  const rankText=profile==='production'?'本命軸 '+rank+'位':profile==='sire'?'血統価値候補':'この軸 '+rank+'位';
+  const risky=['upside','rebuild-upside','longshot','low-record'].includes(cue.key);
+  const rankText=profile==='production'?(risky?'上振れ枠 '+rank+'位':'本命軸 '+rank+'位'):profile==='sire'?'血統価値候補':'この軸 '+rank+'位';
   const tone=['solid','preserve','balance','distance','ceiling','upside','rebuild-upside','longshot','low-record'].includes(cue.key)?cue.key:'neutral';
   const reasons=(cue.reasons||[]).slice(0,4).map(x=>'<span class="breed-reason-chip">'+esc(x)+'</span>').join('');
   const portfolioNote=profile==='sire'?'<div class="muted">直配合だけで順位を決めず、将来診断のportfolioで血統汎用性を評価します。</div>':'';
