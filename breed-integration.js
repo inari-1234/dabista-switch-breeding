@@ -255,29 +255,41 @@ function fitLabelForStatus(status,goal,profile){
   if(profile==='sire')return advisor.goalFit(null,'stallion').label;
   return advisor.goalFit(status?.selectedRoute||null,goal).label;
 }
+function pairDetailsHtml(entry){
+  const p=entry.pair||{},d=p.danger||{},t=p.theory||{},e=p.elaborate||{},n=p.nitro||{};
+  const raw=d.rawCrosses||[],eff=d.effectiveCrosses||[];
+  const cross=eff.length?eff.slice(0,8).map(x=>esc(x.name)+' '+Number(x.sireGen||0)+'×'+Number(x.mareGen||0)).join(' / '):'有効クロスなし';
+  const theory=t.perfect?'完璧（面白＋見事）':[t.interesting?'面白':'',t.magnificent?'見事':'',e.effective?'凝った':''].filter(Boolean).join('・')||'追加理論なし';
+  return '<details class="breed-pair-details"><summary>現在Pairの根拠</summary>'+
+    '<div class="muted" style="margin-top:6px;line-height:1.55">'+
+    '<b>理論：</b>'+esc(theory)+'<br>'+
+    '<b>ニトロ：</b>SP '+Number(n.sp||0)+' / ST '+Number(n.st||0)+' / PW '+Number(n.pw||0)+'<br>'+
+    '<b>クロス：</b>'+cross+(raw.length!==eff.length?'（生 '+raw.length+' / 有効 '+eff.length+'）':'')+
+    '</div></details>';
+}
 function renderCard(entry,rank,profile,goal){
   const r=entry.currentRoute,f=r?.final||{},n=entry.pair?.nitro||{};
   const status=currentFutureStatus(entry.sire,profile);
   const fit=advisor.goalFit(r,goal);
   const future=futureDisplay(status);
-  const rankText=String(rank)+'.';
-  const portfolioNote=profile==='sire'?'<div class="muted">血統価値型は直配合だけで単一順位を確定せず、詳細診断のportfolioで比較します。</div>':'';
+  const rankText=profile==='sire'?'候補':String(rank)+'.';
+  const portfolioNote=profile==='sire'?'<div class="muted">血統価値型は直配合だけで単一順位を作りません。候補名順で表示し、将来診断のportfolioで評価します。</div>':'';
   return '<div class="card breed-integrated-card" data-sire-name="'+esc(entry.sire)+'">'+
     '<div class="row"><div><b>'+rankText+' '+esc(entry.sire)+'</b><div class="muted">'+esc(PROFILE_FALLBACK[profile])+' / '+esc(GOAL_LABELS[goal])+'</div></div><div class="score">'+esc(fit.label)+'</div></div>'+
     '<div class="grid"><div class="stat"><b>'+Number(n.sp||0)+'</b><small>SPニトロ</small></div><div class="stat"><b>'+Number(n.st||0)+'</b><small>STニトロ</small></div><div class="stat"><b>'+Number(n.pw||0)+'</b><small>PWニトロ</small></div></div>'+
     '<p class="muted">'+esc(theoryText(entry.pair))+' / 実績'+esc(f.sireStats?.record||'-')+'・底力'+esc(f.sireStats?.guts||'-')+'・安定'+esc(f.sireStats?.stable||'-')+'</p>'+
     portfolioNote+
-    '<div class="notice"><b>選択カテゴリの将来性：</b>'+esc(future)+'<br><b>現在配合の目的適合：</b>'+esc(fit.label)+'</div>'+
+    '<div class="notice"><b>選択カテゴリの将来性：</b><span data-card-future="'+esc(entry.sire)+'">'+esc(future)+'</span><br><b>現在配合の目的適合：</b>'+esc(fit.label)+'</div>'+
+    pairDetailsHtml(entry)+
     '<button type="button" class="secondary" data-breed-future="'+esc(entry.sire)+'">2～4代の将来性を診断</button>'+
     '<div class="breed-future-slot" data-future-sire="'+esc(entry.sire)+'"></div>'+
   '</div>';
 }
 function renderUnsafe(entry){
   const d=entry.pair?.danger||{};
-  return '<div class="card breed-integrated-card" data-sire-name="'+esc(entry.sire)+'">'+
-    '<div class="row"><div><b>対象外 '+esc(entry.sire)+'</b><div class="muted">危険配合は警告表示のみ。ランキング・将来探索には入れません。</div></div><div class="score">危険</div></div>'+
-    '<div class="notice"><b>'+esc(d.tyokiken?'超危険条件':'危険条件')+'：</b>'+esc(d.reason||'該当')+'</div>'+
-  '</div>';
+  return '<div class="notice" data-sire-name="'+esc(entry.sire)+'" style="margin-top:7px">'+
+    '<b>'+esc(entry.sire)+'：</b>'+esc(d.tyokiken?'超危険条件':'危険条件')+' / '+esc(d.reason||'該当')+
+    '</div>';
 }
 function renderNotice(resolved,index){
   const info=$('#breedNotice');
@@ -328,7 +340,7 @@ function renderBreed(){
   const lists=filteredEntries(currentPairIndex,profile,q);
   renderNotice(resolved,currentPairIndex);
   const safeHtml=lists.ranked.map((e,i)=>renderCard(e,i+1,profile,goal)).join('');
-  const unsafeHtml=lists.unsafe.length?'<div class="card"><b>危険配合（ランキング対象外）</b><p class="muted">警告確認用に表示します。</p></div>'+lists.unsafe.map(renderUnsafe).join(''):'';
+  const unsafeHtml=lists.unsafe.length?'<details class="card breed-danger-list"><summary><b>危険配合 '+lists.unsafe.length+'件（ランキング対象外）</b></summary><p class="muted">警告確認用です。将来探索には入れません。</p>'+lists.unsafe.map(renderUnsafe).join('')+'</details>':'';
   box.innerHTML=safeHtml+unsafeHtml||'<div class="empty">該当種牡馬なし</div>';
   renderCachedFutureIntoActive();
 }
