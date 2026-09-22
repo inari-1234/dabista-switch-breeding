@@ -17,6 +17,20 @@ const matrix={arc:{},bc:{},rebuild:{}};
 const preferredMatrix={arc:{},bc:{},rebuild:{}};
 const focus={};
 const samples={};
+const tradeoffs={bc:{},rebuild:{}};
+function mergeTradeoff(dst,src){
+  for(const [k,v] of Object.entries(src||{})){
+    if(k==='samples'){
+      dst.samples??=[];
+      for(const item of v||[])if(dst.samples.length<24)dst.samples.push(item);
+    }else if(typeof v==='number'){
+      dst[k]=(dst[k]||0)+v;
+    }else if(v&&typeof v==='object'){
+      dst[k]??={};
+      mergeTradeoff(dst[k],v);
+    }
+  }
+}
 const shardIds=[];
 for(const file of files){
   const x=JSON.parse(fs.readFileSync(path.join(dir,file),'utf8'));
@@ -32,6 +46,8 @@ for(const file of files){
     mergeNestedCounts(preferredMatrix[g],x.preferredMatrix[g]);
   }
   Object.assign(focus,x.focus||{});
+  mergeTradeoff(tradeoffs.bc,x.tradeoffs?.bc);
+  mergeTradeoff(tradeoffs.rebuild,x.tradeoffs?.rebuild);
   for(const [k,arr] of Object.entries(x.samples||{})){
     samples[k]??=[];
     for(const item of arr)if(samples[k].length<8)samples[k].push(item);
@@ -59,6 +75,7 @@ console.log(JSON.stringify({
   totals:total,
   matrix,
   preferredMatrix,
+  tradeoffs,
   focus,
   samples
 },null,2));
