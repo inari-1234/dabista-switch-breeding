@@ -34,8 +34,10 @@ for(const c of cases){
 
 const requiredRuntime=[
   'function currentMareAssessment()',
-  "if(ref?.type!=='default-broodmare'||!ref.name)return null",
-  'advisor?.mareAssessment?.(ref.name)',
+  "if(ref?.type==='default-broodmare'&&ref.name)return advisor?.mareAssessment?.(ref.name)||null",
+  "archetype:'自家製牝馬'",
+  "abilityKnown:false",
+  '実馬の距離・印・戦績を補助根拠として分離します',
   'function currentAbilityKnown()',
   "return known?'追加有意改善なし / 早期完成':'血統上の追加有意改善なし'",
   "return known?base:(base==='未診断'?base:'血統上：'+base)",
@@ -43,6 +45,8 @@ const requiredRuntime=[
   'const fitLabel=fitLabelForRoute(r,goal,profile)'
 ];
 for(const s of requiredRuntime)if(!src.includes(s))throw Error('runtime semantic contract missing '+s);
+if(src.includes("if(ref?.type!=='default-broodmare'||!ref.name)return null"))throw Error('runtime regressed to excluding homebred mares from assessment context');
+if(!src.includes('const real=window.horseScore?.(horse.id)||null'))throw Error('homebred mare real-race evidence bridge missing');
 if(/const fit=advisor\.goalFit\(r,goal\);[\s\S]{0,140}fit\.label/.test(src))throw Error('card bypasses ability-aware fit display');
 if(src.includes('advisor?.mareAssessment?.(currentResolvedMare.name)'))throw Error('ability lookup must not trust resolved name alone');
 const cardBlock=src.match(/function renderCard\([\s\S]*?\n\}\nfunction renderUnsafe/);
