@@ -20,6 +20,9 @@ need(ui,'血統候補（能力確認待ち・父実績条件外を含む）','pr
 need(ui,'能力未判明馬や父実績未登録を厳格一致と同じ扱いにせず','uncertain/confirmed separation');
 need(ui,'繁殖能力値には換算しません','real-race evidence boundary');
 need(ui,'第7の総合点は作りません','no seventh overall score');
+need(ui,'overflow:auto;overscroll-behavior:contain','reverse dialog explicit scrolling');
+need(ui,'max-height:92dvh','mobile reverse dialog viewport bound');
+need(ui,'@media(max-width:520px)','mobile reverse density rules');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
 need(idx,'v28.js?v=1.19.1-b50','v28 cache wiring');
 if(!(idx.indexOf('breed-integration.js?v=1.19.1-b50')<idx.indexOf('v28.js?v=1.19.1-b50')))throw Error('v28 must load after breed integration');
