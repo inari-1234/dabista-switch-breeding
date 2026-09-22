@@ -4,7 +4,8 @@ const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.23-50';
 let db=window.db;
 if(!db)return;
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
-let activeHorse=null,activeRows=[],activeUnsafe=0;
+let activeHorse=null,activeRows=[],activeUnsafe=0,activePlanner=null,activeAdvisor=null;
+const nextStepCache=new Map();
 
 function norm(v){return String(v??'').normalize('NFKC').trim()}
 function keyOf(engine,v){return engine?.core?.key?.(v)||norm(v).replace(/[\s・･]/g,'').toLowerCase()}
@@ -26,6 +27,7 @@ function ensureStyle(){
  .horse-match-head b{font-size:13px}.horse-match-tag{font-size:8px;font-weight:800;border-radius:999px;padding:3px 6px;background:#e8eee9}
  .horse-match-reasons{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.horse-match-reasons span{font-size:8px;font-weight:800;padding:3px 6px;border-radius:999px;background:#edf2ef;color:#52655c}
  .horse-match-note{font-size:9px;color:#66736c;line-height:1.45;margin-top:5px}
+ .horse-match-next{font-size:9px;line-height:1.45;margin-top:6px;padding:6px 7px;border-radius:8px;background:#f1f5f2;color:#52655c}.horse-match-next b{color:#34483e}
  .horse-match-section{margin-top:10px}.horse-match-section>h3{font-size:12px;margin:0 0 4px}
  @media(max-width:520px){
   #horseUseDlg{width:calc(100vw - 12px);max-height:92dvh;padding:10px}
@@ -101,13 +103,40 @@ function matchReasons(row,goal){
  if(row.owned)out.push('牧場登録');
  return out;
 }
+function nextStepKey(row,goal){
+ return norm(activeHorse?.id||activeHorse?.name)+'|'+goal+'|'+norm(row?.owned?'owned:'+row.name:row?.name);
+}
+function nextStepFor(row,goal){
+ if(!activePlanner||!activeAdvisor||!row?.route?.finalChild)return null;
+ const cacheKey=nextStepKey(row,goal);
+ if(nextStepCache.has(cacheKey))return nextStepCache.get(cacheKey);
+ let best=null,bestReasons=[];
+ for(const r of activePlanner.iterateTwoFromDirect(row.route)){
+   const reasons=activeAdvisor.materialUpgradeReasons(row.route,r,goal,row.assessment);
+   if(!reasons.length)continue;
+   const selected=activeAdvisor.betterGoalRoute(best,r,goal);
+   if(selected===r){best=r;bestReasons=reasons}
+ }
+ const result=best?{
+   advance:true,
+   sire:best.sires?.[1]||best.sires?.[best.sires.length-1]||'次代候補',
+   facts:activeAdvisor.routeFacts(best),
+   reason:bestReasons[0]||'目的条件で有意な上積み'
+ }:{advance:false};
+ nextStepCache.set(cacheKey,result);
+ return result;
+}
 function rowHtml(row,goal){
  const reasons=matchReasons(row,goal).map(x=>'<span>'+esc(x)+'</span>').join('');
  const a=row.assessment,known=!!a?.abilityKnown;
  const detail=known
    ?'母能力 '+esc(a.tier||'既知')+' / SP順位上位'+Number(a.ranks?.sp?.topPercent||0)+'% / SP+ST順位上位'+Number(a.ranks?.spst?.topPercent||0)+'%'
    :(row.realNote||'繁殖能力は未判明。血統Pairのみで候補判定しています。');
- return '<div class="horse-match '+(row.owned?'owned':'')+'"><div class="horse-match-head"><b>'+esc(row.name)+'</b><span class="horse-match-tag">'+esc(row.owned?'牧場':'セリ')+'</span></div><div class="horse-match-reasons">'+reasons+'</div><div class="horse-match-note">'+detail+'</div></div>'
+ const next=nextStepFor(row,goal);
+ const nextHtml=next?.advance
+   ?'<div class="horse-match-next"><b>次代候補：</b>'+esc(next.sire)+' ｜ SP '+Number(next.facts?.sp||0)+' / ST '+Number(next.facts?.st||0)+'<br>'+esc(next.reason)+'</div>'
+   :'<div class="horse-match-next"><b>次代延長根拠：</b>現時点では明確な上積みなし</div>';
+ return '<div class="horse-match '+(row.owned?'owned':'')+'"><div class="horse-match-head"><b>'+esc(row.name)+'</b><span class="horse-match-tag">'+esc(row.owned?'牧場':'セリ')+'</span></div><div class="horse-match-reasons">'+reasons+'</div><div class="horse-match-note">'+detail+'</div>'+nextHtml+'</div>'
 }
 function renderReverse(){
  const goal=$('#horseUseGoal')?.value||'arc',box=$('#horseUseResults'),st=$('#horseUseStatus');
@@ -163,9 +192,9 @@ async function buildReverse(h){
      if(!x.safe||!x.route){unsafe++;continue}
      rows.push({...m,route:x.route,facts:advisor.routeFacts(x.route)});
    }
-   activeHorse=h;activeRows=rows;activeUnsafe=unsafe;
+   activeHorse=h;activeRows=rows;activeUnsafe=unsafe;activePlanner=planner;activeAdvisor=advisor;nextStepCache.clear();
    const stats=h.record||h.guts||h.stable?('実績'+(h.record||'-')+'・底力'+(h.guts||'-')+'・安定'+(h.stable||'-')):'父能力未登録';
-   $('#horseUseSummary').innerHTML='<b>'+esc(h.name)+'</b> ｜ '+esc(stats)+(h.minD&&h.maxD?' / '+Number(h.minD)+'–'+Number(h.maxD)+'m':'')+'<br><span class="muted">凱旋門・BC・繁殖再建で成立条件を切り替えます。第7の総合点は作りません。</span>';
+   $('#horseUseSummary').innerHTML='<b>'+esc(h.name)+'</b> ｜ '+esc(stats)+(h.minD&&h.maxD?' / '+Number(h.minD)+'–'+Number(h.maxD)+'m':'')+'<br><span class="muted">凱旋門・BC・繁殖再建で成立条件を切り替えます。表示上位は次代候補まで確認します。第7の総合点は作りません。</span>';
    renderReverse();
  }catch(e){
    $('#horseUseSummary').innerHTML='<b>配合利用できません。</b><br>'+esc(String(e.message||e));
