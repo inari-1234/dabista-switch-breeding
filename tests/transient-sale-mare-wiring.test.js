@@ -16,11 +16,11 @@ const idx=read('index.html');
 const version=JSON.parse(read('version.json'));
 
 assert.strictEqual(version.version,'1.19.1');
-assert.strictEqual(version.build,'2026.09.22-47');
+assert.strictEqual(version.build,'2026.09.22-48');
 assert.ok(app.includes("const APP_VERSION='1.19.1';"));
-assert.ok(app.includes("const APP_BUILD='2026.09.22-47';"));
+assert.ok(app.includes("const APP_BUILD='2026.09.22-48';"));
 assert.ok(app.includes('window.DABISTA_TRANSIENT_BREED_MARE=null'));
-assert.ok(breedingEngine.includes("BUILD=window.APP_BUILD||'2026.09.22-47'"),'breeding-engine must use shared APP_BUILD');
+assert.ok(breedingEngine.includes("BUILD=window.APP_BUILD||'2026.09.22-48'"),'breeding-engine must use shared APP_BUILD');
 assert.ok(app.includes('window.getBreedHorseById=id=>'));
 assert.strictEqual((app.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,1,'automatic update check must be centralized in app.js');
 for(const p of ['v15.js','v16.js','v18.js','v26.js']){
@@ -31,7 +31,7 @@ for(const p of ['v15.js','v16.js','v18.js','v26.js']){
 for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js']){
   const c=read(p);
   assert.ok(c.includes("V=window.APP_VERSION||'1.19.1'"),p+' must use shared APP_VERSION');
-  assert.ok(c.includes("BUILD=window.APP_BUILD||'2026.09.22-47'"),p+' must use shared APP_BUILD');
+  assert.ok(c.includes("BUILD=window.APP_BUILD||'2026.09.22-48'"),p+' must use shared APP_BUILD');
   assert.ok(!c.includes('2026.09.21-44'),p+' stale Build 44');
   assert.ok(!c.includes('2026.09.20-35'),p+' stale Build 35');
   assert.ok(!c.includes('2026.09.20-37'),p+' stale Build 37');
