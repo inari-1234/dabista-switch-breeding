@@ -114,7 +114,8 @@ assert.ok(v26.includes('iterateFourthPreview'),'manual design must execute fourt
 assert.ok(v26.includes('全176⁴の最適解ではなく'),'manual UI must not describe generation 4 as exhaustive');
 assert.ok(v27.includes('iterateFourthPreview'),'formal advisor must execute fourth-generation preview');
 assert.ok(v27.includes('generationCard(4,generations[4]'),'formal advisor must render generation 4');
-assert.ok(v27.includes('全176³・176⁴最適解とは表示しません'),'formal advisor must disclose conditional depth');
+assert.ok(v27.includes('3代・4代は条件付き探索で'),'formal advisor must disclose conditional depth inside the collapsed technical detail');
+assert.ok(v27.includes('generation-tech'),'conditional-depth disclosure must remain available without returning to the primary screen');
 assert.ok(v27.includes('createFourthBridgeCollector'),'formal advisor must retain the validated fourth-generation bridge pool');
 assert.ok(v26.includes('createFourthBridgeCollector'),'manual design must use the same fourth-generation bridge pool as the formal advisor');
 assert.ok(!v27.includes('previewBases(r3.shortlists,8)'),'obsolete 8-per-axis fourth-generation bridge must not return');
