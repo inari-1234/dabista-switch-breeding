@@ -56,6 +56,36 @@ function scan(iter,goal,{keep=false,poolN=24}={}){
  return{result:collector.finish(),summary,all};
 }
 
+function gateRoute({sp,st,record='A',speed=false,materialSpeed=false,long=false,materialLong=false,magnificent=false,elaborate=false,maxD=2000}){
+  return{
+    sires:['TEST'],
+    materialSpeedCross:{has:materialSpeed,stages:materialSpeed?1:0,count:materialSpeed?1:0},
+    materialLongCross:{has:materialLong,stages:materialLong?1:0,names:materialLong?['TEST-LONG']:[]},
+    final:{
+      sp,st,pw:0,
+      sireStats:{record,stable:'B',guts:'B',minD:1200,maxD},
+      speedCross:{has:speed,count:speed?1:0,effect:speed?1:0,short:0,speed:speed?1:0},
+      crossEffects:{longDistance:long,gutsSupport:false,powerSupport:false,anyAbility:speed||long},
+      theory:{interesting:false,magnificent,perfect:false},
+      elaborate
+    }
+  };
+}
+const bcPrev=gateRoute({sp:12,st:7,record:'A',speed:true});
+const bcWeakComp=gateRoute({sp:19,st:5,record:'B',speed:true});
+const bcStrongComp=gateRoute({sp:18,st:6,record:'B',speed:true,materialSpeed:true});
+const bcNoSupport=gateRoute({sp:19,st:7,record:'A',speed:false});
+assert.strictEqual(advisor.bcUpgradeGate(bcPrev,bcWeakComp).allowed,false,'BC A→B must not pass on threshold gain alone');
+assert.strictEqual(advisor.bcUpgradeGate(bcPrev,bcStrongComp).allowed,true,'BC A→B may pass with multiple independent compensation signals');
+assert.strictEqual(advisor.bcUpgradeGate(bcPrev,bcNoSupport).allowed,false,'BC next generation must retain an effective SP-support path');
+assert.strictEqual(advisor.goalFit(gateRoute({sp:18,st:6,record:'C',speed:true}),'bc').key,'conditional','BC record C must remain conditional');
+
+const rebuildPrev=gateRoute({sp:10,st:10,record:'A'});
+const rebuildWeakComp=gateRoute({sp:15,st:8,record:'B'});
+const rebuildStrongComp=gateRoute({sp:15,st:10,record:'B',materialSpeed:true});
+assert.strictEqual(advisor.rebuildUpgradeGate(rebuildPrev,rebuildWeakComp).allowed,false,'rebuild A→B must not pass on threshold gain alone');
+assert.strictEqual(advisor.rebuildUpgradeGate(rebuildPrev,rebuildStrongComp).allowed,true,'rebuild A→B may pass with multiple independent compensation signals');
+
 const goal='arc',name='エイスト';
 const g1=scan(planner.iterateDirect(name),goal,{keep:true});
 const g2=scan(planner.iterateTwo(name),goal);
