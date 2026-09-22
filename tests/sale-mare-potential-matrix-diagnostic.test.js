@@ -120,6 +120,64 @@ for(let mi=0;mi<mares.length;mi++){
   rows.push({mare:m.name,band,tier:a?.tier||'未判明',spstPct:a?.ranks?.spst?.topPercent??null,strategy:advisor.mareStrategy(m.name)?.label||'',goals:goalRows});
   if((mi+1)%10===0||mi===mares.length-1)console.error('progress shard '+SHARD_INDEX+': '+(mi+1)+'/'+mares.length);
 }
+function transitionTradeoff(goal,row){
+  const g=row?.goals?.[goal],a=g?.direct?.best,b=g?.two?.best;
+  if(!g||g.recommendedGeneration!==2||!a||!b)return null;
+  const speedA=!!(a.speedCross||a.materialSpeedCross),speedB=!!(b.speedCross||b.materialSpeedCross);
+  const longA=!!(a.longDistanceCross||a.materialLongCross),longB=!!(b.longDistanceCross||b.materialLongCross);
+  const theoryA=!!(a.magnificent||a.perfect||a.elaborate),theoryB=!!(b.magnificent||b.perfect||b.elaborate);
+  const recordDrop=Math.max(0,(a.recordGrade||0)-(b.recordGrade||0));
+  const signals={};
+  if(goal==='bc'){
+    const aq=a.sp>=17&&a.st>=5&&speedA,bq=b.sp>=17&&b.st>=5&&speedB;
+    const as=a.sp>=18&&a.st>=5&&speedA,bs=b.sp>=18&&b.st>=5&&speedB;
+    signals.qualityGain=(!aq&&bq)||(aq&&!as&&bs);
+    signals.spAxisGain=b.sp>=a.sp+2&&b.st>=a.st-1;
+    signals.speedSupportGain=(!speedA&&speedB)||(b.materialSpeedCrossStages||0)>(a.materialSpeedCrossStages||0)||(b.speedCrossCount||0)>(a.speedCrossCount||0);
+    signals.theoryGain=!theoryA&&theoryB&&b.sp>=a.sp-1&&b.st>=a.st-1;
+  }else{
+    const aq=a.sp>=15&&a.st>=5,bq=b.sp>=15&&b.st>=5;
+    signals.qualityGain=!aq&&bq;
+    signals.spstGain=b.spst>=a.spst+3&&b.sp>=a.sp-1&&b.st>=a.st-1;
+    signals.speedSupportGain=(!speedA&&speedB)||(b.materialSpeedCrossStages||0)>(a.materialSpeedCrossStages||0);
+    signals.longSupportGain=(!longA&&longB)||(b.materialLongCrossStages||0)>(a.materialLongCrossStages||0);
+    signals.theoryGain=!theoryA&&theoryB&&b.spst>=a.spst-1;
+  }
+  const compensationCount=Object.values(signals).filter(Boolean).length;
+  const requiredSignals=recordDrop>=2?3:recordDrop===1?2:0;
+  return{
+    recordDrop,requiredSignals,compensationCount,
+    trialAllowed:recordDrop===0||compensationCount>=requiredSignals,
+    lostSpeedSupport:speedA&&!speedB,
+    lostLongSupport:longA&&!longB,
+    lostTheory:theoryA&&!theoryB,
+    signals,a,b
+  };
+}
+function summarizeTradeoffs(goal){
+  const out={twoRecommended:0,recordDrop1:0,recordDrop2Plus:0,wouldBlockTrialGate:0,lostSpeedSupport:0,lostLongSupport:0,lostTheory:0,byBand:{},samples:[]};
+  for(const row of rows){
+    const t=transitionTradeoff(goal,row);if(!t)continue;
+    out.twoRecommended++;
+    const band=row.band||'unknown';out.byBand[band]??={twoRecommended:0,recordDrop:0,wouldBlockTrialGate:0};
+    out.byBand[band].twoRecommended++;
+    if(t.recordDrop===1){out.recordDrop1++;out.byBand[band].recordDrop++}
+    if(t.recordDrop>=2){out.recordDrop2Plus++;out.byBand[band].recordDrop++}
+    if(!t.trialAllowed){out.wouldBlockTrialGate++;out.byBand[band].wouldBlockTrialGate++}
+    if(t.lostSpeedSupport)out.lostSpeedSupport++;
+    if(t.lostLongSupport)out.lostLongSupport++;
+    if(t.lostTheory)out.lostTheory++;
+    if((t.recordDrop>0||!t.trialAllowed)&&out.samples.length<8)out.samples.push({
+      mare:row.mare,band:row.band,record:t.a.record+'→'+t.b.record,
+      sp:t.a.sp+'→'+t.b.sp,st:t.a.st+'→'+t.b.st,
+      compensationCount:t.compensationCount,requiredSignals:t.requiredSignals,
+      trialAllowed:t.trialAllowed,signals:t.signals
+    });
+  }
+  return out;
+}
+const tradeoffs={bc:summarizeTradeoffs('bc'),rebuild:summarizeTradeoffs('rebuild')};
+
 const byName=Object.fromEntries(rows.map(x=>[x.mare,x]));
 const focusNames=['スプリングスイーツ','エイスト','フィットレオタード','ミニミニデート','ワカヒルメ','ミムラス','エトワルセリータ','アマリン'];
 const focus={};
@@ -147,13 +205,13 @@ const output={
   rules:{
     ability:'high=SP+ST top15%, middle=top16-60%, low=below60%, unknown kept separate',
     arc:'SP14/ST6 qualified, SP15/ST6 strong; supported additionally requires sire record B+ and distance evidence. Speed cross is not a hard Arc gate.',
-    bc:'SP17/ST5 + effective SP support qualified; SP18/ST5 strong; supported additionally requires sire record B+.',
+    bc:'SP17/ST5 + effective SP support qualified; SP18/ST5 strong; supported additionally requires sire record B+. Transition tradeoff audit separately tests record-loss compensation.',
     rebuild:'SP15/ST5 used only as a reconstruction reference line.',
     staging:'two-generation labels require an actual materialUpgradeReasons improvement when direct generation has no qualifying route.',
     caution:'This diagnostic does not convert the matrix into a single numeric score.'
   },
   totals:{mares:rows.length,known:rows.filter(x=>x.band!=='unknown').length,unknown:rows.filter(x=>x.band==='unknown').length,twoRoutes,runtimeMs:Date.now()-started},
-  matrix,preferredMatrix,focus,samples
+  matrix,preferredMatrix,tradeoffs,focus,samples
 };
 const outFile=process.env.OUTPUT_FILE;
 if(outFile)fs.writeFileSync(outFile,JSON.stringify(output,null,2));
