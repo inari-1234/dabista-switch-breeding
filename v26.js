@@ -340,8 +340,10 @@ function routeHtml(route,index,goal,profile){
 }
 
 function bridgeStageHtml(st){
- const n=st.nitro||{},ss=st.sireStats||{};
- return '<div class="route-bridge-stage"><b>'+st.generation+'代目：'+esc(st.sire)+'</b><br>SP '+fmt(n.sp)+' / ST '+fmt(n.st)+' / PW '+fmt(n.pw)+'　・　'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m　・　実績'+esc(ss.record||'-')+' / 底力'+esc(ss.guts||'-')+' / 安定'+esc(ss.stable||'-')+'<div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</div>';
+ const n=st.nitro||{},ss=st.sireStats||{},cross=st.speedCross?.has?'SPクロスあり':'SPクロスなし';
+ return '<div class="route-bridge-stage"><div class="row"><b>'+st.generation+'代目：'+esc(st.sire)+'</b><span class="sale-chip">'+esc(cross)+'</span></div>'+
+  '<div class="sale-reason-row"><span class="sale-reason-chip">SP '+fmt(n.sp)+'</span><span class="sale-reason-chip">ST '+fmt(n.st)+'</span><span class="sale-reason-chip">PW '+fmt(n.pw)+'</span><span class="sale-reason-chip">実績'+esc(ss.record||'-')+'・安定'+esc(ss.stable||'-')+'</span></div>'+
+  '<details class="sale-route-details"><summary>クロス・配合理論の根拠を見る</summary><div class="sale-method">'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m / 底力'+esc(ss.guts||'-')+'</div><div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</details></div>';
 }
 function renderRouteBreedBridge(ctx,syncedHorse){
  const sec=$('#breed');if(!sec||!ctx)return;
@@ -350,7 +352,7 @@ function renderRouteBreedBridge(ctx,syncedHorse){
  const syncNote=syncedHorse
   ?'<div class="sale-method">起点牝馬「'+esc(ctx.mare)+'」を配合確認用に同期済みです。下の通常候補欄もこの牝馬を選択した状態にしています。</div>'
   :'<div class="notice">起点牝馬を通常候補欄へ同期できなかったため、ルート判定はこの連携カードの表示を基準にしてください。</div>';
- card.innerHTML='<div class="row"><div><span class="badge gold">セリ設計から連携</span><h3 class="section-title" style="margin-top:7px">'+esc(ctx.mare)+'｜'+esc(planner.goalLabels[ctx.goal]||ctx.goal)+'</h3></div><button type="button" class="secondary" id="closeRouteBridge">閉じる</button></div><div class="route-bridge-path">'+ctx.route.sires.map(esc).join(' → ')+'</div><div class="sale-method">セリ設計で選んだルートの判定を、配合カテゴリでも同じ計算結果で確認できます。</div>'+syncNote+ctx.x.stages.map(bridgeStageHtml).join('')+'<button type="button" class="secondary route-breed-link" id="filterFinalSire">最終父を候補欄で検索</button>';
+ card.innerHTML='<div class="row"><div><span class="badge gold">選んだ配合ルート</span><h3 class="section-title" style="margin-top:7px">'+esc(ctx.mare)+'</h3></div><button type="button" class="secondary" id="closeRouteBridge">閉じる</button></div><div class="route-bridge-path">'+ctx.route.sires.map(esc).join(' → ')+'</div><div class="sale-method">各世代は要点だけ表示しています。詳しいクロス根拠は必要な世代だけ開けます。</div>'+ctx.x.stages.map(bridgeStageHtml).join('')+'<details class="sale-route-details"><summary>連携・最終父の操作</summary>'+syncNote+'<button type="button" class="secondary route-breed-link" id="filterFinalSire">最終父を候補欄で検索</button></details>';
  $('#closeRouteBridge').onclick=()=>card.remove();
  $('#filterFinalSire').onclick=()=>{
   const q=$('#stallionSearch');if(!q)return;
