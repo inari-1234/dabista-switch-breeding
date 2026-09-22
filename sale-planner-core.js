@@ -543,6 +543,37 @@
       }
       return{spst120:p120,spst130:p130};
     }
+    function broodmareFreedom(child){
+      const out={
+        population:stallions.length,safe:0,sp15st5:0,sp17st5:0,
+        speedCross:0,speedQualified:0,longCross:0,longQualified:0,
+        interesting:0,magnificent:0,perfect:0,elaborate:0,
+        maxSp:0,maxSt:0,maxSpSt:0
+      };
+      if(!child)return out;
+      for(const s of stallions){
+        const pair=engine.evaluate(s,child);if(!safe(pair))continue;
+        out.safe++;
+        const sp=val(pair.nitro?.sp),st=val(pair.nitro?.st);
+        const speed=!!speedCrossSummary(pair).has,long=!!crossEffectSummary(pair).longDistance;
+        const qualified=sp>=15&&st>=5;
+        if(qualified)out.sp15st5++;
+        if(sp>=17&&st>=5)out.sp17st5++;
+        if(speed)out.speedCross++;
+        if(speed&&qualified)out.speedQualified++;
+        if(long)out.longCross++;
+        if(long&&qualified)out.longQualified++;
+        if(pair.theory?.interesting)out.interesting++;
+        if(pair.theory?.magnificent)out.magnificent++;
+        if(pair.theory?.perfect)out.perfect++;
+        if(pair.elaborate?.effective)out.elaborate++;
+        out.maxSp=Math.max(out.maxSp,sp);out.maxSt=Math.max(out.maxSt,st);out.maxSpSt=Math.max(out.maxSpSt,sp+st);
+      }
+      return out;
+    }
+    function withRebuildFreedom(route){
+      return route?{...route,rebuildFreedom:broodmareFreedom(route.finalChild)}:route;
+    }
     function withPortfolio(route){
       return{...route,portfolio:combinedPortfolio(route.finalChild)};
     }
@@ -578,7 +609,7 @@
       unknownAbilityCount:broodmareStats.filter(x=>!abilityKnown(x)).length,
       cohorts:{spst120:cohort120.length,spst130:cohort130.length},
       mare,sire,mareInfo,statsForSire,evaluateDirectPair,createDirectPairIndex,iterateDirect,iterateTwo,iterateTwoFromDirect,iterateThirdPreview,iterateFourthPreview,
-      replay,expandRoute,createCollector,createFourthBridgeCollector,diversifiedPool,withPortfolio,portfolioPareto,
+      replay,expandRoute,createCollector,createFourthBridgeCollector,diversifiedPool,withPortfolio,portfolioPareto,broodmareFreedom,withRebuildFreedom,
       profileLabels:PROFILE_LABELS,profileCriteria:PROFILE_CRITERIA,goalLabels:GOAL_LABELS,goalOrder,
       abilityKnown,routeKey,compareProfile,compareFourthBridge
     };
