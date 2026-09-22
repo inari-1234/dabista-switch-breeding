@@ -287,7 +287,9 @@ function theoryText(pair){
   return a.length?a.join('・'):'追加理論なし';
 }
 function currentMareAssessment(){
-  return currentResolvedMare&&advisor?.mareAssessment?.(currentResolvedMare.name)||null;
+  const horse=selectedMareHorse(),ref=horse?.masterRef;
+  if(ref?.type!=='default-broodmare'||!ref.name)return null;
+  return advisor?.mareAssessment?.(ref.name)||null;
 }
 function currentAbilityKnown(){
   return !!currentMareAssessment()?.abilityKnown;
@@ -362,7 +364,7 @@ function renderNotice(resolved,index){
     info.textContent='牝馬を選ぶと、繁殖牝馬×父の共通配合エンジン評価を開始します。';
     return;
   }
-  const assessment=advisor?.mareAssessment?.(resolved.name)||null;
+  const assessment=currentMareAssessment();
   let ability='';
   if(!assessment){
     ability='<b>現在の母能力：</b>能力未評価（自家製／マスタ外）。血統将来性は評価可能。';
