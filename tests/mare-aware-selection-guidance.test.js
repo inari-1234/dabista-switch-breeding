@@ -66,6 +66,8 @@ function directSummary(name){
 const roseReason=advisor.goalMareReason('ローズティンテッド','arc',directSummary('ローズティンテッド'));
 assert.ok(roseReason.reasons.includes('強み：SP・PW'),'Rose Tinted reason must expose actual strengths');
 assert.ok(roseReason.reasons.some(x=>x.includes('相対調整：ST')&&x.includes('弱点扱いではない')),'Rose Tinted reason must distinguish relative adjustment from weakness');
+const eistArcReason=advisor.goalMareReason('エイスト','arc',directSummary('エイスト'));
+assert.notDeepStrictEqual(roseReason.reasons.slice(0,2),eistArcReason.reasons.slice(0,2),'same goal must expose mare-specific reasons when the mare changes');
 
 for(const mare of mareData.broodmares.filter(x=>advisor.mareAssessment(x.name)?.abilityKnown)){
   for(const goal of ['arc','bc','rebuild','stallion']){
