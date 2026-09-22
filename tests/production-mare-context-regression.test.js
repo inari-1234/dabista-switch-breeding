@@ -17,6 +17,16 @@ const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elab
 const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
 const advisor=reco.create({planner,broodmareStats:M});
 
+function topProduction(iter,assessment,limit=3){
+  const cmp=advisor.compareProductionForMare(assessment),list=[];
+  for(const r of iter){
+    let i=0;while(i<list.length&&cmp(list[i],r)<=0)i++;
+    if(list.length>=limit&&i>=limit)continue;
+    list.splice(i,0,r);if(list.length>limit)list.length=limit;
+  }
+  return list;
+}
+
 function fake({record='B',stable='B',sp=15,st=5,pw=1,multi=false}={}){
   return{
     sires:multi?['父1','父2']:['父1'],
@@ -63,8 +73,10 @@ for(const name of allMiddle){
   if(practical.length){
     allMiddleDirectWithPractical++;
     const top=advisor.productionContext(ranked[0],assessment);
+    const repeatable=practical.filter(r=>advisor.productionContext(r,assessment).stable!=='C');
     assert.ok(top.record==='A'||top.record==='B',name+' direct top must not be record C while practical candidates exist');
     assert.notStrictEqual(top.key,'longshot',name+' direct top must not be C/C longshot');
+    if(repeatable.length)assert.notStrictEqual(top.stable,'C',name+' direct top must keep Stable C in the upside lane while repeatable practical candidates exist');
   }
 }
 if(allMiddleDirectChecked<20)throw Error('middle-tier coverage unexpectedly small '+allMiddleDirectChecked);
@@ -84,16 +96,18 @@ for(const name of mediumNames){
     assert.notStrictEqual(p.key,'longshot',name+' direct top must not be C/C longshot');
   }
 
-  const col=planner.createCollector({topN:3,poolN:24});
-  for(const r of planner.iterateTwo(name))col.push(r);
-  const two=col.finish();
-  const source=two.shortlists.production;
-  const ranked=advisor.rankProductionRoutes(source,assessment,3);
-  const practical=source.filter(r=>advisor.productionContext(r,assessment).practical);
+  const twoRoutes=[...planner.iterateTwo(name)];
+  const ranked=topProduction(twoRoutes,assessment,3);
+  const practical=twoRoutes.filter(r=>advisor.productionContext(r,assessment).practical);
+  const repeatable=practical.filter(r=>advisor.productionContext(r,assessment).stable!=='C');
   if(practical.length){
     const p=advisor.productionContext(ranked[0],assessment);
     assert.ok(p.record==='A'||p.record==='B',name+' two-gen top must not be record C while practical candidates exist');
     assert.notStrictEqual(p.key,'longshot',name+' two-gen top must not be C/C longshot');
+    if(repeatable.length){
+      assert.notStrictEqual(p.stable,'C',name+' two-gen top must prefer Stable A/B main lane while repeatable practical candidates exist');
+      assert.ok(p.middleMain,name+' two-gen top must be in the middle-mare main lane');
+    }
   }
   actual.push({
     mare:name,
@@ -102,13 +116,13 @@ for(const name of mediumNames){
     directSires:directRanked[0]?.sires,
     twoTop:advisor.productionContext(ranked[0],assessment),
     twoSires:ranked[0]?.sires,
-    twoSource:source.length
+    twoSource:twoRoutes.length
   });
 }
 
 console.log(JSON.stringify({
   passed:true,
-  rule:'middle mares prefer practical A/B-record production candidates; C/C remains available as longshot; rebuild mares retain stable-C upside context',
+  rule:'middle mares prefer repeatable Stable A/B main-lane production routes across the full scanned generation; Stable C remains an upside lane; rebuild mares retain Stable-C upside context',
   synthetic:{middle:true,high:true,rebuild:true},
   coverage:{allMiddleDirectChecked,allMiddleDirectWithPractical},
   actual
