@@ -302,7 +302,9 @@ assert.ok(v27.includes('今の育成方針'),'mare strategy must be promoted as 
 assert.ok(v27.includes('.mare-tier{padding:7px 11px;font-size:14px'),'ability tier must be visually prominent rather than 8-9px metadata');
 assert.ok(v27.includes('tier-middle'),'middle-tier mares must have a distinct whole-card tone');
 assert.ok(v27.includes('tier-unknown'),'unknown ability must have a neutral whole-card tone');
-assert.ok(v27.includes('正式な推奨世代'),'pre-diagnosis note must distinguish itself from the formal generation diagnosis');
+const mareAdviceBlock=v27.match(/function renderMareAdvice\(\)\{[\s\S]*?\n\}\nfunction invalidateGeneration/)?.[0]||'';
+assert.ok(mareAdviceBlock&&!mareAdviceBlock.includes('推奨世代'),'mare summary must not masquerade as the formal generation recommendation');
+assert.ok(v27.includes('おすすめ配合世代を診断'),'formal generation diagnosis must remain a separate explicit UI action');
 assert.ok(v26.includes("signalMareContext('search-empty','')"),'empty search must invalidate mare/generation context');
 assert.ok(v26.includes("setPlannerMare(sel.value,'search-auto')"),'search-driven mare replacement must reset generation state');
 assert.ok(v26.includes("signalMareContext('search-restore',keep)"),'mare advice must refresh when a previously empty search is cleared');
