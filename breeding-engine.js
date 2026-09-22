@@ -23,11 +23,13 @@ host.ready=(async()=>{
  function resolveHorse(h,stack=new Set()){
   if(!h)return null;
   if(typeof h==='string')return master(h)||resolveHorse(findDbHorse(h),stack);
-  const refName=h.masterRef?.name||h.name,m=master(refName);
-  if(m)return m;
+  const refName=h.masterRef?.name||'',refMaster=refName?master(refName):null;
+  if(refMaster)return refMaster;
   const id=h.id||h.name||'';if(id&&stack.has(id))return null;const next=new Set(stack);if(id)next.add(id);
   const anc=Array.isArray(h.ancestor15)&&h.ancestor15.length===15?[...h.ancestor15]:null;
   const directOm=String(h.omoshiroCode||h.omoshiro||''),directMg=String(h.migotoCode||h.migoto||'');
+  const hasFarmIdentity=!!(anc||directOm||directMg||h.sire||h.dam);
+  if(!hasFarmIdentity){const legacyMaster=master(h.name);if(legacyMaster)return legacyMaster;}
   if(anc&&directOm.length===4)return{name:h.name,kind:'farm-horse',system:h.system||'',ancestor:anc,omoshiro:directOm,migoto:directMg,omoshiroSystems:core.decodeCode(directOm),migotoSystems:core.decodeCode(directMg),theorySource:h.theorySource||'farm-stored-code'};
   if(h.sire&&h.dam){
     const sire=master(h.sire)||resolveHorse(findDbHorse(h.sire),next),mare=master(h.dam)||resolveHorse(findDbHorse(h.dam),next);

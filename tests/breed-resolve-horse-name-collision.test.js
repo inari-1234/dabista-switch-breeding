@@ -1,0 +1,62 @@
+'use strict';
+const fs=require('fs');
+const path=require('path');
+
+global.window=global;
+global.location={href:'https://example.invalid/'};
+global.APP_ERRORS=[];
+global.DABISTA_BREEDING_CORE=require('../breeding-core.js');
+
+const clone=x=>JSON.parse(JSON.stringify(x));
+const dataRoot=path.resolve(__dirname,'..');
+global.fetch=async input=>{
+  const u=new URL(String(input),global.location.href);
+  const rel=u.pathname.replace(/^\//,'');
+  const full=path.join(dataRoot,rel);
+  if(!fs.existsSync(full))return{ok:false,status:404,json:async()=>({})};
+  return{ok:true,status:200,json:async()=>JSON.parse(fs.readFileSync(full,'utf8'))};
+};
+
+const customAncestor=['CustomSire','A2','A3','A4','A5','A6','A7','A8','A9','A10','A11','A12','A13','A14','A15'];
+const custom={
+  id:'custom-eist',
+  name:'エイスト',
+  sex:'牝',
+  ancestor15:[...customAncestor],
+  omoshiroCode:'',
+  migotoCode:''
+};
+const legacy={id:'legacy-eist',name:'エイスト',sex:'牝'};
+const tagged={
+  id:'tagged-eist',
+  name:'別名エイスト',
+  sex:'牝',
+  masterRef:{type:'default-broodmare',name:'エイスト'}
+};
+global.db={horses:[custom,legacy,tagged]};
+
+require('../breeding-engine.js');
+
+(async()=>{
+  const e=await global.DABISTA_BREEDING_ENGINE.ready;
+  const a=e.resolveHorse(custom);
+  if(!a||a.kind!=='farm-horse')throw Error('explicit farm pedigree was replaced by same-name master '+JSON.stringify(a));
+  if(JSON.stringify(a.ancestor)!==JSON.stringify(customAncestor))throw Error('explicit farm ancestor not preserved');
+
+  const b=e.resolveHorse(legacy);
+  if(!b||b.name!=='エイスト'||b.theorySource!=='switch-master')throw Error('legacy name-only master fallback lost '+JSON.stringify(b));
+
+  const c=e.resolveHorse(tagged);
+  if(!c||c.name!=='エイスト'||c.theorySource!=='switch-master')throw Error('masterRef resolution lost '+JSON.stringify(c));
+
+  const master=e.master('エイスト');
+  if(!master||JSON.stringify(a.ancestor)===JSON.stringify(master.ancestor))throw Error('collision fixture did not separate farm/master pedigree');
+
+  console.log(JSON.stringify({
+    passed:true,
+    method:'breeding-engine explicit farm identity beats same-name master',
+    custom:{kind:a.kind,firstAncestor:a.ancestor[0]},
+    legacyFallback:{name:b.name,source:b.theorySource},
+    masterRef:{name:c.name,source:c.theorySource}
+  },null,2));
+})().catch(e=>{console.error(e);process.exit(1)});
