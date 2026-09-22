@@ -45,4 +45,11 @@ const sameTierSameRecordStableC=route({sp:19,st:7,record:'B',stable:'C',material
 assert.strictEqual(winner(sameTierSameRecordStableC,sameTierSameRecordHighSp),sameTierSameRecordHighSp,
  'Stability context must not outrank SP/ST quality inside the same BC tier and sire-record grade');
 
+const bcFitB=route({sp:18,st:6,record:'B',materialSpeed:1});
+const bcFitC=route({sp:18,st:6,record:'C',materialSpeed:1});
+assert.strictEqual(advisor.goalFit(bcFitB,'bc').key,'strong',
+ 'BC SP18/ST5+ with effective SP support and record B+ is a strong fit');
+assert.strictEqual(advisor.goalFit(bcFitC,'bc').key,'conditional',
+ 'BC SP/ST and SP support must not hide a record-C final sire');
+
 console.log(JSON.stringify({passed:true,method:'bc-goal-ranking-regression'}));
