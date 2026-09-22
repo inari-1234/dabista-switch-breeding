@@ -20,6 +20,9 @@ need(ui,'activePlanner.iterateTwoFromDirect(row.route)','fixed first-sire second
 need(ui,'activeAdvisor.materialUpgradeReasons(row.route,r,goal,row.assessment)','goal-specific next-generation gate');
 need(ui,'次代候補：','next-generation candidate label');
 need(ui,'次代延長根拠：','no-upgrade next-generation label');
+need(ui,'function rowHtml(row,goal,includeNext=false)','lazy/capped next-generation row rendering');
+need(ui,'rowHtml(r,goal,i<4)','confirmed reverse rows cap next-generation scans');
+need(ui,'rowHtml(r,goal,i<3)','provisional reverse rows cap next-generation scans');
 need(ui,'厳格条件一致（母能力既知）','confirmed mare section');
 need(ui,'血統候補（能力確認待ち・父実績条件外を含む）','provisional mare section');
 need(ui,'能力未判明馬や父実績未登録を厳格一致と同じ扱いにせず','uncertain/confirmed separation');
