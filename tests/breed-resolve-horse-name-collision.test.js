@@ -52,11 +52,20 @@ require('../breeding-engine.js');
   const master=e.master('エイスト');
   if(!master||JSON.stringify(a.ancestor)===JSON.stringify(master.ancestor))throw Error('collision fixture did not separate farm/master pedigree');
 
+  const restored={
+    id:'restored-mare',name:'復元牝馬',sex:'牝',
+    ancestor15:[...customAncestor],omoshiroCode:master.omoshiro,migotoCode:master.migoto
+  };
+  global.db={horses:[restored]};
+  const afterRestore=e.resolveHorse('復元牝馬');
+  if(!afterRestore||afterRestore.kind!=='farm-horse'||afterRestore.name!=='復元牝馬')throw Error('engine kept stale pre-restore db reference '+JSON.stringify(afterRestore));
+
   console.log(JSON.stringify({
     passed:true,
     method:'breeding-engine explicit farm identity beats same-name master',
     custom:{kind:a.kind,firstAncestor:a.ancestor[0]},
     legacyFallback:{name:b.name,source:b.theorySource},
-    masterRef:{name:c.name,source:c.theorySource}
+    masterRef:{name:c.name,source:c.theorySource},
+    restoreRebind:{name:afterRestore.name,source:afterRestore.theorySource}
   },null,2));
 })().catch(e=>{console.error(e);process.exit(1)});
