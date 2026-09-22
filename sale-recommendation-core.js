@@ -76,7 +76,7 @@
       if(!a)return null;
       if(!a.abilityKnown)return{
         id:'unknown',label:'能力未判明型',priority:'血統・ニトロを先に整える',
-        preserve:[],improve:[],note:'母能力を0として扱わず、実馬で能力を確認してから選抜基準を絞ります。'
+        preserve:[],improve:[],strengths:[],relativeAdjust:[],note:'母能力を0として扱わず、実馬で能力を確認してから選抜基準を絞ります。'
       };
       const r=a.ranks,s=a.stats,improve=[],preserve=[];
       if(r.sp.topPercent<=30)preserve.push('SP'); else improve.push('SP');
@@ -103,8 +103,20 @@
       if(id==='elite-complete'){preserve.splice(0,preserve.length,'SP','ST','PW');improve.splice(0,improve.length)}
       if(id==='elite-st-sp'){preserve.splice(0,preserve.length,'ST','PW');improve.splice(0,improve.length,'SP')}
       if(id==='elite-sp-st'){preserve.splice(0,preserve.length,'SP','PW');improve.splice(0,improve.length,'ST')}
+      const rankedAxes=[
+        {axis:'SP',pct:r.sp.topPercent},
+        {axis:'ST',pct:r.st.topPercent},
+        {axis:'PW',pct:r.pw.topPercent}
+      ];
+      const strengths=rankedAxes.filter(x=>x.pct<=20).map(x=>x.axis);
+      const relativeAdjust=[];
+      if(!improve.length){
+        const ordered=[...rankedAxes].sort((x,y)=>y.pct-x.pct);
+        const weakest=ordered[0],bestPct=Math.min(...rankedAxes.map(x=>x.pct));
+        if(weakest.pct>=20&&weakest.pct-bestPct>=10)relativeAdjust.push(weakest.axis);
+      }
       return{
-        id,label,priority,preserve,improve,
+        id,label,priority,preserve,improve,strengths,relativeAdjust,
         stats:{sp:val(s.sp),st:val(s.st),pw:val(s.pw),spst:val(s.sp)+val(s.st)},
         ranks:r,
         note:(id==='elite-complete'||id==='elite-preserve')
@@ -942,9 +954,16 @@
 
     function directUseLabels(assessment,summary){
       if(!assessment)return{};
-      if(!assessment.abilityKnown)return{
-        arc:'能力評価保留',bc:'能力評価保留',rebuild:'能力評価保留',stallion:'血統評価可能'
-      };
+      if(!assessment.abilityKnown){
+        const arcBlood=(val(summary.arcSupportedA)+val(summary.arcSupportedB))>0
+          ?'血統：直仔基準あり（母能力確認）'
+          :val(summary.arcQuantitative)>0?'血統：SP/ST候補あり・根拠確認':'血統：直仔基準未達';
+        const bcBlood=val(summary.sp17st5)>0
+          ?'血統：SP17/ST5候補あり（SP補強経路確認）'
+          :val(summary.maxSp)>=15?'血統：SP側は伸びる・BC基準未達':'血統：BC基準未達';
+        const rebuildBlood=val(summary.sp15st5)>0?'血統：再建ライン候補あり':'血統：再建ライン未達';
+        return{arc:arcBlood,bc:bcBlood,rebuild:rebuildBlood,stallion:'血統：世代別の汎用性を比較'};
+      }
       const p=assessment.ranks,high=p.spst.topPercent<=25,mid=p.spst.topPercent<=50,spHigh=p.sp.topPercent<=25;
       const supportedA=val(summary.arcSupportedA)>0,supportedB=val(summary.arcSupportedB)>0,supportedC=val(summary.arcSupportedC)>0;
       const uncertainA=val(summary.arcUncertainA)>0,uncertainB=val(summary.arcUncertainB)>0,uncertainC=val(summary.arcUncertainC)>0;
@@ -967,37 +986,43 @@
     function goalMareReason(name,goal='arc',summary){
       const a=mareAssessment(name),strategy=mareStrategy(name),s=summary||emptySummary('direct');
       if(!a)return{goal,key:'unavailable',headline:'牝馬評価を取得できません',detail:'',reasons:[]};
-      const use=directUseLabels(a,s),preserve=(strategy?.preserve||[]).join('・')||'強み',improve=(strategy?.improve||[]).join('・')||'不足軸';
+      const use=directUseLabels(a,s);
+      const preserve=(strategy?.preserve||[]).join('・')||'維持対象';
+      const strengths=(strategy?.strengths||[]).join('・')||preserve;
+      const improveList=strategy?.improve||[],relativeList=strategy?.relativeAdjust||[];
+      const adjustment=improveList.length
+        ?'補強：'+improveList.join('・')
+        :relativeList.length?'相対調整：'+relativeList.join('・')+'（弱点扱いではない）':'明確な不足軸なし';
       const pre=use?.[goal]||'評価保留',reasons=[];
       if(goal==='arc'){
         if(!a.abilityKnown){
-          reasons.push('能力未判明なのでSP/ST不足とは決めつけない','SP14/ST6・距離根拠・父実績を血統側で確認');
+          reasons.push('直仔血統：'+pre,'能力未判明なのでSP/ST不足とは決めつけない');
           return{goal,key:'arc',headline:'凱旋門は母能力を仮定せず、SP/STと2400m側の根拠で判断',detail:'直仔事前評価：'+pre,reasons};
         }
-        reasons.push('維持：'+preserve,'補強：'+improve,'直仔事前評価：'+pre);
+        reasons.push('強み：'+strengths,adjustment,'直仔事前評価：'+pre);
         return{goal,key:'arc',headline:'凱旋門はSP/STを守り、距離根拠を持つ配合へつなぐ',detail:'最終父の距離適性・STニトロ・長距離クロスを分けて確認します。',reasons};
       }
       if(goal==='bc'){
         if(!a.abilityKnown){
-          reasons.push('能力未判明なのでSP不足とは決めつけない','SP17/ST5とSP系補強経路を血統側で確認');
+          reasons.push('直仔血統：'+pre,'能力未判明なのでSP不足とは決めつけない');
           return{goal,key:'bc',headline:'BCは母能力を仮定せず、SP上限とSP補強経路で判断',detail:'直仔事前評価：'+pre,reasons};
         }
-        reasons.push('SP上限を優先','維持：'+preserve,'直仔事前評価：'+pre);
+        reasons.push('強み：'+strengths,adjustment,'直仔事前評価：'+pre);
         return{goal,key:'bc',headline:'BCはSP上限と速力・短距離クロスの経路を優先',detail:'STを極端に落とさず、SP17/ST5以上へ届く血統を比較します。',reasons};
       }
       if(goal==='rebuild'){
         if(!a.abilityKnown){
-          reasons.push('能力値0を低能力として扱わない','ニトロ・有効クロス・次代の使いやすさを確認');
+          reasons.push('直仔血統：'+pre,'能力値0を低能力として扱わない');
           return{goal,key:'rebuild',headline:'繁殖再建は能力未判明のままでも、母系の血統素材価値を比較できる',detail:'直仔事前評価：'+pre,reasons};
         }
-        reasons.push('次代へ残す強み：'+preserve,'補強：'+improve,'直仔事前評価：'+pre);
+        reasons.push('次代へ残す強み：'+strengths,adjustment,'直仔事前評価：'+pre);
         return{goal,key:'rebuild',headline:'繁殖再建は完成馬より、次代で使いやすい母系を作る',detail:'母能力を落とさず、ニトロ・有効クロス・配合理論を次代へ残せるかを見ます。',reasons};
       }
       if(!a.abilityKnown){
         reasons.push('能力値は未判明のまま保持','将来種牡馬として使える血統の広さを世代別に比較');
         return{goal:'stallion',key:'stallion',headline:'自家製種牡馬は母能力より、将来の血統汎用性を別軸で確認',detail:'能力推定値は作らず、世代診断のportfolioで判断します。',reasons};
       }
-      reasons.push('母の強み：'+preserve,'将来の血統汎用性を世代別に比較','直仔だけで完成扱いしない');
+      reasons.push('母の強み：'+strengths,adjustment,'将来の血統汎用性を世代別に比較');
       return{goal:'stallion',key:'stallion',headline:'自家製種牡馬は産駒能力だけでなく、後代で使える血統汎用性を作る',detail:'SP/STと血統の広さを分離し、世代診断のportfolioで比較します。',reasons};
     }
 
@@ -1081,10 +1106,18 @@
       }
       if(recommended>1)reasons.push('中間牝馬のSP/ST/PWは出生前に仮定せず、能力上位牝馬を実際に選抜できた場合だけ次世代へ進みます。');
       if(assessment&&!assessment.abilityKnown)reasons.push('起点牝馬の繁殖能力が未判明なので、母能力を含む総合判断は保留です。');
+      const selectedRoute=recommended===4?r4:recommended===3?r3:recommended===2?r2:r1;
+      const selectedFit=goal==='stallion'?null:goalFit(selectedRoute,goal);
+      const stageLabel=recommended===1?'直仔':recommended+'代';
+      const unknownGenerationLabel=selectedFit?.key==='below'
+        ?'血統上は'+stageLabel+'基準未達（能力確認前提）'
+        :selectedFit?.key==='conditional'
+          ?'血統上は'+stageLabel+'条件付き（能力/根拠確認前提）'
+          :'血統上は'+stageLabel+'候補（能力確認前提）';
       return{
         generation:recommended,
         label:assessment&&!assessment.abilityKnown
-          ?(recommended===1?'血統上は直仔候補（能力確認前提）':recommended===2?'血統上2代候補（能力確認前提）':recommended===3?'血統上3代候補（能力確認前提）':'血統上4代候補（能力確認前提）')
+          ?unknownGenerationLabel
           :(recommended===1?'直仔推奨':recommended===2?'2代推奨':recommended===3?'3代候補（条件付き）':'4代候補（条件付き）'),
         conditional,
         reasons,
