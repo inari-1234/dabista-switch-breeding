@@ -1,4 +1,4 @@
-name: Benchmark third-generation bridge collector cost
+name: Benchmark breeding portfolio cost
 
 on:
   push:
@@ -6,8 +6,7 @@ on:
       - candidate/sale-mare-potential-ui
     paths:
       - '.github/workflows/benchmark-breed-fourth-core-cost.yml'
-      - 'tests/breed-third-bridge-collector-cost-diagnostic.test.js'
-      - 'sale-planner-core.js'
+      - 'tests/breed-portfolio-cost-diagnostic.test.js'
   workflow_dispatch:
 
 permissions:
@@ -20,8 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Static syntax
-        run: node --check tests/breed-third-bridge-collector-cost-diagnostic.test.js
-      - name: Third-generation bridge collector cost
-        run: node tests/breed-third-bridge-collector-cost-diagnostic.test.js
-      - name: Exact3 and compact4 stage timing
-        run: node tests/breed-exact3-stage-timing-diagnostic.test.js
+        run: node --check tests/breed-portfolio-cost-diagnostic.test.js
+      - name: Portfolio cost
+        run: node tests/breed-portfolio-cost-diagnostic.test.js
