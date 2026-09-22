@@ -14,70 +14,79 @@ const kd=(IV.samples||[]).filter(x=>x?.sire&&x?.mare&&x?.ours?.kc!==x?.oracle?.k
 const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elaborateKnownDifferences:kd});
 const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
 
-function compactEntry(x){
-  return{
-    sire:x.sire?.name||'',
-    safe:!!x.safe,
-    pair:x.pair?{...x.pair,child:null}:null,
-    currentRoute:x.route?{...x.route,finalChild:null}:null
-  };
-}
 function profileKeys(routes){
   const c=planner.createCollector({topN:5,poolN:24});
   for(const r of routes)if(r)c.push(r);
   const f=c.finish();
   return Object.fromEntries(Object.entries(f.profiles).map(([k,v])=>[k,v.map(planner.routeKey)]));
 }
-function build(mareInput){
-  const started=Date.now(),full=[],compact=[];
-  for(const s of T.stallions){
-    const x=planner.evaluateDirectPair(mareInput,s.name);
-    full.push(x);compact.push(compactEntry(x));
+function manualFullEntries(mareInput){
+  const out=[];
+  for(const s of T.stallions)out.push(planner.evaluateDirectPair(mareInput,s.name));
+  return out;
+}
+function validate(mareInput){
+  const name=typeof mareInput==='string'?mareInput:mareInput.name;
+  const started=Date.now(),index=planner.createDirectPairIndex(mareInput);
+  if(index.entries.length!==176)throw Error(name+' entries '+index.entries.length);
+  if(index.safeCount+index.unsafeCount!==176)throw Error(name+' count total');
+  if(index.currentRoutes.length!==index.safeCount)throw Error(name+' route/safe count');
+  if(index.entries.some(x=>x.pair?.child!==null))throw Error(name+' pair child retained');
+  if(index.entries.some(x=>x.currentRoute?.finalChild!==null))throw Error(name+' route child retained');
+  if(index.entries.some(x=>x.safe&&!x.currentRoute))throw Error(name+' safe entry lacks current route');
+  if(index.entries.some(x=>!x.safe&&x.currentRoute))throw Error(name+' unsafe entry leaked route');
+  if(index.entries.some(x=>!x.pair))throw Error(name+' valid sire entry lacks pair');
+
+  const canonical=[...planner.iterateDirect(mareInput)];
+  const a=profileKeys(canonical),b=profileKeys(index.currentRoutes);
+  if(JSON.stringify(a)!==JSON.stringify(b))throw Error(name+' profile ranking changed');
+
+  const stay=index.get(' ステイゴールド ');
+  if(!stay||stay.sire!=='ステイゴールド')throw Error(name+' normalized get failed');
+  if(index.get('存在しない種牡馬')!==null)throw Error(name+' missing get must return null');
+
+  // Selected sire can be re-materialized with child pedigree only when needed.
+  const selected=index.entries.find(x=>x.safe);
+  if(selected){
+    const materialized=planner.evaluateDirectPair(index.mare,selected.sire);
+    if(!materialized.route?.finalChild||!materialized.pair?.child)throw Error(name+' selected route did not re-materialize child');
+    if(planner.routeKey(materialized.route)!==planner.routeKey(selected.currentRoute))throw Error(name+' re-materialized route key changed');
   }
-  const fullRoutes=full.filter(x=>x.route).map(x=>x.route);
-  const compactRoutes=compact.filter(x=>x.currentRoute).map(x=>x.currentRoute);
-  const a=profileKeys(fullRoutes),b=profileKeys(compactRoutes);
-  if(JSON.stringify(a)!==JSON.stringify(b))throw Error('ranking changed after child stripping '+(mareInput.name||mareInput));
+
+  const full=manualFullEntries(mareInput);
+  const fullBytes=Buffer.byteLength(JSON.stringify(full));
+  const compactBytes=Buffer.byteLength(JSON.stringify(index.entries));
+  if(!(compactBytes<fullBytes))throw Error(name+' compact index did not shrink');
+
   return{
-    mare:typeof mareInput==='string'?mareInput:mareInput.name,
-    entries:compact.length,
-    safe:compact.filter(x=>x.safe).length,
-    unsafe:compact.filter(x=>!x.safe).length,
-    runtimeMs:Date.now()-started,
-    fullBytes:Buffer.byteLength(JSON.stringify(full)),
-    compactBytes:Buffer.byteLength(JSON.stringify(compact)),
-    ranking:a
+    mare:name,entries:index.entries.length,safe:index.safeCount,unsafe:index.unsafeCount,
+    runtimeMs:Date.now()-started,fullBytes,compactBytes,
+    savedPct:Math.round((1-compactBytes/fullBytes)*1000)/10
   };
 }
 
 const rows=[];
-for(const name of ['エイスト','スプリングスイーツ','フィットレオタード','ワカヒルメ','アマリン'])rows.push(build(name));
+for(const name of ['エイスト','スプリングスイーツ','フィットレオタード','ワカヒルメ','アマリン'])rows.push(validate(name));
 
 const eist=planner.mare('エイスト'),gp=planner.sire('グランプリボス');
 const derived=engine.deriveChild(gp,eist,'自家製テスト牝馬');
 if(!derived||derived.ancestor?.length!==15)throw Error('derived mare fixture missing');
-rows.push(build(derived));
+rows.push(validate(derived));
+if(!rows.some(x=>x.unsafe>0))throw Error('cases did not preserve any dangerous pairs');
 
-for(const r of rows){
-  if(r.entries!==176)throw Error(r.mare+' entries '+r.entries);
-  if(!(r.compactBytes<r.fullBytes))throw Error(r.mare+' compact index did not shrink');
-}
-if(!rows.some(x=>x.unsafe>0))throw Error('diagnostic cases did not preserve any dangerous current pairs');
+const invalid=planner.createDirectPairIndex('存在しない牝馬');
+if(invalid.mare!==null||invalid.entries.length||invalid.currentRoutes.length||invalid.safeCount||invalid.unsafeCount||invalid.get('ステイゴールド')!==null)throw Error('invalid mare index contract');
 
-// Count contract for one complete current-pair index.
+// Evaluation count: one common-engine evaluation per domestic sire.
 let calls=0;
 const counted={...engine,evaluate:(s,m)=>{calls++;return engine.evaluate(s,m)}};
 const cp=sale.create({engine:counted,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
-for(const s of T.stallions)cp.evaluateDirectPair('エイスト',s.name);
-if(calls!==176)throw Error('pair index evaluate count '+calls);
+const countedIndex=cp.createDirectPairIndex('エイスト');
+if(calls!==176||countedIndex.entries.length!==176)throw Error('pair index evaluate count '+calls);
 
 console.log(JSON.stringify({
   passed:true,
   evaluationCalls:calls,
-  rows:rows.map(r=>({
-    mare:r.mare,entries:r.entries,safe:r.safe,unsafe:r.unsafe,runtimeMs:r.runtimeMs,
-    fullBytes:r.fullBytes,compactBytes:r.compactBytes,
-    savedPct:Math.round((1-r.compactBytes/r.fullBytes)*1000)/10
-  })),
-  conclusion:'A 176-entry current-pair index can preserve dangerous pairs and all current five-profile rankings while omitting child pedigrees; custom derived mares are supported.'
+  rows,
+  conclusion:'createDirectPairIndex performs exactly one evaluation per domestic sire, preserves dangerous-pair information and five-profile rankings, omits child pedigrees from persistent entries, and supports derived homebred mares.'
 },null,2));
