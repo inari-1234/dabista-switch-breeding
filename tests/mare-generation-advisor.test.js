@@ -86,6 +86,14 @@ const rebuildStrongComp=gateRoute({sp:15,st:10,record:'B',materialSpeed:true});
 assert.strictEqual(advisor.rebuildUpgradeGate(rebuildPrev,rebuildWeakComp).allowed,false,'rebuild A→B must not pass on threshold gain alone');
 assert.strictEqual(advisor.rebuildUpgradeGate(rebuildPrev,rebuildStrongComp).allowed,true,'rebuild A→B may pass with multiple independent compensation signals');
 
+const unknownBelowRec=advisor.recommendGeneration({
+  goal:'arc',
+  assessment:unknown,
+  generations:{1:{summary:{bestRoute:gateRoute({sp:8,st:14,record:'A',maxD:2600})}}}
+});
+assert.strictEqual(unknownBelowRec.generation,1);
+assert.strictEqual(unknownBelowRec.label,'血統上は直仔基準未達（能力確認前提）','unknown mare must not be called a direct candidate when the selected bloodline route misses the Arc threshold');
+
 const goal='arc',name='エイスト';
 const g1=scan(planner.iterateDirect(name),goal,{keep:true});
 const g2=scan(planner.iterateTwo(name),goal);
