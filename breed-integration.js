@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 
-const db=window.db;
+let db=window.db;
 if(!db)return;
 
 const $=s=>document.querySelector(s);
@@ -38,8 +38,13 @@ const pairCache=new Map();
 const continuationCache=new Map();
 const pending=new Map();
 
-db.breedPlanner=db.breedPlanner||{};
-db.breedPlanner.category=PROFILES.includes(db.breedPlanner.category)?db.breedPlanner.category:'production';
+function syncDb(){
+  db=window.db||db;
+  db.breedPlanner=db.breedPlanner||{};
+  db.breedPlanner.category=PROFILES.includes(db.breedPlanner.category)?db.breedPlanner.category:'production';
+  return db;
+}
+syncDb();
 
 function canonicalGoal(v){
   return GOAL_ALIAS[String(v||'')]||'arc';
@@ -71,6 +76,7 @@ function transientMare(){
   return h?.sex==='牝'?h:null;
 }
 function mareOptions(){
+  syncDb();
   const saved=(db.horses||[]).filter(h=>h.sex==='牝').map(h=>'<option value="'+esc(h.id)+'">'+esc(h.name)+'</option>').join('');
   const t=transientMare();
   return (t?'<option value="'+esc(t.id)+'">'+esc(t.name)+'（セリ設計・一時）</option>':'')+saved;
@@ -323,6 +329,7 @@ function renderNotice(resolved,index){
     '<br><span class="muted">現在能力・現在Pair・2～4代の血統将来性・目的適合は別々に表示します。3代は固定初手父で全探索、4代は条件付きcompact bridgeです。</span>';
 }
 function renderBreed(){
+  syncDb();
   populateMares();
   ensureControls();
   const box=$('#breedCandidates');
