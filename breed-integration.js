@@ -34,6 +34,8 @@ let currentResolvedMare=null;
 let currentPairIndex=null;
 let epoch=0;
 let activeSire='';
+let plannerPoolFingerprint='uninitialized';
+let directPortfolioCache=new WeakMap();
 const pairCache=new Map();
 const continuationCache=new Map();
 const pending=new Map();
@@ -64,6 +66,71 @@ function canonicalGoal(v){
 }
 function norm(v){
   return String(v??'').normalize('NFKC').trim();
+}
+function poolKey(v){
+  return engine?.core?.key?.(v)||norm(v).replace(/[\s・･]/g,'').toLowerCase();
+}
+function farmSirePool(){
+  if(!engine)return{stallions:[],stats:[],fingerprint:'none'};
+  const byName=new Map(),statsByName=new Map(),identity=[];
+  for(const h of db.horses||[]){
+    if(h?.role!=='stallion'&&h?.role!=='sire-candidate')continue;
+    const r=engine.resolveHorse?.(h);
+    if(!r||!Array.isArray(r.ancestor)||r.ancestor.length!==15)continue;
+    const name=norm(h.name||r.name),k=poolKey(name);
+    const record={
+      ...r,name,kind:'farm-stallion',
+      ancestor:[...r.ancestor],
+      omoshiro:String(r.omoshiro||r.omoshiroCode||''),
+      migoto:String(r.migoto||r.migotoCode||'')
+    };
+    const stats={
+      name,
+      record:String(h.record||'-'),guts:String(h.guts||'-'),stable:String(h.stable||'-'),
+      minD:Number(h.minD)||0,maxD:Number(h.maxD)||0,price:0,source:'牧場DB',farm:true
+    };
+    byName.set(k,record);statsByName.set(k,stats);
+    identity.push([k,record.ancestor,record.omoshiro,record.migoto,stats.record,stats.guts,stats.stable,stats.minD,stats.maxD]);
+  }
+  identity.sort((a,b)=>String(a[0]).localeCompare(String(b[0]),'ja'));
+  return{stallions:[...byName.values()],stats:[...statsByName.values()],fingerprint:JSON.stringify(identity)};
+}
+function mergeNamed(base,extra){
+  const m=new Map();
+  for(const x of base||[])if(x?.name)m.set(poolKey(x.name),x);
+  for(const x of extra||[])if(x?.name)m.set(poolKey(x.name),x);
+  return[...m.values()];
+}
+function installPlanner(pool=farmSirePool(),invalidate=false){
+  const stallions=mergeNamed(engine.domesticStallions(),pool.stallions);
+  const stallionStats=mergeNamed(engine.stallionData.stallions||[],pool.stats);
+  planner=window.DABISTA_SALE_PLANNER_CORE.create({
+    engine:engine.core,
+    stallions,stallionStats,
+    broodmares:engine.broodmares(),
+    broodmareStats:engine.mareData.broodmares||[]
+  });
+  advisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({
+    planner,
+    broodmareStats:engine.mareData.broodmares||[]
+  });
+  plannerPoolFingerprint=pool.fingerprint;
+  window.DABISTA_BREED_FUTURE.planner=planner;
+  window.DABISTA_BREED_FUTURE.advisor=advisor;
+  window.DABISTA_BREED_FUTURE.ownedSireCount=pool.stallions.length;
+  if(invalidate){
+    currentPairIndex=null;activeSire='';directPortfolioCache=new WeakMap();
+    pairCache.clear();continuationCache.clear();clearFutureOverview();epoch++;
+    for(const token of pending.values())token.cancelled=true;
+    pending.clear();
+  }
+  return{stallionCount:stallions.length,ownedSireCount:pool.stallions.length};
+}
+function ensurePlannerFresh(){
+  const pool=farmSirePool();
+  if(planner&&pool.fingerprint===plannerPoolFingerprint)return false;
+  installPlanner(pool,true);
+  return true;
 }
 function mareBloodlineFingerprint(m){
   if(!m)return 'none';
@@ -231,8 +298,30 @@ function getPairIndex(resolved,fp){
   if(cached)return cached;
   return lruSet(pairCache,k,planner.createDirectPairIndex(resolved),PAIR_CACHE_LIMIT);
 }
+function directSirePortfolio(entry){
+  const r=entry?.currentRoute;
+  if(!r)return null;
+  if(directPortfolioCache.has(r))return directPortfolioCache.get(r);
+  const p=planner.withPortfolio(r)?.portfolio||null;
+  directPortfolioCache.set(r,p);
+  return p;
+}
+function portfolioVector(p){
+  const a=p?.spst120||{},b=p?.spst130||{};
+  return[
+    Number(a.sp17st5)||0,Number(a.sp15st5)||0,Number(a.safe)||0,
+    Number(b.sp17st5)||0,Number(b.sp15st5)||0,
+    Number(a.maxSpSt)||0,Number(a.maxSp)||0,
+    Number(a.magnificent)||0,Number(a.perfect)||0,Number(a.elaborate)||0
+  ];
+}
+function compareSirePortfolio(a,b){
+  const A=portfolioVector(directSirePortfolio(a)),B=portfolioVector(directSirePortfolio(b));
+  for(let i=0;i<Math.max(A.length,B.length);i++){const d=(B[i]||0)-(A[i]||0);if(d)return d}
+  return planner.compareProfile('sire')(a.currentRoute,b.currentRoute)||a.sire.localeCompare(b.sire,'ja');
+}
 function compareRoutes(profile,a,b){
-  if(profile==='sire')return 0;
+  if(profile==='sire')return compareSirePortfolio(a,b);
   if(profile==='production'){
     const assessment=currentMareAssessment();
     if(assessment&&advisor?.compareProductionForMare)return advisor.compareProductionForMare(assessment)(a.currentRoute,b.currentRoute);
@@ -261,8 +350,7 @@ function filteredEntries(index,profile,q){
   };
   let ranked=safe.filter(filterPair);
   if(profile==='speedCross')ranked=ranked.filter(e=>!!e.currentRoute?.final?.speedCross?.has);
-  if(profile==='sire')ranked=[...ranked].sort((a,b)=>a.sire.localeCompare(b.sire,'ja'));
-  else ranked=[...ranked].sort((a,b)=>compareRoutes(profile,a,b));
+  ranked=[...ranked].sort((a,b)=>compareRoutes(profile,a,b));
   if(q)ranked=ranked.filter(e=>e.sire.toLowerCase().includes(q));
   const unsafeFiltered=q?unsafe.filter(e=>e.sire.toLowerCase().includes(q)):unsafe;
   return{ranked,unsafe:unsafeFiltered};
@@ -280,8 +368,17 @@ function theoryText(pair){
 }
 function currentMareAssessment(){
   const horse=selectedMareHorse(),ref=horse?.masterRef;
-  if(ref?.type!=='default-broodmare'||!ref.name)return null;
-  return advisor?.mareAssessment?.(ref.name)||null;
+  if(ref?.type==='default-broodmare'&&ref.name)return advisor?.mareAssessment?.(ref.name)||null;
+  if(!horse||horse.sex!=='牝')return null;
+  const real=window.horseScore?.(horse.id)||null;
+  return{
+    name:horse.name,abilityKnown:false,stats:null,tier:'実馬確認中',archetype:'自家製牝馬',ranks:null,
+    realEvidence:{
+      minD:Number(horse.minD)||0,maxD:Number(horse.maxD)||0,
+      raceCount:Number(real?.n)||0,mark4:Number(real?.a)||0,mark5:Number(real?.b)||0,wins:Number(real?.wins)||0
+    },
+    note:'自家製牝馬の繁殖SP/ST/PWは推定せず、実馬の距離・印・戦績を補助根拠として分離します。'
+  };
 }
 function currentAbilityKnown(){
   return !!currentMareAssessment()?.abilityKnown;
@@ -343,9 +440,14 @@ function renderCard(entry,rank,profile,goal){
   const displayHeadline=!isMain&&cc?cue.headline+'。父実績C・安定Cのため本命外':cue.headline;
   const extra=cc?['実績C','安定C']:[];
   const reasons=[...(cue.reasons||[]).slice(0,3),...extra].map(x=>'<span class="breed-reason-chip">'+esc(x)+'</span>').join('');
-  const portfolioNote=profile==='sire'?'<div class="muted">血統価値は参考軸です。</div>':'';
+  const portfolio=profile==='sire'?directSirePortfolio(entry):null;
+  const p120=portfolio?.spst120||{};
+  const portfolioNote=profile==='sire'
+    ?'<div class="muted">高能力牝馬'+Number(p120.population||0)+'頭に対し、安全 '+Number(p120.safe||0)+'頭 / SP17・ST5 '+Number(p120.sp17st5||0)+'頭 / 最大SP '+Number(p120.maxSp||0)+'。単一総合点ではなく相手牝馬への広がりで比較します。</div>'
+    :'';
+  const shownRank=profile==='sire'?'血統価値 '+rank+'位':rankText;
   return '<div class="card breed-integrated-card tone-'+esc(tone)+'" data-sire-name="'+esc(entry.sire)+'">'+
-    '<div class="breed-card-head"><div><span class="breed-rank-label">'+esc(rankText)+'</span><b>'+esc(entry.sire)+'</b></div><span class="breed-cue-badge">'+esc(displayLabel)+'</span></div>'+
+    '<div class="breed-card-head"><div><span class="breed-rank-label">'+esc(shownRank)+'</span><b>'+esc(entry.sire)+'</b></div><span class="breed-cue-badge">'+esc(displayLabel)+'</span></div>'+
     '<div class="breed-cue-headline">'+esc(displayHeadline)+'</div>'+
     (reasons?'<div class="breed-reason-row">'+reasons+'</div>':'')+
     '<div class="grid"><div class="stat"><b>'+Number(n.sp||0)+'</b><small>SPニトロ</small></div><div class="stat"><b>'+Number(n.st||0)+'</b><small>STニトロ</small></div><div class="stat"><b>'+Number(n.pw||0)+'</b><small>PWニトロ</small></div></div>'+
@@ -366,8 +468,12 @@ function renderNotice(resolved,index){
   const info=$('#breedNotice');
   if(!info)return;
   if(!resolved){info.textContent='牝馬を選ぶと本命候補を表示します。';return}
+  const a=currentMareAssessment(),real=a?.realEvidence;
+  const realNote=real
+    ?'<br><span class="muted">自家製牝馬：繁殖SP/ST/PWは未推定。実馬補助情報 '+(real.minD&&real.maxD?real.minD+'–'+real.maxD+'m / ':'')+(real.raceCount?'2000–2400m '+real.raceCount+'走・④ '+real.mark4.toFixed(1)+'・⑤ '+real.mark5.toFixed(1):'レース評価未登録')+'。</span>'
+    :'';
   info.innerHTML='<b>'+esc(resolved.name)+'</b> ｜ 安全 '+Number(index?.safeCount||0)+'件'+
-    '<br><span class="muted">カード色＝推薦度：緑は本命、黄は上振れ、白は参考軸。SPクロス/STなどのカテゴリ自体には色を付けません。</span>';
+    '<br><span class="muted">カード色＝推薦度：緑は本命、黄は上振れ、白は参考軸。SPクロス/STなどのカテゴリ自体には色を付けません。</span>'+realNote;
 }
 function renderBreed(){
   syncDb();
@@ -383,6 +489,7 @@ function renderBreed(){
     });
     return;
   }
+  ensurePlannerFresh();
   const horse=selectedMareHorse();
   if(!horse){
     setLineage('none',null);
@@ -628,19 +735,7 @@ async function boot(){
     if(!engine)throw Error('breeding engine missing');
     if(!window.DABISTA_SALE_PLANNER_CORE)throw Error('sale planner core missing');
     if(!window.DABISTA_SALE_RECOMMENDATION_CORE)throw Error('sale recommendation core missing');
-    planner=window.DABISTA_SALE_PLANNER_CORE.create({
-      engine:engine.core,
-      stallions:engine.domesticStallions(),
-      stallionStats:engine.stallionData.stallions||[],
-      broodmares:engine.broodmares(),
-      broodmareStats:engine.mareData.broodmares||[]
-    });
-    advisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({
-      planner,
-      broodmareStats:engine.mareData.broodmares||[]
-    });
-    window.DABISTA_BREED_FUTURE.planner=planner;
-    window.DABISTA_BREED_FUTURE.advisor=advisor;
+    installPlanner(farmSirePool(),false);
     return true;
   })();
   return bootPromise;
@@ -658,9 +753,10 @@ window.DABISTA_BREED_FUTURE={
   version:1,
   load:loadFuture,
   getCached(sire){return continuationCache.get(continuationKey(currentFingerprint,sire))||null},
-  state(){return{fingerprint:currentFingerprint,epoch,pending:[...pending.keys()],cached:[...continuationCache.keys()]}},
+  state(){return{fingerprint:currentFingerprint,epoch,pending:[...pending.keys()],cached:[...continuationCache.keys()],ownedSireCount:this.ownedSireCount||0}},
   planner:null,
-  advisor:null
+  advisor:null,
+  ownedSireCount:0
 };
 window.renderBreed=renderBreed;
 setTimeout(()=>window.renderBreed(),0);
