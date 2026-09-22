@@ -128,6 +128,13 @@ function releaseLegacyBreedUi(){
     try{cleanup?.()}catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'breed-legacy-cleanup: '+String(e)})}
   }
 }
+function futureOverviewPlaceholder(){
+  return '<b>カテゴリ別・将来性比較</b><p class="muted">候補カードで「2～4代の将来性を診断」を開くと、同じ初手父を6カテゴリ横断で比較します。</p>';
+}
+function clearFutureOverview(){
+  const box=$('#breedFutureOverview');
+  if(box)box.innerHTML=futureOverviewPlaceholder();
+}
 function ensureStyle(){
   if($('#breedIntegrationStyle'))return;
   const s=document.createElement('style');
@@ -165,7 +172,7 @@ function ensureControls(){
     const overview=document.createElement('div');
     overview.id='breedFutureOverview';
     overview.className='card breed-future-overview';
-    overview.innerHTML='<b>カテゴリ別・将来性比較</b><p class="muted">候補カードで「2～4代の将来性を診断」を開くと、同じ初手父を6カテゴリ横断で比較します。</p>';
+    overview.innerHTML=futureOverviewPlaceholder();
     (notice.closest('.card')||notice).insertAdjacentElement('afterend',overview);
   }
   if(goal){
@@ -196,7 +203,10 @@ function ensureControls(){
       const b=e.target.closest('[data-breed-future]');
       if(!b)return;
       const nextSire=b.dataset.breedFuture||'';
-      if(nextSire!==activeSire)cancelOtherContinuations(nextSire);
+      if(nextSire!==activeSire){
+        cancelOtherContinuations(nextSire);
+        clearFutureOverview();
+      }
       activeSire=nextSire;
       renderCachedFutureIntoActive();
       loadFuture(activeSire).then(result=>{
@@ -222,6 +232,7 @@ function setLineage(fp,resolved){
   currentResolvedMare=resolved;
   currentPairIndex=null;
   activeSire='';
+  clearFutureOverview();
   epoch++;
   for(const token of pending.values())token.cancelled=true;
   pending.clear();
@@ -386,6 +397,11 @@ function renderBreed(){
   db.breedPlanner.category=profile;
   db.breedPlanner.goal=goal;
   const lists=filteredEntries(currentPairIndex,profile,q);
+  if(activeSire&&!lists.ranked.some(e=>e.sire===activeSire)){
+    cancelOtherContinuations('');
+    activeSire='';
+    clearFutureOverview();
+  }
   renderNotice(resolved,currentPairIndex);
   const safeHtml=lists.ranked.map((e,i)=>renderCard(e,i+1,profile,goal)).join('');
   const unsafeHtml=lists.unsafe.length?'<details class="card breed-danger-list"><summary><b>危険配合 '+lists.unsafe.length+'件（ランキング対象外）</b></summary><p class="muted">警告確認用です。将来探索には入れません。</p>'+lists.unsafe.map(renderUnsafe).join('')+'</details>':'';

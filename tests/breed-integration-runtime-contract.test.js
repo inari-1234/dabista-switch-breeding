@@ -28,6 +28,10 @@ if(!/lruSet\(continuationCache,key,result,CONTINUATION_CACHE_LIMIT\)/.test(src))
 if(src.indexOf('checkToken(token);\n      lruSet(continuationCache,key,result,CONTINUATION_CACHE_LIMIT)')<0)throw Error('cache commit is not protected by stale-token check');
 if(!src.includes('PAIR_CACHE_LIMIT=4')||!src.includes('CONTINUATION_CACHE_LIMIT=12'))throw Error('mobile cache bounds missing');
 if(!src.includes('cancelOtherContinuations(nextSire)'))throw Error('first-sire switch cancellation missing');
+if(!src.includes('clearFutureOverview()'))throw Error('stale future overview reset missing');
+if(!/currentPairIndex=null;\s*activeSire='';\s*clearFutureOverview\(\);\s*epoch\+\+/.test(src))throw Error('lineage change must clear old future overview before advancing epoch');
+if(!/if\(nextSire!==activeSire\)\{[\s\S]{0,180}clearFutureOverview\(\)/.test(src))throw Error('first-sire switch must clear previous overview while new scan starts');
+if(!/if\(activeSire&&!lists\.ranked\.some\(e=>e\.sire===activeSire\)\)[\s\S]{0,180}clearFutureOverview\(\)/.test(src))throw Error('filtered-out active sire must not leave stale overview');
 if(!src.includes('if(pending.get(key)===token)pending.delete(key)'))throw Error('pending cleanup must not delete a restarted same-key scan');
 
 console.log(JSON.stringify({
