@@ -36,7 +36,9 @@ for(const token of [
   'function mareBand(','function productionContext(','function compareProductionForMare(',
   'function productionCandidateCue(','function selectProductionRecommendations(','function shortDistanceTier('
 ])need(advisor,token,'mare-aware production recommendation');
-need(advisor,'const recordEvidence=recordGrade*8','record A>B>C must remain a strong base component');
+need(advisor,"const requiredSignals=record==='A'?2:record==='B'?3:record==='C'?4:99","record A>B>C must require progressively stronger evidence to overturn");
+need(advisor,'const overrideEligible=compensationCount>=requiredSignals','production reversal must use an explicit evidence gate rather than a weighted overall score');
+if(advisor.includes('evidenceScore='))throw Error('production ranking must not collapse evidence into a weighted overall score');
 need(advisor,"if(d<=1000)return 3","1000m lower-bound SP evidence");
 need(advisor,"if(d<=1200)return 2","1200m lower-bound SP evidence");
 need(advisor,"key='longshot';label='上振れ枠'","C/C must stay available as an upside role rather than be globally excluded");
