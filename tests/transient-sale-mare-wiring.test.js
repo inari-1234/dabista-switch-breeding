@@ -62,15 +62,15 @@ for(const [p,c] of [['v15.js',v15],['v18.js',v18],['v19.js',v19],['v20.js',v20],
 assert.ok(v15.includes('15祖先内蔵'));
 assert.ok(v15.includes('馬DB・バックアップJSONには保存されません'));
 
-assert.ok(idx.includes('breed-helper.js?v=1.19.1-b47'),'breed-helper.js cache key');
+assert.ok(idx.includes('breed-helper.js?v=1.19.1-b48'),'breed-helper.js cache key');
 for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js']){
-  assert.ok(idx.includes(p+'?v=1.19.1-b47'),p+' cache key');
+  assert.ok(idx.includes(p+'?v=1.19.1-b48'),p+' cache key');
 }
-assert.ok(idx.includes('app.js?v=1.19.1-b47'),'app cache key');
-assert.ok(idx.includes('sale-planner-core.js?v=1.19.1-b47'),'sale planner core cache key');
-assert.ok(idx.includes('sale-recommendation-core.js?v=1.19.1-b47'),'sale recommendation core cache key');
-assert.ok(idx.includes('v26.js?v=1.19.1-b47'),'v26 cache key');
-assert.ok(idx.includes('v27.js?v=1.19.1-b47'),'v27 cache key');
+assert.ok(idx.includes('app.js?v=1.19.1-b48'),'app cache key');
+assert.ok(idx.includes('sale-planner-core.js?v=1.19.1-b48'),'sale planner core cache key');
+assert.ok(idx.includes('sale-recommendation-core.js?v=1.19.1-b48'),'sale recommendation core cache key');
+assert.ok(idx.includes('v26.js?v=1.19.1-b48'),'v26 cache key');
+assert.ok(idx.includes('v27.js?v=1.19.1-b48'),'v27 cache key');
 
 console.log(JSON.stringify({
   passed:true,
