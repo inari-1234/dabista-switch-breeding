@@ -17,7 +17,7 @@ const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elab
 const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
 const advisor=reco.create({planner,broodmareStats:M});
 const v26=fs.readFileSync('v26.js','utf8');
-assert.ok(v26.includes('SPクロス補強型候補なし'),'SP-cross empty state must be explicit');
+assert.ok(v26.includes('安全なSPクロス候補がありません'),'SP-cross empty state must remain explicit even after copy simplification');
 
 assert.strictEqual(planner.profileLabels.speedCross,'SPクロス補強型');
 assert.ok(planner.profileCriteria.speedCross.includes('速力/短距離'));
