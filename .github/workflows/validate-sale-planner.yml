@@ -20,6 +20,7 @@ on:
       - 'breed-integration.js'
       - 'v26.js'
       - 'v27.js'
+      - 'v28.js'
       - 'tests/mare-aware-selection-guidance.test.js'
       - 'tests/mare-generation-advisor.test.js'
       - 'tests/route-explainability.test.js'
@@ -42,6 +43,7 @@ on:
       - 'tests/breed-current-ranking-mare-dependence.test.js'
       - 'tests/breed-resolve-horse-name-collision.test.js'
       - 'tests/owned-horse-breed-utilization.test.js'
+      - 'tests/owned-horse-utilization-ui.test.js'
       - 'tests/backup-restore-db-identity-contract.test.js'
       - 'tests/diagnostic-workflows-manual-only-contract.test.js'
       - 'tests/sync-game-master-safety-contract.test.js'
@@ -105,6 +107,7 @@ jobs:
           node --check breed-integration.js
           node --check v26.js
           node --check v27.js
+          node --check v28.js
           node --check ui-refresh.js
           node --check tests/mare-aware-selection-guidance.test.js
           node --check tests/mare-generation-advisor.test.js
@@ -193,6 +196,7 @@ jobs:
           node tests/breed-current-ranking-mare-dependence.test.js
           node tests/breed-resolve-horse-name-collision.test.js
           node tests/owned-horse-breed-utilization.test.js
+          node tests/owned-horse-utilization-ui.test.js
           node tests/backup-restore-db-identity-contract.test.js
           node tests/diagnostic-workflows-manual-only-contract.test.js
 
