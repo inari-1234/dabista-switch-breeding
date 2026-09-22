@@ -144,7 +144,7 @@ function ensureControls(){
     overview.id='breedFutureOverview';
     overview.className='card breed-future-overview';
     overview.innerHTML='<b>カテゴリ別・将来性比較</b><p class="muted">候補カードで「2～4代の将来性を診断」を開くと、同じ初手父を6カテゴリ横断で比較します。</p>';
-    notice.insertAdjacentElement('afterend',overview);
+    (notice.closest('.card')||notice).insertAdjacentElement('afterend',overview);
   }
   if(goal){
     const want=canonicalGoal(db.breedPlanner.goal||goal.value);
