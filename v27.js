@@ -84,8 +84,10 @@ function style(){
  .mare-scoreline b{font-size:11px;color:#244b39}
  .mare-color-note{font-size:8px!important;color:#738077!important}
  .generation-compare{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px}
- .generation-compare-card{border:1px solid #dfe7e3;border-radius:10px;background:#fff;padding:9px}
- .generation-compare-card.recommended{border-color:#70ad8e;background:#edf7f2;box-shadow:0 0 0 1px #70ad8e inset}
+ .generation-compare-card{display:block;width:100%;text-align:left;border:1px solid #dfe7e3;border-radius:10px;background:#fff;padding:9px;cursor:pointer;color:inherit}
+ .generation-compare-card.recommended{border-color:#9bc7b0;background:#f3f9f6}
+ .generation-compare-card.selected{border-color:#2f7d5d;background:#eaf6f0;box-shadow:0 0 0 2px #2f7d5d inset}
+ .generation-compare-card:focus-visible{outline:3px solid rgba(47,125,93,.25);outline-offset:2px}
  .generation-compare-card span{display:block;font-size:9px;font-weight:900;color:#65766e}
  .generation-compare-card b{display:block;margin-top:3px;font-size:13px;color:#234b38}
  .generation-compare-card small{display:block;margin-top:2px;font-size:8px;color:#6a7871}
@@ -124,8 +126,8 @@ function mareDecisionText(a,strategy,goal){
  if(!a?.abilityKnown)return'能力は未判明です。血統だけで候補を比較し、能力値0を弱さとして扱いません。';
  if(tone==='elite'||tone==='high')return'上位母です。能力を崩さず、'+improve+'だけを補う配合を優先します。';
  if(tone==='upper')return'中上位母です。母の長所を残しながら、'+improve+'を補う配合を優先します。';
- if(tone==='middle')return'中位母です。一発狙いより、実績・安定A/Bの父で'+improve+'を底上げする配合を本命にします。';
- return'再建向きの母です。上振れより、次代に残しやすいSP/STバランスを優先します。';
+ if(tone==='middle')return'中位母です。父実績Aを強く評価し、'+improve+'・ニトロ・クロス・短距離側の距離適性で明確に上回る場合だけB/Cを逆転候補にします。';
+ return'再建向きの母です。父実績Aを基準に、SP/ST底上げ・短距離側の距離適性・クロスで明確な利点がある場合だけB/Cや安定Cを採用します。';
 }
 function renderMareAdvice(){
  const box=$('#saleMareRecommendation'),name=$('#saleMareSelect')?.value;
@@ -196,30 +198,41 @@ function bestFacts(result,goal){
  const route=result?.summary?.bestRoute||advisor.routeForGoal(result?.result||result,goal);
  return{route,facts:advisor.routeFacts(route)}
 }
-function generationCard(n,g,goal,recommended){
+function generationCard(n,g,goal,recommended,selected){
  const b=bestFacts(g,goal),f=b.facts,label=n===1?'直仔':n+'代';
  const method=n>=3?'条件付き':'全探索';
- return `<div class="generation-compare-card ${recommended===n?'recommended':''}">
-  <span>${recommended===n?'★ おすすめ':'比較'}｜${label}</span>
+ const state=selected===n?(recommended===n?'★ おすすめ・選択中':'✓ 選択中'):(recommended===n?'★ おすすめ':'比較');
+ return `<button type="button" class="generation-compare-card ${recommended===n?'recommended':''} ${selected===n?'selected':''}" data-generation-choice="${n}" aria-pressed="${selected===n?'true':'false'}">
+  <span>${state}｜${label}</span>
   <b>SP/ST ${f.sp}/${f.st}</b>
   <small>SP+ST ${f.spst}・${method}</small>
- </div>`;
+ </button>`;
 }
-function recommendationDetail(name,goal,rec){
- const chosen=rec.routes?.[rec.generation],direct=rec.routes?.[1];
+function recommendationDetail(name,goal,rec,selected){
+ const chosen=rec.routes?.[selected],direct=rec.routes?.[1];
  if(!chosen)return'';
  const expanded=planner.expandRoute(name,chosen,goal);
  if(!expanded)return'';
  const a=advisor.routeFacts(direct),b=advisor.routeFacts(chosen);
- const label=rec.generation===1?'直仔':rec.generation+'代';
- const transition=rec.generation===4?rec.transitions?.to4:rec.generation===3?rec.transitions?.to3:rec.generation===2?rec.transitions?.to2:null;
- const reasons=(transition?.reasons?.length?transition.reasons:rec.reasons||[]).slice(0,2);
- const reasonHtml=reasons.length?reasons.map(x=>'<li>'+esc(x)+'</li>').join(''):'<li>追加世代の上積みが小さいため、短い世代を優先します。</li>';
- return '<div class="generation-key-reason"><b>なぜ'+label+'？</b><ul>'+reasonHtml+'</ul></div>'+
+ const label=selected===1?'直仔':selected+'代';
+ const transition=selected===4?rec.transitions?.to4:selected===3?rec.transitions?.to3:selected===2?rec.transitions?.to2:null;
+ let reasons=[];
+ if(selected===rec.generation){
+  reasons=(transition?.reasons?.length?transition.reasons:rec.reasons||[]).slice(0,2);
+ }else if(selected===1){
+  reasons=['代重ねをせず、最短で配合を完了する比較案'];
+ }else{
+  reasons=(transition?.reasons||[]).slice(0,2);
+  if(!reasons.length)reasons=['自動推奨とは別に、この世代のSP/STと血統条件を比較するための手動選択'];
+ }
+ const reasonHtml=reasons.map(x=>'<li>'+esc(x)+'</li>').join('');
+ const state=selected===rec.generation?'おすすめ世代':'手動で比較中（自動推奨は'+esc(rec.label)+'）';
+ return '<div class="generation-key-reason"><b>'+esc(state)+'｜なぜ'+label+'？</b><ul>'+reasonHtml+'</ul></div>'+
   '<details class="generation-tech"><summary>比較データ・探索条件を見る</summary>'+
   '<div class="advisor-note">直仔 SP/ST '+a.sp+'/'+a.st+' → '+label+' '+b.sp+'/'+b.st+'。3代・4代は条件付き探索で、中間牝馬の実能力は出生前に仮定しません。</div>'+
   '</details>';
 }
+
 async function runGenerationAdvisor(){
  if(!advisor||!planner)return;
  const name=$('#saleMareSelect')?.value,goal=window.db?.salePlanner?.goal||'arc';
@@ -258,17 +271,31 @@ async function runGenerationAdvisor(){
   const rec=advisor.recommendGeneration({goal,assessment,generations,portfolios});
   window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
   const goalLabel=planner.goalLabels[goal]||goal;
-  $('#generationAdvisorResult').innerHTML=`
-   <div class="generation-result">
-    <div class="generation-pick"><span>おすすめ世代</span><b>${esc(rec.label)}</b></div>
-    <div class="generation-compare">${generationCard(1,generations[1],goal,rec.generation)}${generationCard(2,generations[2],goal,rec.generation)}${generationCard(3,generations[3],goal,rec.generation)}${generationCard(4,generations[4],goal,rec.generation)}</div>
-    ${recommendationDetail(name,goal,rec)}
-    <button class="primary generation-action" type="button" id="applyRecommendedGeneration">おすすめ${rec.generation===1?'直仔':rec.generation+'代'}で本命配合を見る</button>
-   </div>`;
-  $('#applyRecommendedGeneration').onclick=()=>{
-    window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
-    setTimeout(()=>$('#runSalePlanner')?.click(),30);
+  const resultBox=$('#generationAdvisorResult');
+  let selectedGeneration=rec.generation;
+  const paintGenerationResult=()=>{
+   resultBox.innerHTML=`
+    <div class="generation-result">
+     <div class="generation-pick"><span>自動おすすめ</span><b>${esc(rec.label)}</b></div>
+     <div class="generation-compare">${generationCard(1,generations[1],goal,rec.generation,selectedGeneration)}${generationCard(2,generations[2],goal,rec.generation,selectedGeneration)}${generationCard(3,generations[3],goal,rec.generation,selectedGeneration)}${generationCard(4,generations[4],goal,rec.generation,selectedGeneration)}</div>
+     ${recommendationDetail(name,goal,rec,selectedGeneration)}
+     <button class="primary generation-action" type="button" id="applyRecommendedGeneration">${selectedGeneration===rec.generation?'おすすめ':'選択した'}${selectedGeneration===1?'直仔':selectedGeneration+'代'}で本命配合を見る</button>
+    </div>`;
   };
+  resultBox.onclick=e=>{
+    const card=e.target.closest('[data-generation-choice]');
+    if(card){
+      selectedGeneration=+card.dataset.generationChoice;
+      window.DABISTA_SALE_PLANNER?.setGeneration?.(selectedGeneration,selectedGeneration===rec.generation?'diagnosis':'manual');
+      paintGenerationResult();
+      return;
+    }
+    if(e.target.closest('#applyRecommendedGeneration')){
+      window.DABISTA_SALE_PLANNER?.setGeneration?.(selectedGeneration,selectedGeneration===rec.generation?'diagnosis':'manual');
+      setTimeout(()=>$('#runSalePlanner')?.click(),30);
+    }
+  };
+  paintGenerationResult();
   $('#generationAdvisorProgress').textContent=`診断完了：直仔 ${s1.count.toLocaleString()}件、2代 ${s2.count.toLocaleString()}件、3代プレビュー ${s3.count.toLocaleString()}件、4代プレビュー ${s4.count.toLocaleString()}件を比較しました。`;
  }catch(e){
   if(String(e).includes('cancelled'))return;
