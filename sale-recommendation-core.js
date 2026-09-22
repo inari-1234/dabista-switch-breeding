@@ -838,9 +838,15 @@
       if(!route)return{key:'unavailable',label:'未評価'};
       const f=routeFacts(route),speedPath=!!(f.speedCross||f.materialSpeedCross);
       if(goal==='arc'){
-        if(f.sp>=15&&f.st>=6)return{key:'strong',label:'凱旋門：強基準'};
-        if(f.sp>=14&&f.st>=6)return{key:'qualified',label:'凱旋門：基準到達'};
-        return{key:'below',label:'凱旋門：未達'};
+        const quantitative=f.sp>=14&&f.st>=6,strong=f.sp>=15&&f.st>=6;
+        if(!quantitative)return{key:'below',label:'凱旋門：未達'};
+        const recordOk=f.recordBPlus,distanceOk=f.distanceEvidence>0;
+        if(recordOk&&distanceOk)return strong
+          ?{key:'strong',label:'凱旋門：強基準'}
+          :{key:'qualified',label:'凱旋門：基準到達'};
+        if(!recordOk&&!distanceOk)return{key:'conditional',label:'凱旋門：数値到達・父実績/距離要確認'};
+        if(!recordOk)return{key:'conditional',label:'凱旋門：数値到達・父実績要確認'};
+        return{key:'conditional',label:'凱旋門：数値到達・距離根拠要確認'};
       }
       if(goal==='bc'){
         if(f.sp>=18&&f.st>=5&&speedPath)return{key:'strong',label:'BC：強基準'};
