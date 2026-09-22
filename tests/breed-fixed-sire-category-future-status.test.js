@@ -130,4 +130,32 @@ categories.sire={
 };
 
 if(Object.keys(categories).length!==6)throw Error('six categories required');
-console.log(JSON.stringify({passed:true,mare,first,categories},null,2));
+
+// Formal advisor API must reproduce the established diagnostic semantics.
+const formal={};
+for(const p of profiles){
+ const routes=Object.fromEntries([1,2,3,4].map(g=>[g,generations[g].profiles[p]]));
+ const x=advisor.profileFutureStatus({profile:p,routes});
+ formal[p]=x;
+ if(x.generation!==categories[p].latestMaterialGeneration||x.state!==categories[p].state)throw Error('formal future generation/state mismatch '+p+' '+JSON.stringify({formal:x,diagnostic:categories[p]}));
+ if(JSON.stringify(x.transitions.map(t=>t.kind))!==JSON.stringify(categories[p].transitions.map(t=>t.kind)))throw Error('formal transition-kind mismatch '+p);
+ const diagnosticKey=categories[p].selected?planner.routeKey({sires:categories[p].selected.sires}):null;
+ const formalKey=x.selectedRoute?planner.routeKey(x.selectedRoute):null;
+ if(formalKey!==diagnosticKey)throw Error('formal selected-route mismatch '+p+' '+formalKey+' vs '+diagnosticKey);
+}
+formal.sire=advisor.profileFutureStatus({profile:'sire',portfolios});
+if(formal.sire.generation!==categories.sire.latestMaterialGeneration||formal.sire.state!==categories.sire.state)throw Error('formal sire generation/state mismatch');
+if(JSON.stringify(formal.sire.transitions.map(t=>t.kind))!==JSON.stringify(categories.sire.transitions.map(t=>t.kind)))throw Error('formal sire transition mismatch');
+if(JSON.stringify(formal.sire.selectedPortfolio)!==JSON.stringify(categories.sire.selected))throw Error('formal sire portfolio mismatch');
+
+// Goal fit is independent from category depth.
+const fits=Object.fromEntries(profiles.map(p=>[
+ p,
+ Object.fromEntries(['arc','bc','rebuild'].map(goal=>[goal,advisor.goalFit(formal[p].selectedRoute,goal).key]))
+]));
+if(fits.sp.arc!=='strong')throw Error('Eist fixed-first SP route should meet Arc strong threshold');
+if(fits.speedCross.bc!=='strong')throw Error('Eist fixed-first SP-cross route should meet BC strong threshold');
+if(fits.production.arc!=='below')throw Error('production profile depth must not imply Arc fit');
+if(advisor.goalFit(formal.sp.selectedRoute,'stallion').key!=='separate')throw Error('stallion fit must remain separate');
+
+console.log(JSON.stringify({passed:true,mare,first,categories,formalSummary:Object.fromEntries(Object.entries(formal).map(([k,v])=>[k,{generation:v.generation,state:v.state}])),fits},null,2));
