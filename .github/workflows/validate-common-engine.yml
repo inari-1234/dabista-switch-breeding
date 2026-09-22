@@ -44,6 +44,7 @@ on:
       - 'tests/diagnostic-workflows-manual-only-contract.test.js'
       - 'tests/sync-game-master-safety-contract.test.js'
       - 'tests/breed-portfolio-optimization-regression.test.js'
+      - 'tests/production-mare-context-regression.test.js'
       - 'tests/magnificent-cross-utility-diagnostic.test.js'
       - 'tests/st-cross-2400-utility-diagnostic.test.js'
       - 'tests/theory-ranking-delta-diagnostic.test.js'
@@ -385,6 +386,7 @@ jobs:
       - name: Portfolio optimization regression
         run: |
           node tests/breed-portfolio-optimization-regression.test.js
+          node tests/production-mare-context-regression.test.js
 
       - name: Master sync safety contract
         run: |
