@@ -341,7 +341,7 @@ function renderCard(entry,rank,profile,goal){
   const rankText=profile==='sire'?'候補':String(rank)+'.';
   const portfolioNote=profile==='sire'?'<div class="muted">血統価値型は直配合だけで単一順位を作りません。候補名順で表示し、将来診断のportfolioで評価します。</div>':'';
   return '<div class="card breed-integrated-card" data-sire-name="'+esc(entry.sire)+'">'+
-    '<div class="row"><div><b>'+rankText+' '+esc(entry.sire)+'</b><div class="muted">'+esc(PROFILE_FALLBACK[profile])+' / '+esc(GOAL_LABELS[goal])+'</div></div><div class="score">'+esc(fitLabel)+'</div></div>'+
+    '<div class="row"><div><b>'+rankText+' '+esc(entry.sire)+'</b><div class="muted">'+esc(PROFILE_FALLBACK[profile])+' / '+esc(GOAL_LABELS[goal])+'</div></div></div>'+
     '<div class="grid"><div class="stat"><b>'+Number(n.sp||0)+'</b><small>SPニトロ</small></div><div class="stat"><b>'+Number(n.st||0)+'</b><small>STニトロ</small></div><div class="stat"><b>'+Number(n.pw||0)+'</b><small>PWニトロ</small></div></div>'+
     '<p class="muted">'+esc(theoryText(entry.pair))+' / 実績'+esc(f.sireStats?.record||'-')+'・底力'+esc(f.sireStats?.guts||'-')+'・安定'+esc(f.sireStats?.stable||'-')+'</p>'+
     portfolioNote+

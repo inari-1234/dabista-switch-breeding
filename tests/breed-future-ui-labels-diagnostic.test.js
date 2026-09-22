@@ -45,6 +45,10 @@ const requiredRuntime=[
 for(const s of requiredRuntime)if(!src.includes(s))throw Error('runtime semantic contract missing '+s);
 if(/const fit=advisor\.goalFit\(r,goal\);[\s\S]{0,140}fit\.label/.test(src))throw Error('card bypasses ability-aware fit display');
 if(src.includes('advisor?.mareAssessment?.(currentResolvedMare.name)'))throw Error('ability lookup must not trust resolved name alone');
+const cardBlock=src.match(/function renderCard\([\s\S]*?\n\}\nfunction renderUnsafe/);
+if(!cardBlock)throw Error('renderCard block missing');
+if((cardBlock[0].match(/esc\(fitLabel\)/g)||[]).length!==1)throw Error('goal fit must render once per candidate card');
+if(/class="score"[^\n]*fitLabel/.test(cardBlock[0]))throw Error('long goal-fit text duplicated in score header');
 
 const compactMobileSpec={
   location:'separate card immediately after breed control card',

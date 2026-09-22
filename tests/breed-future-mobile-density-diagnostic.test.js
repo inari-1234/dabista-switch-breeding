@@ -28,6 +28,7 @@ const requiredRuntime=[
   ".breed-future-row b{grid-row:1 / span 2}",
   "data-breed-future",
   "class=\"breed-pair-details\"",
+  "<b>現在配合の目的適合：</b>'+esc(fitLabel)",
   "class=\"breed-future-detail\"",
   "4代compact bridge",
   "4代は検証済みcompact bridgeによる条件付き探索"
@@ -35,6 +36,9 @@ const requiredRuntime=[
 for(const s of requiredRuntime)if(!src.includes(s))throw Error('mobile runtime contract missing '+s);
 
 if(src.includes('4代全探索'))throw Error('runtime must not describe compact generation 4 as exhaustive');
+const cardBlock=src.match(/function renderCard\([\s\S]*?\n\}\nfunction renderUnsafe/);
+if(!cardBlock)throw Error('renderCard block missing');
+if(/class="score"[^\n]*fitLabel/.test(cardBlock[0]))throw Error('candidate header repeats long goal-fit label');
 
 const mobile={
   assumedViewportPx:390,
