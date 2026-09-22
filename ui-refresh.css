@@ -334,6 +334,30 @@ body.ui-refresh #breedCandidates>.card:before{
   width:4px;
   background:linear-gradient(var(--ui-green),#71ad8e);
 }
+body.ui-refresh #breedCandidates>.card.tone-solid:before,
+body.ui-refresh #breedCandidates>.card.tone-preserve:before{background:linear-gradient(#16845f,#64b58f)}
+body.ui-refresh #breedCandidates>.card.tone-balance:before,
+body.ui-refresh #breedCandidates>.card.tone-distance:before{background:linear-gradient(#4e86bd,#83add4)}
+body.ui-refresh #breedCandidates>.card.tone-ceiling:before{background:linear-gradient(#7155ad,#a18bcc)}
+body.ui-refresh #breedCandidates>.card.tone-upside:before,
+body.ui-refresh #breedCandidates>.card.tone-rebuild-upside:before{background:linear-gradient(#b4822d,#d9ad58)}
+body.ui-refresh #breedCandidates>.card.tone-longshot:before,
+body.ui-refresh #breedCandidates>.card.tone-low-record:before{background:linear-gradient(#b86d2c,#dfad73)}
+body.ui-refresh #breedCandidates>.card.tone-neutral:before{background:linear-gradient(#819088,#a8b1ac)}
+body.ui-refresh #breedCandidates>.card.tone-solid,
+body.ui-refresh #breedCandidates>.card.tone-preserve{border-color:#acd3bf;background:linear-gradient(145deg,#fff,#f3faf6)}
+body.ui-refresh #breedCandidates>.card.tone-balance,
+body.ui-refresh #breedCandidates>.card.tone-distance{border-color:#bfd2e4;background:linear-gradient(145deg,#fff,#f4f8fc)}
+body.ui-refresh #breedCandidates>.card.tone-ceiling{border-color:#d1c7e6;background:linear-gradient(145deg,#fff,#f8f5fc)}
+body.ui-refresh #breedCandidates>.card.tone-upside,
+body.ui-refresh #breedCandidates>.card.tone-rebuild-upside{border-color:#e4cb86;background:linear-gradient(145deg,#fff,#fff9e9)}
+body.ui-refresh #breedCandidates>.card.tone-longshot,
+body.ui-refresh #breedCandidates>.card.tone-low-record{border-color:#e6bd91;background:linear-gradient(145deg,#fff,#fff5eb)}
+body.ui-refresh .breed-card-head b{font-size:16px!important}
+body.ui-refresh .breed-rank-label{font-size:10px!important}
+body.ui-refresh .breed-cue-badge{font-size:10px!important}
+body.ui-refresh .breed-cue-headline{font-size:13px!important}
+body.ui-refresh .breed-reason-chip{font-size:9px!important;padding:4px 7px!important}
 body.ui-refresh .candidate-head{gap:10px}
 body.ui-refresh .theory-tools{
   border-radius:13px!important;
