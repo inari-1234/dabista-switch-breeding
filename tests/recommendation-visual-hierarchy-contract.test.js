@@ -31,7 +31,7 @@ need(v27,'generationSection.hidden=true','legacy generation selector must stay h
 need(v27,'if(notice)notice.hidden=true','technical generation notice must not be primary');
 need(v27,'if(run)run.hidden=true','duplicate old design button must stay hidden');
 need(v27,'generation-key-reason','selected generation must show a concise reason');
-need(v27,'父実績Aを強く評価し','mare policy must keep record A as the strong baseline');
+if(v27.includes('父実績Aを強く評価し'))throw Error('generic record-A mare sentence must not return; the visible reason must change by goal');
 if(v27.includes('世代推奨は勝率・産駒能力の確率予測ではありません。安全配合'))throw Error('long generation disclaimer must not return to primary result');
 if(/\.mare-tier\{[^}]*font-size:(?:8|9)px/.test(v27))throw Error('mare tier regressed to tiny text');
 
