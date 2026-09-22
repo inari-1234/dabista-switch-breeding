@@ -350,6 +350,8 @@
         materialSpeedCross:crossPath.material,
         crossEffectPath:effectPath.path,
         materialLongCross:effectPath.materialLong,
+        shortDistancePath:[{generation:sires.length,minD:val(statsForSire(sires[sires.length-1])?.minD),tier:shortDistanceTier(statsForSire(sires[sires.length-1])?.minD)}],
+        materialShortDistance:{has:false,stages:0,bestMinD:0},
         finalChild:pair.child
       };
     }
@@ -372,6 +374,19 @@
         names:active?[...new Set([...(prev.names||[]),...(last.names||[])])]:[...(prev.names||[])]
       };
     }
+    function shortDistanceTier(minD){
+      const d=val(minD);
+      return d&&d<=1000?3:d&&d<=1200?2:d&&d<=1400?1:0;
+    }
+    function materialShortDistanceThrough(base){
+      const prev=base?.materialShortDistance||{},minD=val(base?.final?.sireStats?.minD),tier=shortDistanceTier(minD),active=tier>=2;
+      const priorBest=val(prev.bestMinD);
+      return{
+        has:!!prev.has||active,
+        stages:val(prev.stages)+(active?1:0),
+        bestMinD:active?(priorBest?Math.min(priorBest,minD):minD):priorBest
+      };
+    }
     function extendRoute(base,sireRecord,pair,method){
       const name=sireRecord.name,generation=(base?.sires?.length||0)+1,final=compactFinal(pair,sireRecord),sp=final.speedCross,fx=final.crossEffects;
       return{
@@ -384,6 +399,8 @@
         materialSpeedCross:materialSpeedThrough(base),
         crossEffectPath:[...(base.crossEffectPath||[]),{...fx,names:[...(fx.names||[])],generation}],
         materialLongCross:materialLongThrough(base),
+        shortDistancePath:[...(base.shortDistancePath||[]),{generation,minD:val(final.sireStats?.minD),tier:shortDistanceTier(final.sireStats?.minD)}],
+        materialShortDistance:materialShortDistanceThrough(base),
         finalChild:pair.child
       };
     }
