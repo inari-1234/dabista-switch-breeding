@@ -464,26 +464,50 @@ function portfolioOne(routes){
   if(!routes?.length)return null;
   return planner.portfolioPareto(routes,1);
 }
+function createFutureProductionCollector(assessment,limit=24){
+  const cmp=advisor?.compareProductionForMare?.(assessment)||planner.compareProfile('production');
+  const list=[],keys=new Set();
+  return{
+    push(route){
+      if(!route)return;
+      const key=planner.routeKey(route);
+      if(keys.has(key))return;
+      let i=0;while(i<list.length&&cmp(list[i],route)<=0)i++;
+      if(list.length>=limit&&i>=limit)return;
+      list.splice(i,0,route);keys.add(key);
+      if(list.length>limit){const drop=list.pop();keys.delete(planner.routeKey(drop))}
+    },
+    routes(){return list.slice()}
+  };
+}
+function fanoutFutureCollectors(...collectors){
+  const active=collectors.filter(Boolean);
+  return active.length?{push(route){for(const c of active)c.push(route)}}:null;
+}
 async function buildContinuation(firstSire,token){
   checkToken(token);
   const direct=planner.evaluateDirectPair(token.mare,firstSire);
   if(!direct.safe||!direct.route)return{fingerprint:token.fingerprint,firstSire,safe:false,statuses:{},meta:{}};
   const g1=direct.route;
+  const assessment=currentMareAssessment();
 
   const c2=planner.createCollector({topN:5,poolN:24});
+  const p2=createFutureProductionCollector(assessment,24);
   const routes2=[];
-  const count2=await scan(planner.iterateTwoFromDirect(g1),c2,token,'2代探索',null,r=>routes2.push(r));
-  const g2=c2.finish();
+  const count2=await scan(planner.iterateTwoFromDirect(g1),c2,token,'2代探索',p2,r=>routes2.push(r));
+  const g2=c2.finish(),production2=p2.routes()[0]||routeAt(g2,'production');
 
   const c3=planner.createCollector({topN:5,poolN:24});
+  const p3=createFutureProductionCollector(assessment,24);
   const bridge4=planner.createFourthBridgeCollector();
-  const count3=await scan(planner.iterateThirdPreview(token.mare,routes2),c3,token,'3代固定父全探索',bridge4,null);
-  const g3=c3.finish();
+  const count3=await scan(planner.iterateThirdPreview(token.mare,routes2),c3,token,'3代固定父全探索',fanoutFutureCollectors(bridge4,p3),null);
+  const g3=c3.finish(),production3=p3.routes()[0]||routeAt(g3,'production');
 
   const b4=bridge4.finish();
   const c4=planner.createCollector({topN:5,poolN:20});
-  const count4=await scan(planner.iterateFourthPreview(token.mare,b4.bases),c4,token,'4代compact bridge',null,null);
-  const g4=c4.finish();
+  const p4=createFutureProductionCollector(assessment,24);
+  const count4=await scan(planner.iterateFourthPreview(token.mare,b4.bases),c4,token,'4代compact bridge',p4,null);
+  const g4=c4.finish(),production4=p4.routes()[0]||routeAt(g4,'production');
 
   checkToken(token);
   const statuses={};
@@ -491,7 +515,12 @@ async function buildContinuation(firstSire,token){
     if(profile==='sire')continue;
     statuses[profile]=advisor.profileFutureStatus({
       profile,
-      routes:{1:g1,2:routeAt(g2,profile),3:routeAt(g3,profile),4:routeAt(g4,profile)}
+      routes:{
+        1:g1,
+        2:profile==='production'?production2:routeAt(g2,profile),
+        3:profile==='production'?production3:routeAt(g3,profile),
+        4:profile==='production'?production4:routeAt(g4,profile)
+      }
     });
   }
   const portfolios={
