@@ -1,0 +1,21 @@
+name: Diagnose ancestor-array cache mutation safety
+
+on:
+  push:
+    paths:
+      - 'tests/breed-ancestor-array-cache-mutation-contract.test.js'
+      - '.github/workflows/diagnose-breed-ancestor-array-cache-mutation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: node --check tests/breed-ancestor-array-cache-mutation-contract.test.js
+      - name: Ancestor-array mutation safety
+        run: node tests/breed-ancestor-array-cache-mutation-contract.test.js
