@@ -23,9 +23,11 @@ if(/iterateThirdPreview\(token\.mare,g2\.pool/.test(src))throw Error('3rd genera
 if(!/routes2\.push\(r\)/.test(src))throw Error('exact g2 route retention missing');
 if(!/generation3:\{method:'exact-fixed-first'/.test(src))throw Error('fixed-first exact generation-3 metadata missing');
 if(!/generation4:\{method:'conditional-compact-bridge'/.test(src))throw Error('conditional compact generation-4 metadata missing');
-if(!/if\(continuationCache\.has\(key\)\)/.test(src)||!/if\(pending\.has\(key\)\)/.test(src))throw Error('continuation cache/dedupe missing');
-if(!/continuationCache\.set\(key,result\)/.test(src))throw Error('continuation cache commit missing');
-if(src.indexOf('checkToken(token);\n      continuationCache.set(key,result)')<0)throw Error('cache commit is not protected by stale-token check');
+if(!/lruGet\(continuationCache,key\)/.test(src)||!/if\(pending\.has\(key\)\)/.test(src))throw Error('continuation cache/dedupe missing');
+if(!/lruSet\(continuationCache,key,result,CONTINUATION_CACHE_LIMIT\)/.test(src))throw Error('bounded continuation cache commit missing');
+if(src.indexOf('checkToken(token);\n      lruSet(continuationCache,key,result,CONTINUATION_CACHE_LIMIT)')<0)throw Error('cache commit is not protected by stale-token check');
+if(!src.includes('PAIR_CACHE_LIMIT=4')||!src.includes('CONTINUATION_CACHE_LIMIT=12'))throw Error('mobile cache bounds missing');
+if(!src.includes('cancelOtherContinuations(nextSire)'))throw Error('first-sire switch cancellation missing');
 
 console.log(JSON.stringify({
   passed:true,
@@ -34,6 +36,7 @@ console.log(JSON.stringify({
   generation2:'exact fixed-first',
   generation3:'exact fixed-first over all safe generation-2 routes',
   generation4:'conditional compact bridge',
-  async:'dedupe + stale rejection before cache commit',
+  async:'dedupe + first-sire cancellation + stale rejection before cache commit',
+  cache:'LRU bounded pair and continuation caches',
   identity:'data-sire-name'
 },null,2));
