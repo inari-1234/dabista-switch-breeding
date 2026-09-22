@@ -42,7 +42,7 @@ function routeEvidenceFromFacts(f,goal){
     return{
       qualified:f.sp>=17&&f.st>=5&&speedPath,
       strong:f.sp>=18&&f.st>=5&&speedPath,
-      supported:f.sp>=18&&f.st>=5&&speedPath&&f.recordBPlus
+      supported:f.sp>=17&&f.st>=5&&speedPath&&f.recordBPlus
     };
   }
   return{
@@ -205,7 +205,7 @@ const output={
   rules:{
     ability:'high=SP+ST top15%, middle=top16-60%, low=below60%, unknown kept separate',
     arc:'SP14/ST6 qualified, SP15/ST6 strong; supported additionally requires sire record B+ and distance evidence. Speed cross is not a hard Arc gate.',
-    bc:'SP17/ST5 + effective SP support qualified; SP18/ST5 strong; supported additionally requires sire record B+. Transition tradeoff audit separately tests record-loss compensation.',
+    bc:'SP17/ST5 + effective SP support qualified; SP18/ST5 strong; supported means qualified plus sire record B+. Generation upgrades also require the explicit BC record-compensation gate.',
     rebuild:'SP15/ST5 used only as a reconstruction reference line.',
     staging:'two-generation labels require an actual materialUpgradeReasons improvement when direct generation has no qualifying route.',
     caution:'This diagnostic does not convert the matrix into a single numeric score.'
