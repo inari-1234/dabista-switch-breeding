@@ -125,6 +125,13 @@ const g3=scan(planner.iterateThirdPreview(name,bases),goal,{poolN:18});
 assert.deepStrictEqual(g1.summary.bestRoute.sires,['グランプリボス']);
 assert.strictEqual(g1.summary.bestRoute.final.sp,16);
 assert.strictEqual(g1.summary.bestRoute.final.st,8);
+const freedomInvariant=planner.broodmareFreedom(g1.summary.bestRoute.finalChild);
+assert.strictEqual(freedomInvariant.population,176,'broodmare freedom must compare the full domestic sire pool');
+assert.ok(freedomInvariant.safe<=freedomInvariant.population,'safe future pairings cannot exceed sire population');
+assert.ok(freedomInvariant.sp17st5<=freedomInvariant.sp15st5&&freedomInvariant.sp15st5<=freedomInvariant.safe,
+ 'future SP17/ST5 and SP15/ST5 counts must remain nested inside safe pairings');
+assert.ok(freedomInvariant.speedQualified<=freedomInvariant.sp15st5,
+ 'SP-cross-qualified future pairings must remain a subset of practical SP15/ST5 pairings');
 
 const portfolios={
  1:planner.portfolioPareto(g1.all,3),
