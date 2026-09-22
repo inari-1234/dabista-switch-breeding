@@ -63,6 +63,9 @@ const strongB=fake({
   multi:true,speedCross:true,material:true,magnificent:true,elaborate:true,sire:'短距離B父'
 });
 assert.ok(advisor.compareProductionForMare(middle)(strongB,equalA)<0,'record B may beat A only when nitro/cross/theory/short-distance evidence is materially stronger');
+const lowerRecordTopCue=advisor.productionCandidateCue(strongB,equalA,middle,0);
+assert.ok(lowerRecordTopCue.headline.includes('実績Bだが')&&lowerRecordTopCue.headline.includes('実績A候補を逆転'),'lower-record main pick must explicitly explain why it beat the record-A reference');
+assert.ok(lowerRecordTopCue.tradeoffs.some(x=>x.includes('実績Bは比較した実績A候補より下')),'lower-record main pick must preserve the record-grade disadvantage');
 const strongBCtx=advisor.productionContext(strongB,middle);
 assert.ok(strongBCtx.shortDistanceRelevant&&strongBCtx.shortTier>=2,'1000m lower bound must become SP-side evidence for an SP-needy/middle mare');
 assert.ok(strongBCtx.overrideEligible,'B-over-A fixture must satisfy the explicit override gate');
