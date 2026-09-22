@@ -33,6 +33,10 @@ assert.ok(!use.arc.includes('推奨'),'only the generation advisor may publish a
 // Purpose-specific mare reasons must actually change when the user changes the goal.
 const rose=advisor.mareAssessment('ローズティンテッド');
 assert.ok(rose?.abilityKnown&&rose.stats.sp===64&&rose.stats.st===54,'Rose Tinted screenshot fixture must remain stable');
+const roseStrategy=advisor.mareStrategy('ローズティンテッド');
+assert.deepStrictEqual(roseStrategy.strengths,['SP','PW'],'Rose Tinted must expose SP/PW as explicit strengths');
+assert.deepStrictEqual(roseStrategy.improve,[],'Rose Tinted must not manufacture a deficit axis');
+assert.deepStrictEqual(roseStrategy.relativeAdjust,['ST'],'Rose Tinted ST must be a relative adjustment axis, not a weakness');
 const roseDirect=advisor.emptySummary('rose-direct');
 for(const r of planner.iterateDirect('ローズティンテッド'))advisor.addRoute(roseDirect,r);
 const roseReasons=['arc','bc','rebuild','stallion'].map(g=>advisor.goalMareReason('ローズティンテッド',g,roseDirect));
@@ -236,8 +240,14 @@ const unknownLabel=advisor.recommendGeneration({
   goal:'arc',assessment:unknownAssessment,
   generations:{1:{summary:{bestRoute:fakeRoute(0,15,6)}}}
 }).label;
-assert.ok(unknownLabel.includes('能力確認前提')&&!unknownLabel.includes('直仔推奨'),
-  'unknown mare generation label must remain a pedigree candidate, not a confirmed recommendation');
+assert.ok(unknownLabel.startsWith('血統上は直仔')&&unknownLabel.includes('確認前提')&&!unknownLabel.includes('直仔推奨'),
+  'unknown mare generation label must remain a bloodline assessment, not a confirmed recommendation');
+const unknownBelowLabel=advisor.recommendGeneration({
+  goal:'arc',assessment:unknownAssessment,
+  generations:{1:{summary:{bestRoute:fakeRoute(0,8,14)}}}
+}).label;
+assert.ok(unknownBelowLabel.includes('基準未達')&&unknownBelowLabel.includes('能力確認前提'),
+  'unknown mare kept at generation 1 must distinguish Arc threshold failure from a qualified direct candidate');
 const unknownDirect=advisor.emptySummary('unknown-direct');
 for(const r of planner.iterateDirect('アマリン'))advisor.addRoute(unknownDirect,r);
 const unknownQuick=advisor.quickSaleOutlook('アマリン',unknownDirect);
