@@ -29,7 +29,9 @@ const requiredRuntime=[
   "data-breed-future",
   "class=\"breed-pair-details\"",
   "class=\"notice breed-quick-fit\"",
-  "'+esc(GOAL_LABELS[goal])+'",
+  "class=\"breed-cue-badge\"",
+  "class=\"breed-cue-headline\"",
+  "'+esc(GOAL_LABELS[goal])+'：</b>'+esc(fitLabel)",
   "class=\"breed-future-detail\"",
   "4代compact bridge",
   "4代は検証済みcompact bridgeによる条件付き探索"
@@ -40,6 +42,8 @@ if(src.includes('4代全探索'))throw Error('runtime must not describe compact 
 const cardBlock=src.match(/function renderCard\([\s\S]*?\n\}\nfunction renderUnsafe/);
 if(!cardBlock)throw Error('renderCard block missing');
 if(/class="score"[^\n]*fitLabel/.test(cardBlock[0]))throw Error('candidate header repeats long goal-fit label');
+if(!cardBlock[0].includes('breed-cue-headline')||!cardBlock[0].includes('breed-reason-chip'))throw Error('collapsed card must explain why the candidate is shown');
+if(!cardBlock[0].includes('breed-card-details'))throw Error('verbose pair evidence must stay collapsed');
 
 const mobile={
   assumedViewportPx:390,
@@ -49,11 +53,11 @@ const mobile={
   overviewLocation:'separate card immediately after breed control card',
   summaryLayout:'category spans two rows; future and goal-fit stack in second column',
   estimatedRows:12,
-  collapsedCandidateFields:['順位・父名','現在配合値','選択カテゴリ将来性','目的適合'],
+  collapsedCandidateFields:['順位・役割・父名','短いおすすめ理由','現在配合値','選択カテゴリ将来性','目的適合'],
   expandOnly:['現在Pair根拠','全6カテゴリ診断','2〜4代ルート','トレードオフ詳細']
 };
 if(mobile.innerWidthPx<330)throw Error('unexpected mobile inner width');
-if(mobile.collapsedCandidateFields.length>4)throw Error('collapsed candidate too dense');
+if(mobile.collapsedCandidateFields.length>5)throw Error('collapsed candidate too dense');
 if(mobile.expandOnly.length>4)throw Error('expand-only grouping drift');
 
 console.log(JSON.stringify({
