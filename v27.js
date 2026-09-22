@@ -84,6 +84,8 @@ function style(){
  .mare-scoreline b{font-size:11px;color:#244b39}
  .mare-color-note{font-size:8px!important;color:#738077!important}
  .mare-why-detail{display:block;margin-top:4px;font-size:9px;line-height:1.45;color:#62736a}
+ .mare-why-reasons{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+ .mare-why-reasons span{font-size:8px;font-weight:800;line-height:1.35;padding:4px 6px;border-radius:999px;background:#eef4f0;color:#496056}
  .sale-quick{margin-top:9px;padding:10px 11px;border-radius:11px;background:#f7faf8;border:1px solid rgba(70,105,88,.14)}
  .sale-quick-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.sale-quick-head small{font-size:9px;font-weight:900;color:#687970}.sale-quick-head b{font-size:12px;color:#1f4a37;text-align:right}
  .sale-quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:7px}.sale-quick-grid>div{padding:7px 8px;border-radius:8px;background:#fff;border:1px solid rgba(80,110,95,.10)}.sale-quick-grid small{display:block;font-size:8px;font-weight:900;color:#66766e}.sale-quick-grid span{display:block;margin-top:2px;font-size:9px;font-weight:800;line-height:1.35;color:#294a3b}
@@ -146,13 +148,19 @@ function renderMareAdvice(){
   :'<div class="mare-scoreline"><b>能力未判明</b></div>';
  const currentUse=use?.[goal]||'評価保留';
  const decision=mareDecisionText(name,goal,direct),quick=advisor.quickSaleOutlook(name,direct);
+ const decisionReasons=(decision.reasons||[]).slice(0,2).map(x=>'<span>'+esc(x)+'</span>').join('');
  const quickSignals=(quick.signals||[]).map(x=>esc(x)).join(' / ');
+ const strategyAxis=strategy
+  ?(strategy.improve?.length?'補強：'+strategy.improve.join('・')
+    :strategy.relativeAdjust?.length?'相対調整：'+strategy.relativeAdjust.join('・')+'（弱点扱いではない）'
+    :'補強：明確な不足なし')
+  :'';
  box.innerHTML=`
    <div class="mare-advice-head">
     <div><h4>${esc(name)}</h4><small>能力既知 ${advisor.knownAbilityCount}頭で比較</small><small class="mare-color-note">カード色＝母能力帯</small></div>
     <span class="mare-tier">${esc(a.tier)}</span>
    </div>
-   <div class="mare-why"><small>この牝馬を使う理由｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span></div>
+   <div class="mare-why"><small>この牝馬を使う理由｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span>${decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':''}</div>
    ${rankHtml}
    <div class="sale-quick">
     <div class="sale-quick-head"><small>セリ即判定</small><b>${esc(quick.label)}</b></div>
@@ -168,7 +176,7 @@ function renderMareAdvice(){
      ${mareRankCell('繁殖PW',a.ranks.pw)}
      ${mareRankCell('SP+ST',a.ranks.spst)}
     </div>`:''}
-    ${strategy?`<div class="advisor-note"><b>補強タイプ：${esc(strategy.label)}</b><br>維持：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / 補強：${strategy.improve.length?esc(strategy.improve.join('・')):'—'}</div>`:''}
+    ${strategy?`<div class="advisor-note"><b>補強タイプ：${esc(strategy.label)}</b><br>維持：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / ${esc(strategyAxis)}</div>`:''}
     <div class="mare-use-title">目的別の事前評価</div>
     <div class="mare-use">
      <div class="${goal==='arc'?'selected':''}"><b>凱旋門賞</b><span>${esc(use.arc)}</span></div>
