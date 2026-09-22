@@ -5,6 +5,7 @@ const v26=fs.readFileSync('v26.js','utf8');
 const v27=fs.readFileSync('v27.js','utf8');
 const breed=fs.readFileSync('breed-integration.js','utf8');
 const advisor=fs.readFileSync('sale-recommendation-core.js','utf8');
+const planner=fs.readFileSync('sale-planner-core.js','utf8');
 const css=fs.readFileSync('ui-refresh.css','utf8');
 const v24=fs.readFileSync('v24.js','utf8');
 const v25=fs.readFileSync('v25.js','utf8');
@@ -18,27 +19,51 @@ need(v27,'カード色＝母能力帯','mare color meaning');
 need(v27,'順位・他目的・血統評価を見る','mare secondary details collapse');
 need(v27,'何代で締めるか比較','generation purpose');
 need(v27,'おすすめ世代を決める','generation single primary action');
-need(v27,'generationSection.hidden=true','manual generation selector must be hidden from primary flow');
+need(v27,'data-generation-choice','generation comparison cards must be selectable');
+need(v27,'selectedGeneration=rec.generation','automatic recommendation must remain the initial selected generation');
+need(v27,"selectedGeneration===rec.generation?'diagnosis':'manual'","manual generation choice must remain distinguishable from diagnosis");
+need(v27,'generation-compare-card selected','generation card selected state');
+need(v27,'手動で比較中（自動推奨は','manual generation choice must keep the auto recommendation visible');
+need(v27,'generationSection.hidden=true','legacy generation selector must stay hidden');
 need(v27,'if(notice)notice.hidden=true','technical generation notice must not be primary');
-need(v27,'if(run)run.hidden=true','separate manual design button must not duplicate the primary flow');
-need(v27,'generation-compare','generation comparison must stay compact');
-need(v27,'generation-key-reason','recommended generation must show a concise reason');
-if(v27.includes('世代推奨は勝率・産駒能力の確率予測ではありません。安全配合'))throw Error('long generation disclaimer must not remain in primary result');
+need(v27,'if(run)run.hidden=true','duplicate old design button must stay hidden');
+need(v27,'generation-key-reason','selected generation must show a concise reason');
+need(v27,'父実績Aを強く評価し','mare policy must keep record A as the strong baseline');
+if(v27.includes('世代推奨は勝率・産駒能力の確率予測ではありません。安全配合'))throw Error('long generation disclaimer must not return to primary result');
 if(/\.mare-tier\{[^}]*font-size:(?:8|9)px/.test(v27))throw Error('mare tier regressed to tiny text');
 
-for(const token of ['function mareBand(','function productionContext(','function compareProductionForMare(','function rankProductionRoutes(','function recommendationCue('])need(advisor,token,'mare-aware recommendation');
-need(advisor,"key='longshot';label='一発狙い'","C/C longshot label");
-need(advisor,"const middleMain=band==='middle'&&practical&&stable!=='C'","middle main lane must exclude Stable C upside");
+for(const token of [
+  'function mareBand(','function productionContext(','function compareProductionForMare(',
+  'function productionCandidateCue(','function selectProductionRecommendations(','function shortDistanceTier('
+])need(advisor,token,'mare-aware production recommendation');
+need(advisor,'const recordEvidence=recordGrade*8','record A>B>C must remain a strong base component');
+need(advisor,"if(d<=1000)return 3","1000m lower-bound SP evidence");
+need(advisor,"if(d<=1200)return 2","1200m lower-bound SP evidence");
+need(advisor,"key='longshot';label='上振れ枠'","C/C must stay available as an upside role rather than be globally excluded");
+need(advisor,"実績C・安定Cを許容する代わりに明確な血統上積みが必要","C/C must require an explicit compensating rationale");
+if(advisor.includes("const middleMain=band==='middle'&&practical&&stable!=='C'"))throw Error('stable C must not be hard-excluded from the middle-mare main comparison');
+
+need(planner,'実績A>B>Cを強い基礎差として評価','planner criteria must document record ordering');
+need(planner,'距離下限1000/1200m側をSP補助根拠','planner criteria must document short-distance SP evidence');
+need(planner,'B/Cは他要素の明確な上積みがある場合のみ逆転','planner criteria must document compensated reversal');
 
 need(v26,'331頭中 ','all mare data visibility');
 need(v26,'件を表示・選択できます','all mare data visibility count');
-need(v26,'色＝推薦度','recommendation color legend');
+need(v26,'色＝候補の役割','candidate colors must explain their meaning');
 need(v26,'緑：本命','main color semantics');
+need(v26,'青：実績','record color semantics');
+need(v26,'紫：SP補強','SP-support color semantics');
+need(v26,'青緑：ニトロ','nitro color semantics');
 need(v26,'黄：上振れ','upside color semantics');
-need(v26,'白：参考','reference color semantics');
-need(v26,'参考軸を見る（SP上限・クロス・ST・バランス・血統価値）','secondary axes must be collapsed');
+need(v26,'白：参考軸','reference color semantics');
+need(v26,'別強み候補 ','non-top recommendations must explain a distinct reason instead of repeating main/standard');
+need(v26,'productionCandidateCue','candidate cards must use peer-relative explanations');
+need(v26,'selectProductionRecommendations','candidate list must select meaningful alternatives');
+need(v26,'距離下限（1000/1200m側）','sale UI must disclose lower-distance evidence');
+need(v26,'本命配合を表示','hidden compatibility button must no longer say この条件で設計');
+if(v26.includes('もう一度「この条件で設計」を実行してください'))throw Error('stale design instruction must be removed');
+need(v26,'参考軸を見る（SP上限・クロス・ST・バランス・血統価値）','secondary axes must stay collapsed');
 need(v26,"const tone=isMain?","non-main axes must not own recommendation colors");
-need(v26,"父実績C・安定Cのため本命外","C/C reference warning");
 need(v26,'function createMareProductionCollector(','sale production recommendations must be collected across the scanned generation');
 need(v26,'クロス・配合理論の根拠を見る','route bridge evidence must be collapsed per generation');
 need(v26,'連携・最終父の操作','route bridge actions must be secondary');
@@ -46,27 +71,23 @@ need(v24,'<div id="rebuildBody" hidden aria-hidden="true"></div>','legacy four-m
 need(v24,'<div hidden aria-hidden="true"><select id="rebuildGoal"','legacy four-mare starter controls must stay hidden');
 need(v25,"card.hidden=true;card.setAttribute('aria-hidden','true')",'legacy manual nitro simulator must stay hidden');
 
-need(breed,"advisor?.compareProductionForMare","breed production mare-aware comparator");
+need(breed,"advisor?.compareProductionForMare","breed production must use the same mare-aware comparator");
 need(breed,'function createFutureProductionCollector(','breed future production must remain full-scan');
-need(breed,"const tone=isMain?","breed non-main axes must be visually neutral");
-need(breed,"父実績C・安定Cのため本命外","breed C/C reference warning");
-need(breed,'カード色＝推薦度：緑は本命、黄は上振れ、白は参考軸','breed color legend');
 need(breed,'function renderFutureOverview(result){}','separate six-axis future overview must stay removed');
 need(breed,"profile=selectedCategory()","future result must focus on the selected category");
 if(breed.includes("overview.className='card breed-future-overview'"))throw Error('six-category overview card must not return to primary UI');
 
-need(css,'.sale-route.tone-neutral','reference sale cards must have a neutral style');
-need(css,'.breed-integrated-card.tone-neutral','reference breed cards must have a neutral style');
+for(const token of ['.sale-route.tone-main','.sale-route.tone-record','.sale-route.tone-speed','.sale-route.tone-nitro','.sale-route.tone-upside','.sale-route.tone-neutral'])need(css,token,'candidate role color');
 need(css,'.sale-other-axes','secondary axes container');
 
 console.log(JSON.stringify({
   passed:true,
   contract:{
-    mare:'decision reason first; full rank data collapsed; card color means ability band',
-    generation:'automatic recommendation first; manual generation choice and legacy four-mare/nitro tools hidden; comparison compact',
-    sale:'main production recommendations visible; five reference axes collapsed',
-    breed:'green/yellow/white mean recommendation role, never category; C/C reference is explicit',
-    future:'selected category only in primary UI; six-category table removed',
-    scoring:'six axes remain separate internally; no seventh overall score'
+    mare:'record A is the strong baseline; B/C need explicit compensating bloodline evidence',
+    generation:'auto recommendation starts selected, but all four comparison cards are tappable',
+    candidates:'top plus differentiated alternatives with reason/tradeoff; role colors are explained',
+    distance:'1000/1200m lower bound is SP-side evidence for middle/rebuild/SP-deficient mares',
+    variance:'stable C and C/C remain available but are never promoted by variance alone',
+    scoring:'six independent axes remain separate; no seventh overall score'
   }
 },null,2));
