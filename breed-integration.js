@@ -128,13 +128,8 @@ function releaseLegacyBreedUi(){
     try{cleanup?.()}catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'breed-legacy-cleanup: '+String(e)})}
   }
 }
-function futureOverviewPlaceholder(){
-  return '<b>カテゴリ別・将来性比較</b><p class="muted">候補カードで「2～4代の将来性を診断」を開くと、同じ初手父を6カテゴリ横断で比較します。</p>';
-}
-function clearFutureOverview(){
-  const box=$('#breedFutureOverview');
-  if(box)box.innerHTML=futureOverviewPlaceholder();
-}
+function futureOverviewPlaceholder(){return ''}
+function clearFutureOverview(){}
 function ensureStyle(){
   if($('#breedIntegrationStyle'))return;
   const s=document.createElement('style');
@@ -168,13 +163,6 @@ function ensureControls(){
     $('#breedNitroFilter').onchange=()=>window.renderBreed();
   }
   const notice=$('#breedNotice');
-  if(notice&&!$('#breedFutureOverview')){
-    const overview=document.createElement('div');
-    overview.id='breedFutureOverview';
-    overview.className='card breed-future-overview';
-    overview.innerHTML=futureOverviewPlaceholder();
-    (notice.closest('.card')||notice).insertAdjacentElement('afterend',overview);
-  }
   if(goal){
     const want=canonicalGoal(db.breedPlanner.goal||goal.value);
     if([...goal.options].some(o=>o.value===want))goal.value=want;
@@ -347,13 +335,18 @@ function renderCard(entry,rank,profile,goal){
   const fitLabel=fitLabelForRoute(r,goal,profile);
   const future=futureDisplay(status);
   const risky=['upside','rebuild-upside','longshot','low-record'].includes(cue.key);
-  const rankText=profile==='production'?(risky?'上振れ枠 '+rank+'位':'本命軸 '+rank+'位'):profile==='sire'?'血統価値候補':'この軸 '+rank+'位';
-  const tone=['solid','preserve','balance','distance','ceiling','upside','rebuild-upside','longshot','low-record'].includes(cue.key)?cue.key:'neutral';
-  const reasons=(cue.reasons||[]).slice(0,4).map(x=>'<span class="breed-reason-chip">'+esc(x)+'</span>').join('');
-  const portfolioNote=profile==='sire'?'<div class="muted">直配合だけで順位を決めず、将来診断のportfolioで血統汎用性を評価します。</div>':'';
+  const isMain=profile==='production';
+  const stats=f.sireStats||{},cc=stats.record==='C'&&stats.stable==='C';
+  const rankText=isMain?(risky?'上振れ枠 '+rank+'位':'本命軸 '+rank+'位'):'参考軸 '+rank+'位';
+  const tone=isMain?(['solid','preserve','upside','rebuild-upside','longshot','low-record'].includes(cue.key)?cue.key:'neutral'):'neutral';
+  const displayLabel=!isMain&&cc?'参考候補':cue.label;
+  const displayHeadline=!isMain&&cc?cue.headline+'。父実績C・安定Cのため本命外':cue.headline;
+  const extra=cc?['実績C','安定C']:[];
+  const reasons=[...(cue.reasons||[]).slice(0,3),...extra].map(x=>'<span class="breed-reason-chip">'+esc(x)+'</span>').join('');
+  const portfolioNote=profile==='sire'?'<div class="muted">血統価値は参考軸です。</div>':'';
   return '<div class="card breed-integrated-card tone-'+esc(tone)+'" data-sire-name="'+esc(entry.sire)+'">'+
-    '<div class="breed-card-head"><div><span class="breed-rank-label">'+esc(rankText)+'</span><b>'+esc(entry.sire)+'</b></div><span class="breed-cue-badge">'+esc(cue.label)+'</span></div>'+
-    '<div class="breed-cue-headline">'+esc(cue.headline)+'</div>'+
+    '<div class="breed-card-head"><div><span class="breed-rank-label">'+esc(rankText)+'</span><b>'+esc(entry.sire)+'</b></div><span class="breed-cue-badge">'+esc(displayLabel)+'</span></div>'+
+    '<div class="breed-cue-headline">'+esc(displayHeadline)+'</div>'+
     (reasons?'<div class="breed-reason-row">'+reasons+'</div>':'')+
     '<div class="grid"><div class="stat"><b>'+Number(n.sp||0)+'</b><small>SPニトロ</small></div><div class="stat"><b>'+Number(n.st||0)+'</b><small>STニトロ</small></div><div class="stat"><b>'+Number(n.pw||0)+'</b><small>PWニトロ</small></div></div>'+
     portfolioNote+
@@ -372,24 +365,9 @@ function renderUnsafe(entry){
 function renderNotice(resolved,index){
   const info=$('#breedNotice');
   if(!info)return;
-  if(!resolved){
-    info.textContent='牝馬を選ぶと、繁殖牝馬×父の共通配合エンジン評価を開始します。';
-    return;
-  }
-  const assessment=currentMareAssessment();
-  let ability='';
-  if(!assessment){
-    ability='<b>現在の母能力：</b>能力未評価（自家製／マスタ外）。血統将来性は評価可能。';
-  }else if(!assessment.abilityKnown){
-    ability='<b>現在の母能力：</b>未判明。SP/ST/PW=0を弱評価へ使わず、血統将来性だけを評価。';
-  }else{
-    const s=assessment.stats||{},r=assessment.ranks||{};
-    ability='<b>現在の母能力：</b>SP '+Number(s.sp||0)+' / ST '+Number(s.st||0)+' / PW '+Number(s.pw||0)+
-      ' ｜ SP順位 '+Number(r.sp?.rank||0)+' / 298・ST順位 '+Number(r.st?.rank||0)+' / 298・PW順位 '+Number(r.pw?.rank||0)+' / 298';
-  }
-  info.innerHTML='<b>選択牝馬：</b>'+esc(resolved.name)+' ｜ 安全 '+Number(index?.safeCount||0)+' / 危険 '+Number(index?.unsafeCount||0)+
-    '<br>'+ability+
-    '<br><span class="muted">現在能力・現在Pair・2～4代の血統将来性・目的適合は別々に表示します。3代は固定初手父で全探索、4代は条件付きcompact bridgeです。</span>';
+  if(!resolved){info.textContent='牝馬を選ぶと本命候補を表示します。';return}
+  info.innerHTML='<b>'+esc(resolved.name)+'</b> ｜ 安全 '+Number(index?.safeCount||0)+'件'+
+    '<br><span class="muted">カード色＝推薦度：緑は本命、黄は上振れ、白は参考軸。SPクロス/STなどのカテゴリ自体には色を付けません。</span>';
 }
 function renderBreed(){
   syncDb();
@@ -612,29 +590,18 @@ function transitionDetail(status){
   if(!meaningful.length)return '<span class="muted">直配合から有意な追加改善なし。</span>';
   return meaningful.map(x=>'<div><b>'+Number(x.to)+'代：</b>'+esc(x.kind==='material'?'有意改善':x.kind==='tradeoff'?'別方向の補強 / tradeoff':'微差')+(x.reasons?.length?' — '+esc(x.reasons.join('／')):'')+'</div>').join('');
 }
-function renderFutureOverview(result){
-  const box=$('#breedFutureOverview');
-  if(!box)return;
-  box.innerHTML='<div class="row"><b>カテゴリ別・将来性比較</b><span class="badge gold">'+esc(result.firstSire)+'起点</span></div>'+
-    '<div class="breed-future-head"><span>カテゴリ</span><span>将来性</span><span>目的適合</span></div>'+
-    futureRowsHtml(result)+
-    '<p class="muted">※3代は固定初手父で全探索。4代は検証済みcompact bridgeによる条件付き探索です。「将来性」と「目的達成」は別判定です。</p>';
-}
+function renderFutureOverview(result){}
 function futureHtml(result){
-  const goal=selectedGoal(),m=result.meta||{};
-  const details=PROFILES.map(profile=>{
-    const st=result.statuses?.[profile],label=planner.profileLabels?.[profile]||PROFILE_FALLBACK[profile];
-    const fit=fitLabelForStatus(st,goal,profile);
-    return '<details class="breed-future-detail"><summary><b>'+esc(label)+'</b> ｜ '+esc(futureDisplay(st))+' ｜ '+esc(fit)+'</summary>'+
-      '<div class="muted" style="margin-top:6px;line-height:1.55">'+selectedRouteDetail(profile,st)+'<br>'+transitionDetail(st)+'</div></details>';
-  }).join('');
-  return '<div class="notice" style="margin-top:8px"><b>'+esc(result.firstSire)+' 起点の6カテゴリ診断</b>'+
-    '<div style="margin-top:6px">'+futureRowsHtml(result)+'</div>'+
-    '<div class="muted" style="margin-top:6px">2代：固定父から正確探索 '+Number(m.generation2?.safeCount||0).toLocaleString()+
-    '件 / 3代：固定父全探索 '+Number(m.generation3?.safeCount||0).toLocaleString()+
-    '件 / 4代：条件付きcompact bridge '+Number(m.generation4?.safeCount||0).toLocaleString()+'件。</div>'+
-    '<div style="margin-top:7px">'+details+'</div>'+
-    '<div class="muted">※3～4代は中間牝馬の実能力を確認し、能力上位個体を選抜できた場合に進む前提です。</div></div>';
+  const goal=selectedGoal(),profile=selectedCategory(),m=result.meta||{};
+  const st=result.statuses?.[profile],label=planner.profileLabels?.[profile]||PROFILE_FALLBACK[profile];
+  const fit=fitLabelForStatus(st,goal,profile);
+  return '<div class="notice breed-future-simple" style="margin-top:8px">'+
+    '<b>'+esc(label)+'：'+esc(futureDisplay(st))+'</b>'+
+    '<div style="margin-top:4px">'+esc(GOAL_LABELS[goal])+'：'+esc(fit)+'</div>'+
+    '<details class="breed-future-detail"><summary>将来ルート・探索条件を見る</summary>'+
+    '<div class="muted" style="margin-top:6px;line-height:1.55">'+selectedRouteDetail(profile,st)+'<br>'+transitionDetail(st)+
+    '<br>2代 '+Number(m.generation2?.safeCount||0).toLocaleString()+'件 / 3代 '+Number(m.generation3?.safeCount||0).toLocaleString()+'件 / 4代 '+Number(m.generation4?.safeCount||0).toLocaleString()+'件</div></details>'+
+    '</div>';
 }
 function renderCachedFutureIntoActive(){
   if(!activeSire)return;
