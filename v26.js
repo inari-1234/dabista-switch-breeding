@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.22-46',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.22-47',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;

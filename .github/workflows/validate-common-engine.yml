@@ -1,5 +1,5 @@
 name: Validate common breeding engine
-# Release-candidate verification: v1.19.1 / Build 2026.09.22-46
+# Release-candidate verification: v1.19.1 / Build 2026.09.22-47
 
 on:
   push:
@@ -154,26 +154,26 @@ jobs:
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
           direct=json.loads(Path('data/elaborate-direct-exceptions.json').read_text(encoding='utf-8'))
           pedigree=json.loads(Path('data/pedigree-master.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build']) == ('1.19.1','2026.09.22-46')
-          assert "const APP_VERSION='1.19.1';" in app and "const APP_BUILD='2026.09.22-46';" in app
-          assert "BUILD=window.APP_BUILD||'2026.09.22-46'" in versioned['v26.js']
+          assert (v['version'],v['build']) == ('1.19.1','2026.09.22-47')
+          assert "const APP_VERSION='1.19.1';" in app and "const APP_BUILD='2026.09.22-47';" in app
+          assert "BUILD=window.APP_BUILD||'2026.09.22-47'" in versioned['v26.js']
           assert direct['count'] == 33 and len(direct['pairs']) == 33
           assert pedigree['schemaVersion'] == 4
           assert pedigree['domesticStallionCount'] == 176
           assert pedigree['pedigreeStallionCount'] == 214
           assert pedigree['broodmareCount'] == 331
-          assert 'breeding-core.js?v=1.19.1-b46' in idx
-          assert 'breeding-engine.js?v=1.19.1-b46' in idx
-          assert 'sale-planner-core.js?v=1.19.1-b46' in idx
-          assert 'sale-recommendation-core.js?v=1.19.1-b46' in idx
-          assert 'breed-integration.js?v=1.19.1-b46' in idx
-          assert 'v26.js?v=1.19.1-b46' in idx
-          assert 'v27.js?v=1.19.1-b46' in idx
-          assert 'ui-refresh.css?v=1.19.1-b46' in idx
-          assert 'ui-refresh.js?v=1.19.1-b46' in idx
+          assert 'breeding-core.js?v=1.19.1-b47' in idx
+          assert 'breeding-engine.js?v=1.19.1-b47' in idx
+          assert 'sale-planner-core.js?v=1.19.1-b47' in idx
+          assert 'sale-recommendation-core.js?v=1.19.1-b47' in idx
+          assert 'breed-integration.js?v=1.19.1-b47' in idx
+          assert 'v26.js?v=1.19.1-b47' in idx
+          assert 'v27.js?v=1.19.1-b47' in idx
+          assert 'ui-refresh.css?v=1.19.1-b47' in idx
+          assert 'ui-refresh.js?v=1.19.1-b47' in idx
           assert "json('data/pedigree-master.json')" in Path('breeding-engine.js').read_text(encoding='utf-8')
           assert 'allPedigreeStallions' in Path('breeding-engine.js').read_text(encoding='utf-8')
-          assert idx.index('breeding-core.js?v=1.19.1-b46') < idx.index('breeding-engine.js?v=1.19.1-b46') < idx.index('sale-planner-core.js?v=1.19.1-b46') < idx.index('sale-recommendation-core.js?v=1.19.1-b46') < idx.index('breed-integration.js?v=1.19.1-b46') < idx.index('v20.js?v=1.19.1-b46') < idx.index('v26.js?v=1.19.1-b46') < idx.index('v27.js?v=1.19.1-b46')
+          assert idx.index('breeding-core.js?v=1.19.1-b47') < idx.index('breeding-engine.js?v=1.19.1-b47') < idx.index('sale-planner-core.js?v=1.19.1-b47') < idx.index('sale-recommendation-core.js?v=1.19.1-b47') < idx.index('breed-integration.js?v=1.19.1-b47') < idx.index('v20.js?v=1.19.1-b47') < idx.index('v26.js?v=1.19.1-b47') < idx.index('v27.js?v=1.19.1-b47')
           assert 'v23.js' not in idx
           assert 'buildSystemMap' not in v20 and 'deriveMare(' not in v20
           assert 'sevenCandidate' not in v21
