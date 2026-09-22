@@ -340,7 +340,7 @@ function openRouteInBreed(id){
  const ctx=routeContexts.get(id);if(!ctx)return;
  window.DABISTA_SELECTED_SALE_ROUTE=ctx;
  const synced=ensureSaleMareForBreed(ctx.mare);
- const goalMap={arc:'breaker',bc:'breaker',rebuild:'rebuild',stallion:'successor'};
+ const goalMap={arc:'arc',bc:'bc',rebuild:'rebuild',stallion:'stallion'};
  const goal=$('#breedGoal');
  if(goal&&goalMap[ctx.goal]){goal.value=goalMap[ctx.goal];goal.dispatchEvent(new Event('change',{bubbles:true}))}
  $('.tab[data-tab="breed"]')?.click();
