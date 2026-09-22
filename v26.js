@@ -75,6 +75,26 @@ function style(){
  .production-warning{display:block;margin-top:3px;color:#7a5610}
  .sale-method{font-size:10px;line-height:1.5;color:#66736c}
  .sale-generation-state{margin:-4px 0 9px;font-size:9px;line-height:1.45;color:#66736c}
+ .sale-profile-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:7px}
+ .sale-profile-head h3{margin:0;font-size:14px}
+ .sale-axis-note{font-size:9px;color:#66736c;line-height:1.45}
+ .sale-profile-detail{margin-top:7px}
+ .sale-profile-detail>summary{cursor:pointer;font-size:9px;font-weight:800;color:#60736b}
+ .sale-route-cue{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+ .sale-rank-label{font-size:11px;font-weight:900}
+ .sale-cue-badge{display:inline-block;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;white-space:nowrap}
+ .sale-cue-headline{margin-top:6px;font-size:12px;font-weight:900;line-height:1.4;color:#2a493a}
+ .sale-reason-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+ .sale-reason-chip{display:inline-block;padding:3px 6px;border-radius:999px;background:#eef2f0;color:#50645a;font-size:8px;font-weight:800}
+ .sale-route-details{margin-top:8px;border-top:1px solid #e3eae6;padding-top:7px}
+ .sale-route-details>summary{cursor:pointer;font-size:10px;font-weight:800;color:#53675e}
+ .sale-route.tone-solid .sale-cue-badge{background:#dcefe3;color:#1b5a35}
+ .sale-route.tone-preserve .sale-cue-badge{background:#dfeee8;color:#245d45}
+ .sale-route.tone-balance .sale-cue-badge,.sale-route.tone-distance .sale-cue-badge{background:#e6eff8;color:#35628e}
+ .sale-route.tone-ceiling .sale-cue-badge{background:#eee8f7;color:#624d91}
+ .sale-route.tone-upside .sale-cue-badge,.sale-route.tone-rebuild-upside .sale-cue-badge{background:#fff0c9;color:#76540c}
+ .sale-route.tone-longshot .sale-cue-badge,.sale-route.tone-low-record .sale-cue-badge{background:#ffe4c6;color:#884f13}
+ .sale-route.tone-neutral .sale-cue-badge{background:#ecefed;color:#5e6963}
  @media(max-width:520px){.sale-controls{grid-template-columns:1fr}.sale-seg{grid-template-columns:1fr 1fr}}
  `;document.head.appendChild(s)
 }
@@ -184,12 +204,13 @@ function renderMare(){
  if(!planner||!$('#saleMareSummary'))return;
  const name=$('#saleMareSelect')?.value||db.salePlanner.mare,info=planner.mareInfo(name),s=info?.stats;
  if(!info?.record||!s){$('#saleMareSummary').textContent='繁殖牝馬情報を取得できませんでした。';return}
- if(!info.abilityKnown){
-  $('#saleMareSummary').innerHTML=`<div class="row"><b>${esc(name)}</b><span>価格 ${fmt(s.price)}万円</span></div><span class="sale-chip warn">繁殖能力：未判明</span><div class="sale-ability-grid"><div><b>未判明</b><small>繁殖SP</small></div><div><b>未判明</b><small>繁殖ST</small></div><div><b>未判明</b><small>繁殖PW</small></div><div><b>${fmt(s.nsp)}</b><small>NSP</small></div><div><b>${fmt(s.nst)}</b><small>NST</small></div><div><b>${fmt(s.npw)}</b><small>NPW</small></div></div><div style="margin-top:6px"><b>血統・ニトロ・配合理論による設計は可能</b><br>母能力を含む総合評価は保留します。SP/ST/PW=0を低能力値として順位付けには使用しません。</div>${pedigreeDetails(info)}`;
- }else{
-  $('#saleMareSummary').innerHTML=`<div class="row"><b>${esc(name)}</b><span>SP+ST ${info.spst}</span></div><div class="sale-ability-grid"><div><b>${fmt(s.sp)}</b><small>繁殖SP</small></div><div><b>${fmt(s.st)}</b><small>繁殖ST</small></div><div><b>${fmt(s.pw)}</b><small>繁殖PW</small></div><div><b>${fmt(s.nsp)}</b><small>NSP</small></div><div><b>${fmt(s.nst)}</b><small>NST</small></div><div><b>${fmt(s.npw)}</b><small>NPW</small></div></div><div style="margin-top:6px">価格 ${fmt(s.price)}万円。母能力は当たり率・平均能力側、ニトロは上限側として別軸で扱います。</div>${pedigreeDetails(info)}`;
- }
+ const ability=info.abilityKnown
+  ?`<div class="sale-ability-grid"><div><b>${fmt(s.sp)}</b><small>繁殖SP</small></div><div><b>${fmt(s.st)}</b><small>繁殖ST</small></div><div><b>${fmt(s.pw)}</b><small>繁殖PW</small></div></div>`
+  :'<div class="sale-ability-grid"><div><b>—</b><small>繁殖SP</small></div><div><b>—</b><small>繁殖ST</small></div><div><b>—</b><small>繁殖PW</small></div></div>';
+ const detail=`<details class="sale-profile-detail"><summary>ニトロ・価格・血統を見る</summary><div class="sale-ability-grid"><div><b>${fmt(s.nsp)}</b><small>NSP</small></div><div><b>${fmt(s.nst)}</b><small>NST</small></div><div><b>${fmt(s.npw)}</b><small>NPW</small></div></div><div class="sale-method" style="margin-top:6px">価格 ${fmt(s.price)}万円。${info.abilityKnown?'母能力とニトロは別軸で評価します。':'能力値0は低能力ではなく未判明として扱います。'}</div>${pedigreeDetails(info)}</details>`;
+ $('#saleMareSummary').innerHTML=`<div class="row"><b>${esc(name)}</b><span>${info.abilityKnown?'SP+ST '+info.spst:'能力未判明'}</span></div>${ability}${detail}`;
 }
+
 function renderNotice(){
  const n=+db.salePlanner.generation,el=$('#salePlannerNotice');if(!el)return;
  if(!n){el.innerHTML='<b>世代未選択：</b>正式な推奨は「おすすめ配合世代を診断」で決定します。手動で比較することもできます。';return}
@@ -269,12 +290,25 @@ function productionHtml(route){
 }
 function routeHtml(route,index,goal,profile){
  const x=planner.expandRoute(db.salePlanner.mare,route,goal);if(!x)return'';
- const f=route.final||{},sx=f.speedCross||{},method=route.method==='conditional-four-generation-preview'?'4代目は条件付き仮プレビュー':route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'この表示範囲は全探索結果';
- const speedBadge=sx.has?'<span class="sale-chip cross-speed-ok">SP系クロス '+fmt(sx.count)+'祖先</span>':'<span class="sale-chip cross-speed-missing">SP系クロスなし</span>';
+ const assessment=recommendationAdvisor?.mareAssessment?.(db.salePlanner.mare)||null;
+ const cue=recommendationAdvisor?.recommendationCue?.(route,profile,assessment)||{key:'neutral',label:'比較候補',headline:'評価候補',reasons:[]};
+ const f=route.final||{},sx=f.speedCross||{},method=route.method==='conditional-four-generation-preview'?'4代目は条件付き仮プレビュー':route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'全探索範囲';
+ const speedBadge=sx.has?'<span class="sale-reason-chip">SPクロス '+fmt(sx.count)+'</span>':'';
+ const reasons=(cue.reasons||[]).slice(0,4).map(v=>'<span class="sale-reason-chip">'+esc(v)+'</span>').join('')+speedBadge;
+ const rankLabel=profile==='production'?(index===0?'本命候補':'本命候補 '+(index+1)):'この軸 '+(index+1)+'位';
+ const tone=['solid','preserve','balance','distance','ceiling','upside','rebuild-upside','longshot','low-record'].includes(cue.key)?cue.key:'neutral';
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
- return '<div class="sale-route"><div class="sale-route-title"><b>候補 '+(index+1)+'</b><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span></div><div style="margin-top:4px">'+speedBadge+'</div><div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div><div class="sale-method">'+method+'。途中世代の繁殖SP/ST/PWは仮定していません。</div>'+productionHtml(route)+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'')+'<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
+ const detail=productionHtml(route)+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'');
+ return '<div class="sale-route tone-'+esc(tone)+'"><div class="sale-route-cue"><span class="sale-rank-label">'+esc(rankLabel)+'</span><span class="sale-cue-badge">'+esc(cue.label)+'</span></div>'+
+  '<div class="sale-cue-headline">'+esc(cue.headline)+'</div>'+
+  '<div class="sale-reason-row">'+reasons+'</div>'+
+  '<div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div>'+
+  '<div class="row"><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span><span class="sale-axis-note">'+esc(method)+'</span></div>'+
+  '<details class="sale-route-details"><summary>詳しい根拠・世代別データを見る</summary><div class="sale-method" style="margin-top:6px">途中世代の繁殖SP/ST/PWは仮定していません。</div>'+detail+'</details>'+
+  '<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
 }
+
 function bridgeStageHtml(st){
  const n=st.nitro||{},ss=st.sireStats||{};
  return '<div class="route-bridge-stage"><b>'+st.generation+'代目：'+esc(st.sire)+'</b><br>SP '+fmt(n.sp)+' / ST '+fmt(n.st)+' / PW '+fmt(n.pw)+'　・　'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m　・　実績'+esc(ss.record||'-')+' / 底力'+esc(ss.guts||'-')+' / 安定'+esc(ss.stable||'-')+'<div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</div>';
@@ -359,17 +393,21 @@ function profileHtml(profile,routes,goal,scope){
  const label=planner.profileLabels[profile],criteria=planner.profileCriteria[profile];
  if(!routes?.length){
   const empty=profile==='speedCross'
-   ?'SPクロス補強型候補なし。この世代の探索範囲では、安全な候補に速力/短距離の有効クロスが成立しません。SP上限型など他の軸と比較してください。'
+   ?'この探索範囲では安全なSPクロス候補がありません。'
    :'条件を満たす候補を取得できませんでした。';
   return`<div class="card sale-profile"><h3>${esc(label)}</h3><p class="muted">${esc(empty)}</p></div>`
  }
- const crossNote=profile==='speedCross'
-  ?'<div class="notice">速力または短距離の有効クロスを持つ候補だけを表示する<b>血統上限側の軸</b>です。ここで1位でも強馬生産の確度1位とは限りません。最終父の実績・安定と中間牝馬の選抜条件も確認してください。</div>'
-  :profile==='production'
-   ?'<div class="notice"><b>強馬生産型：</b>多世代では途中または締めに速力/短距離クロスを最低1回確保し、SP15/ST5を最低線に最終父の実績を評価します。安定C/B/Aは「上振れ幅の違い」として比較し、安定Aは高能力の中間牝馬を実際に選抜できた場合に向く条件として扱います。</div>'
-   :'';
- return `<div class="card sale-profile"><h3>${esc(label)}</h3><div class="sale-method">並び順：${esc(criteria)}</div>${crossNote}${profile==='sire'?`<div class="sale-method">評価範囲：${esc(scope)}</div>`:''}${routes.map((r,i)=>routeHtml(r,i,goal,profile)).join('')}</div>`
+ const axisNotes={
+  production:'実績・安定・SP/STを母能力に合わせて比較する本命軸',
+  speedCross:'速力/短距離クロスによる血統上限側の候補',
+  sp:'SPニトロ上限を伸ばす血統候補',
+  st:'ST・距離側を補強する候補',
+  balance:'SP/STの両立を優先する候補',
+  sire:'将来自家製種牡馬としての血統汎用性'
+ };
+ return `<div class="card sale-profile"><div class="sale-profile-head"><h3>${esc(label)}</h3><span class="sale-axis-note">${esc(axisNotes[profile]||'別軸評価')}</span></div>${routes.map((r,i)=>routeHtml(r,i,goal,profile)).join('')}<details class="sale-profile-detail"><summary>この軸の並び順・評価範囲</summary><div class="sale-method" style="margin-top:5px">${esc(criteria)}</div>${profile==='sire'?`<div class="sale-method">${esc(scope)}</div>`:''}</details></div>`
 }
+
 function renderResults(result){
  routeContexts.clear();routeContextSeq=0;
  const goal=db.salePlanner.goal,order=planner.goalOrder(goal),gen=+db.salePlanner.generation,info=planner.mareInfo(db.salePlanner.mare);
@@ -378,8 +416,11 @@ function renderResults(result){
   :gen===3?`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索後、${result.previewBaseCount3}本の多軸候補から3代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`
   :`2代目まで ${result.baseSafeCount.toLocaleString()}件を全探索し、3代目を${result.previewBaseCount3}本から条件付き探索後、${result.previewBaseCount4}本の3代bridge候補から4代目 ${result.safeCount.toLocaleString()}安全ルートを条件付き探索`;
  const caution=!info.abilityKnown?'<div class="notice"><b>繁殖能力未判明：</b>母能力を含む総合評価は保留。血統・ニトロ・配合理論だけで候補を表示しています。</div>':'';
- const profiles={...result.base.profiles,sire:result.portfolio.routes};
- $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice">6軸は合算して総合1位を作りません。<b>強馬生産型</b>は最終父の実績・安定とSP/ST最低線を重視し、SP上限型・SPクロス補強型は血統上限側として別に残します。実際に生産した中間牝馬の能力を確認して次世代へ進めてください。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
+ const assessment=recommendationAdvisor?.mareAssessment?.(db.salePlanner.mare)||null;
+ const productionSource=result.base.shortlists?.production||result.base.profiles?.production||[];
+ const production=recommendationAdvisor?.rankProductionRoutes?.(productionSource,assessment,3)||result.base.profiles?.production||[];
+ const profiles={...result.base.profiles,production,sire:result.portfolio.routes};
+ $('#salePlannerResults').innerHTML=`<div class="card"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜${esc(planner.goalLabels[goal])}</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}設計</span></div><p class="muted">${esc(method)}</p>${caution}<div class="notice"><b>見方：</b>「強馬生産型」が本命軸です。他の5軸はSP上限・クロス・ST・バランス・血統価値を別々に確認する候補で、総合点には合算しません。</div></div>`+order.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
 }
 async function runDesign(){
  if(!planner)return;
