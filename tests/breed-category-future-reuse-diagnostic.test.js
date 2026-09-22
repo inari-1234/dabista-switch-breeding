@@ -12,6 +12,7 @@ const K=JSON.parse(fs.readFileSync('data/kotta-pairs.json','utf8')).pairs;
 const D=JSON.parse(fs.readFileSync('data/elaborate-direct-exceptions.json','utf8')).pairs;
 const IV=JSON.parse(fs.readFileSync('data/planner-inheritance-validation.json','utf8'));
 const indexHtml=fs.readFileSync('index.html','utf8');
+const integration=fs.readFileSync('breed-integration.js','utf8');
 
 const knownDiff=(IV.samples||[]).filter(x=>x?.sire&&x?.mare&&x?.ours?.kc!==x?.oracle?.k).map(x=>({sire:x.sire,mare:x.mare}));
 const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elaborateKnownDifferences:knownDiff});
@@ -85,9 +86,14 @@ for(const p of profiles){
 
 const defaultAssessment=advisor.mareAssessment('エイスト');
 const childAssessment=advisor.mareAssessment(child.name);
-const uiGoalValues=[...indexHtml.matchAll(/<option value="([^"]+)">([^<]+)<\/option>/g)]
- .map(x=>({value:x[1],label:x[2]}))
- .filter(x=>['breaker','successor','rebuild','bc'].includes(x.value));
+const goalSelect=indexHtml.match(/<select id="breedGoal">([\s\S]*?)<\/select>/);
+if(!goalSelect)throw Error('breedGoal select missing');
+const uiGoalValues=[...goalSelect[1].matchAll(/<option value="([^"]+)">([^<]+)<\/option>/g)]
+ .map(x=>({value:x[1],label:x[2]}));
+const goalValues=uiGoalValues.map(x=>x.value);
+if(JSON.stringify(goalValues)!==JSON.stringify(['arc','bc','rebuild','stallion']))throw Error('canonical goal UI drift '+JSON.stringify(goalValues));
+if(!integration.includes('planner.createDirectPairIndex(resolved)'))throw Error('current breed UI is not Pair Index based');
+if(!integration.includes("const PROFILES=['sp','speedCross','production','st','balance','sire']"))throw Error('six profile integration missing');
 
 console.log(JSON.stringify({
  passed:true,
@@ -110,8 +116,10 @@ console.log(JSON.stringify({
  },
  currentBreedUi:{
   goalOptions:uiGoalValues,
-  goalMap:{breaker:'arc',successor:'stallion',rebuild:'rebuild'},
+  goalMap:{arc:'arc',bc:'bc',rebuild:'rebuild',stallion:'stallion'},
   bcDirectOptionPresent:uiGoalValues.some(x=>x.value==='bc'),
-  currentRanking:'breed-helper legacy scalar rankValue; pair-specific pedigree data is decorated later and does not drive base ordering'
+  currentRanking:'breed-integration Direct Pair Index; current ranking is mare-aware and pair facts drive the integrated card ordering/filtering',
+  sixProfiles:['sp','speedCross','production','st','balance','sire'],
+  helperRole:'fallback/bootstrap only when DABISTA_BREED_PAIR_INDEX is unavailable'
  }
 },null,2));
