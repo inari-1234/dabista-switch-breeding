@@ -228,6 +228,42 @@ function summarizeRebuildFreedom(){
 }
 const rebuildFreedomAudit=summarizeRebuildFreedom();
 
+function summarizeRebuildFreedomTrial(){
+  const out={currentTwo:0,currentDirect:0,wouldBlockTwo:0,wouldPromoteDirect:0,blockByBand:{},promoteByBand:{},blockSamples:[],promoteSamples:[]};
+  for(const row of rows){
+    const g=row.goals?.rebuild,a=g?.direct?.freedom,b=g?.two?.freedom,af=g?.direct?.best,bf=g?.two?.best;
+    if(!a||!b||!af||!bf)continue;
+    const delta={
+      safe:(b.safe||0)-(a.safe||0),
+      sp15:(b.sp15st5||0)-(a.sp15st5||0),
+      sp17:(b.sp17st5||0)-(a.sp17st5||0),
+      speedQualified:(b.speedQualified||0)-(a.speedQualified||0),
+      magnificent:(b.magnificent||0)-(a.magnificent||0),
+      perfect:(b.perfect||0)-(a.perfect||0),
+      elaborate:(b.elaborate||0)-(a.elaborate||0)
+    };
+    const severeLoss=delta.safe<=-5||delta.sp15<=-4||delta.sp17<=-2||delta.speedQualified<=-3;
+    const highValueComp=delta.sp17>=2||delta.perfect>=1||(delta.magnificent>=2&&delta.sp15>=-1&&delta.speedQualified>=-1);
+    const practicalGain=(delta.sp15>=4&&delta.speedQualified>=3&&delta.sp17>=0)||(delta.sp17>=2&&delta.speedQualified>=0);
+    const nextImmediateQualified=bf.sp>=15&&bf.st>=5;
+    if(g.recommendedGeneration===2){
+      out.currentTwo++;
+      if(severeLoss&&!highValueComp){
+        out.wouldBlockTwo++;out.blockByBand[row.band]=(out.blockByBand[row.band]||0)+1;
+        if(out.blockSamples.length<16)out.blockSamples.push({mare:row.mare,band:row.band,delta,directFacts:af,twoFacts:bf});
+      }
+    }else{
+      out.currentDirect++;
+      if(nextImmediateQualified&&practicalGain&&!severeLoss){
+        out.wouldPromoteDirect++;out.promoteByBand[row.band]=(out.promoteByBand[row.band]||0)+1;
+        if(out.promoteSamples.length<16)out.promoteSamples.push({mare:row.mare,band:row.band,delta,directFacts:af,twoFacts:bf});
+      }
+    }
+  }
+  return out;
+}
+const rebuildFreedomTrial=summarizeRebuildFreedomTrial();
+
 const byName=Object.fromEntries(rows.map(x=>[x.mare,x]));
 const focusNames=['スプリングスイーツ','エイスト','フィットレオタード','ミニミニデート','ワカヒルメ','ミムラス','エトワルセリータ','アマリン'];
 const focus={};
@@ -261,7 +297,7 @@ const output={
     caution:'This diagnostic does not convert the matrix into a single numeric score.'
   },
   totals:{mares:rows.length,known:rows.filter(x=>x.band!=='unknown').length,unknown:rows.filter(x=>x.band==='unknown').length,twoRoutes,runtimeMs:Date.now()-started},
-  matrix,preferredMatrix,tradeoffs,rebuildFreedomAudit,focus,samples
+  matrix,preferredMatrix,tradeoffs,rebuildFreedomAudit,rebuildFreedomTrial,focus,samples
 };
 const outFile=process.env.OUTPUT_FILE;
 if(outFile)fs.writeFileSync(outFile,JSON.stringify(output,null,2));
