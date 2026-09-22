@@ -71,6 +71,7 @@ assert.ok(v16.includes('距離・実績・戦績・メモ'),'performance details
 assert.ok(v16.includes("form.requestSubmit()"),'top save action must submit without scrolling to form bottom');
 assert.ok(v26.includes('function openRouteRegister(ctx,generation)'),'route offspring registration action missing');
 assert.ok(v26.includes("role==='broodmare'?'牝':'牡'"),'route registration must support broodmare and sire-candidate roles');
+assert.ok(v26.includes('<option value="stallion">種牡馬</option>'),'route registration must also allow an active stallion role');
 assert.ok(v26.includes('ancestor15:[...a]'),'route registration must persist exact 15-ancestor pedigree');
 assert.ok(v26.includes("SP/ST/PWは血統上のニトロ"),'route registration must not mislabel pedigree nitro as horse ability');
 assert.ok(v26.includes('matchingPreviousMares(ctx,generation)'),'multi-generation registration must require the actual prior broodmare pedigree');
