@@ -465,23 +465,33 @@
       const shortDistanceRelevant=band==='middle'||band==='rebuild'||spNeedsSupport;
       const minD=val(ss.minD),maxD=val(ss.maxD),shortTier=shortDistanceTier(minD);
       const distanceEvidence=shortDistanceRelevant?shortTier:0;
-      const nitroEvidence=Math.max(0,sp-15)*1.5+Math.max(0,st-5)*0.75+Math.max(0,pw)*0.25;
-      const crossEvidence=(f.speedCross?.has?3:0)+(route?.materialSpeedCross?.has?2:0);
-      const theoryEvidence=(f.theory?.magnificent?2:0)+(f.elaborate?1:0)+(f.theory?.interesting?0.5:0);
-      const recordEvidence=recordGrade*8;
-      const stabilityEvidence=stableRank;
-      const eliteEvidence=eliteLine?2:0;
-      const evidenceScore=recordEvidence+stabilityEvidence+nitroEvidence+crossEvidence+theoryEvidence+distanceEvidence+eliteEvidence;
+      const strongNitro=sp>=18&&st>=5;
+      const balancedNitro=sp>=17&&st>=7;
+      const finalCross=!!f.speedCross?.has;
+      const materialCross=!!route?.materialSpeedCross?.has;
+      const theorySupport=!!f.theory?.magnificent||!!f.elaborate;
+      const compensationSignals={
+        shortDistance:shortDistanceRelevant&&shortTier>=2,
+        strongNitro,
+        balancedNitro,
+        finalCross,
+        materialCross,
+        theorySupport
+      };
+      const compensationCount=Object.values(compensationSignals).filter(Boolean).length;
+      const requiredSignals=record==='A'?2:record==='B'?3:record==='C'?4:99;
+      const overrideEligible=compensationCount>=requiredSignals;
       const middleMain=band==='middle'&&practical;
       const vector=[
         bool(speedSupport),
         bool(viable),
-        evidenceScore,
+        bool(overrideEligible),
         recordGrade,
         stableRank,
         shortDistanceRelevant?shortTier:0,
+        bool(strongNitro),bool(balancedNitro),
         sp,st,pw,
-        bool(f.speedCross?.has),val(route?.materialSpeedCross?.stages),
+        bool(finalCross),val(route?.materialSpeedCross?.stages),
         bool(f.theory?.magnificent),bool(f.elaborate),bool(f.theory?.interesting)
       ];
       let key='conditional',label='条件付き',headline='複数要素を比較する候補';
@@ -508,7 +518,7 @@
         band,key,label,headline,reasons,vector,viable,eliteLine,practical,middleMain,
         record,stable,recordGrade,stableRank,speedSupport,
         spNeedsSupport,shortDistanceRelevant,minD,maxD,shortTier,distanceEvidence,
-        nitroEvidence,crossEvidence,theoryEvidence,recordEvidence,stabilityEvidence,evidenceScore
+        compensationSignals,compensationCount,requiredSignals,overrideEligible
       };
     }
     function compareProductionForMare(assessment){
