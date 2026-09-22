@@ -84,18 +84,18 @@ for(const mareName of ['エイスト','スプリングスイーツ','ワカヒ�
 }
 function scan(planner){
  const started=Date.now();
- const direct=[...planner.iterateDirect('エイスト')].find(r=>r.sires[0]==='グランプリボス');
+ const direct=[...planner.iterateDirect(mare)].find(r=>r.sires[0]===first);
  if(!direct)throw Error('direct missing');
  const two=[],c2=planner.createCollector({topN:16,poolN:96});
- for(const r of planner.iterateTwo('エイスト'))if(r.sires[0]==='グランプリボス'){two.push(r);c2.push(r)}
+ for(const r of planner.iterateTwo(mare))if(r.sires[0]===first){two.push(r);c2.push(r)}
  const r2=c2.finish();
 
  const c3=planner.createCollector({topN:16,poolN:96}),bridge=planner.createFourthBridgeCollector();let n3=0;
- for(const r of planner.iterateThirdPreview('エイスト',two)){n3++;c3.push(r);bridge.push(r)}
+ for(const r of planner.iterateThirdPreview(mare,two)){n3++;c3.push(r);bridge.push(r)}
  const r3=c3.finish(),b=bridge.finish();
 
  const c4=planner.createCollector({topN:16,poolN:96});let n4=0;
- for(const r of planner.iterateFourthPreview('エイスト',b.bases)){n4++;c4.push(r)}
+ for(const r of planner.iterateFourthPreview(mare,b.bases)){n4++;c4.push(r)}
  const r4=c4.finish();
 
  const profiles={};
@@ -136,7 +136,7 @@ if(JSON.stringify(A.pools)!==JSON.stringify(B.pools))throw Error('pool size mism
 if(JSON.stringify(A.portfolios)!==JSON.stringify(B.portfolios))throw Error('portfolio mismatch');
 console.log(JSON.stringify({
  passed:true,
- pairEquivalence:3*176,
+ mare,first,pairEquivalence:3*176,
  counts:A.counts,
  pools:A.pools,
  timingMs:{canonical:A.runtimeMs,preparedSinglePass:B.runtimeMs},
