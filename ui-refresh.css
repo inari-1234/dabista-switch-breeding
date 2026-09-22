@@ -472,6 +472,23 @@ body.ui-refresh .sale-route.tone-low-record{
   border-color:#e2b17f!important;
   background:linear-gradient(145deg,#fff2e5,#fffaf6)!important;
 }
+body.ui-refresh .sale-route.tone-main{
+  border-color:#70ad8e!important;
+  background:linear-gradient(145deg,#eef8f3,#fbfdfc)!important;
+  box-shadow:0 3px 12px rgba(24,108,76,.08);
+}
+body.ui-refresh .sale-route.tone-record{
+  border-color:#91b6d7!important;
+  background:linear-gradient(145deg,#f1f7fc,#fbfdff)!important;
+}
+body.ui-refresh .sale-route.tone-speed{
+  border-color:#b7a4dc!important;
+  background:linear-gradient(145deg,#f7f3fc,#fdfcff)!important;
+}
+body.ui-refresh .sale-route.tone-nitro{
+  border-color:#8cbeb4!important;
+  background:linear-gradient(145deg,#eff8f6,#fbfdfc)!important;
+}
 body.ui-refresh .sale-route.tone-neutral{
   border-color:#d8e1dc!important;
   background:#fff!important;
