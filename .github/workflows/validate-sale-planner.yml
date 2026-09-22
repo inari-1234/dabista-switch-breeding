@@ -42,6 +42,7 @@ on:
       - 'tests/breed-current-ranking-mare-dependence.test.js'
       - 'tests/breed-resolve-horse-name-collision.test.js'
       - 'tests/backup-restore-db-identity-contract.test.js'
+      - 'tests/diagnostic-workflows-manual-only-contract.test.js'
       - 'tests/magnificent-cross-utility-diagnostic.test.js'
       - 'tests/st-cross-2400-utility-diagnostic.test.js'
       - 'tests/theory-ranking-delta-diagnostic.test.js'
@@ -120,6 +121,7 @@ jobs:
           node --check tests/breed-async-continuation-state-contract.test.js
           node --check tests/breed-current-ranking-mare-dependence.test.js
           node --check tests/breed-resolve-horse-name-collision.test.js
+          node --check tests/diagnostic-workflows-manual-only-contract.test.js
           node --check tests/magnificent-cross-utility-diagnostic.test.js
           node --check tests/st-cross-2400-utility-diagnostic.test.js
           node --check tests/theory-ranking-delta-diagnostic.test.js
@@ -185,6 +187,7 @@ jobs:
           node tests/breed-current-ranking-mare-dependence.test.js
           node tests/breed-resolve-horse-name-collision.test.js
           node tests/backup-restore-db-identity-contract.test.js
+          node tests/diagnostic-workflows-manual-only-contract.test.js
 
       - name: Transient sale mare wiring regression
         run: |
