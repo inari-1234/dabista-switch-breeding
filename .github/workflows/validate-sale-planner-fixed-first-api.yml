@@ -1,0 +1,33 @@
+name: Validate fixed-first sale planner API
+
+on:
+  push:
+    paths:
+      - 'sale-planner-core.js'
+      - 'breeding-core.js'
+      - 'tests/sale-planner-fixed-first-api.test.js'
+      - '.github/workflows/validate-sale-planner-fixed-first-api.yml'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static syntax
+        run: |
+          node --check sale-planner-core.js
+          node --check tests/sale-planner-fixed-first-api.test.js
+      - name: Fixed-first planner API regression
+        run: node tests/sale-planner-fixed-first-api.test.js
