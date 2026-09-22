@@ -61,6 +61,8 @@ need(v26,'白：参考軸','reference color semantics');
 need(v26,'別強み候補 ','non-top recommendations must explain a distinct reason instead of repeating main/standard');
 need(v26,'productionCandidateCue','candidate cards must use peer-relative explanations');
 need(v26,'selectProductionRecommendations','candidate list must select meaningful alternatives');
+need(v26,'recordAReference','lower-record main recommendation must be compared with the best record-A route');
+need(advisor,"'実績'+p.record+'だが、'+lead+'で実績'+b.record+'候補を逆転'","lower-record main card must explain its compensated reversal");
 need(v26,'距離下限（1000/1200m側）','sale UI must disclose lower-distance evidence');
 need(v26,'本命配合を表示','hidden compatibility button must no longer say この条件で設計');
 if(v26.includes('もう一度「この条件で設計」を実行してください'))throw Error('stale design instruction must be removed');
