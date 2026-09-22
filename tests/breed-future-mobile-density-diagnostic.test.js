@@ -28,7 +28,8 @@ const requiredRuntime=[
   ".breed-future-row b{grid-row:1 / span 2}",
   "data-breed-future",
   "class=\"breed-pair-details\"",
-  "<b>現在配合の目的適合：</b>'+esc(fitLabel)",
+  "class=\"notice breed-quick-fit\"",
+  "'+esc(GOAL_LABELS[goal])+'",
   "class=\"breed-future-detail\"",
   "4代compact bridge",
   "4代は検証済みcompact bridgeによる条件付き探索"
