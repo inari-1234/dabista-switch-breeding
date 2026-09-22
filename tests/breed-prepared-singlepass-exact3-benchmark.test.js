@@ -77,6 +77,16 @@ function fastEvaluate(sire,mare){
 const fast={...base,evaluate:fastEvaluate};
 const basePlanner=sale.create({engine:base,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
 const fastPlanner=sale.create({engine:fast,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
+const CASES=[
+ ['エイスト','グランプリボス'],
+ ['スプリングスイーツ','ステイゴールド'],
+ ['フィットレオタード','ワイルドラッシュ'],
+ ['ミニミニデート','ステイゴールド'],
+ ['ワカヒルメ','ステイゴールド']
+];
+const CASE_INDEX=+process.env.CASE_INDEX||0;
+const [mare,first]=CASES[CASE_INDEX]||[];
+if(!mare)throw Error('invalid CASE_INDEX '+CASE_INDEX);
 
 for(const mareName of ['エイスト','スプリングスイーツ','ワカヒルメ']){
  const m=T.broodmares.find(x=>x.name===mareName);
