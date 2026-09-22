@@ -148,6 +148,30 @@ const distanceWeak=advisor.materialUpgradeReasons(
 assert.ok(!distanceWeak.some(x=>x.includes('2400m対応')),
   '2400m sire evidence must not justify a generation after a large SP loss');
 
+function withSireEvidence(route,record,maxD){
+  return{
+    ...route,
+    final:{...route.final,sireStats:{...(route.final.sireStats||{}),record,maxD}}
+  };
+}
+const severeArcLossA=withSireEvidence(fakeRoute(0,13,8),'A',2600);
+const severeArcLossB=withSireEvidence(fakeRoute(0,15,9),'C',1600);
+const severeArcGate=advisor.arcUpgradeGate(severeArcLossA,severeArcLossB);
+assert.strictEqual(severeArcGate.allowed,false,'Arc must not trade record A + 2400m evidence for record C + 1600m on threshold gain alone');
+assert.strictEqual(severeArcGate.requiredSignals,4,'A->C plus distance-evidence loss must require four independent compensating signals');
+assert.deepStrictEqual(advisor.materialUpgradeReasons(severeArcLossA,severeArcLossB,'arc',fit),[],
+  'blocked Arc evidence loss must not leak generation-extension reasons');
+const severeFit=advisor.goalFit(severeArcLossB,'arc');
+assert.strictEqual(severeFit.key,'conditional','SP/ST alone must not be labelled a complete Arc fit');
+assert.ok(severeFit.label.includes('父実績/距離要確認'),'Arc fit must disclose missing record and distance support');
+
+const compensatedArcA=withSireEvidence(fakeRoute(0,16,12),'C',2600);
+const compensatedArcB=withFinalSpeedCross(withSireEvidence(fakeRoute(0,15,14),'B',1600));
+const compensatedArcGate=advisor.arcUpgradeGate(compensatedArcA,compensatedArcB);
+assert.strictEqual(compensatedArcGate.allowed,true,
+  'distance loss may remain viable when record improves and multiple independent Arc compensations are present');
+assert.ok(compensatedArcGate.compensationCount>=2,'compensated Arc transition must expose multiple independent signals');
+
 const eliteFinalSpeed=advisor.materialUpgradeReasons(
   fakeRoute(0,18,9),
   withFinalSpeedCross(fakeRoute(0,18,9)),
@@ -208,6 +232,12 @@ assert.ok(eliteStDirectional.some(x=>x.includes('STを8→10')),
   'elite SP-dominant profile may extend when the identified ST axis materially improves');
 
 const unknownAssessment=advisor.mareAssessment('アマリン');
+const unknownLabel=advisor.recommendGeneration({
+  goal:'arc',assessment:unknownAssessment,
+  generations:{1:{summary:{bestRoute:fakeRoute(0,15,6)}}}
+}).label;
+assert.ok(unknownLabel.includes('能力確認前提')&&!unknownLabel.includes('直仔推奨'),
+  'unknown mare generation label must remain a pedigree candidate, not a confirmed recommendation');
 const unknownDirect=advisor.emptySummary('unknown-direct');
 for(const r of planner.iterateDirect('アマリン'))advisor.addRoute(unknownDirect,r);
 const unknownQuick=advisor.quickSaleOutlook('アマリン',unknownDirect);
