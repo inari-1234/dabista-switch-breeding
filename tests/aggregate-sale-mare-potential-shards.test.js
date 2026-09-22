@@ -47,7 +47,7 @@ if(focus['エイスト'].band!=='high')throw Error('Eist ability band');
 if(focus['フィットレオタード'].band!=='middle')throw Error('Fit ability band');
 if(focus['ワカヒルメ'].band!=='low')throw Error('Wakahirume ability band');
 if(focus['ミムラス'].band!=='low'||focus['ミムラス'].goals.arc.status!=='direct-supported')throw Error('low/high-pedigree edge');
-if(focus['エトワルセリータ'].band!=='high'||focus['エトワルセリータ'].goals.arc.recommendedGeneration!==2)throw Error('high/staged edge');
+if(focus['エトワルセリータ'].band!=='high'||focus['エトワルセリータ'].goals.arc.recommendedGeneration!==1)throw Error('high/Arc-compensation-gate edge');
 if(focus['スプリングスイーツ'].goals.arc.recommendedGeneration!==1)throw Error('Spring Arc generation regression');
 if(focus['エイスト'].goals.arc.recommendedGeneration!==1)throw Error('Eist Arc generation regression');
 if(focus['フィットレオタード'].goals.arc.recommendedGeneration!==2)throw Error('Fit Arc generation regression');
