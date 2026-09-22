@@ -377,7 +377,7 @@ function ensureRouteRegisterDialog(){
    <div class="route-register-head"><div><small>配合結果から牧場DBへ</small><h2>この産駒を登録</h2></div><button type="button" class="secondary" data-route-register-cancel>閉じる</button></div>
    <div id="routeRegisterSummary" class="route-register-summary"></div>
    <label>馬名</label><input id="routeRegisterName" required autocomplete="off" placeholder="ゲーム内で付けた馬名">
-   <label>登録区分</label><select id="routeRegisterRole"><option value="broodmare">繁殖牝馬</option><option value="sire-candidate">種牡馬候補</option></select>
+   <label>登録区分</label><select id="routeRegisterRole"><option value="broodmare">繁殖牝馬</option><option value="sire-candidate">種牡馬候補</option><option value="stallion">種牡馬</option></select>
    <div id="routeRegisterDamWrap" style="display:none"><label>この世代の母馬</label><select id="routeRegisterDam"></select></div>
    <div id="routeRegisterParents" class="route-register-parents"></div>
    <div id="routeRegisterWarning" class="route-register-warning"></div>
