@@ -423,6 +423,39 @@ body.ui-refresh .sale-route{
   background:#f9fbfa!important;
   padding:11px!important;
 }
+body.ui-refresh .sale-route.tone-solid,
+body.ui-refresh .sale-route.tone-preserve{
+  border-color:#9bcab2!important;
+  background:linear-gradient(145deg,#f1faf5,#fbfdfc)!important;
+  box-shadow:0 3px 12px rgba(24,108,76,.08);
+}
+body.ui-refresh .sale-route.tone-balance,
+body.ui-refresh .sale-route.tone-distance{
+  border-color:#aac6df!important;
+  background:linear-gradient(145deg,#f1f6fb,#fbfdff)!important;
+}
+body.ui-refresh .sale-route.tone-ceiling{
+  border-color:#c8bce0!important;
+  background:linear-gradient(145deg,#f5f1fb,#fdfcff)!important;
+}
+body.ui-refresh .sale-route.tone-upside,
+body.ui-refresh .sale-route.tone-rebuild-upside{
+  border-color:#e2c36c!important;
+  background:linear-gradient(145deg,#fff8df,#fffdf5)!important;
+}
+body.ui-refresh .sale-route.tone-longshot,
+body.ui-refresh .sale-route.tone-low-record{
+  border-color:#e2b17f!important;
+  background:linear-gradient(145deg,#fff2e5,#fffaf6)!important;
+}
+body.ui-refresh .sale-route-cue .sale-rank-label{font-size:12px!important}
+body.ui-refresh .sale-cue-badge{font-size:10px!important}
+body.ui-refresh .sale-cue-headline{font-size:13px!important}
+body.ui-refresh .sale-reason-chip{font-size:9px!important;padding:4px 7px!important}
+body.ui-refresh .sale-profile-head h3{font-size:15px!important}
+body.ui-refresh .sale-axis-note{max-width:62%;text-align:right;font-size:9px!important}
+body.ui-refresh .sale-route-details>summary,
+body.ui-refresh .sale-profile-detail>summary{font-size:10px!important}
 body.ui-refresh .sale-stage{
   border:1px solid #e6ece8;
   border-radius:11px!important;
