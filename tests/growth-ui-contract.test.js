@@ -40,6 +40,8 @@ assert.ok(!ui.includes('data-tab="growth"')&&!ui.includes("dataset.tab='growth'"
 
 assert.ok(ui.includes('growthCheckSets'),'comparison set storage missing');
 assert.ok(ui.includes('conditionFingerprint'),'comparison condition fingerprint missing');
+assert.ok(ui.includes(".map(x=>norm(x.name)).filter(Boolean).sort()"),'comparison fingerprint must be insensitive to baseline display order');
+assert.ok(ui.includes("seen=new Set(),names=[]"),'duplicate baseline names must be normalized away');
 assert.ok(ui.includes("Number(prev.revision||1)+1"),'condition changes must create a new comparison-set revision');
 assert.ok(ui.includes('db.growthChecks.push'),'research observation persistence missing');
 assert.ok(ui.includes('<option value="">未観測</option>'),'baseline comparison must default to unobserved');
