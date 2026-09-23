@@ -438,7 +438,20 @@ function saveRouteRegistration(e){
    minD:'',maxD:'',record:'-',guts:'-',stable:'-',starts:'',g1:'',
    note:'配合ルート：'+ctx.mare+' / '+routeStagePrefix(ctx,generation).join(' → '),
    ancestor15:[...a],omoshiroCode:String(child.omoshiro||''),migotoCode:String(child.migoto||''),theorySource:'route-registration',
-   routeSource:{type:'sale-route',startMare:ctx.mare,goal:ctx.goal,generation,sires:routeStagePrefix(ctx,generation)}
+   routeSource:{
+     type:'sale-route',startMare:ctx.mare,goal:ctx.goal,generation,sires:routeStagePrefix(ctx,generation),
+     evidence:{
+       kind:'pair-pedigree-evidence-not-horse-ability',
+       nitro:{sp:Number(stage.nitro?.sp)||0,st:Number(stage.nitro?.st)||0,pw:Number(stage.nitro?.pw)||0},
+       speedCross:!!stage.speedCross?.has,
+       theory:{
+         interesting:!!stage.theory?.interesting,
+         magnificent:!!stage.theory?.magnificent,
+         perfect:!!stage.theory?.perfect,
+         elaborate:!!stage.elaborate?.effective
+       }
+     }
+   }
  };
  db.horses.push(h);save();window.renderHorses?.();window.renderBreed?.();
  $('#routeRegisterDlg').close();renderRouteBreedBridge(ctx,ensureSaleMareForBreed(ctx.mare));
