@@ -56,6 +56,18 @@ function sameMonthResearchConflict(group){
       if(!seen.has(key))seen.set(key,new Set());
       seen.get(key).add(result);
     }
+    const m4=String(c.mark4||'');
+    if(m4&&m4!=='不明'){
+      const key=scope+'|__mark4';
+      if(!seen.has(key))seen.set(key,new Set());
+      seen.get(key).add(m4);
+    }
+    const m5=String(c.mark5||'');
+    if(m5&&m5!=='不明'){
+      const key=scope+'|__mark5';
+      if(!seen.has(key))seen.set(key,new Set());
+      seen.get(key).add(m5);
+    }
   }
   return [...seen.values()].some(s=>s.size>1);
 }
@@ -97,12 +109,21 @@ function latestResearchSignal(checks,sets){
       if(before==null)continue;
       changes.push({baselineId:id,before,after,delta:REL_ORDER[after]-REL_ORDER[before]});
     }
-    if(!changes.length)continue;
+    const a4=String(a.mark4||''),b4=String(b.mark4||'');
+    const mark4Comparable=a4&&b4&&a4!=='不明'&&b4!=='不明'&&Object.prototype.hasOwnProperty.call(MARK_ORDER,a4)&&Object.prototype.hasOwnProperty.call(MARK_ORDER,b4);
+    const mark4Delta=mark4Comparable?MARK_ORDER[b4]-MARK_ORDER[a4]:0;
+    if(!changes.length){
+      if(mark4Delta>0)return{kind:'growth-change',mode:'research',confidence:'高',reason:'同一比較セットで④が改善方向',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes:[],mark4:{before:a4,after:b4}};
+      if(mark4Delta<0)return{kind:'decline',mode:'research',confidence:'高',reason:'同一比較セットで④が低下方向',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes:[],mark4:{before:a4,after:b4}};
+      continue;
+    }
     const up=changes.filter(x=>x.delta>0),down=changes.filter(x=>x.delta<0);
     if(up.length&&down.length)return{kind:'hold',mode:'research',confidence:'高',reason:'基準馬比較が改善・悪化で混在',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes};
     if(up.length)return{kind:'growth-change',mode:'research',confidence:'高',reason:'同一比較セットで基準馬との序列を上げた',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes:up};
     if(down.length)return{kind:'decline',mode:'research',confidence:'高',reason:'同一比較セットで基準馬との序列を下げた',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes:down};
-    return{kind:'stall',mode:'research',confidence:'高',reason:'同一比較セットで序列変化を観測しない',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes};
+    if(mark4Delta>0)return{kind:'growth-change',mode:'research',confidence:'高',reason:'同一比較セットで④が改善方向',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes,mark4:{before:a4,after:b4}};
+    if(mark4Delta<0)return{kind:'decline',mode:'research',confidence:'高',reason:'同一比較セットで④が低下方向',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes,mark4:{before:a4,after:b4}};
+    return{kind:'stall',mode:'research',confidence:'高',reason:'同一比較セットで序列・④の変化を観測しない',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes};
   }
   return{kind:'insufficient',mode:'research',confidence:'参考',reason:'同一条件で比較できる過去観測が不足',latest:b,gapMonths:null};
 }
