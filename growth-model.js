@@ -44,6 +44,14 @@ function inferCandidates(horse={}){
   if(entry)basis.push('入厩月');
   if(comment)basis.push('成長コメント');
 
+  if(late&&!early&&(entry===8||entry===9))return{
+    candidates:['晩成'],
+    confidence:'中',
+    basis,
+    manual:false,
+    conflict:false
+  };
+
   let commentCandidates=[];
   if(early&&!late)commentCandidates=['超早熟','早熟','持続'];
   if(late&&!early)commentCandidates=['晩成','超晩成'];
