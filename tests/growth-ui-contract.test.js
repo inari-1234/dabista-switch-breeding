@@ -41,6 +41,10 @@ assert.ok(ui.includes("growthChecks:(db.growthChecks||[]).filter"),'diagnosis mu
 assert.ok(ui.includes("races:(db.races||[]).filter"),'dated normal races must feed diagnosis without copying');
 assert.ok(ui.includes('疲労は成長判定には使わず、出走判断だけに反映します。'),'fatigue/growth UI boundary missing');
 assert.ok(ui.includes('旧レースへは推測補完しません。'),'legacy race no-inference warning missing');
+assert.ok(app.includes('class="growth-race-date"'),'dated race snapshot must be visible in the existing results table');
+assert.ok(app.includes('data-race-horse-id'),'race cards must expose stable horse identity for growth decoration');
+assert.ok(ui.includes('function decorateRaceCards()'),'results tab growth summary missing');
+assert.ok(ui.includes('growth-race-diagnosis'),'growth diagnosis must appear alongside race results');
 
 assert.ok(db.includes('SCHEMA_VERSION=2'),'growth DB schema version missing');
 assert.ok(!/for\s*\([^)]*db\.horses/.test(db),'growth migration must not mass-mutate horse records');
