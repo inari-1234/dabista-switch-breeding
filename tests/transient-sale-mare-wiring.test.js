@@ -79,6 +79,9 @@ assert.ok(v26.includes("role==='broodmare'?'牝':'牡'"),'route registration mus
 assert.ok(v26.includes('<option value="stallion">種牡馬</option>'),'route registration must also allow an active stallion role');
 assert.ok(v26.includes('ancestor15:[...a]'),'route registration must persist exact 15-ancestor pedigree');
 assert.ok(v26.includes("SP/ST/PWは血統上のニトロ"),'route registration must not mislabel pedigree nitro as horse ability');
+assert.ok(v26.includes("pair-pedigree-evidence-not-horse-ability"),'route registration must persist pair evidence with an explicit non-ability boundary');
+assert.ok(v16.includes('配合時血統評価'),'registered horse card must expose route provenance');
+assert.ok(v16.includes('※馬自身の能力値ではありません'),'route pedigree evidence must be visibly separated from horse ability');
 assert.ok(v26.includes('matchingPreviousMares(ctx,generation)'),'multi-generation registration must require the actual prior broodmare pedigree');
 assert.ok(v26.includes('この産駒を牧場DBへ登録'),'route bridge registration CTA missing');
 
