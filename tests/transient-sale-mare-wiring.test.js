@@ -72,7 +72,7 @@ assert.ok(v16.includes("roleMemoWrap=roleMemo?.parentElement"),'usage memo must 
 assert.ok(v16.includes("generationWrap=generation?.parentElement"),'generation/classification must move into details');
 assert.ok(v16.includes("if(brood&&sex)sex.value='牝'"),'broodmare role must auto-set female sex');
 assert.ok(v16.includes("if(sireRole&&sex)sex.value='牡'"),'sire roles must auto-set male sex');
-assert.ok(v16.includes("sexWrap.hidden=brood||sireRole"),'redundant sex selector must be hidden for fixed-sex breeding roles');
+assert.ok(v16.includes("sexRow.hidden=brood||sireRole"),'redundant sex row must be hidden for fixed-sex breeding roles');
 assert.ok(v16.includes("form.requestSubmit()"),'top save action must submit without scrolling to form bottom');
 assert.ok(v26.includes('function openRouteRegister(ctx,generation)'),'route offspring registration action missing');
 assert.ok(v26.includes("role==='broodmare'?'牝':'牡'"),'route registration must support broodmare and sire-candidate roles');
