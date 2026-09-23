@@ -1,5 +1,5 @@
 (()=>{
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.24-53',db=window.db,$=s=>document.querySelector(s),esc=window.esc||String;if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.24-54',db=window.db,$=s=>document.querySelector(s),esc=window.esc||String;if(!db)return;window.APP_VERSION=V;window.APP_BUILD=BUILD;const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
 const breedHorseById=id=>window.getBreedHorseById?.(id)||db.horses.find(x=>x.id===id)||null
 function cardName(c){return c.dataset.sireName||c.querySelector('b')?.textContent.replace(/^\s*\d+\.\s*/,'').trim()||''}
 let engine=null,busy=false;
