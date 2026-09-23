@@ -50,9 +50,11 @@ function comparisonMap(check){
 function sameMonthResearchConflict(group){
   const seen=new Map();
   for(const c of group){
+    const scope=String(c.setId)+'@'+Number(c.setRevision);
     for(const [id,result] of comparisonMap(c)){
-      if(!seen.has(id))seen.set(id,new Set());
-      seen.get(id).add(result);
+      const key=scope+'|'+id;
+      if(!seen.has(key))seen.set(key,new Set());
+      seen.get(key).add(result);
     }
   }
   return [...seen.values()].some(s=>s.size>1);
@@ -78,16 +80,17 @@ function latestResearchSignal(checks,sets){
   const valid=(checks||[]).filter(usableCheck).filter(c=>conditionsMatch(c,setMap.get(String(c.setId)+'@'+Number(c.setRevision))));
   if(!valid.length)return null;
   const groups=groupByMonth(valid);
-  const latest=groups.at(-1);
-  if(sameMonthResearchConflict(latest.items))return{
-    kind:'hold',mode:'research',confidence:'高',reason:'同月の固定比較セット結果が一致しない',latest:latest.items.at(-1),gapMonths:null
+  const latest=groups.at(-1),b=latest.items.at(-1);
+  const sameScope=x=>String(x.setId)===String(b.setId)&&Number(x.setRevision)===Number(b.setRevision);
+  const latestScope=latest.items.filter(sameScope);
+  if(sameMonthResearchConflict(latestScope))return{
+    kind:'hold',mode:'research',confidence:'高',reason:'同月の固定比較セット結果が一致しない',latest:b,gapMonths:null
   };
 
   for(let gi=groups.length-2;gi>=0;gi--){
-    const prevGroup=groups[gi];
-    if(sameMonthResearchConflict(prevGroup.items))continue;
-    const a=prevGroup.items.at(-1),b=latest.items.at(-1);
-    if(String(a.setId)!==String(b.setId)||Number(a.setRevision)!==Number(b.setRevision))continue;
+    const prevScope=groups[gi].items.filter(sameScope);
+    if(!prevScope.length||sameMonthResearchConflict(prevScope))continue;
+    const a=prevScope.at(-1);
     const A=comparisonMap(a),B=comparisonMap(b),changes=[];
     for(const [id,after] of B){
       const before=A.get(id);
@@ -130,12 +133,24 @@ function reached(age,month,target){
 function growthTypeInfo(horse){
   return model?.inferCandidates?model.inferCandidates(horse||{}):{candidates:[],confidence:'データ不足',basis:[]};
 }
-function completionZone(horse,typeInfo){
+function abilityReferenceZones(horse,typeInfo){
   const age=Number(horse?.currentAge),month=Number(horse?.currentMonth);
   if(!Number.isInteger(age)||!Number.isInteger(month)||typeInfo.candidates.length!==1)return null;
   const type=typeInfo.candidates[0],milestone=model?.milestoneFor?.(type);
-  if(!milestone?.fullOpen||!reached(age,month,milestone.fullOpen))return null;
-  return{type,target:milestone.fullOpen,label:type+'の全開目安以降（参考）',source:milestone.source};
+  if(!milestone)return null;
+  return{
+    type,
+    speedOpen:milestone.speedOpen||null,
+    fullOpen:milestone.fullOpen||null,
+    speedOpenReached:!!milestone.speedOpen&&reached(age,month,milestone.speedOpen),
+    fullOpenReached:!!milestone.fullOpen&&reached(age,month,milestone.fullOpen),
+    source:milestone.source
+  };
+}
+function completionZone(horse,typeInfo){
+  const z=abilityReferenceZones(horse,typeInfo);
+  if(!z?.fullOpenReached)return null;
+  return{type:z.type,target:z.fullOpen,label:z.type+'の全開目安以降（参考）',source:z.source};
 }
 function publicState(signal,zone){
   if(!signal)return zone?{key:'completion-zone-candidate',label:'完成域候補'}:{key:'data-insufficient',label:'データ不足'};
@@ -152,14 +167,15 @@ function raceAdvice(state,signal,condition={}){
   if(highFatigue)return{key:'recover-first',label:'状態回復待ち',abilityAdvice:state.key==='growth-change'?'1段上候補':state.key==='growth-progressing'?'同格で確認':'待つ'};
   if(state.key==='growth-change'&&signal?.confidence==='高')return{key:'one-step-up',label:'1段上候補'};
   if(state.key==='growth-progressing')return{key:'same-class-check',label:'同格で確認'};
-  if(state.key==='observed-stall'||state.key==='completion-zone-candidate')return{key:'same-class-check',label:'同格で確認'};
+  if(state.key==='observed-stall')return{key:'same-class-check',label:'同格で確認'};
+  if(state.key==='completion-zone-candidate'&&signal&&signal.kind!=='insufficient')return{key:'same-class-check',label:'同格で確認'};
   return{key:'wait',label:'待つ'};
 }
 
 function diagnose(input={}){
   const horse=input.horse||{};
   const typeInfo=growthTypeInfo(horse);
-  const zone=completionZone(horse,typeInfo);
+  const zones=abilityReferenceZones(horse,typeInfo),zone=completionZone(horse,typeInfo);
   const research=latestResearchSignal(input.growthChecks||[],input.growthCheckSets||[]);
   const normal=latestRaceSignal(input.races||[]);
   const signal=research&&research.kind!=='insufficient'?research:(normal||research);
@@ -172,6 +188,7 @@ function diagnose(input={}){
     signal,
     growthType:typeInfo,
     completionZone:zone,
+    abilityReferenceZones:zones,
     raceAdvice:raceAdvice(state,signal,input.currentCondition||horse.currentCondition||{}),
     previousComparisonMonths:signal?.gapMonths??null
   };
@@ -179,6 +196,6 @@ function diagnose(input={}){
 
 return{
   MARK_ORDER,REL_ORDER,validAgeMonth,monthIndex,ageMonthLabel,monthsBetween,
-  latestResearchSignal,latestRaceSignal,growthTypeInfo,completionZone,diagnose
+  latestResearchSignal,latestRaceSignal,growthTypeInfo,abilityReferenceZones,completionZone,diagnose
 };
 });
