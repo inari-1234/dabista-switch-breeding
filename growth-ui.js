@@ -36,7 +36,7 @@ function fingerprint(condition,baselines){
     course:String(condition.course||'').trim(),
     distance:Number(condition.distance)||0,
     styleRule:String(condition.styleRule||'').trim(),
-    baselines:(baselines||[]).map(x=>norm(x.name)).filter(Boolean)
+    baselines:(baselines||[]).map(x=>norm(x.name)).filter(Boolean).sort()
   });
 }
 function diagnosis(h){
@@ -286,7 +286,8 @@ function loadSetForm(id){
 function saveSet(e){
   e.preventDefault();
   const existingId=$('#growthSetId').value,name=$('#growthSetName').value.trim(),condition={course:$('#growthSetCourse').value.trim(),distance:Number($('#growthSetDistance').value)||0,styleRule:$('#growthSetStyle').value.trim()};
-  const names=$('#growthSetBaselines').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const rawNames=$('#growthSetBaselines').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),seen=new Set(),names=[];
+  for(const n of rawNames){const k=norm(n);if(k&&!seen.has(k)){seen.add(k);names.push(n)}}
   if(!name||!names.length)return;
   const baselines=names.map(n=>({id:'b:'+norm(n),name:n})),fp=fingerprint(condition,baselines),prev=latestSets().find(s=>String(s.id)===String(existingId));
   let savedId=prev?.id||'';
