@@ -3,14 +3,16 @@ const assert=require('assert');
 const growth=require('../growth-core.js');
 const model=require('../growth-model.js');
 
-const horse={id:'h1',name:'テスト馬',currentAge:4,currentMonth:6,entryMonth:9};
+const legacyHorse={id:'legacy',name:'旧馬'};
 let d=growth.diagnose({
-  horse,
-  races:[{id:'old',horseId:'h1',mark4:'△',mark5:'△',distance:2000}],
+  horse:legacyHorse,
+  races:[{id:'old',horseId:'legacy',mark4:'△',mark5:'△',distance:2000}],
   growthChecks:[],growthCheckSets:[]
 });
 assert.strictEqual(d.state.key,'data-insufficient','undated legacy race must be excluded from growth diagnosis');
+assert.strictEqual(d.signal,null,'undated legacy race must not enter the growth signal');
 
+const horse={id:'h1',name:'テスト馬',currentAge:4,currentMonth:6,entryMonth:9};
 d=growth.diagnose({
   horse,
   races:[
