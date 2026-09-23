@@ -27,7 +27,7 @@ function monthsBetween(a,b){
   const x=monthIndex(a),y=monthIndex(b);
   return x==null||y==null?null:Math.max(0,y-x);
 }
-function usableRace(r){return validAgeMonth(r)&&Object.prototype.hasOwnProperty.call(MARK_ORDER,String(r.mark4||'不明'))}
+function usableRace(r){const m=String(r?.mark4||'不明');return validAgeMonth(r)&&m!=='不明'&&Object.prototype.hasOwnProperty.call(MARK_ORDER,m)}
 function usableCheck(c){return validAgeMonth(c)&&c?.setId&&Number.isInteger(Number(c.setRevision))}
 
 function researchSetMap(sets){
@@ -118,8 +118,9 @@ function latestRaceSignal(races){
   let prevGroup=null;
   for(let i=groups.length-2;i>=0;i--){if(!sameMonthRaceConflict(groups[i].items)){prevGroup=groups[i];break}}
   if(!prevGroup)return{kind:'insufficient',mode:'normal',confidence:'参考',reason:'比較可能な過去月が不足',latest:latest.items.at(-1),gapMonths:null};
-  const a=prevGroup.items.at(-1),b=latest.items.at(-1),d4=MARK_ORDER[String(b.mark4||'不明')]-MARK_ORDER[String(a.mark4||'不明')];
-  const d5=MARK_ORDER[String(b.mark5||'不明')]-MARK_ORDER[String(a.mark5||'不明')];
+  const a=prevGroup.items.at(-1),b=latest.items.at(-1),d4=MARK_ORDER[String(b.mark4)]-MARK_ORDER[String(a.mark4)];
+  const a5=String(a.mark5||'不明'),b5=String(b.mark5||'不明');
+  const d5=a5!=='不明'&&b5!=='不明'&&Object.prototype.hasOwnProperty.call(MARK_ORDER,a5)&&Object.prototype.hasOwnProperty.call(MARK_ORDER,b5)?MARK_ORDER[b5]-MARK_ORDER[a5]:0;
   if(d4>0)return{kind:'progress',mode:'normal',confidence:'参考',reason:'④が前回観測より改善方向',previous:a,latest:b,gapMonths:monthsBetween(a,b),mark4:{before:a.mark4,after:b.mark4},mark5:{before:a.mark5,after:b.mark5}};
   if(d4<0)return{kind:'decline',mode:'normal',confidence:'参考',reason:'④が前回観測より低下方向',previous:a,latest:b,gapMonths:monthsBetween(a,b)};
   if(d5!==0)return{kind:'mixed',mode:'normal',confidence:'参考',reason:'④は同等だが⑤が変化',previous:a,latest:b,gapMonths:monthsBetween(a,b)};
