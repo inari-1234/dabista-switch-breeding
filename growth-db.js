@@ -15,7 +15,6 @@ function normalizeInPlace(db){
   if(!Array.isArray(db.races))db.races=[];
   if(!Array.isArray(db.growthCheckSets))db.growthCheckSets=[];
   if(!Array.isArray(db.growthChecks))db.growthChecks=[];
-  if(typeof db.memo!=='string')db.memo=db.memo==null?'':String(db.memo);
   const current=Number(db.schemaVersion)||0;
   if(current<SCHEMA_VERSION)db.schemaVersion=SCHEMA_VERSION;
   return db;
