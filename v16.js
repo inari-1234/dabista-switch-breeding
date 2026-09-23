@@ -104,18 +104,22 @@ function resetForm(mode='race'){const f=$('#horseForm');if(!f)return;f.reset();r
 function openExisting(h){const f=$('#horseForm');if(!f)return;f.reset();resetCompactHorseSections();const mode=h.role||(h.sex==='牝'?'broodmare':'race');if($('#role'))$('#role').value=mode;if($('#roleMemo'))$('#roleMemo').value=h.roleMemo||'';const map={editId:h.id,name:h.name,sex:h.sex,generation:h.generation,sire:h.sire,dam:h.dam,damSire:h.damSire,sireSire:h.sireSire,sireDam:h.sireDam,damDam:h.damDam,sireDamSire:h.sireDamSire,damDamSire:h.damDamSire,minD:h.minD,maxD:h.maxD,record:h.record,guts:h.guts,stable:h.stable,starts:h.starts,g1:h.g1,note:h.note};Object.entries(map).forEach(([k,v])=>{const el=$('#'+k);if(el)el.value=v??''});selectedDefaultMare=h.masterRef?.type==='default-broodmare'?(findDefaultMare(h.masterRef.name)||h.mareStats&&{name:h.masterRef.name,...h.mareStats,ver:h.masterRef.ver||''}):null;f.querySelector('h2').textContent=mode==='broodmare'?'繁殖牝馬を編集':'馬を編集';refreshDatalist();updateSelectedMareBox();updateAutoStatus();updateSireStatus();syncCompactHorseRole();horseDlg.showModal()}
 function saveHorse(e){e.preventDefault();fillPedigree(false);const id=$('#editId').value||crypto.randomUUID(),old=db.horses.find(x=>x.id===id)||{},h={...old,id,name:$('#name').value.trim(),sex:$('#sex').value,role:$('#role')?.value||(($('#sex').value==='牝')?'broodmare':'race'),roleMemo:$('#roleMemo')?.value.trim()||'',generation:$('#generation').value.trim(),sire:$('#sire').value.trim(),dam:$('#dam').value.trim(),damSire:$('#damSire')?.value.trim()||'',sireSire:$('#sireSire')?.value.trim()||'',sireDam:$('#sireDam')?.value.trim()||'',damDam:$('#damDam')?.value.trim()||'',sireDamSire:$('#sireDamSire')?.value.trim()||'',damDamSire:$('#damDamSire')?.value.trim()||'',minD:+$('#minD').value||'',maxD:+$('#maxD').value||'',record:$('#record').value,guts:$('#guts').value,stable:$('#stable').value,starts:$('#starts').value.trim(),g1:$('#g1').value.trim(),note:$('#note').value.trim()};if(h.role==='broodmare')h.sex='牝';if(selectedDefaultMare&&norm(selectedDefaultMare.name)===norm(h.name)){h.masterRef={type:'default-broodmare',name:selectedDefaultMare.name,ver:selectedDefaultMare.ver};h.mareStats={price:selectedDefaultMare.price,sp:selectedDefaultMare.sp,st:selectedDefaultMare.st,pw:selectedDefaultMare.pw,dirt:selectedDefaultMare.dirt,nsp:selectedDefaultMare.nsp,nst:selectedDefaultMare.nst,npw:selectedDefaultMare.npw,nstBook:selectedDefaultMare.nstBook}}else if(h.masterRef?.type==='default-broodmare'&&norm(h.masterRef.name)!==norm(h.name)){delete h.masterRef;delete h.mareStats}const i=db.horses.findIndex(x=>x.id===id);i<0?db.horses.push(h):db.horses[i]=h;window.saveFarm?.();window.renderHorses?.();window.renderBreed?.();refreshDatalist();horseDlg.close()}
 function overrideEditing(){const list=$('#horseList');if(list)list.onclick=e=>{const c=e.target.closest('[data-id]');if(!c)return;const h=db.horses.find(x=>x.id===c.dataset.id);if(h)openExisting(h)};const form=$('#horseForm');if(form)form.onsubmit=saveHorse;const add=$('#addBtn');if(add)add.onclick=()=>{resetForm('race');horseDlg.showModal()};const addMare=$('#addMareBtn');if(addMare)addMare.onclick=()=>{resetForm('broodmare');horseDlg.showModal()};const breedAdd=$('#breedAddMare');if(breedAdd)breedAdd.onclick=()=>{resetForm('broodmare');horseDlg.showModal()}}
+function syncHorseMetaLine(card,grid,className,html){
+ let line=card.querySelector('.'+className);
+ if(!html){if(line)line.remove();return}
+ if(!line){line=document.createElement('div');line.className=className;if(grid)grid.insertAdjacentElement('beforebegin',line);else card.appendChild(line)}
+ if(line.innerHTML!==html)line.innerHTML=html
+}
 function decorateHorseCards(){document.querySelectorAll('#horseList [data-id]').forEach(c=>{
- let old=c.querySelector('.default-mare-line');if(old)old.remove();
- let routeOld=c.querySelector('.route-source-line');if(routeOld)routeOld.remove();
  const h=db.horses.find(x=>x.id===c.dataset.id);if(!h)return;
  const grid=c.querySelector('.grid');
- if(h.mareStats){const line=document.createElement('div');line.className='default-mare-line';line.innerHTML=`<b>デフォルト牝馬</b>　SP ${h.mareStats.sp||'?'} / ST ${h.mareStats.st||'?'} / PW ${h.mareStats.pw||'?'} / NSP ${h.mareStats.nsp} / NST ${h.mareStats.nst}`;if(grid)grid.insertAdjacentElement('beforebegin',line)}
- const ev=h.routeSource?.evidence;
- if(ev?.kind==='pair-pedigree-evidence-not-horse-ability'){
-   const n=ev.nitro||{},line=document.createElement('div');line.className='route-source-line';
-   line.innerHTML=`<b>配合時血統評価</b>　SP ${n.sp??'-'} / ST ${n.st??'-'} / PW ${n.pw??'-'}${ev.speedCross?' / SPクロスあり':''}<small>※馬自身の能力値ではありません</small>`;
-   if(grid)grid.insertAdjacentElement('beforebegin',line)
- }
+ const mareHtml=h.mareStats?`<b>デフォルト牝馬</b>　SP ${h.mareStats.sp||'?'} / ST ${h.mareStats.st||'?'} / PW ${h.mareStats.pw||'?'} / NSP ${h.mareStats.nsp} / NST ${h.mareStats.nst}`:'';
+ syncHorseMetaLine(c,grid,'default-mare-line',mareHtml);
+ const ev=h.routeSource?.evidence,n=ev?.nitro||{};
+ const routeHtml=ev?.kind==='pair-pedigree-evidence-not-horse-ability'
+   ?`<b>配合時血統評価</b>　SP ${n.sp??'-'} / ST ${n.st??'-'} / PW ${n.pw??'-'}${ev.speedCross?' / SPクロスあり':''}<small>※馬自身の能力値ではありません</small>`
+   :'';
+ syncHorseMetaLine(c,grid,'route-source-line',routeHtml)
 })}
 function installCardObserver(){const list=$('#horseList');if(!list)return;new MutationObserver(decorateHorseCards).observe(list,{childList:true,subtree:true});decorateHorseCards()}
 function installMasterSummary(){const sec=$('#breed');if(!sec||$('#defaultMasterSummary'))return;const first=sec.querySelector('.card');const card=document.createElement('div');card.className='card';card.id='defaultMasterSummary';card.innerHTML=`<h3 class="section-title">ゲーム内デフォルトマスタ</h3><div class="master-summary"><div><b id="stallionCount">…</b><small>国内種牡馬</small></div><div><b id="mareCount">…</b><small>繁殖牝馬</small></div></div><p class="muted">マスタは牧場所有馬とは別管理です。必要な繁殖牝馬だけを読み込むため、馬DBが大量の既存馬で埋まりません。</p>`;sec.insertBefore(card,first)}
