@@ -56,6 +56,13 @@ function growthTypeText(d){
   if(!xs.length)return'成長型未推定';
   return xs.join(' / ')+'候補'+(d?.growthType?.conflict?'（情報不一致）':'');
 }
+function abilityReferenceText(d){
+  const z=d?.abilityReferenceZones;
+  if(!z)return'';
+  if(z.fullOpenReached)return z.type+'の全能力全開目安以降（コミュニティ参考・完成確定ではない）';
+  if(z.speedOpenReached)return z.type+'のSP全開目安以降（コミュニティ参考）／全体目安前';
+  return'';
+}
 function adviceClass(k){return k==='recover-first'?'warn':k==='one-step-up'?'up':''}
 
 function ensureStyle(){
@@ -89,7 +96,7 @@ function decorateHorseCards(){
   document.querySelectorAll('#horseList [data-id]').forEach(card=>{
     const h=horseById(card.dataset.id);if(!h)return;
     const d=diagnosis(h),stateClass=d.state.key==='growth-change'||d.state.key==='growth-progressing'?'up':d.state.key==='hold'?'warn':'';
-    const html='<div class="growth-mini-head"><div><b>育成診断</b><small>'+esc(ageMonth(h))+' ｜ '+esc(growthTypeText(d))+'</small></div><span class="growth-state '+stateClass+'">'+esc(d.state.label)+'</span></div>'+
+    const html='<div class="growth-mini-head"><div><b>育成診断</b><small>'+esc(ageMonth(h))+' ｜ '+esc(growthTypeText(d))+(d.growthType?.candidates?.length?' ｜ 型確度 '+esc(d.growthType.confidence):'')+'</small></div><span class="growth-state '+stateClass+'">'+esc(d.state.label)+'</span></div>'+
       '<small>'+esc(d.reason)+' ｜ 信頼度 '+esc(d.confidence)+' ｜ 判断 '+esc(d.raceAdvice.label)+'</small>'+
       '<div class="growth-card-actions"><button type="button" class="secondary" data-horse-action="growth-record" data-horse-id="'+esc(h.id)+'">今月を記録</button><button type="button" class="secondary" data-horse-action="growth-history" data-horse-id="'+esc(h.id)+'">成長履歴</button></div>';
     syncCardLine(card,html);
@@ -166,15 +173,29 @@ function historyRows(h){
       const rel=c.result==='above'?'より上':c.result==='below'?'より下':'と同等';
       return (b?.name||c.baselineId)+rel;
     }).join(' / ');
-    rows.push({idx:core.monthIndex(x),html:'<div class="growth-observation"><b>'+esc(core.ageMonthLabel(x))+' 研究</b>　'+esc(set?.name||'比較セット')+' r'+esc(x.setRevision)+'<br><span class="growth-help">'+esc(cs)+'</span></div>'});
+    rows.push({idx:core.monthIndex(x),html:'<div class="growth-observation"><div class="row"><b>'+esc(core.ageMonthLabel(x))+' 研究</b><button type="button" class="secondary mini" data-growth-delete-check="'+esc(x.id)+'">削除</button></div>'+esc(set?.name||'比較セット')+' r'+esc(x.setRevision)+'<br><span class="growth-help">'+esc(cs)+'</span></div>'});
   }
   return rows.sort((a,b)=>b.idx-a.idx).map(x=>x.html).join('')||'<div class="empty">年月付き観測はまだありません</div>';
 }
 function openHistory(h){
   activeHorse=h;const d=diagnosis(h);ensureDialogs();
   $('#growthHistoryTitle').textContent=h.name+'｜成長履歴';
-  $('#growthHistoryBody').innerHTML='<div class="growth-kpis"><div class="growth-kpi"><small>現在</small><b>'+esc(ageMonth(h))+'</b></div><div class="growth-kpi"><small>成長</small><b>'+esc(d.state.label)+'</b></div><div class="growth-kpi"><small>信頼度</small><b>'+esc(d.confidence)+'</b></div><div class="growth-kpi"><small>出走判断</small><b>'+esc(d.raceAdvice.label)+'</b></div></div><p class="growth-help">'+esc(d.reason)+(d.previousComparisonMonths!=null?'｜前回比較 '+esc(d.previousComparisonMonths)+'か月前':'')+'</p><div class="growth-section"><h3>育成設定</h3><div class="growth-two"><div><label>現在年齢</label><input id="growthCurrentAge" type="number" min="2" max="10" value="'+esc(h.currentAge||'')+'"></div><div><label>現在月</label><input id="growthCurrentMonth" type="number" min="1" max="12" value="'+esc(h.currentMonth||'')+'"></div></div><div class="growth-two"><div><label>入厩月</label><input id="growthEntryMonth" type="number" min="1" max="12" value="'+esc(h.entryMonth||'')+'"></div><div><label>手動成長型</label><select id="growthManualType"><option value="">自動推定</option>'+['超早熟','早熟','持続','普通','普通遅','晩成','超晩成'].map(x=>'<option'+(h.manualGrowthType===x?' selected':'')+'>'+x+'</option>').join('')+'</select></div></div><label>成長コメント</label><input id="growthComment" value="'+esc(h.growthComment||'')+'" placeholder="晩成コメントあり など"><label>現在の疲労</label><select id="growthFatigue"><option value="unknown">不明</option><option value="low"'+(h.currentCondition?.fatigue==='low'?' selected':'')+'>少</option><option value="medium"'+(h.currentCondition?.fatigue==='medium'?' selected':'')+'>中</option><option value="high"'+(h.currentCondition?.fatigue==='high'?' selected':'')+'>大</option></select><p class="growth-help">疲労は成長判定には使わず、出走判断だけに反映します。</p></div><div class="growth-section"><h3>観測履歴</h3><div class="growth-timeline">'+historyRows(h)+'</div></div>';
+  const ref=abilityReferenceText(d);
+  $('#growthHistoryBody').innerHTML='<div class="growth-kpis"><div class="growth-kpi"><small>現在</small><b>'+esc(ageMonth(h))+'</b></div><div class="growth-kpi"><small>成長</small><b>'+esc(d.state.label)+'</b></div><div class="growth-kpi"><small>信頼度</small><b>'+esc(d.confidence)+'</b></div><div class="growth-kpi"><small>出走判断</small><b>'+esc(d.raceAdvice.label)+'</b></div></div><p class="growth-help">'+esc(d.reason)+(d.previousComparisonMonths!=null?'｜前回比較 '+esc(d.previousComparisonMonths)+'か月前':'')+(ref?'<br>'+esc(ref):'')+'</p><div class="growth-section"><h3>育成設定</h3><div class="growth-two"><div><label>現在年齢</label><input id="growthCurrentAge" type="number" min="2" max="10" value="'+esc(h.currentAge||'')+'"></div><div><label>現在月</label><input id="growthCurrentMonth" type="number" min="1" max="12" value="'+esc(h.currentMonth||'')+'"></div></div><button type="button" class="secondary" id="advanceGrowthMonth">翌月へ</button><div class="growth-two"><div><label>入厩月</label><input id="growthEntryMonth" type="number" min="1" max="12" value="'+esc(h.entryMonth||'')+'"></div><div><label>手動成長型</label><select id="growthManualType"><option value="">自動推定</option>'+['超早熟','早熟','持続','普通','普通遅','晩成','超晩成'].map(x=>'<option'+(h.manualGrowthType===x?' selected':'')+'>'+x+'</option>').join('')+'</select></div></div><label>成長コメント</label><input id="growthComment" value="'+esc(h.growthComment||'')+'" placeholder="晩成コメントあり など"><label>現在の疲労</label><select id="growthFatigue"><option value="unknown">不明</option><option value="low"'+(h.currentCondition?.fatigue==='low'?' selected':'')+'>少</option><option value="medium"'+(h.currentCondition?.fatigue==='medium'?' selected':'')+'>中</option><option value="high"'+(h.currentCondition?.fatigue==='high'?' selected':'')+'>大</option></select><p class="growth-help">疲労は成長判定には使わず、出走判断だけに反映します。</p></div><div class="growth-section"><h3>観測履歴</h3><div class="growth-timeline">'+historyRows(h)+'</div></div>';
   $('#saveGrowthSettings').onclick=saveGrowthSettings;
+  $('#advanceGrowthMonth').onclick=()=>{
+    let age=Number($('#growthCurrentAge').value),month=Number($('#growthCurrentMonth').value);
+    if(!Number.isInteger(age)||age<2)age=Number(h.currentAge)||2;
+    if(!Number.isInteger(month)||month<1||month>12)month=Number(h.currentMonth)||1;
+    month++;if(month>12){month=1;age++}
+    $('#growthCurrentAge').value=age;$('#growthCurrentMonth').value=month;
+  };
+  $('#growthHistoryBody').onclick=e=>{
+    const id=e.target.closest('[data-growth-delete-check]')?.dataset.growthDeleteCheck;
+    if(!id)return;
+    if(!confirm('このBC比較観測を削除しますか？'))return;
+    db.growthChecks=(db.growthChecks||[]).filter(x=>String(x.id)!==String(id));save();openHistory(h);
+  };
   if(!$('#growthHistoryDlg').open)$('#growthHistoryDlg').showModal();
 }
 function setOptionalNumber(obj,key,value,min,max){
@@ -285,7 +306,7 @@ function saveSet(e){
 
 function install(){
   ensureStyle();ensureRaceAgeMonth();ensureDialogs();ensureResearchPanel();installHorseObserver();installRaceObserver();
-  window.DABISTA_GROWTH_UI={diagnosis,decorateHorseCards,decorateRaceCards,openHistory,openRecord,latestSets};
+  window.DABISTA_GROWTH_UI={diagnosis,decorateHorseCards,decorateRaceCards,openHistory,openRecord,latestSets,refresh:()=>{decorateHorseCards();decorateRaceCards();renderResearchPanel()}};
 }
 install();
 })();
