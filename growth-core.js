@@ -104,7 +104,7 @@ function latestResearchSignal(checks,sets){
     if(down.length)return{kind:'decline',mode:'research',confidence:'高',reason:'同一比較セットで基準馬との序列を下げた',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes:down};
     return{kind:'stall',mode:'research',confidence:'高',reason:'同一比較セットで序列変化を観測しない',previous:a,latest:b,gapMonths:monthsBetween(a,b),changes};
   }
-  return{kind:'insufficient',mode:'research',confidence:'高',reason:'同一条件で比較できる過去観測が不足',latest:latest.items.at(-1),gapMonths:null};
+  return{kind:'insufficient',mode:'research',confidence:'参考',reason:'同一条件で比較できる過去観測が不足',latest:b,gapMonths:null};
 }
 
 function latestRaceSignal(races){
