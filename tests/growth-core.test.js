@@ -58,6 +58,15 @@ assert.strictEqual(d.confidence,'高');
 assert.strictEqual(d.raceAdvice.key,'one-step-up');
 assert.ok(d.signal.changes.some(x=>x.baselineId==='A'&&x.before==='below'&&x.after==='above'));
 
+const markOnlyChecks=[
+  {id:'mk1',horseId:'h1',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:5,mark4:'○',mark5:'△',comparisons:[{baselineId:'A',result:'equal'}]},
+  {id:'mk2',horseId:'h1',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:6,mark4:'◎',mark5:'△',comparisons:[{baselineId:'A',result:'equal'}]}
+];
+d=growth.diagnose({horse,races:[],growthChecks:markOnlyChecks,growthCheckSets:[setV1]});
+assert.strictEqual(d.state.key,'growth-change','same fixed comparison set mark4 improvement must be high-confidence growth evidence');
+assert.strictEqual(d.confidence,'高');
+assert.deepStrictEqual(d.signal.mark4,{before:'○',after:'◎'});
+
 const changedSet={id:'sp-a',name:'SPチェックA',revision:2,conditionFingerprint:'tokyo1800-fixed',baselineHorses:[{id:'A'}]};
 d=growth.diagnose({
   horse,races:[],
@@ -80,6 +89,15 @@ d=growth.diagnose({
   ]
 });
 assert.strictEqual(d.state.key,'hold','same-month research disagreement must not be averaged');
+
+d=growth.diagnose({
+  horse,races:[],growthCheckSets:[setV1],
+  growthChecks:[
+    {id:'mm1',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:6,observationOrder:1,mark4:'○',comparisons:[{baselineId:'A',result:'equal'}]},
+    {id:'mm2',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:6,observationOrder:2,mark4:'◎',comparisons:[{baselineId:'A',result:'equal'}]}
+  ]
+});
+assert.strictEqual(d.state.key,'hold','same-month mark disagreement must not be averaged');
 
 const setB={id:'sp-b',name:'SPチェックB',revision:1,conditionFingerprint:'nakayama1800-fixed',baselineHorses:[{id:'A',name:'別セットA'}]};
 d=growth.diagnose({
