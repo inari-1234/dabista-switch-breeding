@@ -42,6 +42,8 @@ assert.ok(ui.includes('growthCheckSets'),'comparison set storage missing');
 assert.ok(ui.includes('conditionFingerprint'),'comparison condition fingerprint missing');
 assert.ok(ui.includes("Number(prev.revision||1)+1"),'condition changes must create a new comparison-set revision');
 assert.ok(ui.includes('db.growthChecks.push'),'research observation persistence missing');
+assert.ok(ui.includes('<option value="">未観測</option>'),'baseline comparison must default to unobserved');
+assert.ok(ui.includes(".filter(x=>x.value).map(x=>({baselineId:x.dataset.growthBaseline,result:x.value}))"),'unobserved baselines must not be persisted');
 assert.ok(ui.includes("growthChecks:(db.growthChecks||[]).filter"),'diagnosis must derive from stored observations');
 assert.ok(ui.includes("races:(db.races||[]).filter"),'dated normal races must feed diagnosis without copying');
 assert.ok(ui.includes('疲労は成長判定には使わず、出走判断だけに反映します。'),'fatigue/growth UI boundary missing');
