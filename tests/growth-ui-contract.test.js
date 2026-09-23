@@ -26,8 +26,13 @@ assert.ok(app.includes("function score(id){const r=db.races.filter"),'legacy lif
 assert.ok(!core.includes('horseScore'),'growth core must not depend on lifetime score');
 assert.ok(!core.includes('breeding-core')&&!core.includes('sale-planner-core')&&!core.includes('breed-integration'),'growth core must not depend on breeding engine');
 assert.ok(!model.includes('breeding-core')&&!db.includes('breeding-core'),'growth model/DB must remain independent from breeding engine');
+for(const src of [model,core,ui]){
+  assert.ok(!src.includes('growthRate')&&!src.includes('completionRate'),'unverified fixed growth/completion coefficients must not be introduced');
+  assert.ok(!src.includes('currentWeek'),'normal product workflow must remain month-centered');
+}
 
 assert.ok(v16.includes("if(e.target.closest('[data-horse-action]'))return"),'horse card action guard missing');
+assert.ok(app.includes("if(e.target.closest('[data-horse-action]'))return"),'base horse card action guard missing');
 assert.ok(ui.includes('data-horse-action="growth-record"'),'growth record card action missing');
 assert.ok(ui.includes('data-horse-action="growth-history"'),'growth history card action missing');
 assert.ok(ui.includes("const sec=$('#races')"),'growth research tools must integrate into existing results tab');
