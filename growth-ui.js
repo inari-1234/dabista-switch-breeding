@@ -242,15 +242,15 @@ function openRaceFromGrowth(h){
 function renderObservationBaselines(){
   const id=$('#growthObsSet')?.value,set=latestSets().find(s=>String(s.id)===String(id)),box=$('#growthObsBaselines');if(!box)return;
   if(!set){box.innerHTML='<div class="empty">比較セットを作成してください</div>';return}
-  box.innerHTML=(set.baselineHorses||[]).map(b=>'<div class="growth-baseline-row"><b>'+esc(b.name)+'</b><select data-growth-baseline="'+esc(b.id)+'"><option value="below">基準馬より下</option><option value="equal">同等</option><option value="above">基準馬より上</option></select></div>').join('');
+  box.innerHTML=(set.baselineHorses||[]).map(b=>'<div class="growth-baseline-row"><b>'+esc(b.name)+'</b><select data-growth-baseline="'+esc(b.id)+'"><option value="">未観測</option><option value="below">基準馬より下</option><option value="equal">同等</option><option value="above">基準馬より上</option></select></div>').join('');
 }
 function saveGrowthCheck(){
   if(!activeHorse)return;
   const age=Number($('#growthObsAge').value),month=Number($('#growthObsMonth').value),set=latestSets().find(s=>String(s.id)===String($('#growthObsSet').value));
   if(!Number.isInteger(age)||age<2||age>10||!Number.isInteger(month)||month<1||month>12){alert('年齢と月を入力してください');return}
   if(!set){alert('比較セットを作成してください');return}
-  const comparisons=[...document.querySelectorAll('#growthObsBaselines [data-growth-baseline]')].map(x=>({baselineId:x.dataset.growthBaseline,result:x.value}));
-  if(!comparisons.length){alert('基準馬がありません');return}
+  const comparisons=[...document.querySelectorAll('#growthObsBaselines [data-growth-baseline]')].filter(x=>x.value).map(x=>({baselineId:x.dataset.growthBaseline,result:x.value}));
+  if(!comparisons.length){alert('少なくとも1頭の基準馬との比較を入力してください');return}
   db.growthChecks.push({
     id:crypto.randomUUID(),horseId:activeHorse.id,setId:set.id,setRevision:Number(set.revision||1),
     conditionFingerprint:set.conditionFingerprint,age,month,observationOrder:Date.now(),observedAt:new Date().toISOString(),
