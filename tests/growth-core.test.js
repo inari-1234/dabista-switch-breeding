@@ -165,6 +165,16 @@ const changedGrowthType=growth.diagnose({horse:{...lateHorse,manualGrowthType:'�
 assert.strictEqual(changedGrowthType.growthType.candidates[0],'普通');
 assert.strictEqual(changedGrowthType.state.key,'completion-zone-candidate','derived result must be recalculated from observations and current growth-type input');
 
+const sameHistory=[
+  {id:'gt1',horseId:'gt',age:3,month:12,mark4:'○',mark5:'△'},
+  {id:'gt2',horseId:'gt',age:4,month:1,mark4:'○',mark5:'△'}
+];
+const ordinaryFromSameHistory=growth.diagnose({horse:{id:'gt',manualGrowthType:'普通',currentAge:4,currentMonth:1},races:sameHistory,growthChecks:[],growthCheckSets:[]});
+const lateFromSameHistory=growth.diagnose({horse:{id:'gt',manualGrowthType:'晩成',currentAge:4,currentMonth:1},races:sameHistory,growthChecks:[],growthCheckSets:[]});
+assert.strictEqual(ordinaryFromSameHistory.state.key,'completion-zone-candidate');
+assert.strictEqual(lateFromSameHistory.state.key,'observed-stall');
+assert.deepStrictEqual(ordinaryFromSameHistory.signal,lateFromSameHistory.signal,'changing growth type must recalculate derived state without rewriting observation history');
+
 console.log(JSON.stringify({
   passed:true,
   legacyUndatedRaceExcluded:true,
