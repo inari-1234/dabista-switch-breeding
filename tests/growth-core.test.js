@@ -47,6 +47,18 @@ d=growth.diagnose({
 assert.strictEqual(d.state.key,'hold','conflicting observations in the same month must be held');
 assert.match(d.reason,/同月/);
 
+d=growth.diagnose({
+  horse:{id:'missing-mark-month',name:'欠測混在'},
+  races:[
+    {id:'rm1',horseId:'missing-mark-month',age:4,month:5,mark4:'○',mark5:'不明',observationOrder:1},
+    {id:'rm2',horseId:'missing-mark-month',age:4,month:5,mark4:'○',mark5:'△',observationOrder:2},
+    {id:'rm3',horseId:'missing-mark-month',age:4,month:6,mark4:'◎',mark5:'△',observationOrder:1}
+  ]
+});
+assert.strictEqual(d.state.key,'growth-progressing','missing mark plus observed mark in same month must not be treated as a conflict');
+assert.strictEqual(d.signal.previous.month,5);
+assert.strictEqual(d.signal.latest.month,6);
+
 const setV1={id:'sp-a',name:'SPチェックA',revision:1,conditionFingerprint:'tokyo1600-fixed',baselineHorses:[{id:'A'},{id:'B'}]};
 const checks=[
   {id:'c1',horseId:'h1',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:5,comparisons:[{baselineId:'A',result:'below'},{baselineId:'B',result:'above'}]},
