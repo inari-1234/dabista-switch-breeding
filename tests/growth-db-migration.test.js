@@ -64,6 +64,19 @@ assert.deepStrictEqual(shared.races,[]);
 assert.deepStrictEqual(shared.growthCheckSets,[]);
 assert.deepStrictEqual(shared.growthChecks,[]);
 
+const rich={
+  schemaVersion:2,
+  horses:[{id:'hg',name:'成長馬',currentAge:4,currentMonth:6}],
+  races:[{id:'rg',horseId:'hg',age:4,month:5,mark4:'○',mark5:'△'}],
+  growthCheckSets:[{id:'set1',name:'SPチェックA',revision:2,conditionFingerprint:'fp2',baselineHorses:[{id:'b:a',name:'A'}]}],
+  growthChecks:[{id:'cg',horseId:'hg',setId:'set1',setRevision:2,conditionFingerprint:'fp2',age:4,month:6,comparisons:[{baselineId:'b:a',result:'above'}]}],
+  memo:'keep'
+};
+const richJson=JSON.stringify(rich);
+const exported=JSON.parse(JSON.stringify(rich));
+const imported=growthDb.normalizedClone(exported);
+assert.strictEqual(JSON.stringify(imported),richJson,'backup -> restore must preserve complete growth data');
+
 console.log(JSON.stringify({
   passed:true,
   schemaVersion:growthDb.SCHEMA_VERSION,
