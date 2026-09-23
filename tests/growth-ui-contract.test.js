@@ -45,6 +45,12 @@ assert.ok(app.includes('class="growth-race-date"'),'dated race snapshot must be 
 assert.ok(app.includes('data-race-horse-id'),'race cards must expose stable horse identity for growth decoration');
 assert.ok(ui.includes('function decorateRaceCards()'),'results tab growth summary missing');
 assert.ok(ui.includes('growth-race-diagnosis'),'growth diagnosis must appear alongside race results');
+assert.ok(app.includes('window.DABISTA_GROWTH_UI?.refresh?.()'),'backup restore must refresh growth UI without reload');
+assert.ok(ui.includes('refresh:()=>{decorateHorseCards();decorateRaceCards();renderResearchPanel()}'),'growth UI refresh API missing');
+assert.ok(ui.includes('data-growth-delete-check'),'research observations must be removable');
+assert.ok(ui.includes('advanceGrowthMonth'),'monthly workflow advance helper missing');
+assert.ok(ui.includes('完成確定ではない'),'growth milestones must never be presented as confirmed completion');
+assert.ok(!ui.includes('growthState:')&&!ui.includes('raceAdvice:'),'derived diagnosis results must not be persisted into DB records');
 
 assert.ok(db.includes('SCHEMA_VERSION=2'),'growth DB schema version missing');
 assert.ok(!/for\s*\([^)]*db\.horses/.test(db),'growth migration must not mass-mutate horse records');
