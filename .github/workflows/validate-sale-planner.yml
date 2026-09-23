@@ -6,6 +6,13 @@ on:
     paths:
       - 'sale-planner-core.js'
       - 'app.js'
+      - 'growth-db.js'
+      - 'growth-model.js'
+      - 'growth-core.js'
+      - 'growth-ui.js'
+      - 'tests/growth-db-migration.test.js'
+      - 'tests/growth-core.test.js'
+      - 'tests/growth-ui-contract.test.js'
       - 'breed-helper.js'
       - 'v15.js'
       - 'v16.js'
@@ -180,6 +187,12 @@ jobs:
           print('PASS sale planner release wiring')
           PY
           echo "PASS sale planner static syntax"
+
+      - name: Growth tracking core regression
+        run: |
+          node tests/growth-db-migration.test.js
+          node tests/growth-core.test.js
+          if [ -f tests/growth-ui-contract.test.js ]; then node tests/growth-ui-contract.test.js; fi
 
       - name: Breed integration regression
         run: |
