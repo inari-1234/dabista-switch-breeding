@@ -16,6 +16,15 @@ const horse={id:'h1',name:'テスト馬',currentAge:4,currentMonth:6,entryMonth:
 d=growth.diagnose({
   horse,
   races:[
+    {id:'ru1',horseId:'h1',age:4,month:2,mark4:'不明',mark5:'不明'},
+    {id:'ru2',horseId:'h1',age:4,month:3,mark4:'△',mark5:'△'}
+  ]
+});
+assert.strictEqual(d.state.key,'data-insufficient','unknown mark must be treated as missing, not as the weakest mark');
+
+d=growth.diagnose({
+  horse,
+  races:[
     {id:'r1',horseId:'h1',age:4,month:3,mark4:'△',mark5:'△'},
     {id:'r2',horseId:'h1',age:4,month:6,mark4:'○',mark5:'△'}
   ]
