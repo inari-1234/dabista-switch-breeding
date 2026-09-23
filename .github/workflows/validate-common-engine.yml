@@ -5,6 +5,13 @@ on:
   push:
     paths:
       - 'app.js'
+      - 'growth-db.js'
+      - 'growth-model.js'
+      - 'growth-core.js'
+      - 'growth-ui.js'
+      - 'tests/growth-db-migration.test.js'
+      - 'tests/growth-core.test.js'
+      - 'tests/growth-ui-contract.test.js'
       - 'breed-helper.js'
       - 'v15.js'
       - 'v16.js'
@@ -195,6 +202,12 @@ jobs:
           assert idx.count('<dialog') == idx.count('</dialog>')
           print('PASS static release wiring')
           PY
+
+      - name: Growth tracking core regression
+        run: |
+          node tests/growth-db-migration.test.js
+          node tests/growth-core.test.js
+          if [ -f tests/growth-ui-contract.test.js ]; then node tests/growth-ui-contract.test.js; fi
 
       - name: Breed integration regression
         run: |
