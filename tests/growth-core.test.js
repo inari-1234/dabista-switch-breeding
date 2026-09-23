@@ -59,6 +59,18 @@ assert.strictEqual(d.state.key,'growth-progressing','missing mark plus observed 
 assert.strictEqual(d.signal.previous.month,5);
 assert.strictEqual(d.signal.latest.month,6);
 
+d=growth.diagnose({
+  horse:{id:'merge-normal',name:'通常月内統合'},
+  races:[
+    {id:'mn1',horseId:'merge-normal',age:4,month:5,mark4:'○',mark5:'△',observationOrder:1},
+    {id:'mn2',horseId:'merge-normal',age:4,month:5,mark4:'○',mark5:'不明',observationOrder:2},
+    {id:'mn3',horseId:'merge-normal',age:4,month:6,mark4:'○',mark5:'○',observationOrder:1}
+  ]
+});
+assert.strictEqual(d.signal.kind,'mixed','known mark5 in a month must survive a later missing mark5 observation');
+assert.strictEqual(d.signal.previous.mark5,'△');
+assert.strictEqual(d.signal.latest.mark5,'○');
+
 const setV1={id:'sp-a',name:'SPチェックA',revision:1,conditionFingerprint:'tokyo1600-fixed',baselineHorses:[{id:'A'},{id:'B'}]};
 const checks=[
   {id:'c1',horseId:'h1',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:5,comparisons:[{baselineId:'A',result:'below'},{baselineId:'B',result:'above'}]},
@@ -110,6 +122,18 @@ d=growth.diagnose({
   ]
 });
 assert.strictEqual(d.state.key,'hold','same-month mark disagreement must not be averaged');
+
+const mergedResearch=[
+  {id:'mr1',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:5,observationOrder:1,comparisons:[{baselineId:'A',result:'below'}]},
+  {id:'mr2',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:5,observationOrder:2,comparisons:[{baselineId:'B',result:'equal'}]},
+  {id:'mr3',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:6,observationOrder:1,comparisons:[{baselineId:'A',result:'above'}]},
+  {id:'mr4',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:6,observationOrder:2,comparisons:[{baselineId:'B',result:'above'}]}
+];
+d=growth.diagnose({horse,races:[],growthCheckSets:[setV1],growthChecks:mergedResearch});
+assert.strictEqual(d.state.key,'growth-change','consistent same-month research observations must be merged');
+assert.strictEqual(d.signal.changes.length,2,'merged research month must retain changes for both baselines');
+assert.deepStrictEqual(new Set(d.signal.changes.map(x=>x.baselineId)),new Set(['A','B']));
+
 
 const setB={id:'sp-b',name:'SPチェックB',revision:1,conditionFingerprint:'nakayama1800-fixed',baselineHorses:[{id:'A',name:'別セットA'}]};
 d=growth.diagnose({
