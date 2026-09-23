@@ -52,7 +52,8 @@ function ageMonth(h){
 }
 function growthTypeText(d){
   const xs=d?.growthType?.candidates||[];
-  return xs.length?xs.join(' / ')+'候補':'成長型未推定';
+  if(!xs.length)return'成長型未推定';
+  return xs.join(' / ')+'候補'+(d?.growthType?.conflict?'（情報不一致）':'');
 }
 function adviceClass(k){return k==='recover-first'?'warn':k==='one-step-up'?'up':''}
 
@@ -157,7 +158,7 @@ function openHistory(h){
   $('#growthHistoryTitle').textContent=h.name+'｜成長履歴';
   $('#growthHistoryBody').innerHTML='<div class="growth-kpis"><div class="growth-kpi"><small>現在</small><b>'+esc(ageMonth(h))+'</b></div><div class="growth-kpi"><small>成長</small><b>'+esc(d.state.label)+'</b></div><div class="growth-kpi"><small>信頼度</small><b>'+esc(d.confidence)+'</b></div><div class="growth-kpi"><small>出走判断</small><b>'+esc(d.raceAdvice.label)+'</b></div></div><p class="growth-help">'+esc(d.reason)+(d.previousComparisonMonths!=null?'｜前回比較 '+esc(d.previousComparisonMonths)+'か月前':'')+'</p><div class="growth-section"><h3>育成設定</h3><div class="growth-two"><div><label>現在年齢</label><input id="growthCurrentAge" type="number" min="2" max="10" value="'+esc(h.currentAge||'')+'"></div><div><label>現在月</label><input id="growthCurrentMonth" type="number" min="1" max="12" value="'+esc(h.currentMonth||'')+'"></div></div><div class="growth-two"><div><label>入厩月</label><input id="growthEntryMonth" type="number" min="1" max="12" value="'+esc(h.entryMonth||'')+'"></div><div><label>手動成長型</label><select id="growthManualType"><option value="">自動推定</option>'+['超早熟','早熟','持続','普通','普通遅','晩成','超晩成'].map(x=>'<option'+(h.manualGrowthType===x?' selected':'')+'>'+x+'</option>').join('')+'</select></div></div><label>成長コメント</label><input id="growthComment" value="'+esc(h.growthComment||'')+'" placeholder="晩成コメントあり など"><label>現在の疲労</label><select id="growthFatigue"><option value="unknown">不明</option><option value="low"'+(h.currentCondition?.fatigue==='low'?' selected':'')+'>少</option><option value="medium"'+(h.currentCondition?.fatigue==='medium'?' selected':'')+'>中</option><option value="high"'+(h.currentCondition?.fatigue==='high'?' selected':'')+'>大</option></select><p class="growth-help">疲労は成長判定には使わず、出走判断だけに反映します。</p></div><div class="growth-section"><h3>観測履歴</h3><div class="growth-timeline">'+historyRows(h)+'</div></div>';
   $('#saveGrowthSettings').onclick=saveGrowthSettings;
-  $('#growthHistoryDlg').showModal();
+  if(!$('#growthHistoryDlg').open)$('#growthHistoryDlg').showModal();
 }
 function setOptionalNumber(obj,key,value,min,max){
   const n=Number(value);
@@ -187,7 +188,7 @@ function openRecord(h){
   renderObservationBaselines();
   $('#openGrowthRace').onclick=()=>openRaceFromGrowth(h);
   $('#saveGrowthCheck').onclick=saveGrowthCheck;
-  $('#growthRecordDlg').showModal();
+  if(!$('#growthRecordDlg').open)$('#growthRecordDlg').showModal();
 }
 function setHorseCurrentFromRecord(h){
   setOptionalNumber(h,'currentAge',$('#growthObsAge').value,2,10);
@@ -250,13 +251,19 @@ function saveSet(e){
   const names=$('#growthSetBaselines').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
   if(!name||!names.length)return;
   const baselines=names.map(n=>({id:'b:'+norm(n),name:n})),fp=fingerprint(condition,baselines),prev=latestSets().find(s=>String(s.id)===String(existingId));
+  let savedId=prev?.id||'';
   if(prev&&prev.conditionFingerprint===fp){
-    prev.name=name;prev.condition={...condition};prev.baselineHorses=baselines;
+    prev.name=name;prev.condition={...condition};prev.baselineHorses=baselines;savedId=prev.id;
   }else{
-    db.growthCheckSets.push({id:prev?.id||crypto.randomUUID(),name,revision:prev?Number(prev.revision||1)+1:1,condition,conditionFingerprint:fp,baselineHorses:baselines,createdAt:new Date().toISOString()});
+    const next={id:prev?.id||crypto.randomUUID(),name,revision:prev?Number(prev.revision||1)+1:1,condition,conditionFingerprint:fp,baselineHorses:baselines,createdAt:new Date().toISOString()};
+    db.growthCheckSets.push(next);savedId=next.id;
   }
   save();$('#growthSetDlg').close();renderResearchPanel();
-  if($('#growthRecordDlg')?.open&&activeHorse)openRecord(activeHorse);
+  if($('#growthRecordDlg')?.open&&activeHorse){
+    openRecord(activeHorse);
+    if([...$('#growthObsSet').options].some(o=>String(o.value)===String(savedId)))$('#growthObsSet').value=savedId;
+    renderObservationBaselines();
+  }
 }
 
 function install(){
