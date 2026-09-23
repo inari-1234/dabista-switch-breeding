@@ -47,11 +47,11 @@ function resetCompactHorseSections(){
 }
 function syncCompactHorseRole(){
  const role=$('#role')?.value||'race',brood=role==='broodmare',sireRole=role==='sire-candidate'||role==='stallion';
- const master=$('#horseForm .master-tools'),sex=$('#sex'),sexWrap=$('#horseForm .horse-sex-wrap');
+ const master=$('#horseForm .master-tools'),sex=$('#sex'),sexRow=$('#horseForm .horse-sex-row');
  if(master)master.hidden=!brood;
  if(brood&&sex)sex.value='牝';
  if(sireRole&&sex)sex.value='牡';
- if(sexWrap)sexWrap.hidden=brood||sireRole;
+ if(sexRow)sexRow.hidden=brood||sireRole;
 }
 function installCompactHorseForm(){
  const form=$('#horseForm');if(!form||$('#horseFormStickyHead'))return;
