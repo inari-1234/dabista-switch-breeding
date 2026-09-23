@@ -77,6 +77,24 @@ function sameMonthRaceConflict(group){
   const m5=new Set(group.map(x=>known(x.mark5)).filter(Boolean));
   return m4.size>1||m5.size>1;
 }
+function mergeResearchScope(items){
+  const sorted=[...(items||[])].sort(sortObs),base={...(sorted.at(-1)||{})},merged=new Map();
+  for(const item of sorted)for(const [id,result] of comparisonMap(item))if(!merged.has(id))merged.set(id,result);
+  base.comparisons=[...merged].map(([baselineId,result])=>({baselineId,result}));
+  for(const key of ['mark4','mark5']){
+    const values=[...new Set(sorted.map(x=>String(x?.[key]||'')).filter(v=>v&&v!=='不明'))];
+    base[key]=values.length===1?values[0]:'';
+  }
+  return base;
+}
+function mergeRaceMonth(items){
+  const sorted=[...(items||[])].sort(sortObs),base={...(sorted.at(-1)||{})};
+  for(const key of ['mark4','mark5']){
+    const values=[...new Set(sorted.map(x=>String(x?.[key]||'')).filter(v=>v&&v!=='不明'))];
+    base[key]=values.length===1?values[0]:'不明';
+  }
+  return base;
+}
 function groupByMonth(list){
   const m=new Map();
   for(const x of [...list].sort(sortObs)){
@@ -93,17 +111,18 @@ function latestResearchSignal(checks,sets){
   const valid=(checks||[]).filter(usableCheck).filter(c=>conditionsMatch(c,setMap.get(String(c.setId)+'@'+Number(c.setRevision))));
   if(!valid.length)return null;
   const groups=groupByMonth(valid);
-  const latest=groups.at(-1),b=latest.items.at(-1);
-  const sameScope=x=>String(x.setId)===String(b.setId)&&Number(x.setRevision)===Number(b.setRevision);
+  const latest=groups.at(-1),latestRef=latest.items.at(-1);
+  const sameScope=x=>String(x.setId)===String(latestRef.setId)&&Number(x.setRevision)===Number(latestRef.setRevision);
   const latestScope=latest.items.filter(sameScope);
   if(sameMonthResearchConflict(latestScope))return{
-    kind:'hold',mode:'research',confidence:'高',reason:'同月の固定比較セット結果が一致しない',latest:b,gapMonths:null
+    kind:'hold',mode:'research',confidence:'高',reason:'同月の固定比較セット結果が一致しない',latest:latestRef,gapMonths:null
   };
+  const b=mergeResearchScope(latestScope);
 
   for(let gi=groups.length-2;gi>=0;gi--){
     const prevScope=groups[gi].items.filter(sameScope);
     if(!prevScope.length||sameMonthResearchConflict(prevScope))continue;
-    const a=prevScope.at(-1);
+    const a=mergeResearchScope(prevScope);
     const A=comparisonMap(a),B=comparisonMap(b),changes=[];
     for(const [id,after] of B){
       const before=A.get(id);
@@ -136,11 +155,12 @@ function latestRaceSignal(races){
   if(sameMonthRaceConflict(latest.items))return{
     kind:'hold',mode:'normal',confidence:'参考',reason:'同月の通常レース印が一致しない',latest:latest.items.at(-1),gapMonths:null
   };
-  if(groups.length<2)return{kind:'insufficient',mode:'normal',confidence:'参考',reason:'年月付き通常レースが1時点のみ',latest:latest.items.at(-1),gapMonths:null};
+  const b=mergeRaceMonth(latest.items);
+  if(groups.length<2)return{kind:'insufficient',mode:'normal',confidence:'参考',reason:'年月付き通常レースが1時点のみ',latest:b,gapMonths:null};
   let prevGroup=null;
   for(let i=groups.length-2;i>=0;i--){if(!sameMonthRaceConflict(groups[i].items)){prevGroup=groups[i];break}}
-  if(!prevGroup)return{kind:'insufficient',mode:'normal',confidence:'参考',reason:'比較可能な過去月が不足',latest:latest.items.at(-1),gapMonths:null};
-  const a=prevGroup.items.at(-1),b=latest.items.at(-1),d4=MARK_ORDER[String(b.mark4)]-MARK_ORDER[String(a.mark4)];
+  if(!prevGroup)return{kind:'insufficient',mode:'normal',confidence:'参考',reason:'比較可能な過去月が不足',latest:b,gapMonths:null};
+  const a=mergeRaceMonth(prevGroup.items),d4=MARK_ORDER[String(b.mark4)]-MARK_ORDER[String(a.mark4)];
   const a5=String(a.mark5||'不明'),b5=String(b.mark5||'不明');
   const d5=a5!=='不明'&&b5!=='不明'&&Object.prototype.hasOwnProperty.call(MARK_ORDER,a5)&&Object.prototype.hasOwnProperty.call(MARK_ORDER,b5)?MARK_ORDER[b5]-MARK_ORDER[a5]:0;
   if(d4>0)return{kind:'progress',mode:'normal',confidence:'参考',reason:'④が前回観測より改善方向',previous:a,latest:b,gapMonths:monthsBetween(a,b),mark4:{before:a.mark4,after:b.mark4},mark5:{before:a.mark5,after:b.mark5}};
@@ -219,6 +239,6 @@ function diagnose(input={}){
 
 return{
   MARK_ORDER,REL_ORDER,validAgeMonth,monthIndex,ageMonthLabel,monthsBetween,
-  latestResearchSignal,latestRaceSignal,growthTypeInfo,abilityReferenceZones,completionZone,diagnose
+  latestResearchSignal,latestRaceSignal,growthTypeInfo,abilityReferenceZones,completionZone,mergeResearchScope,mergeRaceMonth,diagnose
 };
 });
