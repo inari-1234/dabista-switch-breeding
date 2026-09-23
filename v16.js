@@ -46,8 +46,12 @@ function resetCompactHorseSections(){
  document.querySelectorAll('#horseForm .horse-compact-details').forEach(d=>d.open=false);
 }
 function syncCompactHorseRole(){
- const brood=$('#role')?.value==='broodmare',master=$('#horseForm .master-tools');
+ const role=$('#role')?.value||'race',brood=role==='broodmare',sireRole=role==='sire-candidate'||role==='stallion';
+ const master=$('#horseForm .master-tools'),sex=$('#sex'),sexWrap=$('#horseForm .horse-sex-wrap');
  if(master)master.hidden=!brood;
+ if(brood&&sex)sex.value='牝';
+ if(sireRole&&sex)sex.value='牡';
+ if(sexWrap)sexWrap.hidden=brood||sireRole;
 }
 function installCompactHorseForm(){
  const form=$('#horseForm');if(!form||$('#horseFormStickyHead'))return;
@@ -60,6 +64,7 @@ function installCompactHorseForm(){
   .horse-compact-details>summary{cursor:pointer;list-style:none;padding:11px 12px;font-size:12px;font-weight:900;color:#315544}.horse-compact-details>summary::-webkit-details-marker{display:none}
   .horse-compact-details>summary:after{content:'＋';float:right;color:#6a7d73}.horse-compact-details[open]>summary:after{content:'−'}
   .horse-compact-body{padding:0 10px 10px}.horse-compact-body>.two,.horse-compact-body>.three{margin-top:8px}
+  #horseForm .horse-role-row,#horseForm .horse-sex-row{grid-template-columns:1fr!important}
   #horseForm>.master-tools{margin:8px 0 10px!important}
   #horseForm .v15box{padding:0!important;border:0!important;background:transparent!important;margin-top:8px!important}
   #horseForm .v15box>.horse-compact-details{margin-top:0}
@@ -85,6 +90,10 @@ function installCompactHorseForm(){
    for(const id of ['minD','record','starts']){
      const el=$('#'+id),g=el?.closest('.two,.three');if(g&&!nodes.includes(g))nodes.push(g);
    }
+   const roleMemo=$('#roleMemo'),roleMemoWrap=roleMemo?.parentElement,roleRow=$('#role')?.closest('.two');
+   if(roleMemoWrap&&roleRow){body.appendChild(roleMemoWrap);roleRow.classList.add('horse-role-row')}
+   const generation=$('#generation'),generationWrap=generation?.parentElement,sexRow=$('#sex')?.closest('.two'),sexWrap=$('#sex')?.parentElement;
+   if(generationWrap&&sexRow){body.appendChild(generationWrap);sexRow.classList.add('horse-sex-row');if(sexWrap)sexWrap.classList.add('horse-sex-wrap')}
    const note=$('#note'),noteLabel=note?.previousElementSibling;
    nodes.forEach(x=>body.appendChild(x));if(noteLabel?.tagName==='LABEL')body.appendChild(noteLabel);if(note)body.appendChild(note);
    const before=bottom||null;form.insertBefore(details,before);
