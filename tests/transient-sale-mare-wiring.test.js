@@ -82,6 +82,8 @@ assert.ok(v26.includes("SP/ST/PWは血統上のニトロ"),'route registration m
 assert.ok(v26.includes("pair-pedigree-evidence-not-horse-ability"),'route registration must persist pair evidence with an explicit non-ability boundary');
 assert.ok(v16.includes('配合時血統評価'),'registered horse card must expose route provenance');
 assert.ok(v16.includes('※馬自身の能力値ではありません'),'route pedigree evidence must be visibly separated from horse ability');
+assert.ok(v16.includes('function syncHorseMetaLine(card,grid,className,html)'),'horse-card metadata renderer must use stable diff updates');
+assert.ok(!v16.includes("let old=c.querySelector('.default-mare-line');if(old)old.remove();"),'horse-card observer must not remove/re-add metadata on every mutation');
 assert.ok(v26.includes('matchingPreviousMares(ctx,generation)'),'multi-generation registration must require the actual prior broodmare pedigree');
 assert.ok(v26.includes('この産駒を牧場DBへ登録'),'route bridge registration CTA missing');
 
