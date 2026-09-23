@@ -72,8 +72,9 @@ function sameMonthResearchConflict(group){
   return [...seen.values()].some(s=>s.size>1);
 }
 function sameMonthRaceConflict(group){
-  const m4=new Set(group.map(x=>String(x.mark4||'不明')));
-  const m5=new Set(group.map(x=>String(x.mark5||'不明')));
+  const known=x=>{const v=String(x||'不明');return v&&v!=='不明'?v:null};
+  const m4=new Set(group.map(x=>known(x.mark4)).filter(Boolean));
+  const m5=new Set(group.map(x=>known(x.mark5)).filter(Boolean));
   return m4.size>1||m5.size>1;
 }
 function groupByMonth(list){
