@@ -26,36 +26,62 @@ function validMonth(x){const n=Number(x);return Number.isInteger(n)&&n>=1&&n<=12
 
 function inferCandidates(horse={}){
   const manual=String(horse.manualGrowthType||'').trim();
-  if(manual&&TYPES[manual])return{candidates:[manual],confidence:'高',basis:['手動指定'],manual:true};
+  if(manual&&TYPES[manual])return{candidates:[manual],confidence:'高',basis:['手動指定'],manual:true,conflict:false};
 
   const entry=validMonth(horse.entryMonth);
   const comment=String(horse.growthComment||'').trim();
   const late=/晩成/.test(comment),early=/早熟/.test(comment);
-  let candidates=[];
-  if(entry===4)candidates=['超早熟','早熟'];
-  else if(entry===5)candidates=['早熟','持続'];
-  else if(entry===6||entry===7)candidates=['持続','普通'];
-  else if(entry===8)candidates=late?['晩成']:['普通'];
-  else if(entry===9)candidates=late?['晩成']:['普通遅'];
-  else if(entry===10)candidates=['晩成','超晩成'];
-  else if(entry===11)candidates=['超晩成'];
-
-  if(early&&candidates.length)candidates=candidates.filter(x=>x==='超早熟'||x==='早熟'||x==='持続');
-  if(late&&candidates.length)candidates=candidates.filter(x=>x==='晩成'||x==='超晩成');
-  if(!candidates.length&&late)candidates=['晩成','超晩成'];
-  if(!candidates.length&&early)candidates=['超早熟','早熟'];
+  let entryCandidates=[];
+  if(entry===4)entryCandidates=['超早熟','早熟'];
+  else if(entry===5)entryCandidates=['早熟','持続'];
+  else if(entry===6||entry===7)entryCandidates=['持続','普通'];
+  else if(entry===8)entryCandidates=['普通'];
+  else if(entry===9)entryCandidates=['普通遅'];
+  else if(entry===10)entryCandidates=['晩成','超晩成'];
+  else if(entry===11)entryCandidates=['超晩成'];
 
   const basis=[];
   if(entry)basis.push('入厩月');
   if(comment)basis.push('成長コメント');
+
+  let commentCandidates=[];
+  if(early&&!late)commentCandidates=['超早熟','早熟','持続'];
+  if(late&&!early)commentCandidates=['晩成','超晩成'];
+  if(early&&late)return{
+    candidates:entryCandidates,
+    confidence:entryCandidates.length?'参考':'データ不足',
+    basis:[...basis,'コメント矛盾'],
+    manual:false,
+    conflict:true
+  };
+
+  if(entryCandidates.length&&commentCandidates.length){
+    const intersection=entryCandidates.filter(x=>commentCandidates.includes(x));
+    if(intersection.length)return{
+      candidates:intersection,
+      confidence:intersection.length===1?'中':'参考',
+      basis,
+      manual:false,
+      conflict:false
+    };
+    return{
+      candidates:entryCandidates,
+      confidence:'参考',
+      basis:[...basis,'情報不一致'],
+      manual:false,
+      conflict:true
+    };
+  }
+
+  const candidates=entryCandidates.length?entryCandidates:commentCandidates;
   return{
     candidates,
-    confidence:candidates.length===1?'中':candidates.length>1?'参考':'データ不足',
+    confidence:candidates.length===1&&entryCandidates.length?'中':candidates.length?'参考':'データ不足',
     basis,
-    manual:false
+    manual:false,
+    conflict:false
   };
 }
-
 function milestoneFor(type){
   const x=TYPES[type];
   return x?{...x,source:SOURCE}:null;
