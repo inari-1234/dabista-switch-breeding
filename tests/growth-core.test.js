@@ -112,6 +112,11 @@ const manual=model.inferCandidates({entryMonth:4,manualGrowthType:'超晩成'});
 assert.deepStrictEqual(manual.candidates,['超晩成']);
 assert.strictEqual(manual.confidence,'高');
 
+const conflictType=model.inferCandidates({entryMonth:8,growthComment:'早熟コメントあり'});
+assert.deepStrictEqual(conflictType.candidates,['普通'],'conflicting comment must not overwrite entry-month evidence');
+assert.strictEqual(conflictType.confidence,'参考');
+assert.strictEqual(conflictType.conflict,true);
+
 const researchInput={horse:{...horse,currentCondition:{fatigue:'low'}},races:[],growthChecks:checks,growthCheckSets:[setV1],futurePotential:{stars:1}};
 const low=growth.diagnose(researchInput);
 const futureChanged=growth.diagnose({...researchInput,futurePotential:{stars:5}});
