@@ -62,6 +62,23 @@ require('../breeding-engine.js');
   if(refreshed.ancestor.includes('STALE'))throw Error('stale derived ancestor leaked after parent-based recompute');
   if(refreshed.theorySource!=='parent-code-inheritance')throw Error('derived pedigree cache source was not refreshed '+JSON.stringify(refreshed));
 
+  const routeChild=e.deriveChild(e.master('バゴ'),e.master('エイスト'),'ルート登録牝馬');
+  if(!routeChild||!Array.isArray(routeChild.ancestor)||routeChild.ancestor.length!==15)throw Error('route registration fixture could not derive 15 ancestors');
+  const routeSaved={
+    id:'route-registered-mare',name:'ルート登録牝馬',sex:'牝',role:'broodmare',
+    sire:'バゴ',dam:'エイスト',
+    ancestor15:[...routeChild.ancestor],omoshiroCode:routeChild.omoshiro,migotoCode:routeChild.migoto,
+    theorySource:'route-registration',
+    routeSource:{type:'sale-route',startMare:'エイスト',goal:'rebuild',generation:1,sires:['バゴ']}
+  };
+  global.db={horses:[routeSaved]};
+  const routeResolved=e.resolveHorse(routeSaved);
+  if(!routeResolved||routeResolved.kind!=='farm-horse'||routeResolved.ancestor.length!==15)
+    throw Error('route-registered horse is not reusable as a farm pedigree '+JSON.stringify(routeResolved));
+  const routeNextPair=e.evaluatePair('バゴ',routeSaved);
+  if(!routeNextPair||!routeNextPair.child||routeNextPair.child.ancestor.length!==15)
+    throw Error('route-registered broodmare cannot be used for the next mating');
+
   const restored={
     id:'restored-mare',name:'復元牝馬',sex:'牝',
     ancestor15:[...customAncestor],omoshiroCode:master.omoshiro,migotoCode:master.migoto
@@ -77,6 +94,7 @@ require('../breeding-engine.js');
     legacyFallback:{name:b.name,source:b.theorySource},
     masterRef:{name:c.name,source:c.theorySource},
     restoreRebind:{name:afterRestore.name,source:afterRestore.theorySource},
-    derivedCacheRefresh:{name:refreshed.name,kind:refreshed.kind,firstAncestor:refreshed.ancestor[0],source:refreshed.theorySource}
+    derivedCacheRefresh:{name:refreshed.name,kind:refreshed.kind,firstAncestor:refreshed.ancestor[0],source:refreshed.theorySource},
+    routeRegistrationReuse:{name:routeResolved.name,kind:routeResolved.kind,nextChildAncestors:routeNextPair.child.ancestor.length}
   },null,2));
 })().catch(e=>{console.error(e);process.exit(1)});
