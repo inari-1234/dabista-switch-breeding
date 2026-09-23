@@ -70,6 +70,7 @@ d=growth.diagnose({
 assert.notStrictEqual(d.state.key,'growth-change','different set revisions must not create a high-confidence threshold crossing');
 assert.strictEqual(d.signal.mode,'research');
 assert.strictEqual(d.signal.kind,'insufficient');
+assert.strictEqual(d.confidence,'参考','changed comparison conditions must lower confidence');
 
 d=growth.diagnose({
   horse,races:[],growthCheckSets:[setV1],
