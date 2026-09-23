@@ -15,6 +15,7 @@ function save(){
   window.renderHorses?.();
   window.renderRaces?.();
   decorateHorseCards();
+  decorateRaceCards();
   renderResearchPanel();
 }
 function horseById(id){return (db.horses||[]).find(h=>h.id===id)||null}
@@ -64,6 +65,7 @@ function ensureStyle(){
   .growth-mini-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.growth-mini b{font-size:11px}.growth-mini small{display:block;color:#67776e;font-size:9px;line-height:1.4;margin-top:2px}
   .growth-state{font-size:10px;font-weight:900;padding:3px 6px;border-radius:999px;background:#e6eee9;color:#315643;white-space:nowrap}.growth-state.up{background:#e7f2e8;color:#276338}.growth-state.warn{background:#fff1d7;color:#755614}
   .growth-card-actions{display:flex;gap:6px;margin-top:7px}.growth-card-actions button{flex:1;font-size:10px;padding:7px 6px}
+  .growth-race-date{display:block;font-size:8px;color:#708078;margin-top:2px}.growth-race-diagnosis{margin:6px 0 8px;padding:7px 8px;border-radius:9px;background:#f4f7f5;font-size:10px;line-height:1.45}
   .growth-research-summary{display:grid;gap:5px;margin-top:8px}.growth-set-line{font-size:10px;padding:6px 8px;background:#f5f7f5;border-radius:8px}
   #growthHistoryDlg,#growthRecordDlg,#growthSetDlg{width:min(620px,calc(100vw - 16px));max-height:92dvh;border:0;border-radius:18px;padding:0;overflow:hidden}
   .growth-dialog{max-height:92dvh;overflow:auto;padding:14px;padding-bottom:72px}.growth-dialog-head{position:sticky;top:-14px;z-index:5;background:rgba(255,255,255,.97);padding:13px 0 10px;border-bottom:1px solid #e1e8e4;display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -104,6 +106,21 @@ function installHorseObserver(){
     if(b.dataset.horseAction==='growth-history')openHistory(h);
   });
   decorateHorseCards();
+}
+
+function decorateRaceCards(){
+  document.querySelectorAll('#raceCards [data-race-horse-id]').forEach(card=>{
+    const h=horseById(card.dataset.raceHorseId);if(!h)return;
+    const d=diagnosis(h),html='<b>成長 '+esc(d.state.label)+'</b>｜信頼度 '+esc(d.confidence)+'｜判断 '+esc(d.raceAdvice.label)+(d.previousComparisonMonths!=null?'｜前回 '+esc(d.previousComparisonMonths)+'か月前':'');
+    let x=card.querySelector('.growth-race-diagnosis');
+    if(!x){x=document.createElement('div');x.className='growth-race-diagnosis';const table=card.querySelector('table');if(table)table.insertAdjacentElement('beforebegin',x);else card.appendChild(x)}
+    if(x.innerHTML!==html)x.innerHTML=html;
+  });
+}
+function installRaceObserver(){
+  const list=$('#raceCards');if(!list)return;
+  new MutationObserver(()=>decorateRaceCards()).observe(list,{childList:true,subtree:false});
+  decorateRaceCards();
 }
 
 function ensureRaceAgeMonth(){
@@ -267,8 +284,8 @@ function saveSet(e){
 }
 
 function install(){
-  ensureStyle();ensureRaceAgeMonth();ensureDialogs();ensureResearchPanel();installHorseObserver();
-  window.DABISTA_GROWTH_UI={diagnosis,decorateHorseCards,openHistory,openRecord,latestSets};
+  ensureStyle();ensureRaceAgeMonth();ensureDialogs();ensureResearchPanel();installHorseObserver();installRaceObserver();
+  window.DABISTA_GROWTH_UI={diagnosis,decorateHorseCards,decorateRaceCards,openHistory,openRecord,latestSets};
 }
 install();
 })();
