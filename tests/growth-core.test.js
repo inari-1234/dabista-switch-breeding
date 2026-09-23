@@ -70,6 +70,18 @@ d=growth.diagnose({
 });
 assert.strictEqual(d.state.key,'hold','same-month research disagreement must not be averaged');
 
+const setB={id:'sp-b',name:'SPチェックB',revision:1,conditionFingerprint:'nakayama1800-fixed',baselineHorses:[{id:'A',name:'別セットA'}]};
+d=growth.diagnose({
+  horse,races:[],growthCheckSets:[setV1,setB],
+  growthChecks:[
+    {id:'sa1',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:5,observationOrder:1,comparisons:[{baselineId:'A',result:'below'}]},
+    {id:'sa2',setId:'sp-a',setRevision:1,conditionFingerprint:'tokyo1600-fixed',age:4,month:6,observationOrder:1,comparisons:[{baselineId:'A',result:'above'}]},
+    {id:'sb2',setId:'sp-b',setRevision:1,conditionFingerprint:'nakayama1800-fixed',age:4,month:6,observationOrder:2,comparisons:[{baselineId:'A',result:'below'}]}
+  ]
+});
+assert.notStrictEqual(d.state.key,'hold','different comparison sets in the same month must not conflict merely because baseline IDs match');
+assert.strictEqual(d.signal.latest.setId,'sp-b','latest research scope should be evaluated independently');
+
 const lateHorse={id:'late',manualGrowthType:'晩成',currentAge:5,currentMonth:1};
 d=growth.diagnose({horse:lateHorse,races:[],growthChecks:[],growthCheckSets:[]});
 assert.strictEqual(d.state.key,'completion-zone-candidate');
@@ -77,6 +89,14 @@ assert.notStrictEqual(d.state.label,'完成');
 assert.ok(d.completionZone);
 assert.strictEqual(d.completionZone.target.age,5);
 assert.strictEqual(d.completionZone.target.month,1);
+assert.strictEqual(d.raceAdvice.key,'wait','growth-type milestone alone must not recommend racing up');
+assert.strictEqual(d.abilityReferenceZones.speedOpenReached,true);
+assert.strictEqual(d.abilityReferenceZones.fullOpenReached,true);
+
+const lateSpeedOnly=growth.diagnose({horse:{id:'late-speed',manualGrowthType:'晩成',currentAge:4,currentMonth:11},races:[],growthChecks:[],growthCheckSets:[]});
+assert.strictEqual(lateSpeedOnly.abilityReferenceZones.speedOpenReached,true);
+assert.strictEqual(lateSpeedOnly.abilityReferenceZones.fullOpenReached,false);
+assert.strictEqual(lateSpeedOnly.state.key,'data-insufficient','SP reference milestone must not be promoted to whole-horse completion');
 
 const lateMilestone=model.milestoneFor('晩成');
 assert.deepStrictEqual(lateMilestone.speedOpen,{age:4,month:11},'ability-specific milestone must remain distinct from full-open reference');
