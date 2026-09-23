@@ -204,6 +204,17 @@ function publicState(signal,zone){
   if(signal.kind==='insufficient')return zone?{key:'completion-zone-candidate',label:'完成域候補'}:{key:'data-insufficient',label:'データ不足'};
   return{key:'hold',label:'判定保留'};
 }
+function selectCurrentSignal(research,normal){
+  if(!research)return normal||null;
+  if(!normal)return research;
+  if(research.kind==='insufficient')return normal;
+  const r=monthIndex(research.latest),n=monthIndex(normal.latest);
+  if(r!=null&&n!=null){
+    if(n>r)return normal;
+    if(r>n)return research;
+  }
+  return research;
+}
 function raceAdvice(state,signal,condition={}){
   const fatigue=String(condition?.fatigue||'unknown');
   const highFatigue=fatigue==='high'||fatigue==='大'||fatigue==='疲労大';
@@ -221,7 +232,7 @@ function diagnose(input={}){
   const zones=abilityReferenceZones(horse,typeInfo),zone=completionZone(horse,typeInfo);
   const research=latestResearchSignal(input.growthChecks||[],input.growthCheckSets||[]);
   const normal=latestRaceSignal(input.races||[]);
-  const signal=research&&research.kind!=='insufficient'?research:(normal||research);
+  const signal=selectCurrentSignal(research,normal);
   const state=publicState(signal,zone);
   const confidence=signal?.confidence||(zone?'参考':'参考');
   return{
@@ -239,6 +250,6 @@ function diagnose(input={}){
 
 return{
   MARK_ORDER,REL_ORDER,validAgeMonth,monthIndex,ageMonthLabel,monthsBetween,
-  latestResearchSignal,latestRaceSignal,growthTypeInfo,abilityReferenceZones,completionZone,mergeResearchScope,mergeRaceMonth,diagnose
+  latestResearchSignal,latestRaceSignal,selectCurrentSignal,growthTypeInfo,abilityReferenceZones,completionZone,mergeResearchScope,mergeRaceMonth,diagnose
 };
 });
