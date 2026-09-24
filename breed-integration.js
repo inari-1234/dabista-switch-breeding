@@ -462,13 +462,14 @@ function renderCard(entry,rank,profile,goal,baselineRoute=null){
     ?'<div class="muted">高能力牝馬'+Number(p120.population||0)+'頭に対し、安全 '+Number(p120.safe||0)+'頭 / SP17・ST5 '+Number(p120.sp17st5||0)+'頭 / 最大SP '+Number(p120.maxSp||0)+'。単一総合点ではなく相手牝馬への広がりで比較します。</div>'
     :'';
   const shownRank=profile==='sire'?'血統価値 '+rank+'位':rankText;
+  const fitHtml='<div class="notice breed-quick-fit"><b>将来性：</b><span data-card-future="'+esc(entry.sire)+'">'+esc(future)+'</span><br><b>'+esc(GOAL_LABELS[goal])+'：</b>'+esc(fitLabel)+'</div>';
   return '<div class="card breed-integrated-card tone-'+esc(tone)+'" data-sire-name="'+esc(entry.sire)+'">'+
     '<div class="breed-card-head"><div><span class="breed-rank-label">'+esc(shownRank)+'</span><b>'+esc(entry.sire)+'</b></div><span class="breed-cue-badge">'+esc(displayLabel)+'</span></div>'+
     (displayFacts?additions+subtractions+cautions:'<div class="breed-cue-headline">'+esc(displayHeadline)+'</div>'+(reasons?'<div class="breed-reason-row">'+reasons+'</div>':''))+
     (displayFacts?ability:'<div class="grid"><div class="stat"><b>'+Number(n.sp||0)+'</b><small>SPニトロ</small></div><div class="stat"><b>'+Number(n.st||0)+'</b><small>STニトロ</small></div><div class="stat"><b>'+Number(n.pw||0)+'</b><small>PWニトロ</small></div></div>')+
     portfolioNote+
-    (displayFacts?'':'<div class="notice breed-quick-fit"><b>将来性：</b><span data-card-future="'+esc(entry.sire)+'">'+esc(future)+'</span><br><b>'+esc(GOAL_LABELS[goal])+'：</b>'+esc(fitLabel)+'</div>')+
-    '<details class="breed-card-details"><summary>詳しい根拠を見る</summary>'+(displayFacts?'<div class="muted" style="margin-top:6px"><b>将来性：</b><span data-card-future="'+esc(entry.sire)+'">'+esc(future)+'</span> / <b>'+esc(GOAL_LABELS[goal])+'：</b>'+esc(fitLabel)+'</div>':'')+'<div class="muted" style="margin-top:6px">実績'+esc(f.sireStats?.record||'-')+'・底力'+esc(f.sireStats?.guts||'-')+'・安定'+esc(f.sireStats?.stable||'-')+' / '+esc(theoryText(entry.pair))+'</div>'+pairDetailsHtml(entry)+'</details>'+
+    (displayFacts?'':fitHtml)+
+    '<details class="breed-card-details"><summary>詳しい根拠を見る</summary>'+(displayFacts?fitHtml:'')+'<div class="muted" style="margin-top:6px">実績'+esc(f.sireStats?.record||'-')+'・底力'+esc(f.sireStats?.guts||'-')+'・安定'+esc(f.sireStats?.stable||'-')+' / '+esc(theoryText(entry.pair))+'</div>'+pairDetailsHtml(entry)+'</details>'+
     '<button type="button" class="secondary" data-breed-future="'+esc(entry.sire)+'">2～4代の将来性を診断</button>'+
     '<div class="breed-future-slot" data-future-sire="'+esc(entry.sire)+'"></div>'+
   '</div>';
