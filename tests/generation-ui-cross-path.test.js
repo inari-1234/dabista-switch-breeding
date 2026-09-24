@@ -386,12 +386,12 @@ assert.ok(v27.includes('data-generation-choice'),'all four compact generation ca
 assert.ok(v27.includes('selectedGeneration=rec.generation'),'automatic recommendation must remain the initial selection');
 assert.ok(v27.includes("selectedGeneration===rec.generation?'diagnosis':'manual'"),'manual generation override must be recorded separately from diagnosis');
 assert.ok(v27.includes('aria-pressed'),'generation card selection must expose button state');
-assert.ok(v27.includes('手動で比較中（自動推奨は'),'manual override must keep the automatic recommendation visible');
+assert.ok(v27.includes("'選択中：'+label"),'manual override must remain visible without long explanatory copy');
 assert.ok(v27.includes('選択した')&&v27.includes('で本命配合を見る'),'manual generation must be directly actionable');
-assert.ok(v27.includes('この牝馬を使う理由'),'mare card must explain why the mare is used');
-assert.ok(v27.includes('目的別の即時判定'),'mare card must provide an at-a-glance purpose decision panel');
-assert.ok(v27.includes('この牝馬の推奨用途'),'mare card must expose the recommendation conclusion before detailed evidence');
-assert.ok(v27.includes('quickSaleOutlook'),'sale quick panel must come from the shared recommendation core');
+assert.ok(v27.includes('推奨用途'),'mare card must lead with the recommended use');
+assert.ok(v27.includes('4目的の評価'),'mare card must provide a compact four-purpose panel');
+assert.ok(v27.includes('mare-purpose-summary'),'mare card must expose the recommendation conclusion before detailed evidence');
+assert.ok(v27.includes('quickGoalRecommendations'),'sale purpose panel must come from the shared recommendation core');
 assert.ok(v27.includes('goalMareReason'),'purpose-specific mare reason must come from the shared recommendation core');
 assert.ok(v27.includes('カード色＝母能力帯'),'mare color meaning must be explicit');
 assert.ok(v27.includes('.mare-tier{padding:7px 11px;font-size:14px'),'ability tier must remain prominent');
@@ -399,7 +399,7 @@ assert.ok(v27.includes('tier-middle'),'middle-tier mares must retain a distinct 
 assert.ok(v27.includes('tier-unknown'),'unknown ability must retain a neutral whole-card tone');
 const mareAdviceBlock=v27.match(/function renderMareAdvice\(\)\{[\s\S]*?\n\}\nfunction invalidateGeneration/)?.[0]||'';
 assert.ok(mareAdviceBlock&&!mareAdviceBlock.includes('推奨世代'),'mare summary must not masquerade as the formal generation recommendation');
-assert.ok(v27.includes('何代で締めるか比較'),'formal generation diagnosis must explain its purpose');
+assert.ok(v27.includes('おすすめ世代を決める'),'formal generation diagnosis must be recommendation-first');
 assert.ok(v27.includes('おすすめ世代を決める'),'generation diagnosis must have one primary action');
 assert.ok(v27.includes('generationSection.hidden=true'),'legacy generation selector must stay hidden');
 assert.ok(v27.includes('if(notice)notice.hidden=true'),'technical generation notice must stay hidden from the primary flow');

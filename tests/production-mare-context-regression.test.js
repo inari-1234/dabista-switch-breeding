@@ -119,11 +119,15 @@ assert.ok(display.comparison[0].label.startsWith('SPクロス消失（'),'SP-cro
 assert.ok(display.comparison.findIndex(x=>x.key==='record-delta')>0,'record downgrade must remain visible after the higher-priority SP-cross loss');
 assert.ok(display.facts.some(x=>x.label==='実績B'),'record B must always remain visible in primary facts');
 const stableCDisplay=display.facts.find(x=>x.key==='stable');
-assert.ok(stableCDisplay&&stableCDisplay.label==='安定C・上振れ寄り'&&stableCDisplay.tone==='trait','stable C must be shown as an upside/variance trait, not an automatic warning');
+assert.ok(stableCDisplay&&stableCDisplay.label==='安定C'&&stableCDisplay.tone==='trait','stable C must be shown as a neutral variance trait label, not an automatic warning');
 const theoryIndex=display.facts.findIndex(x=>x.key==='magnificent');
 const distanceIndex=display.facts.findIndex(x=>x.key==='distance2400');
 assert.ok(theoryIndex>=0&&distanceIndex>=0&&theoryIndex<distanceIndex,'pairing theory must be displayed before Arc distance evidence');
 assert.ok(display.comparison.some(x=>x.label==='SP -2')&&display.comparison.some(x=>x.label==='ST +1'),'nitro comparison deltas are mandatory card information');
+assert.ok(display.facts.some(x=>x.key==='distance-range'&&x.label.includes('2600m')),'distance aptitude range must remain visible because it contributes to SP-side interpretation');
+assert.ok(display.groups.additions.length<=3&&display.groups.subtractions.length<=3&&display.groups.cautions.length<=3,'primary candidate display groups must stay compact');
+assert.ok(display.groups.subtractions.some(x=>x.label.startsWith('SPクロス消失')),'SP-cross loss must remain in the subtraction group');
+assert.ok(display.groups.cautions.some(x=>x.label==='実績B')&&display.groups.cautions.some(x=>x.label==='安定C'),'record/stability must remain visible as caution facts');
 
 // High mare: stable A remains preferable to stable C at equal facts.
 const highA=fake({record:'A',stable:'A',sp:16,st:6,speedCross:false,sire:'高母A'});

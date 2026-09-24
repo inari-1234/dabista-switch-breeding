@@ -14,23 +14,23 @@ const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: 
 
 for(const token of ['tier-elite','tier-high','tier-upper','tier-middle','tier-rebuild','tier-unknown'])need(v27,token,'mare tier tone');
 need(v27,'.mare-tier{padding:7px 11px;font-size:14px','mare tier prominence');
-need(v27,'この牝馬を使う理由','mare decision reason');
-need(v27,'目的別の即時判定','sale quick purpose cue');
-need(v27,'この牝馬の推奨用途','mare purpose recommendation summary');
+need(v27,'推奨用途','mare recommendation must lead the card');
+need(v27,'4目的の評価','mare purpose panel must stay concise and structured');
+need(v27,'mare-purpose-summary','mare purpose recommendation summary');
 need(v27,'quickGoalRecommendations','purpose recommendation must use core criteria');
 need(v27,"quickGoalCell('arc','凱旋門'",'quick purpose cards must start with Arc then BC');
 need(v27,'自家製種牡馬は世代診断前に推奨確定しません','stallion quick recommendation must remain conditional before portfolio diagnosis');
-need(v27,'直仔血統＋母能力の即時判定','quick view must disclose its scope');
+need(v27,'4目的は別々の成立条件で判定','detailed scope disclosure must remain available without occupying primary UI');
 need(v27,'第7の総合点は作らず','quick view must not become a weighted overall score');
 need(v27,'カード色＝母能力帯','mare color meaning');
 need(v27,'順位・他目的・血統評価を見る','mare secondary details collapse');
-need(v27,'何代で締めるか比較','generation purpose');
+need(v27,'おすすめ世代を決める','generation purpose must be recommendation-first');
 need(v27,'おすすめ世代を決める','generation single primary action');
 need(v27,'data-generation-choice','generation comparison cards must be selectable');
 need(v27,'selectedGeneration=rec.generation','automatic recommendation must remain the initial selected generation');
 need(v27,"selectedGeneration===rec.generation?'diagnosis':'manual'","manual generation choice must remain distinguishable from diagnosis");
 need(v27,"selected===n?'selected':''",'generation card selected state');
-need(v27,'手動で比較中（自動推奨は','manual generation choice must keep the auto recommendation visible');
+need(v27,"'選択中：'+label",'manual generation choice must be visible without a long sentence');
 need(v27,'generationSection.hidden=true','legacy generation selector must stay hidden');
 need(v27,'if(notice)notice.hidden=true','technical generation notice must not be primary');
 need(v27,'if(run)run.hidden=true','duplicate old design button must stay hidden');
@@ -73,8 +73,9 @@ need(v26,'白：参考軸','reference color semantics');
 need(v26,'別強み候補 ','non-top recommendations must explain a distinct reason instead of repeating main/standard');
 need(v26,'productionCandidateCue','candidate cards must use peer-relative explanations');
 need(v26,'candidateDisplayFacts','sale candidate cards must use shared display-priority facts');
-need(v26,"candidateBlock('比較差'",'sale candidate cards must put peer differences before detailed facts');
-need(v26,"candidateBlock('主要根拠'",'sale candidate cards must expose compact primary facts');
+need(v26,"candidateBlock('加算'",'sale candidate cards must show additions first');
+need(v26,"candidateBlock('減算'",'sale candidate cards must show subtractions after additions');
+need(v26,"candidateBlock('注意'",'sale candidate cards must show cautions after subtractions');
 need(v26,'selectProductionRecommendations','candidate list must select meaningful alternatives');
 need(v26,'recordAReference','lower-record main recommendation must be compared with the best record-A route');
 need(advisor,"'実績'+p.record+'だが、'+lead+'で実績'+b.record+'候補を逆転'","lower-record main card must explain its compensated reversal");
@@ -92,7 +93,9 @@ need(v25,"card.hidden=true;card.setAttribute('aria-hidden','true')",'legacy manu
 
 need(breed,"advisor?.compareProductionForMare","breed production must use the same mare-aware comparator");
 need(breed,'candidateDisplayFacts','breed cards must inherit the same display-priority facts used by sale cards');
-need(breed,"breedCandidateBlock('比較差'",'breed cards must preserve comparison-first presentation');
+need(breed,"breedCandidateBlock('加算'",'breed cards must inherit addition grouping');
+need(breed,"breedCandidateBlock('減算'",'breed cards must inherit subtraction grouping');
+need(breed,"breedCandidateBlock('注意'",'breed cards must inherit caution grouping');
 need(breed,'function createFutureProductionCollector(','breed future production must remain full-scan');
 need(breed,'function renderFutureOverview(result){}','separate six-axis future overview must stay removed');
 need(breed,"profile=selectedCategory()","future result must focus on the selected category");
@@ -101,6 +104,7 @@ if(breed.includes("overview.className='card breed-future-overview'"))throw Error
 for(const token of ['.sale-route.tone-main','.sale-route.tone-record','.sale-route.tone-speed','.sale-route.tone-nitro','.sale-route.tone-upside','.sale-route.tone-neutral'])need(css,token,'candidate role color');
 need(css,'.sale-other-axes','secondary axes container');
 for(const token of ['.candidate-chip.cross','.candidate-chip.theory','.candidate-chip.warning','.candidate-chip.record','.candidate-chip.trait','.candidate-chip.metric'])need(css,token,'shared candidate fact colors');
+for(const token of ['.candidate-block.addition','.candidate-block.subtraction','.candidate-block.caution','.candidate-none'])need(css,token,'compact grouped candidate layout');
 
 console.log(JSON.stringify({
   passed:true,

@@ -646,15 +646,31 @@
       else if(f.materialSpeedCross)push(facts,'material-speed','途中SP補強 '+f.materialSpeedCrossStages,'cross',90);
       else push(facts,'speed-cross-none','SPクロスなし','warning',89);
       if(f.longDistanceCross)push(facts,'long-cross','長距離クロス','cross',88);
+      if(f.minD||f.maxD)push(facts,'distance-range','距離 '+(f.minD||'?')+'–'+(f.maxD||'?')+'m','distance',86);
       push(facts,'record','実績'+f.record,f.record==='A'?'record':f.record==='B'?'record':'warning',84);
-      const stableLabel=f.stable==='A'?'安定A・再現寄り':f.stable==='C'?'安定C・上振れ寄り':f.stable==='B'?'安定B・中間':'安定'+f.stable;
-      push(facts,'stable',stableLabel,'trait',82);
-      if(f.distance2400)push(facts,'distance2400','2400m根拠','distance',70);
-      else if(goal==='arc'&&f.distanceEvidence===0)push(facts,'distance-none','距離根拠弱い','warning',68);
+      push(facts,'stable','安定'+f.stable,'trait',82);
       comparison.sort((a,b)=>b.priority-a.priority);
       facts.sort((a,b)=>b.priority-a.priority);
+      const baseKey=x=>String(x||'').replace(/-(?:delta|count)$/,'');
+      const unique=(arr)=>{
+        const out=[],seen=new Set();
+        for(const x of arr){const k=baseKey(x.key);if(seen.has(k))continue;seen.add(k);out.push(x)}
+        return out;
+      };
+      const positiveComparison=comparison.filter(x=>x.tone!=='warning'&&x.key!=='stable-delta');
+      const negativeComparison=comparison.filter(x=>x.tone==='warning');
+      const bonusFacts=facts.filter(x=>['perfect','magnificent','interesting','elaborate','speed-cross','material-speed','long-cross'].includes(x.key));
+      const lossFacts=facts.filter(x=>x.key==='speed-cross-none');
+      const cautionFacts=[
+        ...comparison.filter(x=>x.key==='stable-delta'),
+        ...facts.filter(x=>['record','stable','distance-range'].includes(x.key))
+      ];
+      const additions=unique([...positiveComparison,...bonusFacts]).slice(0,3);
+      const subtractions=unique([...negativeComparison,...lossFacts]).slice(0,3);
+      const cautions=unique(cautionFacts).slice(0,3);
       return{
         comparison,facts,
+        groups:{additions,subtractions,cautions},
         ability:[{key:'sp',label:'SP '+f.sp},{key:'st',label:'ST '+f.st},{key:'pw',label:'PW '+f.pw}],
         hasReference,
         stableRole:f.stable==='C'?'upside':f.stable==='A'?'reproducible':'middle'

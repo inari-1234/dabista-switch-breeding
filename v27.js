@@ -28,6 +28,8 @@ function style(){
  .generation-result{margin-top:9px}
  .generation-pick{border-left:4px solid #17855f;background:#edf7f2;border-radius:0 10px 10px 0;padding:9px}
  .generation-pick b{display:block;font-size:14px;color:#174b37}.generation-pick span{font-size:9px;line-height:1.55;color:#50665b}
+ .generation-pick em{display:inline-block;margin-top:5px;padding:3px 6px;border-radius:999px;background:#fff0d7;color:#795914;font-size:8px;font-style:normal;font-weight:900}
+ .generation-progress{min-height:14px;font-size:9px!important}
  .generation-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
  .generation-card{border:1px solid #dfe7e3;border-radius:10px;background:#fff;padding:8px}
  .generation-card.recommended{border-color:#77ad91;box-shadow:0 0 0 1px #77ad91 inset}
@@ -90,6 +92,10 @@ function style(){
  .sale-goal-summary{margin-bottom:8px;padding:9px 10px;border-radius:9px;background:#fff;border:1px solid rgba(80,110,95,.12)}
  .sale-goal-summary small{display:block;font-size:8px;font-weight:900;color:#687970}.sale-goal-summary b{display:block;margin-top:2px;font-size:13px;line-height:1.35;color:#204735}.sale-goal-summary span{display:block;margin-top:3px;font-size:8px;line-height:1.4;color:#687970}
  .sale-goal-grade{display:inline-block!important;margin-top:3px;font-size:10px!important;font-weight:900!important}.goal-recommend .sale-goal-grade{color:#176c4b}.goal-candidate .sale-goal-grade{color:#315f91}.goal-conditional .sale-goal-grade{color:#7a5a13}.goal-insufficient .sale-goal-grade{color:#7b817e}
+ .mare-purpose-summary{margin-top:9px;padding:11px 12px;border-radius:11px;background:#fff;border:1px solid rgba(80,110,95,.13)}
+ .mare-purpose-summary small{display:block;font-size:8px;font-weight:900;color:#687970}.mare-purpose-summary b{display:block;margin-top:3px;font-size:15px;line-height:1.35;color:#174b37}.mare-purpose-summary span{display:block;margin-top:3px;font-size:9px;line-height:1.4;color:#687970}.mare-purpose-summary em{display:inline-block;margin-top:7px;padding:4px 7px;border-radius:999px;background:#eef4f0;color:#5e7167;font-size:8px;font-style:normal;font-weight:800}
+ .sale-quick-grid>div.goal-recommend{border-left:3px solid #1f8b62}.sale-quick-grid>div.goal-candidate{border-left:3px solid #3d79b8}.sale-quick-grid>div.goal-conditional{border-left:3px solid #c38a28}.sale-quick-grid>div.goal-insufficient{border-left:3px solid #a3aaa6}
+ .mare-attention{margin-top:9px;padding:9px 10px;border-radius:10px;background:rgba(255,255,255,.72);border:1px solid rgba(80,110,95,.10)}.mare-attention>small{display:block;margin-bottom:5px;font-size:8px;font-weight:900;color:#66766e}
  .sale-quick-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.sale-quick-head small{font-size:9px;font-weight:900;color:#687970}.sale-quick-head b{font-size:12px;color:#1f4a37;text-align:right}
  .sale-quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:7px}.sale-quick-grid>div{padding:7px 8px;border-radius:8px;background:#fff;border:1px solid rgba(80,110,95,.10)}.sale-quick-grid small{display:block;font-size:8px;font-weight:900;color:#66766e}.sale-quick-grid span{display:block;margin-top:2px;font-size:9px;font-weight:800;line-height:1.35;color:#294a3b}
  .sale-quick-signals{margin-top:7px;font-size:8px;line-height:1.45;color:#65766e}.sale-quick-note{margin-top:5px;font-size:8px;line-height:1.4;color:#7a817d}
@@ -104,6 +110,7 @@ function style(){
  .generation-key-reason{margin-top:8px;padding:10px 11px;border-radius:10px;background:#f3f7f5}
  .generation-key-reason b{display:block;font-size:11px;color:#264f3c}
  .generation-key-reason ul{margin:5px 0 0;padding-left:17px;font-size:9px;line-height:1.5;color:#53675e}
+ .generation-key-reason ul{list-style:none;padding-left:0!important;display:grid;gap:6px}.generation-key-reason li{display:grid;grid-template-columns:20px 1fr;align-items:start;gap:7px}.generation-key-reason li>span{display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:#dff0e7;color:#176748;font-size:9px;font-weight:900}
  .generation-tech{margin-top:8px}
  .generation-tech>summary{cursor:pointer;font-size:9px;font-weight:800;color:#65766e}
  @media(max-width:420px){.mare-ranks{grid-template-columns:repeat(2,1fr)}.generation-grid{grid-template-columns:1fr}.mare-use{grid-template-columns:1fr 1fr}.mare-advice-head h4{font-size:16px}.mare-tier{font-size:13px}}
@@ -138,9 +145,26 @@ function mareRankCell(label,r){
 function mareDecisionText(name,goal,direct){
  return advisor.goalMareReason(name,goal,direct);
 }
+function quickGoalReason(key,g){
+ const state=g?.key||'insufficient',ok=state==='recommend'||state==='candidate';
+ if(key==='arc')return ok?'血統：SP/ST・距離候補':state==='conditional'?'血統：距離根拠を確認':'血統：成立根拠不足';
+ if(key==='bc')return ok?'血統：SP補強候補':state==='conditional'?'血統：SP補強を確認':'血統：成立根拠不足';
+ if(key==='rebuild')return ok?'血統：再建ライン候補':state==='conditional'?'血統：再建条件を確認':'血統：成立根拠不足';
+ if(key==='stallion')return ok?'血統：汎用性候補':state==='conditional'?'血統：世代別比較':'血統：根拠不足';
+ return '評価保留';
+}
 function quickGoalCell(key,label,value,recommendations){
  const g=recommendations?.goals?.[key]||{key:'insufficient',symbol:'—',label:'根拠不足'};
- return `<div class="goal-${esc(g.key)}"><small>${esc(label)}</small><b class="sale-goal-grade">${esc(g.symbol)} ${esc(g.label)}</b><span>${esc(value||g.reason||'評価保留')}</span></div>`;
+ return `<div class="goal-${esc(g.key)}"><small>${esc(label)}</small><b class="sale-goal-grade">${esc(g.symbol)} ${esc(g.label)}</b><span>${esc(quickGoalReason(key,g))}</span></div>`;
+}
+function mareAttentionFacts(goal,direct,a){
+ const route=direct?.bestByGoal?.[goal]||direct?.bestByGoal?.rebuild||direct?.bestByGoal?.arc||direct?.bestByGoal?.bc;
+ if(!route||!advisor?.candidateDisplayFacts)return[];
+ const d=advisor.candidateDisplayFacts(route,route,a,0,goal);
+ const xs=[...(d.groups?.additions||[]),...(d.groups?.subtractions||[]),...(d.groups?.cautions||[])];
+ const out=[],seen=new Set();
+ for(const x of xs){if(!x?.label||seen.has(x.label))continue;seen.add(x.label);out.push(x);if(out.length>=5)break}
+ return out;
 }
 function renderMareAdvice(){
  const box=$('#saleMareRecommendation'),name=$('#saleMareSelect')?.value;
@@ -154,31 +178,37 @@ function renderMareAdvice(){
  const rankHtml=a.abilityKnown
   ?`<div class="mare-scoreline"><span>SP ${a.ranks.sp?.value??'—'}</span><span>ST ${a.ranks.st?.value??'—'}</span><span>PW ${a.ranks.pw?.value??'—'}</span><b>SP+ST ${a.ranks.spst?.value??'—'}</b></div>`
   :'<div class="mare-scoreline"><b>能力未判明</b></div>';
- const currentUse=use?.[goal]||'評価保留';
- const decision=mareDecisionText(name,goal,direct),quick=advisor.quickSaleOutlook(name,direct),recommendations=advisor.quickGoalRecommendations(name,direct,direct.bestByGoal);
- const decisionReasons=(decision.reasons||[]).slice(0,2).map(x=>'<span>'+esc(x)+'</span>').join('');
- const quickSignals=(quick.signals||[]).map(x=>esc(x)).join(' / ');
+ const decision=mareDecisionText(name,goal,direct),recommendations=advisor.quickGoalRecommendations(name,direct,direct.bestByGoal);
+ const points=mareAttentionFacts(goal,direct,a);
+ const pointHtml=points.map(x=>'<span class="candidate-chip '+esc(x.tone||'trait')+'">'+esc(x.label)+'</span>').join('');
  const strategyAxis=strategy
   ?(strategy.improve?.length?'補強：'+strategy.improve.join('・')
-    :strategy.relativeAdjust?.length?'相対調整：'+strategy.relativeAdjust.join('・')+'（弱点扱いではない）'
+    :strategy.relativeAdjust?.length?'相対調整：'+strategy.relativeAdjust.join('・')
     :'明確な補強対象なし')
   :'';
  box.innerHTML=`
    <div class="mare-advice-head">
-    <div><h4>${esc(name)}</h4><small>能力既知 ${advisor.knownAbilityCount}頭で比較</small><small class="mare-color-note">カード色＝母能力帯</small></div>
+    <div><h4>${esc(name)}</h4><small>能力既知 ${advisor.knownAbilityCount}頭で比較</small></div>
     <span class="mare-tier">${esc(a.tier)}</span>
    </div>
-   <div class="mare-why"><small>この牝馬を使う理由｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span>${decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':''}</div>
-   ${rankHtml}
-   <div class="sale-quick">
-    <div class="sale-goal-summary"><small>この牝馬の推奨用途</small><b>${esc(recommendations.headline)}</b>${recommendations.subline?'<span>'+esc(recommendations.subline)+'</span>':''}</div>
-    <div class="sale-quick-head"><small>目的別の即時判定</small><b>${esc(quick.label)}</b></div>
-    <div class="sale-quick-grid">${quickGoalCell('arc','凱旋門',quick.goalLabels?.arc,recommendations)}${quickGoalCell('bc','BC',quick.goalLabels?.bc,recommendations)}${quickGoalCell('rebuild','繁殖再建',quick.goalLabels?.rebuild,recommendations)}${quickGoalCell('stallion','自家製種牡馬',quick.goalLabels?.stallion,recommendations)}</div>
-    <div class="sale-quick-signals">${quickSignals}</div>
-    <div class="sale-quick-note">直仔血統＋母能力の即時判定です。第7の総合点は作らず、${esc(recommendations.note)} 自家製種牡馬は世代診断前に推奨確定しません。<br>${esc(quick.caution)}</div>
+   <div class="mare-purpose-summary">
+    <small>推奨用途</small>
+    <b>${esc(recommendations.headline)}</b>
+    ${recommendations.subline?'<span>'+esc(recommendations.subline)+'</span>':''}
+    <em>${a.abilityKnown?'母能力を含めて判定':'能力未判明・血統中心'}</em>
    </div>
+   <div class="mare-use-title">4目的の評価</div>
+   <div class="sale-quick-grid">
+    ${quickGoalCell('arc','凱旋門賞',use.arc,recommendations)}
+    ${quickGoalCell('bc','BC長期',use.bc,recommendations)}
+    ${quickGoalCell('rebuild','繁殖再建',use.rebuild,recommendations)}
+    ${quickGoalCell('stallion','自家製種牡馬',use.stallion,recommendations)}
+   </div>
+   ${pointHtml?`<div class="mare-attention"><small>注目ポイント</small><div class="candidate-chip-row">${pointHtml}</div></div>`:''}
    <details class="mare-detail">
-    <summary>順位・他目的・血統評価を見る</summary>
+    <summary>詳しい順位・根拠を見る</summary>
+    <div class="mare-why"><small>現在の目的｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span></div>
+    ${rankHtml}
     ${a.abilityKnown?`<div class="mare-ranks">
      ${mareRankCell('繁殖SP',a.ranks.sp)}
      ${mareRankCell('繁殖ST',a.ranks.st)}
@@ -186,15 +216,8 @@ function renderMareAdvice(){
      ${mareRankCell('SP+ST',a.ranks.spst)}
     </div>`:''}
     ${strategy?`<div class="advisor-note"><b>補強タイプ：${esc(strategy.label)}</b><br>維持：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / ${esc(strategyAxis)}</div>`:''}
-    <div class="mare-use-title">目的別の事前評価</div>
-    <div class="mare-use">
-     <div class="${goal==='arc'?'selected':''}"><b>凱旋門賞</b><span>${esc(use.arc)}</span></div>
-     <div class="${goal==='bc'?'selected':''}"><b>BC長期</b><span>${esc(use.bc)}</span></div>
-     <div class="${goal==='rebuild'?'selected':''}"><b>繁殖再建</b><span>${esc(use.rebuild)}</span></div>
-     <div class="${goal==='stallion'?'selected':''}"><b>自家製種牡馬</b><span>${esc(use.stallion)}</span></div>
-    </div>
     <div class="mare-direct">直仔安全 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
-    <div class="advisor-note">${esc(a.note)}</div>
+    <div class="advisor-note">4目的は別々の成立条件で判定し、第7の総合点は作りません。自家製種牡馬は世代診断で確認します。</div>
    </details>`;
 }
 function invalidateGeneration(message='条件を変更したため、世代診断を更新してください。'){
@@ -228,14 +251,24 @@ function bestFacts(result,goal){
 function generationCard(n,g,goal,recommended,selected){
  const b=bestFacts(g,goal),f=b.facts,label=n===1?'直仔':n+'代';
  const method=n>=3?'条件付き':'全探索';
- const state=selected===n?(recommended===n?'★ おすすめ・選択中':'✓ 選択中'):(recommended===n?'★ おすすめ':'比較');
  return `<button type="button" class="generation-compare-card ${recommended===n?'recommended':''} ${selected===n?'selected':''}" data-generation-choice="${n}" aria-pressed="${selected===n?'true':'false'}">
-  <span>${state}｜${label}</span>
+  <span>${recommended===n?'★ ':''}${label}</span>
   <b>SP/ST ${f.sp}/${f.st}</b>
-  <small>SP+ST ${f.spst}・${method}</small>
+  <small>${method}</small>
  </button>`;
 }
-function recommendationDetail(name,goal,rec,selected){
+function compactGenerationReason(x=''){
+ const s=String(x);
+ if(/上積み.*小|小さ.*上積み/.test(s))return'2代以降の上積みが小さい';
+ if(/繁殖能力.*未判明|母能力.*未判明/.test(s))return'母能力未確認のため総合判断は保留';
+ if(/SPクロス/.test(s)&&/成立相手|経路|維持/.test(s))return'SPクロス経路を維持できる';
+ if(/成立相手/.test(s)&&/増|広/.test(s))return'次代で成立する相手が増える';
+ if(/距離/.test(s)&&/根拠|適性/.test(s))return'距離根拠を維持できる';
+ if(/実績/.test(s)&&/下|落|低/.test(s))return'父実績の低下に注意';
+ if(s.length<=34)return s;
+ return s.slice(0,32)+'…';
+}
+function recommendationDetail(name,goal,rec,selected,diagnosticText=''){
  const chosen=rec.routes?.[selected],direct=rec.routes?.[1];
  if(!chosen)return'';
  const expanded=planner.expandRoute(name,chosen,goal);
@@ -245,18 +278,19 @@ function recommendationDetail(name,goal,rec,selected){
  const transition=selected===4?rec.transitions?.to4:selected===3?rec.transitions?.to3:selected===2?rec.transitions?.to2:null;
  let reasons=[];
  if(selected===rec.generation){
-  reasons=(transition?.reasons?.length?transition.reasons:rec.reasons||[]).slice(0,2);
+  reasons=(transition?.reasons?.length?transition.reasons:rec.reasons||[]).slice(0,3);
  }else if(selected===1){
-  reasons=['代重ねをせず、最短で配合を完了する比較案'];
+  reasons=['代重ねをせず、最短で配合を完了する'];
  }else{
-  reasons=(transition?.reasons||[]).slice(0,2);
-  if(!reasons.length)reasons=['自動推奨とは別に、この世代のSP/STと血統条件を比較するための手動選択'];
+  reasons=(transition?.reasons||[]).slice(0,3);
+  if(!reasons.length)reasons=['自動推奨とは別に、この世代の条件を比較'];
  }
- const reasonHtml=reasons.map(x=>'<li>'+esc(x)+'</li>').join('');
- const state=selected===rec.generation?'おすすめ世代':'手動で比較中（自動推奨は'+esc(rec.label)+'）';
- return '<div class="generation-key-reason"><b>'+esc(state)+'｜なぜ'+label+'？</b><ul>'+reasonHtml+'</ul></div>'+
+ reasons=[...new Set(reasons.map(compactGenerationReason))].slice(0,3);
+ const reasonHtml=reasons.map((x,i)=>'<li><span>'+(i+1)+'</span>'+esc(x)+'</li>').join('');
+ const state=selected===rec.generation?'なぜこの世代？':'選択中：'+label;
+ return '<div class="generation-key-reason"><b>'+esc(state)+'</b><ul>'+reasonHtml+'</ul></div>'+
   '<details class="generation-tech"><summary>比較データ・探索条件を見る</summary>'+
-  '<div class="advisor-note">直仔 SP/ST '+a.sp+'/'+a.st+' → '+label+' '+b.sp+'/'+b.st+'。3代・4代は条件付き探索で、中間牝馬の実能力は出生前に仮定しません。</div>'+
+  '<div class="advisor-note">直仔 SP/ST '+a.sp+'/'+a.st+' → '+label+' '+b.sp+'/'+b.st+'。3代・4代は条件付き探索です。'+(diagnosticText?' '+esc(diagnosticText):'')+'</div>'+
   '</details>';
 }
 
@@ -297,16 +331,18 @@ async function runGenerationAdvisor(){
   };
   const rec=advisor.recommendGeneration({goal,assessment,generations,portfolios});
   window.DABISTA_SALE_PLANNER?.setGeneration?.(rec.generation,'diagnosis');
-  const goalLabel=planner.goalLabels[goal]||goal;
   const resultBox=$('#generationAdvisorResult');
+  const diagnosticText='直仔 '+s1.count.toLocaleString()+'件 / 2代 '+s2.count.toLocaleString()+'件 / 3代 '+s3.count.toLocaleString()+'件 / 4代 '+s4.count.toLocaleString()+'件';
+  const recommendedLabel=rec.generation===1?'直仔':rec.generation+'代';
+  const recommendationStatus=/基準未達/.test(rec.label)?'血統基準未達・能力確認前提':(!assessment?.abilityKnown?'能力確認前提':'');
   let selectedGeneration=rec.generation;
   const paintGenerationResult=()=>{
    resultBox.innerHTML=`
     <div class="generation-result">
-     <div class="generation-pick"><span>自動おすすめ</span><b>${esc(rec.label)}</b></div>
+     <div class="generation-pick"><span>おすすめ世代</span><b>おすすめ：${esc(recommendedLabel)}</b>${recommendationStatus?'<em>'+esc(recommendationStatus)+'</em>':''}</div>
      <div class="generation-compare">${generationCard(1,generations[1],goal,rec.generation,selectedGeneration)}${generationCard(2,generations[2],goal,rec.generation,selectedGeneration)}${generationCard(3,generations[3],goal,rec.generation,selectedGeneration)}${generationCard(4,generations[4],goal,rec.generation,selectedGeneration)}</div>
-     ${recommendationDetail(name,goal,rec,selectedGeneration)}
-     <button class="primary generation-action" type="button" id="applyRecommendedGeneration">${selectedGeneration===rec.generation?'おすすめ':'選択した'}${selectedGeneration===1?'直仔':selectedGeneration+'代'}で本命配合を見る</button>
+     ${recommendationDetail(name,goal,rec,selectedGeneration,diagnosticText)}
+     <button class="primary generation-action" type="button" id="applyRecommendedGeneration">この世代で本命配合を見る</button>
     </div>`;
   };
   resultBox.onclick=e=>{
@@ -323,7 +359,7 @@ async function runGenerationAdvisor(){
     }
   };
   paintGenerationResult();
-  $('#generationAdvisorProgress').textContent=`診断完了：直仔 ${s1.count.toLocaleString()}件、2代 ${s2.count.toLocaleString()}件、3代プレビュー ${s3.count.toLocaleString()}件、4代プレビュー ${s4.count.toLocaleString()}件を比較しました。`;
+  $('#generationAdvisorProgress').textContent='診断完了';
  }catch(e){
   if(String(e).includes('cancelled'))return;
   window.APP_ERRORS?.push({at:new Date().toISOString(),message:'generation-advisor: '+String(e)});
@@ -339,7 +375,7 @@ function inject(){
  if(goalSection)goalSection.insertAdjacentElement('afterend',mareBox);else summary?.insertAdjacentElement('afterend',mareBox);
  const notice=$('#salePlannerNotice'),generationSection=$('#saleGenerationSection');
  const gen=document.createElement('div');gen.id='saleGenerationAdvisor';gen.className='generation-advisor';
- gen.innerHTML=`<h4>何代で締めるか比較</h4><p>直仔・2代・3代・4代を同条件で比較し、おすすめ世代を1つ決めます。</p><button type="button" class="secondary" id="runGenerationAdvisor">おすすめ世代を決める</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
+ gen.innerHTML=`<h4>おすすめ世代を決める</h4><p>直仔〜4代を同じ条件で比較します。</p><button type="button" class="secondary" id="runGenerationAdvisor">診断する</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
  if(generationSection){generationSection.hidden=true;generationSection.insertAdjacentElement('beforebegin',gen)}else notice?.insertAdjacentElement('beforebegin',gen);
  if(notice)notice.hidden=true;
  const run=$('#runSalePlanner');if(run)run.hidden=true;

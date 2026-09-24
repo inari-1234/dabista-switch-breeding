@@ -370,9 +370,13 @@ body.ui-refresh .candidate-chip.record{background:#e9f1fa;color:#35658f;border-c
 body.ui-refresh .candidate-chip.trait{background:#fff4d8;color:#7b5c16;border-color:#ebd89e}
 body.ui-refresh .candidate-chip.metric{background:#edf3f0;color:#31584a;border-color:#dce8e2}
 body.ui-refresh .candidate-chip.distance{background:#e8f2fb;color:#326a9a;border-color:#d2e4f2}
-body.ui-refresh .candidate-block.comparison{padding:8px 9px;border-radius:10px;background:rgba(255,255,255,.72);border:1px solid rgba(85,112,99,.11)}
-body.ui-refresh .candidate-block.comparison>small{color:#365b4a}
-body.ui-refresh .candidate-block.facts{margin-top:7px}
+body.ui-refresh .candidate-block.addition{padding:8px 9px;border-radius:10px;background:#f0f8f4;border:1px solid #d5e9de}
+body.ui-refresh .candidate-block.subtraction{padding:8px 9px;border-radius:10px;background:#fff6ef;border:1px solid #f1dcc8}
+body.ui-refresh .candidate-block.caution{padding:8px 9px;border-radius:10px;background:#fffaf0;border:1px solid #eadfbf}
+body.ui-refresh .candidate-block.addition>small{color:#1d714f}
+body.ui-refresh .candidate-block.subtraction>small{color:#9a5a16}
+body.ui-refresh .candidate-block.caution>small{color:#7a641e}
+body.ui-refresh .candidate-none{font-size:9px;font-weight:800;color:#8a9690}
 body.ui-refresh .candidate-block.ability{margin-top:7px}
 body.ui-refresh .candidate-scope{margin-top:7px;color:#728079;font-size:8px;text-align:right}
 body.ui-refresh .candidate-head{gap:10px}

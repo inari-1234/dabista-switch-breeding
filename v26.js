@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-57',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-58',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
@@ -317,8 +317,10 @@ function productionHtml(route){
 }
 function candidateChip(x){return '<span class="candidate-chip '+esc(x?.tone||'trait')+'">'+esc(x?.label||'')+'</span>'}
 function candidateBlock(label,items,cls=''){
- const xs=(items||[]).filter(Boolean);if(!xs.length)return'';
- return '<div class="candidate-block '+esc(cls)+'"><small>'+esc(label)+'</small><div class="candidate-chip-row">'+xs.map(candidateChip).join('')+'</div></div>';
+ if(!Array.isArray(items))return'';
+ const xs=items.filter(Boolean);
+ const body=xs.length?xs.map(candidateChip).join(''):'<span class="candidate-none">なし</span>';
+ return '<div class="candidate-block '+esc(cls)+'"><small>'+esc(label)+'</small><div class="candidate-chip-row">'+body+'</div></div>';
 }
 function routeHtml(route,index,goal,profile,baseline=null){
  const x=planner.expandRoute(db.salePlanner.mare,route,goal);if(!x)return'';
@@ -346,11 +348,12 @@ function routeHtml(route,index,goal,profile,baseline=null){
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
  const detail=productionHtml(route)+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'');
- const comparison=displayFacts?candidateBlock('比較差',displayFacts.comparison,'comparison'):'';
- const primary=displayFacts?candidateBlock('主要根拠',displayFacts.facts,'facts'):'';
+ const additions=displayFacts?candidateBlock('加算',displayFacts.groups?.additions||[],'addition'):'';
+ const subtractions=displayFacts?candidateBlock('減算',displayFacts.groups?.subtractions||[],'subtraction'):'';
+ const cautions=displayFacts?candidateBlock('注意',displayFacts.groups?.cautions||[],'caution'):'';
  const ability=displayFacts?candidateBlock('能力上限',displayFacts.ability.map(x=>({...x,tone:'metric'})),'ability'):'';
  return '<div class="sale-route tone-'+esc(tone)+'"><div class="sale-route-cue"><span class="sale-rank-label">'+esc(rankLabel)+'</span><span class="sale-cue-badge">'+esc(displayLabel)+'</span></div>'+
-  (displayFacts?comparison+primary:'<div class="sale-cue-headline">'+esc(displayHeadline)+'</div><div class="sale-reason-row">'+reasons+'</div>')+
+  (displayFacts?additions+subtractions+cautions:'<div class="sale-cue-headline">'+esc(displayHeadline)+'</div><div class="sale-reason-row">'+reasons+'</div>')+
   '<div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div>'+
   (displayFacts?ability:'<div class="row"><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span><span class="sale-axis-note">'+esc(method)+'</span></div>')+
   '<div class="candidate-scope">'+esc(method)+'</div>'+
