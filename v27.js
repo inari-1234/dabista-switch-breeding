@@ -217,7 +217,7 @@ function renderMareAdvice(){
     </div>`:''}
     ${strategy?`<div class="advisor-note"><b>補強タイプ：${esc(strategy.label)}</b><br>維持：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / ${esc(strategyAxis)}</div>`:''}
     <div class="mare-direct">直仔安全 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
-    <div class="advisor-note">4目的は別々の成立条件で判定し、第7の総合点は作りません。自家製種牡馬は世代診断で確認します。</div>
+    <div class="advisor-note">4目的は別々の成立条件で判定し、第7の総合点は作らずに比較します。自家製種牡馬は世代診断で確認します。</div>
    </details>`;
 }
 function invalidateGeneration(message='条件を変更したため、世代診断を更新してください。'){
