@@ -121,7 +121,7 @@ assert.ok(display.facts.some(x=>x.label==='実績B'),'record B must always remai
 const stableCDisplay=display.facts.find(x=>x.key==='stable');
 assert.ok(stableCDisplay&&stableCDisplay.label==='安定C'&&stableCDisplay.tone==='trait','stable C must be shown as a neutral variance trait label, not an automatic warning');
 const theoryIndex=display.facts.findIndex(x=>x.key==='magnificent');
-const distanceIndex=display.facts.findIndex(x=>x.key==='distance2400');
+const distanceIndex=display.facts.findIndex(x=>x.key==='distance-range');
 assert.ok(theoryIndex>=0&&distanceIndex>=0&&theoryIndex<distanceIndex,'pairing theory must be displayed before Arc distance evidence');
 assert.ok(display.comparison.some(x=>x.label==='SP -2')&&display.comparison.some(x=>x.label==='ST +1'),'nitro comparison deltas are mandatory card information');
 assert.ok(display.facts.some(x=>x.key==='distance-range'&&x.label.includes('2600m')),'distance aptitude range must remain visible because it contributes to SP-side interpretation');
