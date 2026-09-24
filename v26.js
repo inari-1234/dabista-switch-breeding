@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.24-56',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-57',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
@@ -315,6 +315,11 @@ function productionHtml(route){
  const warnings=(q.warnings||[]).slice(0,3).map(x=>'<span class="production-warning">⚠ '+esc(x)+'</span>').join('');
  return '<div class="production-quality '+esc(q.key)+'"><b>強馬生産条件：'+esc(q.label)+'｜実績'+esc(q.record)+'・安定'+esc(q.stable)+'</b>'+(notes?'<div>'+notes+'</div>':'')+warnings+'</div>';
 }
+function candidateChip(x){return '<span class="candidate-chip '+esc(x?.tone||'trait')+'">'+esc(x?.label||'')+'</span>'}
+function candidateBlock(label,items,cls=''){
+ const xs=(items||[]).filter(Boolean);if(!xs.length)return'';
+ return '<div class="candidate-block '+esc(cls)+'"><small>'+esc(label)+'</small><div class="candidate-chip-row">'+xs.map(candidateChip).join('')+'</div></div>';
+}
 function routeHtml(route,index,goal,profile,baseline=null){
  const x=planner.expandRoute(db.salePlanner.mare,route,goal);if(!x)return'';
  const assessment=recommendationAdvisor?.mareAssessment?.(db.salePlanner.mare)||null;
@@ -324,6 +329,8 @@ function routeHtml(route,index,goal,profile,baseline=null){
  const safeCue=cue||{key:'neutral',label:'比較候補',headline:'評価候補',reasons:[]};
  const f=route.final||{},sx=f.speedCross||{},method=route.method==='conditional-four-generation-preview'?'4代目は条件付き仮プレビュー':route.method==='conditional-three-generation-preview'?'3代目は条件付き仮プレビュー':'全探索範囲';
  const stats=f.sireStats||{},cc=stats.record==='C'&&stats.stable==='C';
+ const displayFacts=profile==='production'&&recommendationAdvisor?.candidateDisplayFacts
+  ?recommendationAdvisor.candidateDisplayFacts(route,baseline||route,assessment,index,goal):null;
  const chipValues=[...(safeCue.reasons||[]),sx.has?'SPクロス '+fmt(sx.count):null,cc?'実績C・安定C':null].filter(Boolean);
  const reasons=[...new Set(chipValues)].slice(0,5).map(v=>'<span class="sale-reason-chip">'+esc(v)+'</span>').join('');
  const isMain=profile==='production';
@@ -339,11 +346,14 @@ function routeHtml(route,index,goal,profile,baseline=null){
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
  const detail=productionHtml(route)+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'');
+ const comparison=displayFacts?candidateBlock('比較差',displayFacts.comparison,'comparison'):'';
+ const primary=displayFacts?candidateBlock('主要根拠',displayFacts.facts,'facts'):'';
+ const ability=displayFacts?candidateBlock('能力上限',displayFacts.ability.map(x=>({...x,tone:'metric'})),'ability'):'';
  return '<div class="sale-route tone-'+esc(tone)+'"><div class="sale-route-cue"><span class="sale-rank-label">'+esc(rankLabel)+'</span><span class="sale-cue-badge">'+esc(displayLabel)+'</span></div>'+
-  '<div class="sale-cue-headline">'+esc(displayHeadline)+'</div>'+
-  '<div class="sale-reason-row">'+reasons+'</div>'+
+  (displayFacts?comparison+primary:'<div class="sale-cue-headline">'+esc(displayHeadline)+'</div><div class="sale-reason-row">'+reasons+'</div>')+
   '<div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div>'+
-  '<div class="row"><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span><span class="sale-axis-note">'+esc(method)+'</span></div>'+
+  (displayFacts?ability:'<div class="row"><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span><span class="sale-axis-note">'+esc(method)+'</span></div>')+
+  '<div class="candidate-scope">'+esc(method)+'</div>'+
   '<details class="sale-route-details"><summary>詳しい根拠・世代別データを見る</summary><div class="sale-method" style="margin-top:6px">途中世代の繁殖SP/ST/PWは仮定していません。</div>'+detail+'</details>'+
   '<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
 }
@@ -562,7 +572,9 @@ function profileHtml(profile,routes,goal,scope,recordAReference=null){
  };
  const baseline=routes[0]||null;
  return `<div class="card sale-profile"><div class="sale-profile-head"><h3>${esc(label)}</h3><span class="sale-axis-note">${esc(axisNotes[profile]||'別軸評価')}</span></div>${routes.map((r,i)=>{
-  const reference=i===0&&profile==='production'&&r?.final?.sireStats?.record!=='A'&&recordAReference?recordAReference:baseline;
+  const reference=profile==='production'
+   ?(i===0?(r?.final?.sireStats?.record!=='A'&&recordAReference?recordAReference:(routes[1]||r)):baseline)
+   :baseline;
   return routeHtml(r,i,goal,profile,reference);
  }).join('')}<details class="sale-profile-detail"><summary>この軸の並び順・評価範囲</summary><div class="sale-method" style="margin-top:5px">${esc(criteria)}</div>${profile==='sire'?`<div class="sale-method">${esc(scope)}</div>`:''}</details></div>`
 }

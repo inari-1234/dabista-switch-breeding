@@ -609,6 +609,54 @@
         advantages,tradeoffs,hasReference
       };
     }
+    function candidateDisplayFacts(route,baseline,assessment,rank=0,goal=''){
+      const f=routeFacts(route),hasReference=!!baseline&&baseline!==route,bf=hasReference?routeFacts(baseline):f;
+      const comparison=[],facts=[];
+      const push=(arr,key,label,tone,priority)=>{if(label&&!arr.some(x=>x.key===key&&x.label===label))arr.push({key,label,tone,priority})};
+      const delta=(name,a,b)=>a===b?null:(a>b?name+' +'+(a-b):name+' -'+(b-a));
+      if(hasReference){
+        if(f.speedCross!==bf.speedCross)push(comparison,'speed-cross',f.speedCross?'SPクロス獲得':'SPクロス消失',f.speedCross?'cross':'warning',100);
+        if(f.speedCrossCount!==bf.speedCrossCount)push(comparison,'speed-cross-count','SPクロス '+(f.speedCrossCount>bf.speedCrossCount?'+':'')+(f.speedCrossCount-bf.speedCrossCount),f.speedCrossCount>bf.speedCrossCount?'cross':'warning',96);
+        const spd=delta('SP',f.sp,bf.sp),std=delta('ST',f.st,bf.st),pwd=delta('PW',f.pw,bf.pw);
+        if(spd)push(comparison,'sp-delta',spd,f.sp>bf.sp?'positive':'warning',94);
+        if(std)push(comparison,'st-delta',std,f.st>bf.st?'positive':'warning',92);
+        if(pwd)push(comparison,'pw-delta',pwd,f.pw>bf.pw?'positive':'warning',90);
+        if(f.perfect!==bf.perfect)push(comparison,'perfect-delta',f.perfect?'完璧配合を獲得':'完璧配合を失う',f.perfect?'theory':'warning',88);
+        if(f.magnificent!==bf.magnificent)push(comparison,'magnificent-delta',f.magnificent?'見事配合を獲得':'見事配合を失う',f.magnificent?'theory':'warning',87);
+        if(f.elaborate!==bf.elaborate)push(comparison,'elaborate-delta',f.elaborate?'凝った配合を獲得':'凝った配合を失う',f.elaborate?'theory':'warning',86);
+        if(f.interesting!==bf.interesting)push(comparison,'interesting-delta',f.interesting?'面白配合を獲得':'面白配合を失う',f.interesting?'theory':'warning',85);
+        if(f.record!==bf.record)push(comparison,'record-delta','実績 '+bf.record+'→'+f.record,f.recordGrade>bf.recordGrade?'record':'warning',80);
+        if(f.stable!==bf.stable)push(comparison,'stable-delta','安定 '+bf.stable+'→'+f.stable,'trait',70);
+        if(f.distanceEvidence!==bf.distanceEvidence){
+          const stronger=f.distanceEvidence>bf.distanceEvidence;
+          push(comparison,'distance-delta',stronger?'距離根拠強化':'距離根拠低下',stronger?'distance':'warning',60);
+        }
+      }
+      if(f.perfect)push(facts,'perfect','完璧','theory',100);
+      else{
+        if(f.magnificent)push(facts,'magnificent','見事','theory',98);
+        if(f.interesting)push(facts,'interesting','面白','theory',96);
+      }
+      if(f.elaborate)push(facts,'elaborate','凝った','theory',94);
+      if(f.speedCross)push(facts,'speed-cross','SPクロス '+f.speedCrossCount,'cross',92);
+      else if(f.materialSpeedCross)push(facts,'material-speed','途中SP補強 '+f.materialSpeedCrossStages,'cross',90);
+      else push(facts,'speed-cross-none','SPクロスなし','warning',89);
+      if(f.longDistanceCross)push(facts,'long-cross','長距離クロス','cross',88);
+      push(facts,'record','実績'+f.record,f.record==='A'?'record':f.record==='B'?'record':'warning',84);
+      const stableLabel=f.stable==='A'?'安定A・再現寄り':f.stable==='C'?'安定C・上振れ寄り':f.stable==='B'?'安定B・中間':'安定'+f.stable;
+      push(facts,'stable',stableLabel,'trait',82);
+      if(f.distance2400)push(facts,'distance2400','2400m根拠','distance',70);
+      else if(goal==='arc'&&f.distanceEvidence===0)push(facts,'distance-none','距離根拠弱い','warning',68);
+      comparison.sort((a,b)=>b.priority-a.priority);
+      facts.sort((a,b)=>b.priority-a.priority);
+      return{
+        comparison,facts,
+        ability:[{key:'sp',label:'SP '+f.sp},{key:'st',label:'ST '+f.st},{key:'pw',label:'PW '+f.pw}],
+        hasReference,
+        stableRole:f.stable==='C'?'upside':f.stable==='A'?'reproducible':'middle'
+      };
+    }
+
     function rankProductionRoutes(routes,assessment,limit=3){
       return[...(routes||[])].sort(compareProductionForMare(assessment)).slice(0,limit);
     }
@@ -1227,7 +1275,7 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,goalMareReason,quickSaleOutlook,quickGoalRecommendations,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,arcUpgradeGate,bcUpgradeGate,rebuildUpgradeGate,rebuildFreedomGate,rebuildFreedomUpgradeReasons,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
+      directUseLabels,goalMareReason,quickSaleOutlook,quickGoalRecommendations,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,candidateDisplayFacts,recommendationCue,arcUpgradeGate,bcUpgradeGate,rebuildUpgradeGate,rebuildFreedomGate,rebuildFreedomUpgradeReasons,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
       profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
     };
   }

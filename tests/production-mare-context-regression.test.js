@@ -111,6 +111,20 @@ const candidates=advisor.selectProductionRecommendations([longMiddle,shortMiddle
 assert.strictEqual(candidates.length,3);
 assert.strictEqual(new Set(candidates.map(r=>r.sires[r.sires.length-1])).size,3,'recommendation list should preserve distinct final-sire alternatives when useful');
 
+// Candidate-card display facts: comparison delta first, theory before distance, and stable C is an upside trait rather than a warning.
+const displayBaseline=fake({record:'A',stable:'B',sp:19,st:7,pw:2,maxD:2200,speedCross:true,sire:'表示基準'});
+const displayRoute=fake({record:'B',stable:'C',sp:17,st:8,pw:2,maxD:2600,speedCross:false,magnificent:true,elaborate:true,sire:'表示候補'});
+const display=advisor.candidateDisplayFacts(displayRoute,displayBaseline,middle,1,'arc');
+assert.strictEqual(display.comparison[0].label,'SPクロス消失','SP-cross loss must outrank record B/C and other display tradeoffs');
+assert.ok(display.comparison.findIndex(x=>x.key==='record-delta')>0,'record downgrade must remain visible after the higher-priority SP-cross loss');
+assert.ok(display.facts.some(x=>x.label==='実績B'),'record B must always remain visible in primary facts');
+const stableCDisplay=display.facts.find(x=>x.key==='stable');
+assert.ok(stableCDisplay&&stableCDisplay.label==='安定C・上振れ寄り'&&stableCDisplay.tone==='trait','stable C must be shown as an upside/variance trait, not an automatic warning');
+const theoryIndex=display.facts.findIndex(x=>x.key==='magnificent');
+const distanceIndex=display.facts.findIndex(x=>x.key==='distance2400');
+assert.ok(theoryIndex>=0&&distanceIndex>=0&&theoryIndex<distanceIndex,'pairing theory must be displayed before Arc distance evidence');
+assert.ok(display.comparison.some(x=>x.label==='SP -2')&&display.comparison.some(x=>x.label==='ST +1'),'nitro comparison deltas are mandatory card information');
+
 // High mare: stable A remains preferable to stable C at equal facts.
 const highA=fake({record:'A',stable:'A',sp:16,st:6,speedCross:false,sire:'高母A'});
 const highC=fake({record:'A',stable:'C',sp:16,st:6,speedCross:false,sire:'高母C'});

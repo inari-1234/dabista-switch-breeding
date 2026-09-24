@@ -40,7 +40,7 @@ if(v27.includes('世代推奨は勝率・産駒能力の確率予測ではあり
 if(/\.mare-tier\{[^}]*font-size:(?:8|9)px/.test(v27))throw Error('mare tier regressed to tiny text');
 
 for(const token of [
-  'function mareBand(','function goalMareReason(','function quickSaleOutlook(','function quickGoalRecommendations(','function productionContext(','function compareProductionForMare(',
+  'function mareBand(','function goalMareReason(','function quickSaleOutlook(','function quickGoalRecommendations(','function productionContext(','function compareProductionForMare(','function candidateDisplayFacts(',
   'function productionCandidateCue(','function selectProductionRecommendations(','function shortDistanceTier('
 ])need(advisor,token,'mare-aware production recommendation');
 need(advisor,"const requiredSignals=record==='A'?2:record==='B'?3:record==='C'?4:99","record A>B>C must require progressively stronger evidence to overturn");
@@ -72,6 +72,9 @@ need(v26,'黄：上振れ','upside color semantics');
 need(v26,'白：参考軸','reference color semantics');
 need(v26,'別強み候補 ','non-top recommendations must explain a distinct reason instead of repeating main/standard');
 need(v26,'productionCandidateCue','candidate cards must use peer-relative explanations');
+need(v26,'candidateDisplayFacts','sale candidate cards must use shared display-priority facts');
+need(v26,"candidateBlock('比較差'",'sale candidate cards must put peer differences before detailed facts');
+need(v26,"candidateBlock('主要根拠'",'sale candidate cards must expose compact primary facts');
 need(v26,'selectProductionRecommendations','candidate list must select meaningful alternatives');
 need(v26,'recordAReference','lower-record main recommendation must be compared with the best record-A route');
 need(advisor,"'実績'+p.record+'だが、'+lead+'で実績'+b.record+'候補を逆転'","lower-record main card must explain its compensated reversal");
@@ -88,6 +91,8 @@ need(v24,'<div hidden aria-hidden="true"><select id="rebuildGoal"','legacy four-
 need(v25,"card.hidden=true;card.setAttribute('aria-hidden','true')",'legacy manual nitro simulator must stay hidden');
 
 need(breed,"advisor?.compareProductionForMare","breed production must use the same mare-aware comparator");
+need(breed,'candidateDisplayFacts','breed cards must inherit the same display-priority facts used by sale cards');
+need(breed,"breedCandidateBlock('比較差'",'breed cards must preserve comparison-first presentation');
 need(breed,'function createFutureProductionCollector(','breed future production must remain full-scan');
 need(breed,'function renderFutureOverview(result){}','separate six-axis future overview must stay removed');
 need(breed,"profile=selectedCategory()","future result must focus on the selected category");
@@ -95,6 +100,7 @@ if(breed.includes("overview.className='card breed-future-overview'"))throw Error
 
 for(const token of ['.sale-route.tone-main','.sale-route.tone-record','.sale-route.tone-speed','.sale-route.tone-nitro','.sale-route.tone-upside','.sale-route.tone-neutral'])need(css,token,'candidate role color');
 need(css,'.sale-other-axes','secondary axes container');
+for(const token of ['.candidate-chip.cross','.candidate-chip.theory','.candidate-chip.warning','.candidate-chip.record','.candidate-chip.trait','.candidate-chip.metric'])need(css,token,'shared candidate fact colors');
 
 console.log(JSON.stringify({
   passed:true,

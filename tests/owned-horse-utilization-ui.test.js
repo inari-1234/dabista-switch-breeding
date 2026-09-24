@@ -32,9 +32,9 @@ need(ui,'overflow:auto;overscroll-behavior:contain','reverse dialog explicit scr
 need(ui,'max-height:92dvh','mobile reverse dialog viewport bound');
 need(ui,'@media(max-width:520px)','mobile reverse density rules');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
-need(idx,'v28.js?v=1.19.1-b56','v28 cache wiring');
-if(!(idx.indexOf('breed-integration.js?v=1.19.1-b56')<idx.indexOf('v28.js?v=1.19.1-b56')))throw Error('v28 must load after breed integration');
-if(!(idx.indexOf('v27.js?v=1.19.1-b56')<idx.indexOf('v28.js?v=1.19.1-b56')))throw Error('v28 must load after v27');
+need(idx,'v28.js?v=1.19.1-b57','v28 cache wiring');
+if(!(idx.indexOf('breed-integration.js?v=1.19.1-b57')<idx.indexOf('v28.js?v=1.19.1-b57')))throw Error('v28 must load after breed integration');
+if(!(idx.indexOf('v27.js?v=1.19.1-b57')<idx.indexOf('v28.js?v=1.19.1-b57')))throw Error('v28 must load after v27');
 if(/evidenceScore\s*=|overallScore\s*=|weightedScore\s*=/.test(ui))throw Error('reverse lookup must not add a weighted umbrella score');
 
 console.log(JSON.stringify({
