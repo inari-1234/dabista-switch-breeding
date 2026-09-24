@@ -662,8 +662,8 @@
       const bonusFacts=facts.filter(x=>['perfect','magnificent','interesting','elaborate','speed-cross','material-speed','long-cross'].includes(x.key));
       const lossFacts=facts.filter(x=>x.key==='speed-cross-none');
       const cautionFacts=[
-        ...comparison.filter(x=>x.key==='stable-delta'),
-        ...facts.filter(x=>['record','stable','distance-range'].includes(x.key))
+        ...facts.filter(x=>['record','stable','distance-range'].includes(x.key)),
+        ...comparison.filter(x=>x.key==='stable-delta')
       ];
       const additions=unique([...positiveComparison,...bonusFacts]).slice(0,3);
       const subtractions=unique([...negativeComparison,...lossFacts]).slice(0,3);
