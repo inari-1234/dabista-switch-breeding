@@ -1,5 +1,5 @@
 (()=>{
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.24-54';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.24-55';
 const $=s=>document.querySelector(s),db=window.db,esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;

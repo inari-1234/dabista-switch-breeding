@@ -147,6 +147,34 @@ d=growth.diagnose({
 assert.notStrictEqual(d.state.key,'hold','different comparison sets in the same month must not conflict merely because baseline IDs match');
 assert.strictEqual(d.signal.latest.setId,'sp-b','latest research scope should be evaluated independently');
 
+// Cross-mode current-signal selection must follow observation recency, not mode priority.
+const olderResearchSignal={kind:'growth-change',mode:'research',confidence:'高',latest:{age:4,month:5}};
+const newerNormalSignal={kind:'progress',mode:'normal',confidence:'参考',latest:{age:4,month:7}};
+assert.strictEqual(growth.selectCurrentSignal(olderResearchSignal,newerNormalSignal),newerNormalSignal,'newer normal observation must supersede older research observation');
+
+const newerResearchSignal={kind:'growth-change',mode:'research',confidence:'高',latest:{age:4,month:8}};
+const olderNormalSignal={kind:'progress',mode:'normal',confidence:'参考',latest:{age:4,month:7}};
+assert.strictEqual(growth.selectCurrentSignal(newerResearchSignal,olderNormalSignal),newerResearchSignal,'newer research observation must supersede older normal observation');
+
+const sameMonthResearchSignal={kind:'growth-change',mode:'research',confidence:'高',latest:{age:4,month:7}};
+const sameMonthNormalSignal={kind:'progress',mode:'normal',confidence:'参考',latest:{age:4,month:7}};
+assert.strictEqual(growth.selectCurrentSignal(sameMonthResearchSignal,sameMonthNormalSignal),sameMonthResearchSignal,'same-month research observation must retain priority');
+
+const insufficientResearchSignal={kind:'insufficient',mode:'research',confidence:'参考',latest:{age:4,month:8}};
+assert.strictEqual(growth.selectCurrentSignal(insufficientResearchSignal,olderNormalSignal),olderNormalSignal,'insufficient research observation must fall back to normal observation');
+
+d=growth.diagnose({
+  horse,
+  races:[
+    {id:'cross-normal-1',horseId:'h1',age:4,month:6,mark4:'△',mark5:'△'},
+    {id:'cross-normal-2',horseId:'h1',age:4,month:7,mark4:'○',mark5:'△'}
+  ],
+  growthChecks:checks,
+  growthCheckSets:[setV1]
+});
+assert.strictEqual(d.signal.mode,'normal','diagnose must use the newer normal signal when research is older');
+assert.strictEqual(d.state.key,'growth-progressing');
+
 const lateHorse={id:'late',manualGrowthType:'晩成',currentAge:5,currentMonth:1};
 d=growth.diagnose({horse:lateHorse,races:[],growthChecks:[],growthCheckSets:[]});
 assert.strictEqual(d.state.key,'completion-zone-candidate');
