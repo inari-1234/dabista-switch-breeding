@@ -389,7 +389,8 @@ assert.ok(v27.includes('aria-pressed'),'generation card selection must expose bu
 assert.ok(v27.includes('手動で比較中（自動推奨は'),'manual override must keep the automatic recommendation visible');
 assert.ok(v27.includes('選択した')&&v27.includes('で本命配合を見る'),'manual generation must be directly actionable');
 assert.ok(v27.includes('この牝馬を使う理由'),'mare card must explain why the mare is used');
-assert.ok(v27.includes('セリ即判定'),'mare card must provide an at-a-glance sale decision panel');
+assert.ok(v27.includes('目的別の即時判定'),'mare card must provide an at-a-glance purpose decision panel');
+assert.ok(v27.includes('この牝馬の推奨用途'),'mare card must expose the recommendation conclusion before detailed evidence');
 assert.ok(v27.includes('quickSaleOutlook'),'sale quick panel must come from the shared recommendation core');
 assert.ok(v27.includes('goalMareReason'),'purpose-specific mare reason must come from the shared recommendation core');
 assert.ok(v27.includes('カード色＝母能力帯'),'mare color meaning must be explicit');
