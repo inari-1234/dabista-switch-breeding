@@ -615,8 +615,12 @@
       const push=(arr,key,label,tone,priority)=>{if(label&&!arr.some(x=>x.key===key&&x.label===label))arr.push({key,label,tone,priority})};
       const delta=(name,a,b)=>a===b?null:(a>b?name+' +'+(a-b):name+' -'+(b-a));
       if(hasReference){
-        if(f.speedCross!==bf.speedCross)push(comparison,'speed-cross',f.speedCross?'SPクロス獲得':'SPクロス消失',f.speedCross?'cross':'warning',100);
-        if(f.speedCrossCount!==bf.speedCrossCount)push(comparison,'speed-cross-count','SPクロス '+(f.speedCrossCount>bf.speedCrossCount?'+':'')+(f.speedCrossCount-bf.speedCrossCount),f.speedCrossCount>bf.speedCrossCount?'cross':'warning',96);
+        if(f.speedCross!==bf.speedCross){
+          const from=bf.speedCrossCount||0,to=f.speedCrossCount||0;
+          push(comparison,'speed-cross',f.speedCross?'SPクロス獲得（'+from+'→'+to+'）':'SPクロス消失（'+from+'→'+to+'）',f.speedCross?'cross':'warning',100);
+        }else if(f.speedCrossCount!==bf.speedCrossCount){
+          push(comparison,'speed-cross-count','SPクロス '+(f.speedCrossCount>bf.speedCrossCount?'+':'')+(f.speedCrossCount-bf.speedCrossCount),f.speedCrossCount>bf.speedCrossCount?'cross':'warning',96);
+        }
         const spd=delta('SP',f.sp,bf.sp),std=delta('ST',f.st,bf.st),pwd=delta('PW',f.pw,bf.pw);
         if(spd)push(comparison,'sp-delta',spd,f.sp>bf.sp?'positive':'warning',94);
         if(std)push(comparison,'st-delta',std,f.st>bf.st?'positive':'warning',92);

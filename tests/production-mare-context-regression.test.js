@@ -115,7 +115,7 @@ assert.strictEqual(new Set(candidates.map(r=>r.sires[r.sires.length-1])).size,3,
 const displayBaseline=fake({record:'A',stable:'B',sp:19,st:7,pw:2,maxD:2200,speedCross:true,sire:'表示基準'});
 const displayRoute=fake({record:'B',stable:'C',sp:17,st:8,pw:2,maxD:2600,speedCross:false,magnificent:true,elaborate:true,sire:'表示候補'});
 const display=advisor.candidateDisplayFacts(displayRoute,displayBaseline,middle,1,'arc');
-assert.strictEqual(display.comparison[0].label,'SPクロス消失','SP-cross loss must outrank record B/C and other display tradeoffs');
+assert.ok(display.comparison[0].label.startsWith('SPクロス消失（'),'SP-cross loss must outrank record B/C and other display tradeoffs');
 assert.ok(display.comparison.findIndex(x=>x.key==='record-delta')>0,'record downgrade must remain visible after the higher-priority SP-cross loss');
 assert.ok(display.facts.some(x=>x.label==='実績B'),'record B must always remain visible in primary facts');
 const stableCDisplay=display.facts.find(x=>x.key==='stable');
