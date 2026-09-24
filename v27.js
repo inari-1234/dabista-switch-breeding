@@ -179,6 +179,7 @@ function renderMareAdvice(){
   ?`<div class="mare-scoreline"><span>SP ${a.ranks.sp?.value??'—'}</span><span>ST ${a.ranks.st?.value??'—'}</span><span>PW ${a.ranks.pw?.value??'—'}</span><b>SP+ST ${a.ranks.spst?.value??'—'}</b></div>`
   :'<div class="mare-scoreline"><b>能力未判明</b></div>';
  const decision=mareDecisionText(name,goal,direct),recommendations=advisor.quickGoalRecommendations(name,direct,direct.bestByGoal);
+ const decisionReasons=(decision.reasons||[]).slice(0,2).map(x=>'<span>'+esc(x)+'</span>').join('');
  const points=mareAttentionFacts(goal,direct,a);
  const pointHtml=points.map(x=>'<span class="candidate-chip '+esc(x.tone||'trait')+'">'+esc(x.label)+'</span>').join('');
  const strategyAxis=strategy
@@ -207,7 +208,7 @@ function renderMareAdvice(){
    ${pointHtml?`<div class="mare-attention"><small>注目ポイント</small><div class="candidate-chip-row">${pointHtml}</div></div>`:''}
    <details class="mare-detail">
     <summary>詳しい順位・根拠を見る</summary>
-    <div class="mare-why"><small>現在の目的｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span></div>
+    <div class="mare-why"><small>現在の目的｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span>${decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':''}</div>
     ${rankHtml}
     ${a.abilityKnown?`<div class="mare-ranks">
      ${mareRankCell('繁殖SP',a.ranks.sp)}
