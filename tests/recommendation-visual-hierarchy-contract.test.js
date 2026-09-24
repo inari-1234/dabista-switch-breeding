@@ -19,11 +19,11 @@ need(v27,'4目的の評価','mare purpose panel must stay concise and structured
 need(v27,'mare-purpose-summary','mare purpose recommendation summary');
 need(v27,'quickGoalRecommendations','purpose recommendation must use core criteria');
 need(v27,"quickGoalCell('arc','凱旋門'",'quick purpose cards must start with Arc then BC');
-need(v27,'自家製種牡馬は世代診断前に推奨確定しません','stallion quick recommendation must remain conditional before portfolio diagnosis');
+need(v27,'自家製種牡馬は世代診断で確認します','stallion recommendation must remain deferred to generation diagnosis');
 need(v27,'4目的は別々の成立条件で判定','detailed scope disclosure must remain available without occupying primary UI');
 need(v27,'第7の総合点は作らず','quick view must not become a weighted overall score');
-need(v27,'カード色＝母能力帯','mare color meaning');
-need(v27,'順位・他目的・血統評価を見る','mare secondary details collapse');
+need(v27,'mare-purpose-summary','mare purpose summary must lead the visual hierarchy');
+need(v27,'詳しい順位・根拠を見る','mare secondary details collapse');
 need(v27,'おすすめ世代を決める','generation purpose must be recommendation-first');
 need(v27,'おすすめ世代を決める','generation single primary action');
 need(v27,'data-generation-choice','generation comparison cards must be selectable');

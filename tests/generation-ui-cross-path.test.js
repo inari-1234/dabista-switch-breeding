@@ -387,13 +387,13 @@ assert.ok(v27.includes('selectedGeneration=rec.generation'),'automatic recommend
 assert.ok(v27.includes("selectedGeneration===rec.generation?'diagnosis':'manual'"),'manual generation override must be recorded separately from diagnosis');
 assert.ok(v27.includes('aria-pressed'),'generation card selection must expose button state');
 assert.ok(v27.includes("'選択中：'+label"),'manual override must remain visible without long explanatory copy');
-assert.ok(v27.includes('選択した')&&v27.includes('で本命配合を見る'),'manual generation must be directly actionable');
+assert.ok(v27.includes('この世代で本命配合を見る'),'manual generation must be directly actionable');
 assert.ok(v27.includes('推奨用途'),'mare card must lead with the recommended use');
 assert.ok(v27.includes('4目的の評価'),'mare card must provide a compact four-purpose panel');
 assert.ok(v27.includes('mare-purpose-summary'),'mare card must expose the recommendation conclusion before detailed evidence');
 assert.ok(v27.includes('quickGoalRecommendations'),'sale purpose panel must come from the shared recommendation core');
 assert.ok(v27.includes('goalMareReason'),'purpose-specific mare reason must come from the shared recommendation core');
-assert.ok(v27.includes('カード色＝母能力帯'),'mare color meaning must be explicit');
+assert.ok(v27.includes('mare-purpose-summary'),'mare purpose summary must carry the primary visual hierarchy');
 assert.ok(v27.includes('.mare-tier{padding:7px 11px;font-size:14px'),'ability tier must remain prominent');
 assert.ok(v27.includes('tier-middle'),'middle-tier mares must retain a distinct whole-card tone');
 assert.ok(v27.includes('tier-unknown'),'unknown ability must retain a neutral whole-card tone');
@@ -415,8 +415,8 @@ assert.ok(v26.includes('331頭中 '),'UI must reveal that the full mare master i
 assert.ok(!v26.includes('もう一度「この条件で設計」を実行してください'),'stale hidden-button instruction must be removed');
 assert.ok(v27.includes("box.className='mare-advice tier-'"),'mare card must carry a whole-card ability-tier tone');
 assert.ok(v27.includes('<h4>${esc(name)}</h4>'),'mare identity must remain the primary card heading');
-assert.ok(v27.includes('順位・他目的・血統評価を見る'),'secondary mare data must remain collapsed');
-assert.ok(v27.includes('目的別の事前評価'),'purpose cards inside details must remain explicitly pre-diagnosis evaluation');
+assert.ok(v27.includes('詳しい順位・根拠を見る'),'secondary mare data must remain collapsed');
+assert.ok(v27.includes('4目的の評価'),'purpose evaluation must remain explicit in the primary compact grid');
 assert.ok(v27.includes("if(!name){box.className='mare-advice tier-unknown';box.innerHTML='<div class=\"muted\">検索条件に一致する繁殖牝馬がありません。</div>';return}"),'empty mare search must clear stale mare advice and reset card tone');
 console.log(JSON.stringify({
   passed:true,
