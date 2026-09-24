@@ -175,7 +175,7 @@ function renderMareAdvice(){
     <div class="sale-quick-head"><small>目的別の即時判定</small><b>${esc(quick.label)}</b></div>
     <div class="sale-quick-grid">${quickGoalCell('arc','凱旋門',quick.goalLabels?.arc,recommendations)}${quickGoalCell('bc','BC',quick.goalLabels?.bc,recommendations)}${quickGoalCell('rebuild','繁殖再建',quick.goalLabels?.rebuild,recommendations)}${quickGoalCell('stallion','自家製種牡馬',quick.goalLabels?.stallion,recommendations)}</div>
     <div class="sale-quick-signals">${quickSignals}</div>
-    <div class="sale-quick-note">直仔血統＋母能力の即時判定です。${esc(recommendations.note)} 自家製種牡馬は世代診断前に推奨確定しません。<br>${esc(quick.caution)}</div>
+    <div class="sale-quick-note">直仔血統＋母能力の即時判定です。第7の総合点は作らず、${esc(recommendations.note)} 自家製種牡馬は世代診断前に推奨確定しません。<br>${esc(quick.caution)}</div>
    </div>
    <details class="mare-detail">
     <summary>順位・他目的・血統評価を見る</summary>
