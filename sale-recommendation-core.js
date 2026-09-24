@@ -1101,6 +1101,58 @@
       };
     }
 
+    function quickGoalRecommendations(name,summary,bestByGoal={}){
+      const a=mareAssessment(name),s=summary||emptySummary('direct');
+      const labels={arc:'凱旋門賞',bc:'BC長期',rebuild:'繁殖再建',stallion:'自家製種牡馬'};
+      const grade=(key,reason)=>{
+        const meta={
+          recommend:{symbol:'◎',label:'推奨'},
+          candidate:{symbol:'○',label:'候補'},
+          conditional:{symbol:'△',label:'条件付き'},
+          insufficient:{symbol:'—',label:'根拠不足'}
+        }[key]||{symbol:'—',label:'根拠不足'};
+        return{key,...meta,reason};
+      };
+      if(!a){
+        const unavailable=grade('insufficient','牝馬評価を取得できません');
+        return{goals:{arc:unavailable,bc:unavailable,rebuild:unavailable,stallion:unavailable},headline:'推奨保留',subline:'牝馬評価を取得できません',recommendedGoals:[],candidateGoals:[],note:'目的別判定のみを表示し、総合点は作りません。'};
+      }
+      const arcFit=goalFit(bestByGoal.arc,'arc'),bcFit=goalFit(bestByGoal.bc,'bc'),rebuildFit=goalFit(bestByGoal.rebuild,'rebuild');
+      const high=!!a.abilityKnown&&val(a.ranks?.spst?.topPercent,100)<=25;
+      const spHigh=!!a.abilityKnown&&val(a.ranks?.sp?.topPercent,100)<=25;
+      let arc,bc,rebuild;
+      if(arcFit.key==='strong'&&high)arc=grade('recommend','母能力上位＋凱旋門強基準・父実績/距離根拠あり');
+      else if(arcFit.key==='strong'||arcFit.key==='qualified')arc=grade('candidate',a.abilityKnown?'凱旋門基準を満たす直仔候補あり':'血統上は凱旋門基準候補・母能力確認前提');
+      else if(arcFit.key==='conditional')arc=grade('conditional','SP/ST到達候補はあるが父実績または距離根拠の確認が必要');
+      else arc=grade('insufficient','直仔血統では凱旋門成立根拠が不足');
+
+      if(bcFit.key==='strong'&&spHigh)bc=grade('recommend','母SP上位＋BC強基準・SP補強経路・父実績あり');
+      else if(bcFit.key==='strong'||bcFit.key==='qualified')bc=grade('candidate',a.abilityKnown?'BC基準とSP補強経路を満たす直仔候補あり':'血統上はBC基準候補・母能力確認前提');
+      else if(bcFit.key==='conditional')bc=grade('conditional','BC数値/補強条件は候補だが父実績などの確認が必要');
+      else bc=grade('insufficient','直仔血統ではBC成立根拠が不足');
+
+      if(rebuildFit.key==='qualified'&&a.abilityKnown&&val(a.ranks?.spst?.topPercent,0)>60)rebuild=grade('recommend','母能力帯は再建対象で、直仔にSP15/ST5以上の再建ラインあり');
+      else if(rebuildFit.key==='qualified')rebuild=grade('candidate',a.abilityKnown?'SP15/ST5以上の再建ラインあり':'血統上はSP15/ST5以上の再建ライン候補');
+      else rebuild=grade('insufficient','直仔血統では再建ラインの根拠が不足');
+
+      const stallion=grade('conditional','将来の血統汎用性は世代診断のportfolioで確認');
+      const goals={arc,bc,rebuild,stallion};
+      const recommendedGoals=Object.keys(goals).filter(k=>goals[k].key==='recommend');
+      const candidateGoals=Object.keys(goals).filter(k=>goals[k].key==='candidate');
+      const conditionalGoals=Object.keys(goals).filter(k=>goals[k].key==='conditional');
+      const headline=recommendedGoals.length
+        ?'推奨：'+recommendedGoals.map(k=>labels[k]).join(' / ')
+        :candidateGoals.length?'有力候補：'+candidateGoals.map(k=>labels[k]).join(' / '):'推奨保留';
+      const sub=[];
+      if(recommendedGoals.length&&candidateGoals.length)sub.push('候補：'+candidateGoals.map(k=>labels[k]).join(' / '));
+      if(conditionalGoals.length)sub.push('条件付き：'+conditionalGoals.map(k=>labels[k]).join(' / '));
+      return{
+        goals,headline,subline:sub.join(' ｜ '),recommendedGoals,candidateGoals,
+        note:'4目的を別々の成立条件で判定し、総合点による順位付けはしません。',
+        abilityKnown:a.abilityKnown,goalLabels:directUseLabels(a,s)
+      };
+    }
+
     function recommendGeneration({goal='arc',assessment,generations,portfolios}={}){
       const g1=generations?.[1],g2=generations?.[2],g3=generations?.[3],g4=generations?.[4];
       const rawR1=g1?.summary?.bestRoute||routeForGoal(g1?.result,goal);
@@ -1175,7 +1227,7 @@
     return{
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
-      directUseLabels,goalMareReason,quickSaleOutlook,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,arcUpgradeGate,bcUpgradeGate,rebuildUpgradeGate,rebuildFreedomGate,rebuildFreedomUpgradeReasons,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
+      directUseLabels,goalMareReason,quickSaleOutlook,quickGoalRecommendations,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,recommendationCue,arcUpgradeGate,bcUpgradeGate,rebuildUpgradeGate,rebuildFreedomGate,rebuildFreedomUpgradeReasons,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
       profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
     };
   }

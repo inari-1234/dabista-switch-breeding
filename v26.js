@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.24-55',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.24-56',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
@@ -104,7 +104,7 @@ function style(){
  `;document.head.appendChild(s)
 }
 function goalButtons(){
- const labels={arc:'凱旋門賞',stallion:'自家製種牡馬',rebuild:'繁殖再建',bc:'BC長期'};
+ const labels={arc:'凱旋門賞',bc:'BC長期',rebuild:'繁殖再建',stallion:'自家製種牡馬'};
  return Object.entries(labels).map(([k,v])=>`<button type="button" data-sale-goal="${k}" class="${db.salePlanner.goal===k?'on':''}">${v}</button>`).join('')
 }
 function genButtons(){

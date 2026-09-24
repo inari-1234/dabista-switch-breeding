@@ -84,6 +84,47 @@ for(const mare of mareData.broodmares.filter(x=>!advisor.mareAssessment(x.name)?
 }
 assert.ok(unknownArcReasonVariants.size>1,'unknown mares must expose different bloodline outlooks without inventing ability values');
 
+function quickRoute({sp,st,record='A',speed=true,maxD=2400}={}){
+  return{
+    sires:['即時判定父'],
+    materialSpeedCross:{has:false,stages:0},
+    materialLongCross:{has:false,stages:0},
+    final:{
+      sp,st,pw:0,
+      sireStats:{record,stable:'B',guts:'B',minD:1200,maxD},
+      speedCross:{has:speed,count:speed?1:0,effect:speed?1:0,short:0,speed:speed?1:0},
+      crossEffects:{longDistance:false,gutsSupport:false,powerSupport:false,anyAbility:speed},
+      theory:{interesting:false,magnificent:false,perfect:false},
+      elaborate:false
+    }
+  };
+}
+const strongQuickRoutes={
+  arc:quickRoute({sp:15,st:6,record:'A',speed:true,maxD:2400}),
+  bc:quickRoute({sp:18,st:5,record:'A',speed:true,maxD:1800}),
+  rebuild:quickRoute({sp:15,st:5,record:'B',speed:false,maxD:1800})
+};
+const springQuick=advisor.quickGoalRecommendations('スプリングスイーツ',directSummary('スプリングスイーツ'),strongQuickRoutes);
+assert.strictEqual(springQuick.goals.arc.key,'recommend','high known mare + Arc strong fit should be recommended');
+assert.strictEqual(springQuick.goals.bc.key,'recommend','high-SP known mare + BC strong fit should be recommended');
+assert.strictEqual(springQuick.goals.rebuild.key,'candidate','high mare should not be labeled as a rebuild-first recommendation');
+assert.strictEqual(springQuick.goals.stallion.key,'conditional','stallion use must wait for portfolio/generation diagnosis');
+assert.strictEqual(springQuick.headline,'推奨：凱旋門賞 / BC長期');
+
+const rebuildQuick=advisor.quickGoalRecommendations('アオイツキアカリ',directSummary('アオイツキアカリ'),{
+  arc:quickRoute({sp:12,st:5,record:'A',speed:false,maxD:1800}),
+  bc:quickRoute({sp:14,st:5,record:'A',speed:false,maxD:1800}),
+  rebuild:quickRoute({sp:15,st:5,record:'B',speed:false,maxD:1800})
+});
+assert.strictEqual(rebuildQuick.goals.rebuild.key,'recommend','low-band mare with a rebuild line should be recommended for rebuild');
+assert.deepStrictEqual(rebuildQuick.recommendedGoals,['rebuild']);
+
+const unknownQuick=advisor.quickGoalRecommendations('アマリン',directSummary('アマリン'),strongQuickRoutes);
+assert.strictEqual(unknownQuick.goals.arc.key,'candidate','unknown mare must not become an Arc recommendation from bloodline facts alone');
+assert.strictEqual(unknownQuick.goals.bc.key,'candidate','unknown mare must not become a BC recommendation from bloodline facts alone');
+assert.ok(!unknownQuick.recommendedGoals.includes('arc')&&!unknownQuick.recommendedGoals.includes('bc'));
+assert.ok(!JSON.stringify(springQuick).includes('overallScore')&&!JSON.stringify(springQuick).includes('totalScore'),'quick purpose recommendation must not create a seventh overall score');
+
 const ui=fs.readFileSync('v27.js','utf8');
 assert.ok(ui.includes("decision.reasons||[]"),'v27 must render mare-specific decision reasons');
 assert.ok(ui.includes('mare-why-reasons'),'v27 must include compact reason UI');

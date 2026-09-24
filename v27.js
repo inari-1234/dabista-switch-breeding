@@ -87,6 +87,9 @@ function style(){
  .mare-why-reasons{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
  .mare-why-reasons span{font-size:8px;font-weight:800;line-height:1.35;padding:4px 6px;border-radius:999px;background:#eef4f0;color:#496056}
  .sale-quick{margin-top:9px;padding:10px 11px;border-radius:11px;background:#f7faf8;border:1px solid rgba(70,105,88,.14)}
+ .sale-goal-summary{margin-bottom:8px;padding:9px 10px;border-radius:9px;background:#fff;border:1px solid rgba(80,110,95,.12)}
+ .sale-goal-summary small{display:block;font-size:8px;font-weight:900;color:#687970}.sale-goal-summary b{display:block;margin-top:2px;font-size:13px;line-height:1.35;color:#204735}.sale-goal-summary span{display:block;margin-top:3px;font-size:8px;line-height:1.4;color:#687970}
+ .sale-goal-grade{display:inline-block!important;margin-top:3px;font-size:10px!important;font-weight:900!important}.goal-recommend .sale-goal-grade{color:#176c4b}.goal-candidate .sale-goal-grade{color:#315f91}.goal-conditional .sale-goal-grade{color:#7a5a13}.goal-insufficient .sale-goal-grade{color:#7b817e}
  .sale-quick-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.sale-quick-head small{font-size:9px;font-weight:900;color:#687970}.sale-quick-head b{font-size:12px;color:#1f4a37;text-align:right}
  .sale-quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:7px}.sale-quick-grid>div{padding:7px 8px;border-radius:8px;background:#fff;border:1px solid rgba(80,110,95,.10)}.sale-quick-grid small{display:block;font-size:8px;font-weight:900;color:#66766e}.sale-quick-grid span{display:block;margin-top:2px;font-size:9px;font-weight:800;line-height:1.35;color:#294a3b}
  .sale-quick-signals{margin-top:7px;font-size:8px;line-height:1.45;color:#65766e}.sale-quick-note{margin-top:5px;font-size:8px;line-height:1.4;color:#7a817d}
@@ -111,8 +114,12 @@ function fmtRank(r){
  return `<b>${r.value}</b><small>${r.rank}/${r.total}位<br>上位${r.topPercent}%</small>`
 }
 function directSnapshot(name){
- const sum=advisor.emptySummary('direct');
- for(const r of planner.iterateDirect(name))advisor.addRoute(sum,r);
+ const sum=advisor.emptySummary('direct'),bestByGoal={arc:null,bc:null,rebuild:null};
+ for(const r of planner.iterateDirect(name)){
+  advisor.addRoute(sum,r);
+  for(const g of ['arc','bc','rebuild'])bestByGoal[g]=advisor.betterGoalRoute(bestByGoal[g],r,g);
+ }
+ sum.bestByGoal=bestByGoal;
  return sum
 }
 function mareTierTone(a){
@@ -131,8 +138,9 @@ function mareRankCell(label,r){
 function mareDecisionText(name,goal,direct){
  return advisor.goalMareReason(name,goal,direct);
 }
-function quickGoalCell(label,value){
- return `<div><small>${esc(label)}</small><span>${esc(value||'評価保留')}</span></div>`;
+function quickGoalCell(key,label,value,recommendations){
+ const g=recommendations?.goals?.[key]||{key:'insufficient',symbol:'—',label:'根拠不足'};
+ return `<div class="goal-${esc(g.key)}"><small>${esc(label)}</small><b class="sale-goal-grade">${esc(g.symbol)} ${esc(g.label)}</b><span>${esc(value||g.reason||'評価保留')}</span></div>`;
 }
 function renderMareAdvice(){
  const box=$('#saleMareRecommendation'),name=$('#saleMareSelect')?.value;
@@ -147,7 +155,7 @@ function renderMareAdvice(){
   ?`<div class="mare-scoreline"><span>SP ${a.ranks.sp?.value??'—'}</span><span>ST ${a.ranks.st?.value??'—'}</span><span>PW ${a.ranks.pw?.value??'—'}</span><b>SP+ST ${a.ranks.spst?.value??'—'}</b></div>`
   :'<div class="mare-scoreline"><b>能力未判明</b></div>';
  const currentUse=use?.[goal]||'評価保留';
- const decision=mareDecisionText(name,goal,direct),quick=advisor.quickSaleOutlook(name,direct);
+ const decision=mareDecisionText(name,goal,direct),quick=advisor.quickSaleOutlook(name,direct),recommendations=advisor.quickGoalRecommendations(name,direct,direct.bestByGoal);
  const decisionReasons=(decision.reasons||[]).slice(0,2).map(x=>'<span>'+esc(x)+'</span>').join('');
  const quickSignals=(quick.signals||[]).map(x=>esc(x)).join(' / ');
  const strategyAxis=strategy
@@ -163,10 +171,11 @@ function renderMareAdvice(){
    <div class="mare-why"><small>この牝馬を使う理由｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span>${decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':''}</div>
    ${rankHtml}
    <div class="sale-quick">
-    <div class="sale-quick-head"><small>セリ即判定</small><b>${esc(quick.label)}</b></div>
-    <div class="sale-quick-grid">${quickGoalCell('凱旋門',quick.goalLabels?.arc)}${quickGoalCell('BC',quick.goalLabels?.bc)}${quickGoalCell('繁殖再建',quick.goalLabels?.rebuild)}${quickGoalCell('自家製種牡馬',quick.goalLabels?.stallion)}</div>
+    <div class="sale-goal-summary"><small>この牝馬の推奨用途</small><b>${esc(recommendations.headline)}</b>${recommendations.subline?'<span>'+esc(recommendations.subline)+'</span>':''}</div>
+    <div class="sale-quick-head"><small>目的別の即時判定</small><b>${esc(quick.label)}</b></div>
+    <div class="sale-quick-grid">${quickGoalCell('arc','凱旋門',quick.goalLabels?.arc,recommendations)}${quickGoalCell('bc','BC',quick.goalLabels?.bc,recommendations)}${quickGoalCell('rebuild','繁殖再建',quick.goalLabels?.rebuild,recommendations)}${quickGoalCell('stallion','自家製種牡馬',quick.goalLabels?.stallion,recommendations)}</div>
     <div class="sale-quick-signals">${quickSignals}</div>
-    <div class="sale-quick-note">直仔血統＋母能力の即時判定です。第7の総合点は作らず、正式な何代先までの価値は下の世代診断で確認します。<br>${esc(quick.caution)}</div>
+    <div class="sale-quick-note">${esc(recommendations.note)} 自家製種牡馬は世代診断前に推奨確定しません。<br>${esc(quick.caution)}</div>
    </div>
    <details class="mare-detail">
     <summary>順位・他目的・血統評価を見る</summary>
