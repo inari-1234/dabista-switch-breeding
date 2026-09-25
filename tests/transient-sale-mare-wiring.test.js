@@ -78,7 +78,7 @@ assert.ok(v26.includes('function openRouteRegister(ctx,generation)'),'route offs
 assert.ok(v26.includes("role==='broodmare'?'牝':'牡'"),'route registration must support broodmare and sire-candidate roles');
 assert.ok(v26.includes('<option value="stallion">種牡馬</option>'),'route registration must also allow an active stallion role');
 assert.ok(v26.includes('ancestor15:[...a]'),'route registration must persist exact 15-ancestor pedigree');
-assert.ok(v26.includes("SP/ST/PWは血統上のニトロ"),'route registration must not mislabel pedigree nitro as horse ability');
+assert.ok(v26.includes("配合由来の根拠で、この馬自身の能力値ではありません"),'route registration must not mislabel pedigree evidence as horse ability');
 assert.ok(v26.includes("pair-pedigree-evidence-not-horse-ability"),'route registration must persist pair evidence with an explicit non-ability boundary');
 assert.ok(v16.includes('配合時血統評価'),'registered horse card must expose route provenance');
 assert.ok(v16.includes('※馬自身の能力値ではありません'),'route pedigree evidence must be visibly separated from horse ability');
