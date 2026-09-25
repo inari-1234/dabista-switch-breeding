@@ -10,13 +10,13 @@ const model=fs.readFileSync('growth-model.js','utf8');
 const core=fs.readFileSync('growth-core.js','utf8');
 const ui=fs.readFileSync('growth-ui.js','utf8');
 
-assert.ok(index.includes('growth-db.js?v=1.19.1-b62'),'growth DB script missing');
-assert.ok(index.includes('growth-model.js?v=1.19.1-b62'),'growth model script missing');
-assert.ok(index.includes('growth-core.js?v=1.19.1-b62'),'growth core script missing');
-assert.ok(index.includes('growth-ui.js?v=1.19.1-b62'),'growth UI script missing');
-assert.ok(index.indexOf('growth-db.js?v=1.19.1-b62')<index.indexOf('app.js?v=1.19.1-b62'),'growth DB must load before app initialization');
-assert.ok(index.indexOf('growth-model.js?v=1.19.1-b62')<index.indexOf('growth-core.js?v=1.19.1-b62'),'growth model must load before growth core');
-assert.ok(index.indexOf('ui-refresh.js?v=1.19.1-b62')<index.indexOf('growth-ui.js?v=1.19.1-b62'),'growth UI must load after existing UI refresh');
+assert.ok(index.includes('growth-db.js?v=1.19.1-b63'),'growth DB script missing');
+assert.ok(index.includes('growth-model.js?v=1.19.1-b63'),'growth model script missing');
+assert.ok(index.includes('growth-core.js?v=1.19.1-b63'),'growth core script missing');
+assert.ok(index.includes('growth-ui.js?v=1.19.1-b63'),'growth UI script missing');
+assert.ok(index.indexOf('growth-db.js?v=1.19.1-b63')<index.indexOf('app.js?v=1.19.1-b63'),'growth DB must load before app initialization');
+assert.ok(index.indexOf('growth-model.js?v=1.19.1-b63')<index.indexOf('growth-core.js?v=1.19.1-b63'),'growth model must load before growth core');
+assert.ok(index.indexOf('ui-refresh.js?v=1.19.1-b63')<index.indexOf('growth-ui.js?v=1.19.1-b63'),'growth UI must load after existing UI refresh');
 
 assert.ok(app.includes('window.DABISTA_GROWTH_DB?.normalizeInPlace(db)'),'startup DB growth normalization missing');
 assert.ok(app.includes('window.DABISTA_GROWTH_DB?.normalizeInPlace(restored)'),'restored backup growth normalization missing');
@@ -35,6 +35,10 @@ assert.ok(v16.includes("if(e.target.closest('[data-horse-action],details,button,
 assert.ok(app.includes("if(e.target.closest('[data-horse-action]'))return"),'base horse card action guard missing');
 assert.ok(ui.includes('data-horse-action="growth-record"'),'growth record card action missing');
 assert.ok(ui.includes('data-horse-action="growth-history"'),'growth history card action missing');
+assert.ok(ui.includes("function growthTrackable(h)"),'growth role boundary missing');
+assert.ok(ui.includes("h.role==='broodmare'||h.role==='stallion'"),'broodmare/stallion must not show active growth diagnosis');
+assert.ok(ui.includes("String(h.generation||'').includes('基準種牡馬')"),'baseline stallion must not show active growth diagnosis');
+assert.ok(!ui.includes("h.role==='sire-candidate'||h.role==='broodmare'"),'sire candidate must remain growth-trackable');
 assert.ok(ui.includes("const sec=$('#races')"),'growth research tools must integrate into existing results tab');
 assert.ok(!ui.includes('data-tab="growth"')&&!ui.includes("dataset.tab='growth'"),'growth feature must not add a new top-level tab');
 
@@ -66,7 +70,7 @@ assert.ok(!/for\s*\([^)]*db\.horses/.test(db),'growth migration must not mass-mu
 assert.ok(!/for\s*\([^)]*db\.races/.test(db),'growth migration must not mass-mutate race records');
 
 // iOS modal scroll-lock regression: comparison-set dialog is created after v16 loads.
-assert.ok(index.indexOf('v16.js?v=1.19.1-b62')<index.indexOf('growth-ui.js?v=1.19.1-b62'),'dialog patch must load before dynamically-created growth dialogs');
+assert.ok(index.indexOf('v16.js?v=1.19.1-b63')<index.indexOf('growth-ui.js?v=1.19.1-b63'),'dialog patch must load before dynamically-created growth dialogs');
 assert.ok(v16.includes("HTMLDialogElement.prototype.showModal=function(){lockBody();if(!this.__dabistaUnlockBound){this.__dabistaUnlockBound=true;this.addEventListener('close',unlockBody)}return nativeShow.call(this)}"),'dynamic dialog showModal must bind unlockBody');
 assert.ok(v16.includes("function unlockBody(){if(document.querySelector('dialog[open]'))return;"),'body unlock must wait for the last open dialog');
 assert.ok(ui.includes("d=document.createElement('dialog');d.id='growthSetDlg'"),'comparison-set dialog must remain dynamically created');

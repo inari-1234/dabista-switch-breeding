@@ -10,8 +10,8 @@ const refresh=fs.readFileSync('ui-refresh.js','utf8');
 
 const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: '+token)};
 need(ui,'data-use-horse','horse-card utilization action');
-need(ui,'この牝馬を配合に活かす','mare utilization action');
-need(ui,'相性牝馬を探す','sire reverse lookup action');
+need(ui,'配合を考える','shared breeding action label');
+if(ui.includes('この牝馬を配合に活かす')||ui.includes('相性牝馬を探す'))throw Error('legacy horse utilization labels must be removed');
 need(ui,'planner.evaluateDirectPair(m.record,h.name)','fixed-sire reverse pair evaluation');
 need(ui,"if(goal==='arc')",'Arc reverse gate');
 need(ui,'bloodline=qualified&&f.distanceEvidence>0','Arc bloodline gate');
@@ -57,6 +57,8 @@ need(horses,'function deleteEditingHorse()','horse delete action');
 need(horses,"db.races=(db.races||[]).filter","horse delete cascades race records");
 need(horses,"db.growthChecks=(db.growthChecks||[]).filter","horse delete cascades growth observations");
 need(horses,'route-source-details','registered route evidence collapses in large lists');
+need(horses,'route-source-intent','registered horse intent badge');
+need(horses,'<small>狙い</small>','registered horse intent label');
 need(horses,"e.target.closest('[data-horse-action],details,button,input,select,textarea,a,label')",'nested horse-card controls must not open edit dialog');
 if(horses.includes('db.growthCheckSets=(db.growthCheckSets||[]).filter'))throw Error('horse delete must not delete shared growth comparison sets');
 need(route,'grid-template-rows:auto minmax(0,1fr) auto','route dialog non-overlap frame');
@@ -67,9 +69,9 @@ need(horses,'function storedRouteEvidenceHtml(ev,goal)','registered horse reuses
 need(horses,'配合由来の特徴','registered horse pairing evidence heading');
 need(horses,'※配合時の血統根拠です。この馬自身の能力値ではありません。','registered horse ability boundary');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
-need(idx,'v28.js?v=1.19.1-b62','v28 cache wiring');
-if(!(idx.indexOf('breed-integration.js?v=1.19.1-b62')<idx.indexOf('v28.js?v=1.19.1-b62')))throw Error('v28 must load after breed integration');
-if(!(idx.indexOf('v27.js?v=1.19.1-b62')<idx.indexOf('v28.js?v=1.19.1-b62')))throw Error('v28 must load after v27');
+need(idx,'v28.js?v=1.19.1-b63','v28 cache wiring');
+if(!(idx.indexOf('breed-integration.js?v=1.19.1-b63')<idx.indexOf('v28.js?v=1.19.1-b63')))throw Error('v28 must load after breed integration');
+if(!(idx.indexOf('v27.js?v=1.19.1-b63')<idx.indexOf('v28.js?v=1.19.1-b63')))throw Error('v28 must load after v27');
 if(/evidenceScore\s*=|overallScore\s*=|weightedScore\s*=/.test(ui))throw Error('reverse lookup must not add a weighted umbrella score');
 
 console.log(JSON.stringify({

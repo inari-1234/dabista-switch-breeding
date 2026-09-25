@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-62';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-63';
 let db=window.db;
 if(!db)return;
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
@@ -16,7 +16,7 @@ function isSire(h){return h?.role==='stallion'||h?.role==='sire-candidate'}
 function ensureStyle(){
  if($('#v28style'))return;
  const s=document.createElement('style');s.id='v28style';s.textContent=`
- .horse-use-actions{display:flex;gap:6px;margin-top:8px}.horse-use-actions button{width:100%}
+ .horse-use-actions{display:flex;gap:6px;margin-top:8px}.horse-use-actions button{width:auto;max-width:100%;min-height:40px;padding:8px 14px;font-size:11px;line-height:1.2}
  #horseUseDlg{width:min(680px,calc(100vw - 24px));max-height:88vh;overflow:auto;overscroll-behavior:contain}
  .horse-use-head{display:grid;gap:4px}.horse-use-summary{padding:9px;border-radius:10px;background:#f4f7f4;font-size:11px;line-height:1.55;margin:8px 0}
  .horse-use-goal{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
@@ -215,7 +215,7 @@ function decorate(){
    if(card.querySelector('.horse-use-actions'))return;
    const h=(db.horses||[]).find(x=>x.id===card.dataset.id);if(!h||(!isMare(h)&&!isSire(h)))return;
    const d=document.createElement('div');d.className='horse-use-actions';
-   d.innerHTML='<button type="button" class="secondary" data-use-horse="'+esc(h.id)+'">'+(isMare(h)?'この牝馬を配合に活かす':'相性牝馬を探す')+'</button>';
+   d.innerHTML='<button type="button" class="secondary" data-use-horse="'+esc(h.id)+'">配合を考える</button>';
    card.appendChild(d);
  })
 }

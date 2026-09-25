@@ -87,6 +87,12 @@ function ensureStyle(){
   `;document.head.appendChild(s);
 }
 
+function growthTrackable(h){
+  if(!h)return false;
+  if(h.role==='broodmare'||h.role==='stallion')return false;
+  if(String(h.generation||'').includes('基準種牡馬'))return false;
+  return true;
+}
 function syncCardLine(card,html){
   let x=card.querySelector('.growth-mini');
   if(!x){x=document.createElement('div');x.className='growth-mini';card.appendChild(x)}
@@ -95,6 +101,7 @@ function syncCardLine(card,html){
 function decorateHorseCards(){
   document.querySelectorAll('#horseList [data-id]').forEach(card=>{
     const h=horseById(card.dataset.id);if(!h)return;
+    if(!growthTrackable(h)){card.querySelector('.growth-mini')?.remove();return}
     const d=diagnosis(h),stateClass=d.state.key==='growth-change'||d.state.key==='growth-progressing'?'up':d.state.key==='hold'?'warn':'';
     const html='<div class="growth-mini-head"><div><b>育成診断</b><small>'+esc(ageMonth(h))+' ｜ '+esc(growthTypeText(d))+(d.growthType?.candidates?.length?' ｜ 型確度 '+esc(d.growthType.confidence):'')+'</small></div><span class="growth-state '+stateClass+'">'+esc(d.state.label)+'</span></div>'+
       '<small>'+esc(d.reason)+' ｜ 信頼度 '+esc(d.confidence)+' ｜ 判断 '+esc(d.raceAdvice.label)+'</small>'+
@@ -118,6 +125,7 @@ function installHorseObserver(){
 function decorateRaceCards(){
   document.querySelectorAll('#raceCards [data-race-horse-id]').forEach(card=>{
     const h=horseById(card.dataset.raceHorseId);if(!h)return;
+    if(!growthTrackable(h)){card.querySelector('.growth-race-diagnosis')?.remove();return}
     const d=diagnosis(h),html='<b>成長 '+esc(d.state.label)+'</b>｜信頼度 '+esc(d.confidence)+'｜判断 '+esc(d.raceAdvice.label)+(d.previousComparisonMonths!=null?'｜前回 '+esc(d.previousComparisonMonths)+'か月前':'');
     let x=card.querySelector('.growth-race-diagnosis');
     if(!x){x=document.createElement('div');x.className='growth-race-diagnosis';const table=card.querySelector('table');if(table)table.insertAdjacentElement('beforebegin',x);else card.appendChild(x)}
