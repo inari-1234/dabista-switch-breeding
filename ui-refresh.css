@@ -227,6 +227,22 @@ body.ui-refresh .card{
   margin-bottom:9px;
 }
 body.ui-refresh .card:hover{border-color:#ccdcd4}
+body.ui-refresh .ui-wide-cta{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  min-height:52px!important;
+  padding:12px 18px!important;
+  border-radius:14px!important;
+  box-sizing:border-box!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  line-height:1.25!important;
+  text-align:center!important;
+  letter-spacing:.01em;
+}
+body.ui-refresh .breed-future-cta,
+body.ui-refresh .generation-run-cta{margin-top:10px!important}
 body.ui-refresh .horse{cursor:pointer}
 body.ui-refresh .horse h2{font-size:17px;letter-spacing:-.02em}
 body.ui-refresh .row{gap:9px}
@@ -697,6 +713,7 @@ body.ui-refresh .form h2{font-size:19px;letter-spacing:-.03em}
   body.ui-refresh #horseList .horse{padding:11px 12px}
   body.ui-refresh #horseList .horse h2{font-size:16px}
   body.ui-refresh #horseList .route-source-line{margin-top:7px}
+  body.ui-refresh .ui-wide-cta{min-height:54px!important;padding:13px 16px!important;font-size:16px!important;border-radius:14px!important}
   body.ui-refresh .ui-inline-add{display:block!important}
   body.ui-refresh .two{grid-template-columns:1fr}
   body.ui-refresh .three{grid-template-columns:repeat(3,1fr)}

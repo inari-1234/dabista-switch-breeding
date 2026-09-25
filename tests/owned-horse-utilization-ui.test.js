@@ -18,6 +18,7 @@ need(ui,"card.classList.add('has-horse-use-actions')",'horse card must mark rese
 need(ui,'function decorate(){\n ensureStyle();','horse action style must be installed before card decoration');
 need(ui,'ensureStyle();\nconst list=$(\'#horseList\')','horse action style must be installed at startup before first render');
 need(ui,'配合を考える','shared breeding action label');
+need(ui,'secondary ui-wide-cta horse-breed-cta','horse breeding action must use shared wide CTA');
 if(ui.includes('この牝馬を配合に活かす')||ui.includes('相性牝馬を探す'))throw Error('legacy horse utilization labels must be removed');
 need(ui,'planner.evaluateDirectPair(m.record,h.name)','fixed-sire reverse pair evaluation');
 need(ui,"if(goal==='arc')",'Arc reverse gate');
@@ -76,9 +77,9 @@ need(horses,'function storedRouteEvidenceHtml(ev,goal)','registered horse reuses
 need(horses,'配合由来の特徴','registered horse pairing evidence heading');
 need(horses,'※配合時の血統根拠です。この馬自身の能力値ではありません。','registered horse ability boundary');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
-need(idx,'v28.js?v=1.19.1-b66','v28 cache wiring');
-if(!(idx.indexOf('breed-integration.js?v=1.19.1-b66')<idx.indexOf('v28.js?v=1.19.1-b66')))throw Error('v28 must load after breed integration');
-if(!(idx.indexOf('v27.js?v=1.19.1-b66')<idx.indexOf('v28.js?v=1.19.1-b66')))throw Error('v28 must load after v27');
+need(idx,'v28.js?v=1.19.1-b67','v28 cache wiring');
+if(!(idx.indexOf('breed-integration.js?v=1.19.1-b67')<idx.indexOf('v28.js?v=1.19.1-b67')))throw Error('v28 must load after breed integration');
+if(!(idx.indexOf('v27.js?v=1.19.1-b67')<idx.indexOf('v28.js?v=1.19.1-b67')))throw Error('v28 must load after v27');
 if(/evidenceScore\s*=|overallScore\s*=|weightedScore\s*=/.test(ui))throw Error('reverse lookup must not add a weighted umbrella score');
 
 console.log(JSON.stringify({

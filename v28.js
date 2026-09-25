@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-66';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-67';
 let db=window.db;
 if(!db)return;
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
@@ -217,7 +217,7 @@ function decorate(){
    const h=(db.horses||[]).find(x=>x.id===card.dataset.id);if(!h||(!isMare(h)&&!isSire(h)))return;
    card.classList.add('has-horse-use-actions');
    const d=document.createElement('div');d.className='horse-use-actions';
-   d.innerHTML='<button type="button" class="secondary" data-use-horse="'+esc(h.id)+'">配合を考える</button>';
+   d.innerHTML='<button type="button" class="secondary ui-wide-cta horse-breed-cta" data-use-horse="'+esc(h.id)+'">配合を考える</button>';
    card.appendChild(d);
  })
 }

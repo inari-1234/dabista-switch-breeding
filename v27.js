@@ -417,7 +417,7 @@ function inject(){
  if(goalSection)goalSection.insertAdjacentElement('afterend',mareBox);else summary?.insertAdjacentElement('afterend',mareBox);
  const notice=$('#salePlannerNotice'),generationSection=$('#saleGenerationSection');
  const gen=document.createElement('div');gen.id='saleGenerationAdvisor';gen.className='generation-advisor';
- gen.innerHTML=`<h4>おすすめ世代を決める</h4><p>直仔〜4代を同じ条件で比較します。</p><button type="button" class="secondary" id="runGenerationAdvisor">診断する</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
+ gen.innerHTML=`<h4>おすすめ世代を決める</h4><p>直仔〜4代を同じ条件で比較します。</p><button type="button" class="secondary ui-wide-cta generation-run-cta" id="runGenerationAdvisor">診断する</button><div id="generationAdvisorProgress" class="generation-progress"></div><div id="generationAdvisorResult"></div>`;
  if(generationSection){generationSection.hidden=true;generationSection.insertAdjacentElement('beforebegin',gen)}else notice?.insertAdjacentElement('beforebegin',gen);
  if(notice)notice.hidden=true;
  const run=$('#runSalePlanner');if(run)run.hidden=true;

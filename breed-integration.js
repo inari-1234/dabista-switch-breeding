@@ -470,7 +470,7 @@ function renderCard(entry,rank,profile,goal,baselineRoute=null){
     portfolioNote+
     (displayFacts?'':fitHtml)+
     '<details class="breed-card-details"><summary>詳しい根拠を見る</summary>'+(displayFacts?fitHtml:'')+'<div class="muted" style="margin-top:6px">実績'+esc(f.sireStats?.record||'-')+'・底力'+esc(f.sireStats?.guts||'-')+'・安定'+esc(f.sireStats?.stable||'-')+' / '+esc(theoryText(entry.pair))+'</div>'+pairDetailsHtml(entry)+'</details>'+
-    '<button type="button" class="secondary" data-breed-future="'+esc(entry.sire)+'">2～4代の将来性を診断</button>'+
+    '<button type="button" class="secondary ui-wide-cta breed-future-cta" data-breed-future="'+esc(entry.sire)+'">2～4代の将来性を診断</button>'+
     '<div class="breed-future-slot" data-future-sire="'+esc(entry.sire)+'"></div>'+
   '</div>';
 }
