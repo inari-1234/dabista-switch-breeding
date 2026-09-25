@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-61';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-62';
 let db=window.db;
 if(!db)return;
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));

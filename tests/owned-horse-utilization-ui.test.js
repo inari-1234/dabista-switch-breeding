@@ -57,6 +57,7 @@ need(horses,'function deleteEditingHorse()','horse delete action');
 need(horses,"db.races=(db.races||[]).filter","horse delete cascades race records");
 need(horses,"db.growthChecks=(db.growthChecks||[]).filter","horse delete cascades growth observations");
 need(horses,'route-source-details','registered route evidence collapses in large lists');
+need(horses,"e.target.closest('[data-horse-action],details,button,input,select,textarea,a,label')",'nested horse-card controls must not open edit dialog');
 if(horses.includes('db.growthCheckSets=(db.growthCheckSets||[]).filter'))throw Error('horse delete must not delete shared growth comparison sets');
 need(route,'grid-template-rows:auto minmax(0,1fr) auto','route dialog non-overlap frame');
 if(route.includes('bottom:-68px')||route.includes('margin:18px -16px -68px'))throw Error('route register must not use overlapping negative sticky footer offsets');
@@ -66,9 +67,9 @@ need(horses,'function storedRouteEvidenceHtml(ev,goal)','registered horse reuses
 need(horses,'配合由来の特徴','registered horse pairing evidence heading');
 need(horses,'※配合時の血統根拠です。この馬自身の能力値ではありません。','registered horse ability boundary');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
-need(idx,'v28.js?v=1.19.1-b61','v28 cache wiring');
-if(!(idx.indexOf('breed-integration.js?v=1.19.1-b61')<idx.indexOf('v28.js?v=1.19.1-b61')))throw Error('v28 must load after breed integration');
-if(!(idx.indexOf('v27.js?v=1.19.1-b61')<idx.indexOf('v28.js?v=1.19.1-b61')))throw Error('v28 must load after v27');
+need(idx,'v28.js?v=1.19.1-b62','v28 cache wiring');
+if(!(idx.indexOf('breed-integration.js?v=1.19.1-b62')<idx.indexOf('v28.js?v=1.19.1-b62')))throw Error('v28 must load after breed integration');
+if(!(idx.indexOf('v27.js?v=1.19.1-b62')<idx.indexOf('v28.js?v=1.19.1-b62')))throw Error('v28 must load after v27');
 if(/evidenceScore\s*=|overallScore\s*=|weightedScore\s*=/.test(ui))throw Error('reverse lookup must not add a weighted umbrella score');
 
 console.log(JSON.stringify({
