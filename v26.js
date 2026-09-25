@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-63',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-64',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
@@ -73,6 +73,9 @@ function style(){
  .route-evidence-card{display:grid;gap:6px;margin-top:8px;padding:8px 9px;border-radius:10px;background:#f8faf8;border:1px solid #e4ebe7}.route-evidence-card>small{display:block;font-size:8px;font-weight:900;color:#52675d}
  .route-evidence-row{display:grid;grid-template-columns:42px minmax(0,1fr);gap:7px;align-items:start}.route-evidence-row>b{font-size:9px;padding-top:4px}.route-evidence-row.addition>b{color:#176748}.route-evidence-row.subtraction>b{color:#9a5a16}.route-evidence-row.caution>b{color:#7a641e}.route-evidence-row>div{display:flex;flex-wrap:wrap;gap:5px}
  .route-evidence-chip{display:inline-flex;align-items:center;min-height:24px;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;border:1px solid transparent}.route-evidence-chip.cross,.route-evidence-chip.theory{background:#eee8fb;color:#6847a0;border-color:#ddcff5}.route-evidence-chip.positive{background:#e8f6ef;color:#176c4b;border-color:#cfe9dc}.route-evidence-chip.warning{background:#fff0df;color:#9a5a16;border-color:#f2d3ac}.route-evidence-chip.record{background:#e9f1fa;color:#35658f;border-color:#d2e1f0}.route-evidence-chip.trait{background:#fff4d8;color:#7b5c16;border-color:#ebd89e}.route-evidence-chip.distance{background:#e8f2fb;color:#326a9a;border-color:#d2e4f2}.route-evidence-none{font-size:9px;color:#8a9690;padding:4px 0}
+ .route-stage-action-row{display:flex;align-items:stretch;justify-content:flex-start;clear:both;margin:12px 0 0;padding:0;position:static}
+ .route-stage-action-row .route-register-btn{position:static!important;float:none!important;transform:none!important;width:auto;max-width:100%;min-height:44px;margin:0;padding:10px 16px;white-space:normal;line-height:1.3;box-sizing:border-box}
+ .sale-route-details.route-stage-details{clear:both;margin-top:16px;padding-top:12px;border-top:1px solid #e3eae6;position:static}
  .route-stage-current,.route-stage-next{display:grid;grid-template-columns:56px auto minmax(0,1fr);gap:7px;align-items:center;margin-top:7px;padding:7px 8px;border-radius:9px;background:#f4f7f5}.route-stage-current>b,.route-stage-next>b{font-size:9px}.route-stage-current>span,.route-stage-next>span{padding:3px 6px;border-radius:999px;background:#e9efeb;color:#365849;font-size:8px;font-weight:900}.route-stage-current>small,.route-stage-next>small{font-size:8px;color:#65766e}.route-stage-next{background:#f2f7f4}.route-stage-registered{margin-top:8px;padding:9px 10px;border-radius:10px;background:#eaf6f0;border:1px solid #bcdcca}.route-stage-registered-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.route-stage-registered-head b{font-size:10px;color:#176748}.route-stage-registered-head span{font-size:8px;font-weight:900;color:#537266}.route-stage-registered-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.route-stage-registered-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#fff;color:#285241;border:1px solid #cfe3d8;font-size:9px;font-weight:900}.route-stage-registered-chip small{font-size:7px;color:#6f8179;font-weight:800}
  .sale-select{margin-top:7px;padding:7px;border-left:3px solid #d6b566;background:#fff9e7;border-radius:0 7px 7px 0}
  .sale-portfolio{font-size:10px;line-height:1.55;background:#eef2f6;border-radius:8px;padding:7px;margin-top:7px}
@@ -105,7 +108,7 @@ function style(){
  .sale-route.tone-upside .sale-cue-badge,.sale-route.tone-rebuild-upside .sale-cue-badge{background:#fff0c9;color:#76540c}
  .sale-route.tone-longshot .sale-cue-badge,.sale-route.tone-low-record .sale-cue-badge{background:#ffe4c6;color:#884f13}
  .sale-route.tone-neutral .sale-cue-badge{background:#ecefed;color:#5e6963}
- @media(max-width:520px){.sale-controls{grid-template-columns:1fr}.sale-seg{grid-template-columns:1fr 1fr}}
+ @media(max-width:520px){.sale-controls{grid-template-columns:1fr}.sale-seg{grid-template-columns:1fr 1fr}.route-stage-action-row{margin-top:12px}.route-stage-action-row .route-register-btn{width:100%;min-height:46px;padding:11px 14px}.sale-route-details.route-stage-details{margin-top:16px;padding-top:12px}}
  `;document.head.appendChild(s)
 }
 function goalButtons(){
@@ -574,8 +577,8 @@ function bridgeStageHtml(st,ctx,total){
   routeEvidenceHtml(st)+
   '<div class="route-stage-current"><b>現在地</b><span>能力未判明</span><small>育成・レース記録で更新</small></div>'+
   '<div class="route-stage-next"><b>活かし方</b><span>'+esc(nextState)+'</span><small>'+esc(nextDetail)+'</small></div>'+
-  reg+'<button type="button" class="primary route-register-btn" data-route-register-stage="'+st.generation+'">'+(st.generation<total?'この世代の牝馬を登録':'この産駒を牧場DBへ登録')+'</button>'+
-  '<details class="sale-route-details"><summary>詳しい血統根拠を見る</summary><div class="sale-method">'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m / 実績'+esc(ss.record||'-')+' / 底力'+esc(ss.guts||'-')+' / 安定'+esc(ss.stable||'-')+'</div><div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</details></div>';
+  reg+'<div class="route-stage-action-row"><button type="button" class="primary route-register-btn" data-route-register-stage="'+st.generation+'">'+(st.generation<total?'この世代の牝馬を登録':'この産駒を牧場DBへ登録')+'</button></div>'+
+  '<details class="sale-route-details route-stage-details"><summary>詳しい血統根拠を見る</summary><div class="sale-method">'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m / 実績'+esc(ss.record||'-')+' / 底力'+esc(ss.guts||'-')+' / 安定'+esc(ss.stable||'-')+'</div><div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</details></div>';
 }
 function renderRouteBreedBridge(ctx,syncedHorse){
  const sec=$('#breed');if(!sec||!ctx)return;

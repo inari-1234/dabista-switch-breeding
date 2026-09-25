@@ -96,6 +96,11 @@ need(v26,'参考軸を見る（SP上限・クロス・ST・バランス・血統
 need(v26,"const tone=isMain","non-main axes must not own recommendation colors");
 need(v26,'function createMareProductionCollector(','sale production recommendations must be collected across the scanned generation');
 need(v26,'詳しい血統根拠を見る','route bridge evidence must remain collapsed per generation');
+need(v26,'route-stage-action-row','route registration CTA must live in its own action row');
+need(v26,'sale-route-details route-stage-details','route evidence details must be structurally separated from CTA');
+need(v26,'route-stage-action-row .route-register-btn{position:static!important;float:none!important;transform:none!important;width:auto;max-width:100%;min-height:44px','route CTA must not rely on overlapping positioning');
+need(v26,'.route-stage-action-row .route-register-btn{width:100%;min-height:46px','route CTA must become full-width on narrow screens');
+need(v26,'.sale-route-details.route-stage-details{clear:both;margin-top:16px;padding-top:12px','route details need protected vertical separation from CTA');
 need(v26,'連携・最終父の操作','route bridge actions must be secondary');
 need(v24,'<div id="rebuildBody" hidden aria-hidden="true"></div>','legacy four-mare research body must stay hidden');
 need(v24,'<div hidden aria-hidden="true"><select id="rebuildGoal"','legacy four-mare starter controls must stay hidden');
