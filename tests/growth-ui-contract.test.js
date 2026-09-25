@@ -31,7 +31,7 @@ for(const src of [model,core,ui]){
   assert.ok(!src.includes('currentWeek'),'normal product workflow must remain month-centered');
 }
 
-assert.ok(v16.includes("if(e.target.closest('[data-horse-action]'))return"),'horse card action guard missing');
+assert.ok(v16.includes("if(e.target.closest('[data-horse-action],details,button,input,select,textarea,a,label'))return"),'horse card nested-control guard missing');
 assert.ok(app.includes("if(e.target.closest('[data-horse-action]'))return"),'base horse card action guard missing');
 assert.ok(ui.includes('data-horse-action="growth-record"'),'growth record card action missing');
 assert.ok(ui.includes('data-horse-action="growth-history"'),'growth history card action missing');
