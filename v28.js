@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-65';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-66';
 let db=window.db;
 if(!db)return;
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
@@ -210,6 +210,7 @@ async function openMareInBreed(h){
  }catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'horse-use-mare: '+String(e)})}
 }
 function decorate(){
+ ensureStyle();
  db=window.db||db;
  document.querySelectorAll('#horseList .horse[data-id]').forEach(card=>{
    if(card.querySelector('.horse-use-actions'))return;
@@ -226,6 +227,7 @@ document.addEventListener('click',e=>{
  const h=(window.db?.horses||[]).find(x=>x.id===b.dataset.useHorse);if(!h)return;
  if(isMare(h))openMareInBreed(h);else if(isSire(h))buildReverse(h);
 },true);
+ensureStyle();
 const list=$('#horseList');if(list)new MutationObserver(()=>decorate()).observe(list,{childList:true,subtree:true});
 setTimeout(decorate,700);
 })();
