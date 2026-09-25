@@ -62,7 +62,7 @@ need(route,'grid-template-rows:auto minmax(0,1fr) auto','route dialog non-overla
 if(route.includes('bottom:-68px')||route.includes('margin:18px -16px -68px'))throw Error('route register must not use overlapping negative sticky footer offsets');
 need(route,'sireStats:{','route registration persists factual sire context');
 need(route,"kind:'pair-pedigree-evidence-not-horse-ability'",'route evidence boundary');
-need(horses,'function storedRouteEvidenceHtml(ev)','registered horse reuses saved pairing evidence');
+need(horses,'function storedRouteEvidenceHtml(ev,goal)','registered horse reuses saved pairing evidence');
 need(horses,'配合由来の特徴','registered horse pairing evidence heading');
 need(horses,'※配合時の血統根拠です。この馬自身の能力値ではありません。','registered horse ability boundary');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
