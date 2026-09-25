@@ -389,9 +389,11 @@ assert.ok(v27.includes('aria-pressed'),'generation card selection must expose bu
 assert.ok(v27.includes("'選択中：'+label"),'manual override must remain visible without long explanatory copy');
 assert.ok(v27.includes('この世代で本命配合を見る'),'manual generation must be directly actionable');
 assert.ok(v27.includes('推奨用途'),'mare card must lead with the recommended use');
-assert.ok(v27.includes('4目的の評価'),'mare card must provide a compact four-purpose panel');
+assert.ok(v27.includes('<div class="mare-use-title">評価</div>')&&v27.includes('mare-goal-list'),'mare card must provide a compact ordered purpose evaluation list');
 assert.ok(v27.includes('mare-purpose-summary'),'mare card must expose the recommendation conclusion before detailed evidence');
 assert.ok(v27.includes('quickGoalRecommendations'),'sale purpose panel must come from the shared recommendation core');
+assert.ok(v27.includes('function mareAttentionGroups'),'mare attention must use structured recommendation evidence');
+assert.ok(v27.includes("attentionGroupHtml('加算'")&&v27.includes("attentionGroupHtml('減算'")&&v27.includes("attentionGroupHtml('注意'"),'mare attention must preserve 加算→減算→注意 groups');
 assert.ok(v27.includes('goalMareReason'),'purpose-specific mare reason must come from the shared recommendation core');
 assert.ok(v27.includes('mare-purpose-summary'),'mare purpose summary must carry the primary visual hierarchy');
 assert.ok(v27.includes('.mare-tier{padding:7px 11px;font-size:14px'),'ability tier must remain prominent');
@@ -416,7 +418,7 @@ assert.ok(!v26.includes('もう一度「この条件で設計」を実行して�
 assert.ok(v27.includes("box.className='mare-advice tier-'"),'mare card must carry a whole-card ability-tier tone');
 assert.ok(v27.includes('<h4>${esc(name)}</h4>'),'mare identity must remain the primary card heading');
 assert.ok(v27.includes('詳しい順位・根拠を見る'),'secondary mare data must remain collapsed');
-assert.ok(v27.includes('4目的の評価'),'purpose evaluation must remain explicit in the primary compact grid');
+assert.ok(v27.includes('function orderedGoalKeys')&&v27.includes('function quickGoalRow'),'purpose evaluation must remain explicit and ordered by strength');
 assert.ok(v27.includes("if(!name){box.className='mare-advice tier-unknown';box.innerHTML='<div class=\"muted\">検索条件に一致する繁殖牝馬がありません。</div>';return}"),'empty mare search must clear stale mare advice and reset card tone');
 console.log(JSON.stringify({
   passed:true,

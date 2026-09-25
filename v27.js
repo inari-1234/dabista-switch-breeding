@@ -93,9 +93,21 @@ function style(){
  .sale-goal-summary small{display:block;font-size:8px;font-weight:900;color:#687970}.sale-goal-summary b{display:block;margin-top:2px;font-size:13px;line-height:1.35;color:#204735}.sale-goal-summary span{display:block;margin-top:3px;font-size:8px;line-height:1.4;color:#687970}
  .sale-goal-grade{display:inline-block!important;margin-top:3px;font-size:10px!important;font-weight:900!important}.goal-recommend .sale-goal-grade{color:#176c4b}.goal-candidate .sale-goal-grade{color:#315f91}.goal-conditional .sale-goal-grade{color:#7a5a13}.goal-insufficient .sale-goal-grade{color:#7b817e}
  .mare-purpose-summary{margin-top:9px;padding:11px 12px;border-radius:11px;background:#fff;border:1px solid rgba(80,110,95,.13)}
- .mare-purpose-summary small{display:block;font-size:8px;font-weight:900;color:#687970}.mare-purpose-summary b{display:block;margin-top:3px;font-size:15px;line-height:1.35;color:#174b37}.mare-purpose-summary span{display:block;margin-top:3px;font-size:9px;line-height:1.4;color:#687970}.mare-purpose-summary em{display:inline-block;margin-top:7px;padding:4px 7px;border-radius:999px;background:#eef4f0;color:#5e7167;font-size:8px;font-style:normal;font-weight:800}
- .sale-quick-grid>div.goal-recommend{border-left:3px solid #1f8b62}.sale-quick-grid>div.goal-candidate{border-left:3px solid #3d79b8}.sale-quick-grid>div.goal-conditional{border-left:3px solid #c38a28}.sale-quick-grid>div.goal-insufficient{border-left:3px solid #a3aaa6}
- .mare-attention{margin-top:9px;padding:9px 10px;border-radius:10px;background:rgba(255,255,255,.72);border:1px solid rgba(80,110,95,.10)}.mare-attention>small{display:block;margin-bottom:5px;font-size:8px;font-weight:900;color:#66766e}
+ .mare-purpose-summary>small{display:block;font-size:8px;font-weight:900;color:#687970}
+ .mare-purpose-main{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:3px}
+ .mare-purpose-main>b{font-size:15px;line-height:1.35;color:#174b37}
+ .mare-purpose-main>span{flex:0 0 auto;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;background:#eef4f0;color:#52675d}
+ .mare-purpose-main>span.goal-recommend{background:#e5f4ec;color:#176748}.mare-purpose-main>span.goal-candidate{background:#eaf2fb;color:#315f91}.mare-purpose-main>span.goal-conditional{background:#fff3d7;color:#7a5a13}.mare-purpose-main>span.goal-insufficient{background:#eef0ef;color:#727b76}
+ .mare-purpose-summary em{display:inline-block;margin-top:7px;padding:4px 7px;border-radius:999px;background:#eef4f0;color:#5e7167;font-size:8px;font-style:normal;font-weight:800}
+ .mare-goal-list{display:grid;gap:5px;margin-top:5px}
+ .mare-goal-row{display:grid;grid-template-columns:minmax(82px,.8fr) auto minmax(110px,1.35fr);gap:7px;align-items:center;padding:7px 8px;border-radius:8px;background:#fff;border:1px solid rgba(80,110,95,.10);border-left-width:3px}
+ .mare-goal-row.goal-recommend{border-left-color:#1f8b62}.mare-goal-row.goal-candidate{border-left-color:#3d79b8}.mare-goal-row.goal-conditional{border-left-color:#c38a28}.mare-goal-row.goal-insufficient{border-left-color:#a3aaa6}
+ .mare-goal-name{font-size:9px;font-weight:900;color:#52655c}.mare-goal-row>b{font-size:9px;white-space:nowrap}.mare-goal-row.goal-recommend>b{color:#176748}.mare-goal-row.goal-candidate>b{color:#315f91}.mare-goal-row.goal-conditional>b{color:#8a6317}.mare-goal-row.goal-insufficient>b{color:#727b76}.mare-goal-row>small{font-size:8px;line-height:1.35;color:#65766e;text-align:right}
+ .mare-attention{margin-top:9px;padding:9px 10px;border-radius:10px;background:rgba(255,255,255,.72);border:1px solid rgba(80,110,95,.10)}
+ .mare-attention-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}.mare-attention-head small{font-size:8px;font-weight:900;color:#66766e}.mare-attention-head span{font-size:8px;font-weight:900;color:#365b4a}
+ .mare-attention-group{display:grid;grid-template-columns:38px 1fr;gap:7px;align-items:start;padding:6px 0;border-top:1px solid rgba(80,110,95,.08)}.mare-attention-group:first-of-type{border-top:0}
+ .mare-attention-group>b{font-size:8px;padding-top:5px}.mare-attention-group.addition>b{color:#176748}.mare-attention-group.subtraction>b{color:#9a5a16}.mare-attention-group.caution>b{color:#7a641e}
+ .mare-attention-none{font-size:8px;color:#8a9690;padding:4px 0}
  .sale-quick-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.sale-quick-head small{font-size:9px;font-weight:900;color:#687970}.sale-quick-head b{font-size:12px;color:#1f4a37;text-align:right}
  .sale-quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:7px}.sale-quick-grid>div{padding:7px 8px;border-radius:8px;background:#fff;border:1px solid rgba(80,110,95,.10)}.sale-quick-grid small{display:block;font-size:8px;font-weight:900;color:#66766e}.sale-quick-grid span{display:block;margin-top:2px;font-size:9px;font-weight:800;line-height:1.35;color:#294a3b}
  .sale-quick-signals{margin-top:7px;font-size:8px;line-height:1.45;color:#65766e}.sale-quick-note{margin-top:5px;font-size:8px;line-height:1.4;color:#7a817d}
@@ -113,7 +125,7 @@ function style(){
  .generation-key-reason ul{list-style:none;padding-left:0!important;display:grid;gap:6px}.generation-key-reason li{display:grid;grid-template-columns:20px 1fr;align-items:start;gap:7px}.generation-key-reason li>span{display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:#dff0e7;color:#176748;font-size:9px;font-weight:900}
  .generation-tech{margin-top:8px}
  .generation-tech>summary{cursor:pointer;font-size:9px;font-weight:800;color:#65766e}
- @media(max-width:420px){.mare-ranks{grid-template-columns:repeat(2,1fr)}.generation-grid{grid-template-columns:1fr}.mare-use{grid-template-columns:1fr 1fr}.mare-advice-head h4{font-size:16px}.mare-tier{font-size:13px}}
+ @media(max-width:420px){.mare-ranks{grid-template-columns:repeat(2,1fr)}.generation-grid{grid-template-columns:1fr}.mare-use{grid-template-columns:1fr 1fr}.mare-advice-head h4{font-size:16px}.mare-tier{font-size:13px}.mare-goal-row{grid-template-columns:78px auto 1fr;gap:5px}.mare-goal-row>small{font-size:7.5px}.mare-purpose-main>b{font-size:14px}}
  `;document.head.appendChild(s)
 }
 function fmtRank(r){
@@ -147,24 +159,49 @@ function mareDecisionText(name,goal,direct){
 }
 function quickGoalReason(key,g){
  const state=g?.key||'insufficient',ok=state==='recommend'||state==='candidate';
- if(key==='arc')return ok?'血統：SP/ST・距離候補':state==='conditional'?'血統：距離根拠を確認':'血統：成立根拠不足';
- if(key==='bc')return ok?'血統：SP補強候補':state==='conditional'?'血統：SP補強を確認':'血統：成立根拠不足';
- if(key==='rebuild')return ok?'血統：再建ライン候補':state==='conditional'?'血統：再建条件を確認':'血統：成立根拠不足';
- if(key==='stallion')return ok?'血統：汎用性候補':state==='conditional'?'血統：世代別比較':'血統：根拠不足';
+ if(key==='arc')return ok?'SP/ST・距離候補':state==='conditional'?'距離根拠を確認':'成立根拠不足';
+ if(key==='bc')return ok?'SP補強候補':state==='conditional'?'SP補強を確認':'成立根拠不足';
+ if(key==='rebuild')return ok?'再建ライン候補':state==='conditional'?'再建条件を確認':'成立根拠不足';
+ if(key==='stallion')return ok?'血統汎用性候補':state==='conditional'?'世代別比較':'根拠不足';
  return '評価保留';
 }
-function quickGoalCell(key,label,value,recommendations){
- const g=recommendations?.goals?.[key]||{key:'insufficient',symbol:'—',label:'根拠不足'};
- return `<div class="goal-${esc(g.key)}"><small>${esc(label)}</small><b class="sale-goal-grade">${esc(g.symbol)} ${esc(g.label)}</b><span>${esc(quickGoalReason(key,g))}</span></div>`;
+const goalLabels={arc:'凱旋門賞',bc:'BC長期',rebuild:'繁殖再建',stallion:'自家製種牡馬'};
+const goalBaseOrder=['arc','bc','rebuild','stallion'];
+const goalGradeRank={recommend:4,candidate:3,conditional:2,insufficient:1};
+function orderedGoalKeys(recommendations){
+ return goalBaseOrder.slice().sort((a,b)=>{
+  const d=(goalGradeRank[recommendations?.goals?.[b]?.key]||0)-(goalGradeRank[recommendations?.goals?.[a]?.key]||0);
+  return d||goalBaseOrder.indexOf(a)-goalBaseOrder.indexOf(b);
+ });
 }
-function mareAttentionFacts(goal,direct,a){
- const route=direct?.bestByGoal?.[goal]||direct?.bestByGoal?.rebuild||direct?.bestByGoal?.arc||direct?.bestByGoal?.bc;
- if(!route||!advisor?.candidateDisplayFacts)return[];
+function primaryGoalKeys(recommendations){
+ if(recommendations?.recommendedGoals?.length)return recommendations.recommendedGoals.slice();
+ if(recommendations?.candidateGoals?.length)return recommendations.candidateGoals.slice();
+ return[];
+}
+function quickGoalRow(key,recommendations){
+ const g=recommendations?.goals?.[key]||{key:'insufficient',symbol:'—',label:'根拠不足'};
+ return `<div class="mare-goal-row goal-${esc(g.key)}"><span class="mare-goal-name">${esc(goalLabels[key]||key)}</span><b>${esc(g.symbol)} ${esc(g.label)}</b><small>${esc(quickGoalReason(key,g))}</small></div>`;
+}
+function mareAttentionGroups(goal,direct,a,recommendations){
+ const route=direct?.bestByGoal?.[goal]||null;
+ if(!route||!advisor?.candidateDisplayFacts)return{additions:[],subtractions:[],cautions:[]};
  const d=advisor.candidateDisplayFacts(route,route,a,0,goal);
- const xs=[...(d.groups?.additions||[]),...(d.groups?.subtractions||[]),...(d.groups?.cautions||[])];
- const out=[],seen=new Set();
- for(const x of xs){if(!x?.label||seen.has(x.label))continue;seen.add(x.label);out.push(x);if(out.length>=5)break}
- return out;
+ const additions=[],subtractions=[],cautions=[];
+ const push=(arr,x)=>{if(x?.label&&!arr.some(y=>y.label===x.label))arr.push(x)};
+ const grade=recommendations?.goals?.[goal];
+ if(grade&&(grade.key==='recommend'||grade.key==='candidate')){
+  push(additions,{key:'purpose-fit',label:quickGoalReason(goal,grade),tone:'positive'});
+ }
+ for(const x of d.groups?.additions||[])push(additions,x);
+ for(const x of d.groups?.subtractions||[])push(subtractions,x);
+ for(const x of d.groups?.cautions||[])push(cautions,x);
+ return{additions:additions.slice(0,3),subtractions:subtractions.slice(0,3),cautions:cautions.slice(0,3)};
+}
+function attentionGroupHtml(label,items,cls){
+ const xs=(items||[]).filter(Boolean);
+ const chips=xs.length?xs.map(x=>'<span class="candidate-chip '+esc(x.tone||'trait')+'">'+esc(x.label)+'</span>').join(''):'<span class="mare-attention-none">なし</span>';
+ return '<div class="mare-attention-group '+esc(cls)+'"><b>'+esc(label)+'</b><div class="candidate-chip-row">'+chips+'</div></div>';
 }
 function renderMareAdvice(){
  const box=$('#saleMareRecommendation'),name=$('#saleMareSelect')?.value;
@@ -172,16 +209,21 @@ function renderMareAdvice(){
  if(!name){box.className='mare-advice tier-unknown';box.innerHTML='<div class="muted">検索条件に一致する繁殖牝馬がありません。</div>';return}
  const a=advisor.mareAssessment(name);
  if(!a){box.className='mare-advice tier-unknown';box.innerHTML='<div class="muted">牝馬評価を取得できませんでした。</div>';return}
- const direct=directSnapshot(name),use=advisor.directUseLabels(a,direct),strategy=advisor.mareStrategy(name),goal=window.db?.salePlanner?.goal||'arc';
- const tone=mareTierTone(a),goalNames={arc:'凱旋門賞',bc:'BC長期',rebuild:'繁殖再建',stallion:'自家製種牡馬'};
+ const direct=directSnapshot(name),strategy=advisor.mareStrategy(name),goal=window.db?.salePlanner?.goal||'arc';
+ const tone=mareTierTone(a);
  box.className='mare-advice tier-'+tone;
  const rankHtml=a.abilityKnown
   ?`<div class="mare-scoreline"><span>SP ${a.ranks.sp?.value??'—'}</span><span>ST ${a.ranks.st?.value??'—'}</span><span>PW ${a.ranks.pw?.value??'—'}</span><b>SP+ST ${a.ranks.spst?.value??'—'}</b></div>`
   :'<div class="mare-scoreline"><b>能力未判明</b></div>';
  const decision=mareDecisionText(name,goal,direct),recommendations=advisor.quickGoalRecommendations(name,direct,direct.bestByGoal);
  const decisionReasons=(decision.reasons||[]).slice(0,2).map(x=>'<span>'+esc(x)+'</span>').join('');
- const points=mareAttentionFacts(goal,direct,a);
- const pointHtml=points.map(x=>'<span class="candidate-chip '+esc(x.tone||'trait')+'">'+esc(x.label)+'</span>').join('');
+ const topGoals=primaryGoalKeys(recommendations);
+ const purposeText=topGoals.length?topGoals.map(k=>goalLabels[k]).join(' / '):'推奨保留';
+ const purposeGrade=topGoals.length?recommendations.goals[topGoals[0]]:{symbol:'—',label:'保留'};
+ const orderedGoals=orderedGoalKeys(recommendations);
+ const goalRows=orderedGoals.map(k=>quickGoalRow(k,recommendations)).join('');
+ const attentionGoal=topGoals.includes(goal)?goal:(topGoals[0]||goal);
+ const attention=mareAttentionGroups(attentionGoal,direct,a,recommendations);
  const strategyAxis=strategy
   ?(strategy.improve?.length?'補強：'+strategy.improve.join('・')
     :strategy.relativeAdjust?.length?'相対調整：'+strategy.relativeAdjust.join('・')
@@ -194,21 +236,20 @@ function renderMareAdvice(){
    </div>
    <div class="mare-purpose-summary">
     <small>推奨用途</small>
-    <b>${esc(recommendations.headline)}</b>
-    ${recommendations.subline?'<span>'+esc(recommendations.subline)+'</span>':''}
+    <div class="mare-purpose-main"><b>${esc(purposeText)}</b><span class="goal-${esc(purposeGrade.key||'insufficient')}">${esc(purposeGrade.symbol)} ${esc(purposeGrade.label)}</span></div>
     <em>${a.abilityKnown?'母能力を含めて判定':'能力未判明・血統中心'}</em>
    </div>
-   <div class="mare-use-title">4目的の評価</div>
-   <div class="sale-quick-grid">
-    ${quickGoalCell('arc','凱旋門賞',use.arc,recommendations)}
-    ${quickGoalCell('bc','BC長期',use.bc,recommendations)}
-    ${quickGoalCell('rebuild','繁殖再建',use.rebuild,recommendations)}
-    ${quickGoalCell('stallion','自家製種牡馬',use.stallion,recommendations)}
+   <div class="mare-use-title">評価</div>
+   <div class="mare-goal-list">${goalRows}</div>
+   <div class="mare-attention">
+    <div class="mare-attention-head"><small>注目ポイント</small><span>${esc(goalLabels[attentionGoal]||attentionGoal)}</span></div>
+    ${attentionGroupHtml('加算',attention.additions,'addition')}
+    ${attentionGroupHtml('減算',attention.subtractions,'subtraction')}
+    ${attentionGroupHtml('注意',attention.cautions,'caution')}
    </div>
-   ${pointHtml?`<div class="mare-attention"><small>注目ポイント</small><div class="candidate-chip-row">${pointHtml}</div></div>`:''}
    <details class="mare-detail">
     <summary>詳しい順位・根拠を見る</summary>
-    <div class="mare-why"><small>現在の目的｜${esc(goalNames[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span>${decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':''}</div>
+    <div class="mare-why"><small>現在の目的｜${esc(goalLabels[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span>${decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':''}</div>
     ${rankHtml}
     ${a.abilityKnown?`<div class="mare-ranks">
      ${mareRankCell('繁殖SP',a.ranks.sp)}
