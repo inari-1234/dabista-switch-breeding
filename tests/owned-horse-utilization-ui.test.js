@@ -2,6 +2,8 @@
 const fs=require('fs');
 const ui=fs.readFileSync('v28.js','utf8');
 const breed=fs.readFileSync('breed-integration.js','utf8');
+const route=fs.readFileSync('v26.js','utf8');
+const horses=fs.readFileSync('v16.js','utf8');
 const idx=fs.readFileSync('index.html','utf8');
 
 const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: '+token)};
@@ -31,10 +33,25 @@ need(ui,'第7の総合点は作りません','no seventh overall score');
 need(ui,'overflow:auto;overscroll-behavior:contain','reverse dialog explicit scrolling');
 need(ui,'max-height:92dvh','mobile reverse dialog viewport bound');
 need(ui,'@media(max-width:520px)','mobile reverse density rules');
+need(route,'function routeEvidenceGroups(st)','route registration evidence grouping');
+need(route,"routeEvidenceRow('加算'","route result additions group");
+need(route,"routeEvidenceRow('減算'","route result subtractions group");
+need(route,"routeEvidenceRow('注意'","route result cautions group");
+need(route,'配合由来の特徴 <span>（この産駒に期待できる血統要素）</span>','route register evidence section');
+need(route,'この産駒の現在地','route register current-state section');
+need(route,'将来の使い道','route register future-use section');
+need(route,'route-register-field','route register wrapped field layout');
+need(route,'grid-template-rows:auto minmax(0,1fr) auto','route dialog non-overlap frame');
+if(route.includes('bottom:-68px')||route.includes('margin:18px -16px -68px'))throw Error('route register must not use overlapping negative sticky footer offsets');
+need(route,'sireStats:{','route registration persists factual sire context');
+need(route,"kind:'pair-pedigree-evidence-not-horse-ability'",'route evidence boundary');
+need(horses,'function storedRouteEvidenceHtml(ev)','registered horse reuses saved pairing evidence');
+need(horses,'配合由来の特徴','registered horse pairing evidence heading');
+need(horses,'※配合時の血統根拠です。この馬自身の能力値ではありません。','registered horse ability boundary');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
-need(idx,'v28.js?v=1.19.1-b59','v28 cache wiring');
-if(!(idx.indexOf('breed-integration.js?v=1.19.1-b59')<idx.indexOf('v28.js?v=1.19.1-b59')))throw Error('v28 must load after breed integration');
-if(!(idx.indexOf('v27.js?v=1.19.1-b59')<idx.indexOf('v28.js?v=1.19.1-b59')))throw Error('v28 must load after v27');
+need(idx,'v28.js?v=1.19.1-b60','v28 cache wiring');
+if(!(idx.indexOf('breed-integration.js?v=1.19.1-b60')<idx.indexOf('v28.js?v=1.19.1-b60')))throw Error('v28 must load after breed integration');
+if(!(idx.indexOf('v27.js?v=1.19.1-b60')<idx.indexOf('v28.js?v=1.19.1-b60')))throw Error('v28 must load after v27');
 if(/evidenceScore\s*=|overallScore\s*=|weightedScore\s*=/.test(ui))throw Error('reverse lookup must not add a weighted umbrella score');
 
 console.log(JSON.stringify({

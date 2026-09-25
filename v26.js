@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-59',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-60',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
@@ -69,6 +69,11 @@ function style(){
  .sale-route-bridge{border-color:#bcd8ca!important;background:linear-gradient(145deg,#fff,#f2f8f5)!important}
  .route-bridge-path{font-weight:800;font-size:12px;line-height:1.55;margin:6px 0}
  .route-bridge-stage{padding:8px;border-radius:9px;background:#fff;border:1px solid #e0e8e4;margin-top:6px;font-size:10px;line-height:1.5}
+ .route-stage-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.route-stage-head>b{font-size:11px}
+ .route-evidence-card{display:grid;gap:6px;margin-top:8px;padding:8px 9px;border-radius:10px;background:#f8faf8;border:1px solid #e4ebe7}.route-evidence-card>small{display:block;font-size:8px;font-weight:900;color:#52675d}
+ .route-evidence-row{display:grid;grid-template-columns:42px minmax(0,1fr);gap:7px;align-items:start}.route-evidence-row>b{font-size:9px;padding-top:4px}.route-evidence-row.addition>b{color:#176748}.route-evidence-row.subtraction>b{color:#9a5a16}.route-evidence-row.caution>b{color:#7a641e}.route-evidence-row>div{display:flex;flex-wrap:wrap;gap:5px}
+ .route-evidence-chip{display:inline-flex;align-items:center;min-height:24px;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;border:1px solid transparent}.route-evidence-chip.cross,.route-evidence-chip.theory{background:#eee8fb;color:#6847a0;border-color:#ddcff5}.route-evidence-chip.positive{background:#e8f6ef;color:#176c4b;border-color:#cfe9dc}.route-evidence-chip.warning{background:#fff0df;color:#9a5a16;border-color:#f2d3ac}.route-evidence-chip.record{background:#e9f1fa;color:#35658f;border-color:#d2e1f0}.route-evidence-chip.trait{background:#fff4d8;color:#7b5c16;border-color:#ebd89e}.route-evidence-chip.distance{background:#e8f2fb;color:#326a9a;border-color:#d2e4f2}.route-evidence-none{font-size:9px;color:#8a9690;padding:4px 0}
+ .route-stage-current,.route-stage-next{display:grid;grid-template-columns:56px auto minmax(0,1fr);gap:7px;align-items:center;margin-top:7px;padding:7px 8px;border-radius:9px;background:#f4f7f5}.route-stage-current>b,.route-stage-next>b{font-size:9px}.route-stage-current>span,.route-stage-next>span{padding:3px 6px;border-radius:999px;background:#e9efeb;color:#365849;font-size:8px;font-weight:900}.route-stage-current>small,.route-stage-next>small{font-size:8px;color:#65766e}.route-stage-next{background:#f2f7f4}
  .sale-select{margin-top:7px;padding:7px;border-left:3px solid #d6b566;background:#fff9e7;border-radius:0 7px 7px 0}
  .sale-portfolio{font-size:10px;line-height:1.55;background:#eef2f6;border-radius:8px;padding:7px;margin-top:7px}
  .sale-progress{font-size:11px;line-height:1.5;margin-top:8px}
@@ -383,31 +388,100 @@ function matchingPreviousMares(ctx,generation){
  const expected=ctx?.x?.stages?.[generation-2]?.child;if(!expected)return[];
  return (db.horses||[]).filter(h=>h?.role==='broodmare'&&sameRoutePedigree(engine?.resolveHorse?.(h),expected));
 }
+function routeFeatureChip(x){return '<span class="route-evidence-chip '+esc(x?.tone||'neutral')+'">'+esc(x?.label||'')+'</span>'}
+function routeEvidenceGroups(st){
+ const n=st?.nitro||{},ss=st?.sireStats||{},t=st?.theory||{},add=[],sub=[],caution=[];
+ const push=(arr,key,label,tone)=>{if(label&&!arr.some(x=>x.key===key))arr.push({key,label,tone})};
+ if(st?.speedCross?.has)push(add,'speed-cross','SPクロスあり','cross');
+ if(n.sp!==null&&n.sp!==undefined)push(add,'sp','SPニトロ '+fmt(n.sp),'positive');
+ if(n.st!==null&&n.st!==undefined)push(add,'st','STニトロ '+fmt(n.st),'positive');
+ if(t.perfect)push(add,'perfect','完璧','theory');
+ else{
+  if(t.magnificent)push(add,'magnificent','見事','theory');
+  if(t.interesting)push(add,'interesting','面白','theory');
+ }
+ if(st?.elaborate?.effective)push(add,'elaborate','凝った','theory');
+ if(!st?.speedCross?.has)push(sub,'speed-cross-none','SPクロスなし','warning');
+ if(ss.record&&ss.record!=='-')push(caution,'record','実績'+ss.record,'record');
+ if(ss.stable&&ss.stable!=='-')push(caution,'stable','安定'+ss.stable,'trait');
+ if(ss.minD||ss.maxD)push(caution,'distance','距離 '+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m','distance');
+ return{additions:add.slice(0,4),subtractions:sub.slice(0,2),cautions:caution.slice(0,3)};
+}
+function routeEvidenceRow(label,items,cls){
+ const xs=(items||[]).filter(Boolean),body=xs.length?xs.map(routeFeatureChip).join(''):'<span class="route-evidence-none">なし</span>';
+ return '<div class="route-evidence-row '+esc(cls)+'"><b>'+esc(label)+'</b><div>'+body+'</div></div>';
+}
+function routeEvidenceHtml(st){
+ const g=routeEvidenceGroups(st);
+ return '<section class="route-evidence-card"><small>配合由来の特徴</small>'+
+  routeEvidenceRow('加算',g.additions,'addition')+
+  routeEvidenceRow('減算',g.subtractions,'subtraction')+
+  routeEvidenceRow('注意',g.cautions,'caution')+
+ '</section>';
+}
+function routeUseRows(role,generation,total){
+ const rows=[{label:'競走',state:'能力確認待ち',detail:'育成・レース記録でこの馬自身を確認'}];
+ if(role==='broodmare'){
+  rows.push({label:'繁殖',state:'血統素材候補',detail:'15祖先と配合根拠を残して再評価'});
+  rows.push({label:'次配合',state:generation<total?'次世代へ':'能力判明後',detail:generation<total?'選抜後にこのルートを継続':'母能力を確認して配合候補を比較'});
+ }else if(role==='stallion'){
+  rows.push({label:'種牡馬',state:'登録',detail:'血統15祖先を使って相性牝馬を逆引き'});
+  rows.push({label:'配合',state:'能力確認と併用',detail:'父能力と血統根拠を分けて判断'});
+ }else{
+  rows.push({label:'種牡馬',state:'候補として保存',detail:'能力確認後に相性牝馬を逆引き'});
+  rows.push({label:'配合',state:'能力確認後',detail:'血統素材価値を再評価'});
+ }
+ return rows;
+}
+function routeUseHtml(role,generation,total){
+ return routeUseRows(role,generation,total).map(x=>'<div class="route-use-row"><b>'+esc(x.label)+'</b><span>'+esc(x.state)+'</span><small>'+esc(x.detail)+'</small></div>').join('');
+}
+function updateRouteRegisterUse(){
+ const s=routeRegisterState;if(!s)return;
+ const role=$('#routeRegisterRole')?.value||'broodmare',box=$('#routeRegisterUse');
+ if(box)box.innerHTML=routeUseHtml(role,s.generation,s.ctx?.x?.stages?.length||s.generation);
+}
 function ensureRouteRegisterDialog(){
  let d=$('#routeRegisterDlg');if(d)return d;
  d=document.createElement('dialog');d.id='routeRegisterDlg';d.innerHTML=`
   <form id="routeRegisterForm" class="route-register-form">
    <div class="route-register-head"><div><small>配合結果から牧場DBへ</small><h2>この産駒を登録</h2></div><button type="button" class="secondary" data-route-register-cancel>閉じる</button></div>
-   <div id="routeRegisterSummary" class="route-register-summary"></div>
-   <label>馬名</label><input id="routeRegisterName" required autocomplete="off" placeholder="ゲーム内で付けた馬名">
-   <label>登録区分</label><select id="routeRegisterRole"><option value="broodmare">繁殖牝馬</option><option value="sire-candidate">種牡馬候補</option><option value="stallion">種牡馬</option></select>
-   <div id="routeRegisterDamWrap" style="display:none"><label>この世代の母馬</label><select id="routeRegisterDam"></select></div>
-   <div id="routeRegisterParents" class="route-register-parents"></div>
-   <div id="routeRegisterWarning" class="route-register-warning"></div>
+   <div class="route-register-body">
+    <section class="route-register-section basic"><small>基本情報</small><div id="routeRegisterSummary" class="route-register-summary"></div></section>
+    <div class="route-register-fields">
+     <label class="route-register-field"><span>馬名</span><input id="routeRegisterName" required autocomplete="off" placeholder="ゲーム内で付けた馬名"></label>
+     <label class="route-register-field"><span>登録区分</span><select id="routeRegisterRole"><option value="broodmare">繁殖牝馬</option><option value="sire-candidate">種牡馬候補</option><option value="stallion">種牡馬</option></select></label>
+     <label id="routeRegisterDamWrap" class="route-register-field" style="display:none"><span>この世代の母馬</span><select id="routeRegisterDam"></select></label>
+    </div>
+    <div id="routeRegisterParents" class="route-register-parents"></div>
+    <section class="route-register-section"><small>配合由来の特徴 <span>（この産駒に期待できる血統要素）</span></small><div id="routeRegisterEvidence"></div></section>
+    <section class="route-register-section current"><small>この産駒の現在地</small><div class="route-current-row"><b>現在能力</b><span>未判明</span><small>育成・レース記録で更新</small></div></section>
+    <section class="route-register-section use"><small>将来の使い道</small><div id="routeRegisterUse"></div></section>
+    <div id="routeRegisterWarning" class="route-register-warning"></div>
+   </div>
    <div class="route-register-actions"><button type="button" class="secondary" data-route-register-cancel>取消</button><button type="submit" class="primary" id="saveRouteRegister">登録</button></div>
   </form>`;
  document.body.appendChild(d);
  if(!$('#routeRegisterStyle')){const s=document.createElement('style');s.id='routeRegisterStyle';s.textContent=`
-  #routeRegisterDlg{width:min(560px,calc(100vw - 20px));max-height:88dvh;overflow:hidden;padding:0;border:0;border-radius:18px}
-  .route-register-form{max-height:88dvh;overflow:auto;padding:16px;padding-bottom:84px}
-  .route-register-head{position:sticky;top:-16px;z-index:4;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff;padding:14px 0 10px;margin-top:-2px;border-bottom:1px solid #e3ebe7}
+  #routeRegisterDlg{width:min(620px,calc(100vw - 20px));max-height:92dvh;overflow:hidden;padding:0;border:0;border-radius:18px}
+  .route-register-form{display:grid;grid-template-rows:auto minmax(0,1fr) auto;max-height:92dvh;overflow:hidden;padding:0}
+  .route-register-head{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;padding:15px 16px 12px;border-bottom:1px solid #e3ebe7}
   .route-register-head h2{margin:2px 0 0;font-size:20px}.route-register-head small{font-size:10px;color:#66736c;font-weight:800}
-  .route-register-summary,.route-register-parents,.route-register-warning{margin-top:10px;padding:10px;border-radius:11px;background:#f3f7f4;font-size:11px;line-height:1.5}
+  .route-register-body{min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:12px 16px 16px}
+  .route-register-section{margin-top:10px;padding:10px 11px;border-radius:11px;background:#f8faf8;border:1px solid #e4ebe7}
+  .route-register-section:first-child{margin-top:0}.route-register-section>small{display:block;margin-bottom:6px;font-size:9px;font-weight:900;color:#52675d}.route-register-section>small span{font-weight:700;color:#7a8981}
+  .route-register-summary{font-size:11px;line-height:1.5}.route-register-summary b{display:block;font-size:13px;color:#173f2e}.route-register-summary span{display:block;margin-top:2px;color:#66736c}
+  .route-register-fields{display:grid;gap:9px;margin-top:10px}
+  .route-register-field{display:grid;grid-template-columns:108px minmax(0,1fr);gap:10px;align-items:center;margin:0}
+  .route-register-field>span{font-size:11px;font-weight:900;color:#263c31}.route-register-field input,.route-register-field select{width:100%;min-width:0;box-sizing:border-box;margin:0}
+  .route-register-parents,.route-register-warning{margin-top:10px;padding:10px;border-radius:11px;background:#f3f7f4;font-size:11px;line-height:1.5}
   .route-register-warning{background:#fff7e5;color:#69521d}.route-register-warning:empty{display:none}
-  .route-register-actions{position:sticky;bottom:-68px;z-index:5;display:flex;justify-content:flex-end;gap:8px;margin:18px -16px -68px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #dfe8e3;backdrop-filter:blur(8px)}
-  @media(max-width:520px){#routeRegisterDlg{width:calc(100vw - 12px);max-height:92dvh}.route-register-form{max-height:92dvh;padding:12px;padding-bottom:82px}.route-register-head{top:-12px}.route-register-actions{margin-left:-12px;margin-right:-12px}}
+  .route-current-row,.route-use-row{display:grid;grid-template-columns:70px auto minmax(0,1fr);gap:8px;align-items:center}.route-current-row b,.route-use-row b{font-size:10px}.route-current-row span,.route-use-row span{justify-self:start;padding:3px 7px;border-radius:999px;background:#eef3f0;color:#365849;font-size:9px;font-weight:900}.route-current-row small,.route-use-row small{font-size:9px;color:#65766e}.route-use-row{padding:5px 0;border-top:1px solid #e7ece9}.route-use-row:first-child{border-top:0;padding-top:0}.route-use-row:last-child{padding-bottom:0}
+  .route-register-actions{display:flex;justify-content:flex-end;gap:8px;padding:11px 16px calc(11px + env(safe-area-inset-bottom));background:rgba(255,255,255,.98);border-top:1px solid #dfe8e3}
+  @media(max-width:520px){#routeRegisterDlg{width:calc(100vw - 12px);max-height:94dvh}.route-register-form{max-height:94dvh}.route-register-head{padding:12px}.route-register-body{padding:10px 12px 14px}.route-register-actions{padding-left:12px;padding-right:12px}.route-register-field{grid-template-columns:1fr;gap:4px}.route-current-row,.route-use-row{grid-template-columns:60px auto 1fr;gap:6px}.route-register-head h2{font-size:19px}}
  `;document.head.appendChild(s)}
  d.querySelectorAll('[data-route-register-cancel]').forEach(b=>b.onclick=()=>d.close());
+ $('#routeRegisterRole').onchange=updateRouteRegisterUse;
  $('#routeRegisterForm').onsubmit=saveRouteRegistration;
  return d;
 }
@@ -417,20 +491,23 @@ function openRouteRegister(ctx,generation){
  $('#routeRegisterForm').reset();$('#routeRegisterName').value='';
  $('#routeRegisterRole').value=(generation<ctx.x.stages.length||ctx.goal!=='stallion')?'broodmare':'sire-candidate';
  const prior=routeStageRegistered(ctx,generation);
- $('#routeRegisterSummary').innerHTML='<b>'+generation+'代目：'+esc(stage.sire)+'</b><br>'+esc(ctx.mare)+' → '+routeStagePrefix(ctx,generation).map(esc).join(' → ')+(prior.length?'<br>同じ世代を登録済み：'+prior.map(x=>esc(x.name)).join('、'):'');
+ const routePath=[ctx.mare,...routeStagePrefix(ctx,generation)].map(esc).join(' → ');
+ $('#routeRegisterSummary').innerHTML='<b>'+generation+'代目：'+esc(stage.sire)+'産駒</b><span>'+routePath+'</span>'+(prior.length?'<span>同じ世代を登録済み：'+prior.map(x=>esc(x.name)).join('、')+'</span>':'');
+ $('#routeRegisterEvidence').innerHTML=routeEvidenceHtml(stage);
  const damWrap=$('#routeRegisterDamWrap'),dam=$('#routeRegisterDam'),warn=$('#routeRegisterWarning'),saveBtn=$('#saveRouteRegister');
  if(generation===1){
    damWrap.style.display='none';dam.innerHTML='';
    $('#routeRegisterParents').innerHTML='<b>父</b> '+esc(stage.sire)+'<br><b>母</b> '+esc(ctx.mare);
-   warn.textContent='父・母・15祖先は配合エンジンから自動保存します。SP/ST/PWは血統上のニトロであり、この馬自身の繁殖能力値としては登録しません。';saveBtn.disabled=false;
+   warn.textContent='父・母・15祖先は配合エンジンから自動保存します。表示中のニトロ・クロス・配合理論は配合由来の根拠で、この馬自身の能力値ではありません。';saveBtn.disabled=false;
  }else{
-   const mares=matchingPreviousMares(ctx,generation);damWrap.style.display='block';
+   const mares=matchingPreviousMares(ctx,generation);damWrap.style.display='grid';
    dam.innerHTML='<option value="">前世代の登録牝馬を選択</option>'+mares.map(h=>'<option value="'+esc(h.id)+'">'+esc(h.name)+'</option>').join('');
    if(mares.length===1)dam.value=mares[0].id;
    $('#routeRegisterParents').innerHTML='<b>父</b> '+esc(stage.sire)+'<br><b>母</b> 前世代で実際に選抜・登録した牝馬を使用';
    warn.textContent=mares.length?'前世代と同じ15祖先を持つ登録牝馬だけを候補にしています。':'先に'+(generation-1)+'代目の牝馬をこのルートから登録してください。';
    saveBtn.disabled=!mares.length;dam.onchange=()=>{saveBtn.disabled=!dam.value};
  }
+ updateRouteRegisterUse();
  d.showModal();setTimeout(()=>$('#routeRegisterName')?.focus(),80);
 }
 function saveRouteRegistration(e){
@@ -462,6 +539,13 @@ function saveRouteRegistration(e){
          magnificent:!!stage.theory?.magnificent,
          perfect:!!stage.theory?.perfect,
          elaborate:!!stage.elaborate?.effective
+       },
+       sireStats:{
+         record:stage.sireStats?.record||'-',
+         guts:stage.sireStats?.guts||'-',
+         stable:stage.sireStats?.stable||'-',
+         minD:Number(stage.sireStats?.minD)||0,
+         maxD:Number(stage.sireStats?.maxD)||0
        }
      }
    }
@@ -471,12 +555,17 @@ function saveRouteRegistration(e){
 }
 
 function bridgeStageHtml(st,ctx,total){
- const n=st.nitro||{},ss=st.sireStats||{},cross=st.speedCross?.has?'SPクロスあり':'SPクロスなし';
- const registered=routeStageRegistered(ctx,st.generation),reg=registered.length?'<div class="sale-method">登録済み：'+registered.map(x=>esc(x.name)).join('、')+'</div>':'';
- return '<div class="route-bridge-stage"><div class="row"><b>'+st.generation+'代目：'+esc(st.sire)+'</b><span class="sale-chip">'+esc(cross)+'</span></div>'+
-  '<div class="sale-reason-row"><span class="sale-reason-chip">SP '+fmt(n.sp)+'</span><span class="sale-reason-chip">ST '+fmt(n.st)+'</span><span class="sale-reason-chip">PW '+fmt(n.pw)+'</span><span class="sale-reason-chip">実績'+esc(ss.record||'-')+'・安定'+esc(ss.stable||'-')+'</span></div>'+
+ const ss=st.sireStats||{},registered=routeStageRegistered(ctx,st.generation);
+ const reg=registered.length?'<div class="sale-method">登録済み：'+registered.map(x=>esc(x.name)).join('、')+'</div>':'';
+ const nextState=st.generation<total?'次世代へ進む前の血統素材':'最終産駒';
+ const nextDetail=st.generation<total?'能力確認後に牝馬を選抜してルートを継続':'登録後に競走・繁殖・種牡馬利用を分けて再評価';
+ return '<div class="route-bridge-stage">'+
+  '<div class="route-stage-head"><b>'+st.generation+'代目：'+esc(st.sire)+'産駒</b><span class="sale-chip '+(st.speedCross?.has?'good':'warn')+'">'+(st.speedCross?.has?'SPクロスあり':'SPクロスなし')+'</span></div>'+
+  routeEvidenceHtml(st)+
+  '<div class="route-stage-current"><b>現在地</b><span>能力未判明</span><small>育成・レース記録で更新</small></div>'+
+  '<div class="route-stage-next"><b>活かし方</b><span>'+esc(nextState)+'</span><small>'+esc(nextDetail)+'</small></div>'+
   reg+'<button type="button" class="primary route-register-btn" data-route-register-stage="'+st.generation+'">'+(st.generation<total?'この世代の牝馬を登録':'この産駒を牧場DBへ登録')+'</button>'+
-  '<details class="sale-route-details"><summary>クロス・配合理論の根拠を見る</summary><div class="sale-method">'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m / 底力'+esc(ss.guts||'-')+'</div><div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</details></div>';
+  '<details class="sale-route-details"><summary>詳しい血統根拠を見る</summary><div class="sale-method">'+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m / 実績'+esc(ss.record||'-')+' / 底力'+esc(ss.guts||'-')+' / 安定'+esc(ss.stable||'-')+'</div><div class="sale-effect-block"><span class="sale-effect-title">配合理論</span>'+theoryChips(st.theory,st.elaborate)+'</div>'+crossHtml(st)+'</details></div>';
 }
 function renderRouteBreedBridge(ctx,syncedHorse){
  const sec=$('#breed');if(!sec||!ctx)return;

@@ -1,17 +1,17 @@
 (()=>{
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-59';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-60';
 const $=s=>document.querySelector(s),db=window.db,esc=window.esc||((s)=>String(s??''));
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ver=$('#ver');if(ver)ver.textContent=`v${V} / Build ${BUILD}`;
 
 /* iOS: dialog外のページが一緒に動く問題を防ぐ */
-const css=`body.dabista-modal-lock{position:fixed!important;left:0;right:0;width:100%;overflow:hidden!important}dialog{max-height:calc(100dvh - 18px)!important;overflow:hidden!important;margin:auto!important}dialog .form{max-height:calc(100dvh - 18px)!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(18px + env(safe-area-inset-bottom))}.auto-tools,.master-tools{margin-top:9px;padding:10px;border-radius:10px;background:#f6f7f4}.master-tools{background:#eef4ef;border:1px solid #d8e5dc}.auto-row{display:flex;gap:7px;align-items:end}.auto-row>div{flex:1}.auto-status,.master-status{font-size:11px;color:#66736c;line-height:1.5;margin-top:6px}.auto-filled{background:#f3ead0!important;border-color:#d7be74!important}.small-btn{border:1px solid #dce2dd;background:#fff;border-radius:9px;padding:9px 10px;white-space:nowrap}.source-chip{display:inline-block;font-size:10px;border-radius:999px;padding:3px 6px;background:#e8efe9;margin-left:4px}.master-results{display:grid;gap:5px;margin-top:6px;max-height:220px;overflow:auto}.master-result{width:100%;text-align:left;border:1px solid #dce2dd;background:#fff;border-radius:9px;padding:8px}.master-result b{display:block;font-size:13px}.master-result small{color:#66736c}.mare-base{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}.mare-base>div{background:#fff;border-radius:8px;padding:6px;text-align:center}.mare-base b{display:block;font-size:14px}.mare-base small{font-size:10px;color:#66736c}.master-count{margin-top:8px;font-size:11px;color:#52645a}.stallion-hit{font-size:11px;padding:7px 9px;margin-top:6px;border-radius:8px;background:#edf3ee;color:#405349}.default-mare-line,.route-source-line{font-size:11px;color:#66736c;margin:8px 0 0}.default-mare-line b,.route-source-line b{color:#17221d}.route-source-line small{display:block;margin-top:2px;font-size:9px;color:#7b8a82}.master-summary{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.master-summary>div{background:#f6f7f4;border-radius:9px;padding:9px}.master-summary b{font-size:17px;display:block}@media(max-width:430px){.auto-row{align-items:stretch;flex-direction:column}.small-btn{width:100%}.mare-base{grid-template-columns:repeat(2,1fr)}}`;
+const css=`body.dabista-modal-lock{position:fixed!important;left:0;right:0;width:100%;overflow:hidden!important}dialog{max-height:calc(100dvh - 18px)!important;overflow:hidden!important;margin:auto!important}dialog .form{max-height:calc(100dvh - 18px)!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(18px + env(safe-area-inset-bottom))}.auto-tools,.master-tools{margin-top:9px;padding:10px;border-radius:10px;background:#f6f7f4}.master-tools{background:#eef4ef;border:1px solid #d8e5dc}.auto-row{display:flex;gap:7px;align-items:end}.auto-row>div{flex:1}.auto-status,.master-status{font-size:11px;color:#66736c;line-height:1.5;margin-top:6px}.auto-filled{background:#f3ead0!important;border-color:#d7be74!important}.small-btn{border:1px solid #dce2dd;background:#fff;border-radius:9px;padding:9px 10px;white-space:nowrap}.source-chip{display:inline-block;font-size:10px;border-radius:999px;padding:3px 6px;background:#e8efe9;margin-left:4px}.master-results{display:grid;gap:5px;margin-top:6px;max-height:220px;overflow:auto}.master-result{width:100%;text-align:left;border:1px solid #dce2dd;background:#fff;border-radius:9px;padding:8px}.master-result b{display:block;font-size:13px}.master-result small{color:#66736c}.mare-base{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}.mare-base>div{background:#fff;border-radius:8px;padding:6px;text-align:center}.mare-base b{display:block;font-size:14px}.mare-base small{font-size:10px;color:#66736c}.master-count{margin-top:8px;font-size:11px;color:#52645a}.stallion-hit{font-size:11px;padding:7px 9px;margin-top:6px;border-radius:8px;background:#edf3ee;color:#405349}.default-mare-line,.route-source-line{font-size:11px;color:#66736c;margin:8px 0 0}.default-mare-line b,.route-source-line b{color:#17221d}.route-source-line{padding:8px 9px;border-radius:10px;background:#f6f9f7;border:1px solid #e1e9e5}.route-source-line small{display:block;margin-top:4px;font-size:9px;color:#7b8a82}.route-source-groups{display:grid;gap:5px;margin-top:6px}.route-source-group{display:grid;grid-template-columns:38px 1fr;gap:6px;align-items:start}.route-source-group>span:first-child{font-size:8px;font-weight:900;padding-top:3px}.route-source-group.addition>span:first-child{color:#176748}.route-source-group.subtraction>span:first-child{color:#9a5a16}.route-source-group.caution>span:first-child{color:#7a641e}.route-source-chips{display:flex;flex-wrap:wrap;gap:4px}.route-source-chip{padding:3px 6px;border-radius:999px;background:#edf3ef;color:#365849;font-size:8px;font-weight:900}.route-source-group.subtraction .route-source-chip{background:#fff0df;color:#9a5a16}.route-source-group.caution .route-source-chip{background:#fff5dc;color:#7a641e}.master-summary{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.master-summary>div{background:#f6f7f4;border-radius:9px;padding:9px}.master-summary b{font-size:17px;display:block}@media(max-width:430px){.auto-row{align-items:stretch;flex-direction:column}.small-btn{width:100%}.mare-base{grid-template-columns:repeat(2,1fr)}}`;
 const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 let lockedY=0;
 function lockBody(){if(document.body.classList.contains('dabista-modal-lock'))return;lockedY=window.scrollY||0;document.body.style.top=`-${lockedY}px`;document.body.classList.add('dabista-modal-lock')}
 function unlockBody(){if(document.querySelector('dialog[open]'))return;document.body.classList.remove('dabista-modal-lock');document.body.style.top='';window.scrollTo(0,lockedY)}
-if(!window.__dabistaDialogPatch){window.__dabistaDialogPatch=true;const nativeShow=HTMLDialogElement.prototype.showModal;HTMLDialogElement.prototype.showModal=function(){lockBody();return nativeShow.call(this)};document.querySelectorAll('dialog').forEach(d=>d.addEventListener('close',unlockBody));document.addEventListener('touchmove',e=>{const open=document.querySelector('dialog[open]');if(open&&!e.target.closest('dialog[open]'))e.preventDefault()},{passive:false})}
+if(!window.__dabistaDialogPatch){window.__dabistaDialogPatch=true;const nativeShow=HTMLDialogElement.prototype.showModal;HTMLDialogElement.prototype.showModal=function(){lockBody();if(!this.__dabistaUnlockBound){this.__dabistaUnlockBound=true;this.addEventListener('close',unlockBody)}return nativeShow.call(this)};document.querySelectorAll('dialog').forEach(d=>{if(!d.__dabistaUnlockBound){d.__dabistaUnlockBound=true;d.addEventListener('close',unlockBody)}});document.addEventListener('touchmove',e=>{const open=document.querySelector('dialog[open]');if(open&&!e.target.closest('dialog[open]'))e.preventDefault()},{passive:false})}
 
 let pedigreeMaster=[],defaultMares=[],stallionMaster=[];
 let selectedDefaultMare=null;
@@ -110,15 +110,35 @@ function syncHorseMetaLine(card,grid,className,html){
  if(!line){line=document.createElement('div');line.className=className;if(grid)grid.insertAdjacentElement('beforebegin',line);else card.appendChild(line)}
  if(line.innerHTML!==html)line.innerHTML=html
 }
+function storedRouteGroup(label,items,cls){
+ const xs=(items||[]).filter(Boolean);if(!xs.length)return'';
+ return '<div class="route-source-group '+cls+'"><span>'+label+'</span><div class="route-source-chips">'+xs.map(x=>'<span class="route-source-chip">'+esc(x)+'</span>').join('')+'</div></div>';
+}
+function storedRouteEvidenceHtml(ev){
+ if(ev?.kind!=='pair-pedigree-evidence-not-horse-ability')return'';
+ const n=ev.nitro||{},t=ev.theory||{},ss=ev.sireStats||{},add=[],sub=[],caution=[];
+ if(ev.speedCross)add.push('SPクロスあり');
+ if(n.sp!==undefined)add.push('SPニトロ '+(n.sp??'-'));
+ if(n.st!==undefined)add.push('STニトロ '+(n.st??'-'));
+ if(t.perfect)add.push('完璧');else{if(t.magnificent)add.push('見事');if(t.interesting)add.push('面白')}
+ if(t.elaborate)add.push('凝った');
+ if(!ev.speedCross)sub.push('SPクロスなし');
+ if(ss.record&&ss.record!=='-')caution.push('実績'+ss.record);
+ if(ss.stable&&ss.stable!=='-')caution.push('安定'+ss.stable);
+ if(ss.minD||ss.maxD)caution.push('距離 '+(ss.minD||'?')+'–'+(ss.maxD||'?')+'m');
+ return '<b>配合由来の特徴</b><div class="route-source-groups">'+
+  storedRouteGroup('加算',add.slice(0,4),'addition')+
+  storedRouteGroup('減算',sub.slice(0,2),'subtraction')+
+  storedRouteGroup('注意',caution.slice(0,3),'caution')+
+  '</div><small>※配合時の血統根拠です。この馬自身の能力値ではありません。</small>';
+}
 function decorateHorseCards(){document.querySelectorAll('#horseList [data-id]').forEach(c=>{
  const h=db.horses.find(x=>x.id===c.dataset.id);if(!h)return;
  const grid=c.querySelector('.grid');
  const mareHtml=h.mareStats?`<b>デフォルト牝馬</b>　SP ${h.mareStats.sp||'?'} / ST ${h.mareStats.st||'?'} / PW ${h.mareStats.pw||'?'} / NSP ${h.mareStats.nsp} / NST ${h.mareStats.nst}`:'';
  syncHorseMetaLine(c,grid,'default-mare-line',mareHtml);
- const ev=h.routeSource?.evidence,n=ev?.nitro||{};
- const routeHtml=ev?.kind==='pair-pedigree-evidence-not-horse-ability'
-   ?`<b>配合時血統評価</b>　SP ${n.sp??'-'} / ST ${n.st??'-'} / PW ${n.pw??'-'}${ev.speedCross?' / SPクロスあり':''}<small>※馬自身の能力値ではありません</small>`
-   :'';
+ const ev=h.routeSource?.evidence;
+ const routeHtml=storedRouteEvidenceHtml(ev);
  syncHorseMetaLine(c,grid,'route-source-line',routeHtml)
 })}
 function installCardObserver(){const list=$('#horseList');if(!list)return;new MutationObserver(decorateHorseCards).observe(list,{childList:true,subtree:true});decorateHorseCards()}
