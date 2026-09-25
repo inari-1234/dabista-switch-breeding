@@ -95,7 +95,7 @@ if(v26.includes('もう一度「この条件で設計」を実行してくださ
 need(v26,'参考軸を見る（SP上限・クロス・ST・バランス・血統価値）','secondary axes must stay collapsed');
 need(v26,"const tone=isMain","non-main axes must not own recommendation colors");
 need(v26,'function createMareProductionCollector(','sale production recommendations must be collected across the scanned generation');
-need(v26,'クロス・配合理論の根拠を見る','route bridge evidence must be collapsed per generation');
+need(v26,'詳しい血統根拠を見る','route bridge evidence must remain collapsed per generation');
 need(v26,'連携・最終父の操作','route bridge actions must be secondary');
 need(v24,'<div id="rebuildBody" hidden aria-hidden="true"></div>','legacy four-mare research body must stay hidden');
 need(v24,'<div hidden aria-hidden="true"><select id="rebuildGoal"','legacy four-mare starter controls must stay hidden');
