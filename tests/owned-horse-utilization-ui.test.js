@@ -77,9 +77,9 @@ need(horses,'function storedRouteEvidenceHtml(ev,goal)','registered horse reuses
 need(horses,'配合由来の特徴','registered horse pairing evidence heading');
 need(horses,'※配合時の血統根拠です。この馬自身の能力値ではありません。','registered horse ability boundary');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
-need(idx,'v28.js?v=1.19.1-b67','v28 cache wiring');
-if(!(idx.indexOf('breed-integration.js?v=1.19.1-b67')<idx.indexOf('v28.js?v=1.19.1-b67')))throw Error('v28 must load after breed integration');
-if(!(idx.indexOf('v27.js?v=1.19.1-b67')<idx.indexOf('v28.js?v=1.19.1-b67')))throw Error('v28 must load after v27');
+need(idx,'v28.js?v=1.19.1-b68','v28 cache wiring');
+if(!(idx.indexOf('breed-integration.js?v=1.19.1-b68')<idx.indexOf('v28.js?v=1.19.1-b68')))throw Error('v28 must load after breed integration');
+if(!(idx.indexOf('v27.js?v=1.19.1-b68')<idx.indexOf('v28.js?v=1.19.1-b68')))throw Error('v28 must load after v27');
 if(/evidenceScore\s*=|overallScore\s*=|weightedScore\s*=/.test(ui))throw Error('reverse lookup must not add a weighted umbrella score');
 
 console.log(JSON.stringify({
