@@ -5,6 +5,8 @@ const breed=fs.readFileSync('breed-integration.js','utf8');
 const route=fs.readFileSync('v26.js','utf8');
 const horses=fs.readFileSync('v16.js','utf8');
 const idx=fs.readFileSync('index.html','utf8');
+const app=fs.readFileSync('app.js','utf8');
+const refresh=fs.readFileSync('ui-refresh.js','utf8');
 
 const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: '+token)};
 need(ui,'data-use-horse','horse-card utilization action');
@@ -41,6 +43,21 @@ need(route,'配合由来の特徴 <span>（この産駒に期待できる血統�
 need(route,'この産駒の現在地','route register current-state section');
 need(route,'将来の使い道','route register future-use section');
 need(route,'route-register-field','route register wrapped field layout');
+need(route,'function registeredRouteHtml(rows)','registered route visual summary');
+need(route,'route-stage-registered','registered route highlighted block');
+need(route,'refreshSelectedRoute','registered route refresh after horse mutation');
+need(app,'function horseRoleKey(h)','horse role filter key');
+need(app,"const role=$('#horseRoleFilter')?.value||'all'","horse role filter");
+need(app,"sort=$('#horseSort')?.value||'newest'","horse list sort");
+need(app,".filter(([,v])=>v&&v!=='-')","empty horse stats omitted");
+need(refresh,'horseListControls','horse list management controls');
+need(refresh,'horseRoleFilter','horse role filter control');
+need(refresh,'horseSort','horse sort control');
+need(horses,'function deleteEditingHorse()','horse delete action');
+need(horses,"db.races=(db.races||[]).filter","horse delete cascades race records");
+need(horses,"db.growthChecks=(db.growthChecks||[]).filter","horse delete cascades growth observations");
+need(horses,'route-source-details','registered route evidence collapses in large lists');
+if(horses.includes('db.growthCheckSets=(db.growthCheckSets||[]).filter'))throw Error('horse delete must not delete shared growth comparison sets');
 need(route,'grid-template-rows:auto minmax(0,1fr) auto','route dialog non-overlap frame');
 if(route.includes('bottom:-68px')||route.includes('margin:18px -16px -68px'))throw Error('route register must not use overlapping negative sticky footer offsets');
 need(route,'sireStats:{','route registration persists factual sire context');
@@ -49,9 +66,9 @@ need(horses,'function storedRouteEvidenceHtml(ev)','registered horse reuses save
 need(horses,'配合由来の特徴','registered horse pairing evidence heading');
 need(horses,'※配合時の血統根拠です。この馬自身の能力値ではありません。','registered horse ability boundary');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
-need(idx,'v28.js?v=1.19.1-b60','v28 cache wiring');
-if(!(idx.indexOf('breed-integration.js?v=1.19.1-b60')<idx.indexOf('v28.js?v=1.19.1-b60')))throw Error('v28 must load after breed integration');
-if(!(idx.indexOf('v27.js?v=1.19.1-b60')<idx.indexOf('v28.js?v=1.19.1-b60')))throw Error('v28 must load after v27');
+need(idx,'v28.js?v=1.19.1-b61','v28 cache wiring');
+if(!(idx.indexOf('breed-integration.js?v=1.19.1-b61')<idx.indexOf('v28.js?v=1.19.1-b61')))throw Error('v28 must load after breed integration');
+if(!(idx.indexOf('v27.js?v=1.19.1-b61')<idx.indexOf('v28.js?v=1.19.1-b61')))throw Error('v28 must load after v27');
 if(/evidenceScore\s*=|overallScore\s*=|weightedScore\s*=/.test(ui))throw Error('reverse lookup must not add a weighted umbrella score');
 
 console.log(JSON.stringify({
