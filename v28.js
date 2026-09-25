@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-64';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.25-65';
 let db=window.db;
 if(!db)return;
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
@@ -16,7 +16,7 @@ function isSire(h){return h?.role==='stallion'||h?.role==='sire-candidate'}
 function ensureStyle(){
  if($('#v28style'))return;
  const s=document.createElement('style');s.id='v28style';s.textContent=`
- .horse-use-actions{display:flex;gap:6px;margin-top:8px}.horse-use-actions button{width:auto;max-width:100%;min-height:40px;padding:8px 14px;font-size:11px;line-height:1.2}
+ .horse.has-horse-use-actions{padding-bottom:15px!important}.horse-use-actions{display:block;clear:both;width:100%;box-sizing:border-box;margin:14px 0 0;padding:12px 0 2px;border-top:1px solid #e3eae6;position:static!important}.horse-use-actions button{display:block;position:static!important;float:none!important;transform:none!important;width:auto;max-width:100%;min-height:44px;margin:0;padding:10px 14px;font-size:11px;line-height:1.25;box-sizing:border-box}
  #horseUseDlg{width:min(680px,calc(100vw - 24px));max-height:88vh;overflow:auto;overscroll-behavior:contain}
  .horse-use-head{display:grid;gap:4px}.horse-use-summary{padding:9px;border-radius:10px;background:#f4f7f4;font-size:11px;line-height:1.55;margin:8px 0}
  .horse-use-goal{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
@@ -35,7 +35,7 @@ function ensureStyle(){
   .horse-use-summary{padding:7px 8px;font-size:10px;margin:6px 0}.horse-use-count{margin:6px 0;font-size:9px}
   .horse-match{padding:7px 8px;margin-top:5px}.horse-match-head{align-items:center}.horse-match-head b{font-size:12px}
   .horse-match-reasons{gap:3px;margin-top:5px}.horse-match-reasons span{padding:3px 5px}
-  .horse-match-note{font-size:8px;margin-top:4px}.horse-match-section{margin-top:8px}.horse-match-section>h3{font-size:11px}
+  .horse-match-note{font-size:8px;margin-top:4px}.horse-match-section{margin-top:8px}.horse-match-section>h3{font-size:11px}.horse.has-horse-use-actions{padding-bottom:16px!important}.horse-use-actions{margin-top:14px;padding-top:12px}.horse-use-actions button{width:100%;min-height:46px;padding:11px 14px}
  }
  `;document.head.appendChild(s)
 }
@@ -214,6 +214,7 @@ function decorate(){
  document.querySelectorAll('#horseList .horse[data-id]').forEach(card=>{
    if(card.querySelector('.horse-use-actions'))return;
    const h=(db.horses||[]).find(x=>x.id===card.dataset.id);if(!h||(!isMare(h)&&!isSire(h)))return;
+   card.classList.add('has-horse-use-actions');
    const d=document.createElement('div');d.className='horse-use-actions';
    d.innerHTML='<button type="button" class="secondary" data-use-horse="'+esc(h.id)+'">配合を考える</button>';
    card.appendChild(d);

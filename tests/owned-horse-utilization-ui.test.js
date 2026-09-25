@@ -10,6 +10,11 @@ const refresh=fs.readFileSync('ui-refresh.js','utf8');
 
 const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: '+token)};
 need(ui,'data-use-horse','horse-card utilization action');
+need(ui,'horse.has-horse-use-actions{padding-bottom:15px!important}','horse card must reserve footer space for breeding action');
+need(ui,'horse-use-actions{display:block;clear:both;width:100%;box-sizing:border-box;margin:14px 0 0;padding:12px 0 2px;border-top:1px solid #e3eae6;position:static!important}','breeding action must use a dedicated non-overlapping footer row');
+need(ui,'horse-use-actions button{display:block;position:static!important;float:none!important;transform:none!important;width:auto;max-width:100%;min-height:44px','breeding action button must not use overlapping positioning');
+need(ui,'.horse-use-actions button{width:100%;min-height:46px','breeding action must become full width on narrow screens');
+need(ui,"card.classList.add('has-horse-use-actions')",'horse card must mark reserved action-footer layout');
 need(ui,'配合を考える','shared breeding action label');
 if(ui.includes('この牝馬を配合に活かす')||ui.includes('相性牝馬を探す'))throw Error('legacy horse utilization labels must be removed');
 need(ui,'planner.evaluateDirectPair(m.record,h.name)','fixed-sire reverse pair evaluation');
@@ -69,9 +74,9 @@ need(horses,'function storedRouteEvidenceHtml(ev,goal)','registered horse reuses
 need(horses,'配合由来の特徴','registered horse pairing evidence heading');
 need(horses,'※配合時の血統根拠です。この馬自身の能力値ではありません。','registered horse ability boundary');
 need(breed,'async ensureReady(){await boot();ensurePlannerFresh();return{planner,advisor,engine}}','breed planner readiness API');
-need(idx,'v28.js?v=1.19.1-b64','v28 cache wiring');
-if(!(idx.indexOf('breed-integration.js?v=1.19.1-b64')<idx.indexOf('v28.js?v=1.19.1-b64')))throw Error('v28 must load after breed integration');
-if(!(idx.indexOf('v27.js?v=1.19.1-b64')<idx.indexOf('v28.js?v=1.19.1-b64')))throw Error('v28 must load after v27');
+need(idx,'v28.js?v=1.19.1-b65','v28 cache wiring');
+if(!(idx.indexOf('breed-integration.js?v=1.19.1-b65')<idx.indexOf('v28.js?v=1.19.1-b65')))throw Error('v28 must load after breed integration');
+if(!(idx.indexOf('v27.js?v=1.19.1-b65')<idx.indexOf('v28.js?v=1.19.1-b65')))throw Error('v28 must load after v27');
 if(/evidenceScore\s*=|overallScore\s*=|weightedScore\s*=/.test(ui))throw Error('reverse lookup must not add a weighted umbrella score');
 
 console.log(JSON.stringify({
