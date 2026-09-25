@@ -73,8 +73,18 @@ function ensureHome(){
    }
  });
 }
+function ensureHorseListControls(){
+ const toolbar=$('#horses .toolbar');if(!toolbar||$('#horseListControls'))return;
+ const row=document.createElement('div');row.id='horseListControls';row.className='horse-list-controls';
+ row.innerHTML='<span id="horseListSummary" class="horse-list-summary"></span><select id="horseRoleFilter" aria-label="登録区分で絞り込み"><option value="all">すべて</option><option value="broodmare">繁殖牝馬</option><option value="sire-candidate">種牡馬候補</option><option value="stallion">種牡馬</option><option value="race">競走馬</option></select><select id="horseSort" aria-label="並び順"><option value="newest">新しい順</option><option value="name">名前順</option><option value="oldest">登録順</option></select>';
+ toolbar.insertAdjacentElement('afterend',row);
+ $('#horseRoleFilter').onchange=()=>window.renderHorses?.();
+ $('#horseSort').onchange=()=>window.renderHorses?.();
+ window.renderHorses?.();
+}
 ensureHome();
 ensureInlineAdd();
+ensureHorseListControls();
 
 
 window.addEventListener('load',()=>{

@@ -73,7 +73,7 @@ function style(){
  .route-evidence-card{display:grid;gap:6px;margin-top:8px;padding:8px 9px;border-radius:10px;background:#f8faf8;border:1px solid #e4ebe7}.route-evidence-card>small{display:block;font-size:8px;font-weight:900;color:#52675d}
  .route-evidence-row{display:grid;grid-template-columns:42px minmax(0,1fr);gap:7px;align-items:start}.route-evidence-row>b{font-size:9px;padding-top:4px}.route-evidence-row.addition>b{color:#176748}.route-evidence-row.subtraction>b{color:#9a5a16}.route-evidence-row.caution>b{color:#7a641e}.route-evidence-row>div{display:flex;flex-wrap:wrap;gap:5px}
  .route-evidence-chip{display:inline-flex;align-items:center;min-height:24px;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;border:1px solid transparent}.route-evidence-chip.cross,.route-evidence-chip.theory{background:#eee8fb;color:#6847a0;border-color:#ddcff5}.route-evidence-chip.positive{background:#e8f6ef;color:#176c4b;border-color:#cfe9dc}.route-evidence-chip.warning{background:#fff0df;color:#9a5a16;border-color:#f2d3ac}.route-evidence-chip.record{background:#e9f1fa;color:#35658f;border-color:#d2e1f0}.route-evidence-chip.trait{background:#fff4d8;color:#7b5c16;border-color:#ebd89e}.route-evidence-chip.distance{background:#e8f2fb;color:#326a9a;border-color:#d2e4f2}.route-evidence-none{font-size:9px;color:#8a9690;padding:4px 0}
- .route-stage-current,.route-stage-next{display:grid;grid-template-columns:56px auto minmax(0,1fr);gap:7px;align-items:center;margin-top:7px;padding:7px 8px;border-radius:9px;background:#f4f7f5}.route-stage-current>b,.route-stage-next>b{font-size:9px}.route-stage-current>span,.route-stage-next>span{padding:3px 6px;border-radius:999px;background:#e9efeb;color:#365849;font-size:8px;font-weight:900}.route-stage-current>small,.route-stage-next>small{font-size:8px;color:#65766e}.route-stage-next{background:#f2f7f4}
+ .route-stage-current,.route-stage-next{display:grid;grid-template-columns:56px auto minmax(0,1fr);gap:7px;align-items:center;margin-top:7px;padding:7px 8px;border-radius:9px;background:#f4f7f5}.route-stage-current>b,.route-stage-next>b{font-size:9px}.route-stage-current>span,.route-stage-next>span{padding:3px 6px;border-radius:999px;background:#e9efeb;color:#365849;font-size:8px;font-weight:900}.route-stage-current>small,.route-stage-next>small{font-size:8px;color:#65766e}.route-stage-next{background:#f2f7f4}.route-stage-registered{margin-top:8px;padding:9px 10px;border-radius:10px;background:#eaf6f0;border:1px solid #bcdcca}.route-stage-registered-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.route-stage-registered-head b{font-size:10px;color:#176748}.route-stage-registered-head span{font-size:8px;font-weight:900;color:#537266}.route-stage-registered-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.route-stage-registered-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#fff;color:#285241;border:1px solid #cfe3d8;font-size:9px;font-weight:900}.route-stage-registered-chip small{font-size:7px;color:#6f8179;font-weight:800}
  .sale-select{margin-top:7px;padding:7px;border-left:3px solid #d6b566;background:#fff9e7;border-radius:0 7px 7px 0}
  .sale-portfolio{font-size:10px;line-height:1.55;background:#eef2f6;border-radius:8px;padding:7px;margin-top:7px}
  .sale-progress{font-size:11px;line-height:1.5;margin-top:8px}
@@ -383,6 +383,16 @@ function routeStageRegistered(ctx,generation){
    const hs=(s.sires||[]).map(key);return hs.length===sires.length&&hs.every((x,i)=>x===sires[i]);
  });
 }
+function routeRegisteredRole(h){
+ if(h?.role==='stallion')return'種牡馬';
+ if(h?.role==='sire-candidate')return'種牡馬候補';
+ if(h?.role==='broodmare'||h?.sex==='牝')return'繁殖牝馬';
+ return'登録馬';
+}
+function registeredRouteHtml(rows){
+ if(!rows?.length)return'';
+ return '<div class="route-stage-registered"><div class="route-stage-registered-head"><b>登録済み</b><span>'+rows.length+'頭</span></div><div class="route-stage-registered-list">'+rows.map(h=>'<span class="route-stage-registered-chip">'+esc(h.name)+'<small>'+esc(routeRegisteredRole(h))+'</small></span>').join('')+'</div></div>';
+}
 function matchingPreviousMares(ctx,generation){
  if(generation<=1)return[];
  const expected=ctx?.x?.stages?.[generation-2]?.child;if(!expected)return[];
@@ -556,7 +566,7 @@ function saveRouteRegistration(e){
 
 function bridgeStageHtml(st,ctx,total){
  const ss=st.sireStats||{},registered=routeStageRegistered(ctx,st.generation);
- const reg=registered.length?'<div class="sale-method">登録済み：'+registered.map(x=>esc(x.name)).join('、')+'</div>':'';
+ const reg=registeredRouteHtml(registered);
  const nextState=st.generation<total?'次世代へ進む前の血統素材':'最終産駒';
  const nextDetail=st.generation<total?'能力確認後に牝馬を選抜してルートを継続':'登録後に競走・繁殖・種牡馬利用を分けて再評価';
  return '<div class="route-bridge-stage">'+
@@ -760,7 +770,7 @@ async function load(){
    recommendationAdvisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({planner,broodmareStats:engine.mareData.broodmares||[]});
   }
   cleanupLegacySaleSync();inject();fillMares();paintButtons();renderNotice();
-  window.DABISTA_SALE_PLANNER={version:1,planner,run:runDesign,openRouteInBreed,routeContexts,setGeneration,resetGenerationSelection};
+  window.DABISTA_SALE_PLANNER={version:1,planner,run:runDesign,openRouteInBreed,routeContexts,setGeneration,resetGenerationSelection,refreshSelectedRoute:()=>{const ctx=window.DABISTA_SELECTED_SALE_ROUTE;if(ctx)renderRouteBreedBridge(ctx,ensureSaleMareForBreed(ctx.mare))}};
  }catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'sale-planner-load: '+String(e)})}
 }
 function newer(a,b){const A=String(a).split('.').map(Number),B=String(b).split('.').map(Number);for(let i=0;i<3;i++){if((A[i]||0)!==(B[i]||0))return(A[i]||0)>(B[i]||0)}return false}
