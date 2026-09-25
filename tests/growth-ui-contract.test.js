@@ -65,6 +65,14 @@ assert.ok(db.includes('SCHEMA_VERSION=2'),'growth DB schema version missing');
 assert.ok(!/for\s*\([^)]*db\.horses/.test(db),'growth migration must not mass-mutate horse records');
 assert.ok(!/for\s*\([^)]*db\.races/.test(db),'growth migration must not mass-mutate race records');
 
+// iOS modal scroll-lock regression: comparison-set dialog is created after v16 loads.
+assert.ok(index.indexOf('v16.js?v=1.19.1-b60')<index.indexOf('growth-ui.js?v=1.19.1-b60'),'dialog patch must load before dynamically-created growth dialogs');
+assert.ok(v16.includes("HTMLDialogElement.prototype.showModal=function(){lockBody();if(!this.__dabistaUnlockBound){this.__dabistaUnlockBound=true;this.addEventListener('close',unlockBody)}return nativeShow.call(this)}"),'dynamic dialog showModal must bind unlockBody');
+assert.ok(v16.includes("function unlockBody(){if(document.querySelector('dialog[open]'))return;"),'body unlock must wait for the last open dialog');
+assert.ok(ui.includes("d=document.createElement('dialog');d.id='growthSetDlg'"),'comparison-set dialog must remain dynamically created');
+assert.ok(ui.includes("d.querySelectorAll('[data-growth-set-close]').forEach(b=>b.onclick=()=>d.close())"),'comparison-set close controls must call dialog.close');
+assert.ok(ui.includes("$('#growthSetDlg').showModal()"),'comparison-set dialog must use patched showModal path');
+
 console.log(JSON.stringify({
   passed:true,
   loadOrder:true,
