@@ -80,8 +80,8 @@ assert.ok(v26.includes('<option value="stallion">種牡馬</option>'),'route reg
 assert.ok(v26.includes('ancestor15:[...a]'),'route registration must persist exact 15-ancestor pedigree');
 assert.ok(v26.includes("配合由来の根拠で、この馬自身の能力値ではありません"),'route registration must not mislabel pedigree evidence as horse ability');
 assert.ok(v26.includes("pair-pedigree-evidence-not-horse-ability"),'route registration must persist pair evidence with an explicit non-ability boundary');
-assert.ok(v16.includes('配合時血統評価'),'registered horse card must expose route provenance');
-assert.ok(v16.includes('※馬自身の能力値ではありません'),'route pedigree evidence must be visibly separated from horse ability');
+assert.ok(v16.includes('配合由来の特徴'),'registered horse card must expose route provenance');
+assert.ok(v16.includes('※配合時の血統根拠です。この馬自身の能力値ではありません。'),'route pedigree evidence must be visibly separated from horse ability');
 assert.ok(v16.includes('function syncHorseMetaLine(card,grid,className,html)'),'horse-card metadata renderer must use stable diff updates');
 assert.ok(!v16.includes("let old=c.querySelector('.default-mare-line');if(old)old.remove();"),'horse-card observer must not remove/re-add metadata on every mutation');
 assert.ok(v26.includes('matchingPreviousMares(ctx,generation)'),'multi-generation registration must require the actual prior broodmare pedigree');
