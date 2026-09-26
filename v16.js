@@ -1,5 +1,5 @@
 (()=>{
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.26-68';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.26-69';
 const $=s=>document.querySelector(s),db=window.db,esc=window.esc||((s)=>String(s??'')),lifecycle=window.DABISTA_HORSE_LIFECYCLE;
 if(!db||!lifecycle)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
