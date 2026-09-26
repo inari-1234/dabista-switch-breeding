@@ -132,13 +132,15 @@ function fmtRank(r){
  if(!r)return'<b>—</b><small>未判明</small>';
  return `<b>${r.value}</b><small>${r.rank}/${r.total}位<br>上位${r.topPercent}%</small>`
 }
+const directCache=new Map();
 function directSnapshot(name){
- const sum=advisor.emptySummary('direct'),bestByGoal={arc:null,bc:null,rebuild:null};
+ if(directCache.has(name))return directCache.get(name);
+ const sum=advisor.emptySummary('direct'),bestByGoal={arc:null,bc:null,rebuild:null,stallion:null};
  for(const r of planner.iterateDirect(name)){
   advisor.addRoute(sum,r);
-  for(const g of ['arc','bc','rebuild'])bestByGoal[g]=advisor.betterGoalRoute(bestByGoal[g],r,g);
+  for(const g of ['arc','bc','rebuild','stallion'])bestByGoal[g]=advisor.betterGoalRoute(bestByGoal[g],r,g);
  }
- sum.bestByGoal=bestByGoal;
+ sum.bestByGoal=bestByGoal;directCache.set(name,sum);
  return sum
 }
 function mareTierTone(a){
