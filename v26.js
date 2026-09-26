@@ -310,7 +310,7 @@ function stageHtml(st,totalStages,goal){
 function portfolioHtml(r){
  const p=r.portfolio;if(!p)return'';
  const line=(label,x)=>`<b>${label}</b>：安全 ${x.safe}/${x.population}・SP15/ST5 ${x.sp15st5}・SP17/ST5 ${x.sp17st5}・面白 ${x.interesting}・見事 ${x.magnificent}・完璧 ${x.perfect}・凝った ${x.elaborate}・最大SP ${x.maxSp}・最大SP+ST ${x.maxSpSt}`;
- return `<div class="sale-portfolio">${line('母SP+ST≥120',p.spst120)}<br>${line('母SP+ST≥130',p.spst130)}<br>※自家製種牡馬の実績・安定・底力は出生前に仮定せず、血統汎用性だけを比較。</div>`
+ return `<div class="sale-portfolio">${line('高能力母集団A',p.spst120)}<br>${line('高能力母集団B',p.spst130)}<br>※自家製種牡馬の実績・安定・底力は出生前に仮定せず、血統汎用性だけを比較。</div>`
 }
 function productionHtml(route){
  const assessment=recommendationAdvisor?.mareAssessment?.(db.salePlanner.mare)||null;
@@ -746,7 +746,7 @@ async function runDesign(){
   }else{
    portfolioSource=directAll;portfolioScope=`直仔の安全候補 ${portfolioSource.length}件すべてで将来価値を比較。`;
   }
-  $('#salePlannerProgress').textContent='自家製種牡馬としての血統汎用性をSP+ST≥120 / ≥130の2母集団で比較中…';await yieldUi();
+  $('#salePlannerProgress').textContent='自家製種牡馬としての血統汎用性を2つの高能力母集団で比較中…';await yieldUi();
   const portfolio=planner.portfolioPareto(portfolioSource,3);
   if(seq!==runSeq)return;
   renderResults({base:finalBase,portfolio,productionRoutes,safeCount,baseSafeCount:baseSafe,previewBaseCount3,previewBaseCount4,thirdSafeCount,portfolioScope});
