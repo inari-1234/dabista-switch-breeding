@@ -23,12 +23,17 @@ for(const m of M){
   const a=advisor.mareAssessment(m.name);
   if(!a?.abilityKnown)continue;
   const summary=advisor.emptySummary('purpose-rank'),bestByGoal={arc:null,bc:null,rebuild:null,stallion:null};
+  const rankPool=planner.createCollector({topN:2,poolN:4});
   for(const r of planner.iterateDirect(m.name)){
-    advisor.addRoute(summary,r);
+    advisor.addRoute(summary,r);rankPool.push(r);
     for(const g of goals)bestByGoal[g]=advisor.betterGoalRoute(bestByGoal[g],r,g);
   }
   summary.bestByGoal=bestByGoal;
-  for(const g of goals)buckets[g].push(advisor.marePurposeCandidate(m.name,g,summary,bestByGoal[g]));
+  const stallionRoute=planner.portfolioPareto(rankPool.finish().pool.slice(0,24),1).routes[0]||bestByGoal.stallion;
+  for(const g of goals){
+    const route=g==='stallion'?stallionRoute:bestByGoal[g];
+    buckets[g].push(advisor.marePurposeCandidate(m.name,g,summary,route));
+  }
 }
 
 const ranked={};
@@ -43,8 +48,23 @@ const lookup=(goal,name)=>ranked[goal].find(x=>x.name===name)?.rank||null;
 assert.ok(lookup('arc','エイスト')&&lookup('arc','スプリングスイーツ'),'known reference mares must receive Arc ranks');
 assert.strictEqual(lookup('arc','エイスト'),1,'Arc AI rank must place Eist first under the validated purpose logic');
 assert.strictEqual(lookup('arc','スプリングスイーツ'),2,'Arc AI rank must place Spring Sweets second under the validated purpose logic');
+assert.ok(ranked.stallion.every(x=>x.route?.portfolio),'stallion purpose ranking must use portfolio-backed routes');
+const stallionTopFacts=advisor.portfolioFacts(ranked.stallion[0].route.portfolio);
+assert.deepStrictEqual(
+  ranked.stallion[0].vector.slice(0,7),
+  [stallionTopFacts.sp17,stallionTopFacts.sp15,stallionTopFacts.safe,stallionTopFacts.sp17hi,stallionTopFacts.sp15hi,stallionTopFacts.maxSpSt,stallionTopFacts.maxSp],
+  'stallion purpose rank must begin with future breeding utility, not direct offspring SP/ST'
+);
 
-const ped=JSON.parse(fs.readFileSync('data/pedigree-master.json','utf8')).horses.find(x=>x.name==='クイーンズスミレ');
+const pedigreeRows=JSON.parse(fs.readFileSync('data/pedigree-master.json','utf8')).horses;
+const pedigreeMap=new Map(pedigreeRows.map(x=>[core.key(x.name),x]));
+for(const mare of T.broodmares){
+  const pedRow=pedigreeMap.get(core.key(mare.name));
+  assert.ok(pedRow,mare.name+' must exist in pedigree master');
+  assert.strictEqual(mare.ancestor.length,15,mare.name+' theory master must retain 15 ancestors');
+  assert.deepStrictEqual(mare.ancestor,pedRow.ancestor,mare.name+' 15 ancestors must exactly match pedigree master');
+}
+const ped=pedigreeMap.get(core.key('クイーンズスミレ'));
 assert.strictEqual(ped.ancestor.length,15,'Queens Sumire must retain the full 15-ancestor game pedigree');
 const effectMap=new Map(E.map(x=>[core.key(x.name),x]));
 assert.ok(effectMap.get(core.key(ped.sire))?.speed,'Queens Sumire sire factor must be available');
