@@ -237,6 +237,105 @@ function attentionGroupHtml(label,items,cls){
  const chips=xs.length?xs.map(x=>'<span class="candidate-chip '+esc(x.tone||'trait')+'">'+esc(x.label)+'</span>').join(''):'<span class="mare-attention-none">なし</span>';
  return '<div class="mare-attention-group '+esc(cls)+'"><b>'+esc(label)+'</b><div class="candidate-chip-row">'+chips+'</div></div>';
 }
+const FACTOR_KEYS=[
+ ['short','短距離'],['speed','速力'],['power','パワー'],['guts','底力'],['long','長距離'],
+ ['dirt','ダート'],['health','丈夫'],['early','早熟'],['late','晩成'],['steady','安定'],['temper','気性']
+];
+let factorMapCache=null;
+function factorMap(){
+ if(factorMapCache)return factorMapCache;
+ const key=engine?.core?.key||((x)=>String(x||'').normalize('NFKC').trim().toLowerCase());
+ factorMapCache=new Map((engine?.effects?.effects||[]).map(x=>[key(x.name),x]));
+ return factorMapCache;
+}
+function factorTags(name){
+ if(!name)return[];
+ const key=engine?.core?.key||((x)=>String(x||'').normalize('NFKC').trim().toLowerCase()),f=factorMap().get(key(name));
+ if(!f)return[];
+ return FACTOR_KEYS.filter(([k])=>Number(f[k])>0).map(([,label])=>label);
+}
+function factorChips(name,compact=false){
+ const xs=factorTags(name);if(!xs.length)return'';
+ return '<span class="factor-chips">'+xs.map(x=>'<i class="'+(compact?'compact':'')+'">'+esc(x)+'</i>').join('')+'</span>';
+}
+function marePedigreeInfo(name){
+ const info=planner?.mareInfo?.(name),record=info?.record||null,a=record?.ancestor||[];
+ return{info,record,a};
+}
+function focusFactorHtml(name){
+ const {record,a}=marePedigreeInfo(name);if(!record||a.length!==15)return'';
+ const rows=[
+  ['父',record.sire||a[0]],['母父',record.damSire||a[2]],['父父',record.sireSire||a[1]]
+ ].map(([label,n])=>({label,name:n,tags:factorTags(n)})).filter(x=>x.tags.length);
+ if(!rows.length)return'';
+ return '<div class="mare-factor-row"><small>注目因子</small><div>'+rows.map(x=>'<span><b>'+esc(x.label)+'</b>'+esc(x.name)+factorChips(x.name,true)+'</span>').join('')+'</div></div>';
+}
+function pedigreeCell(name,rowStart,rowEnd,focus=''){
+ return '<div class="pedigree-cell '+esc(focus)+'" style="grid-row:'+rowStart+'/'+rowEnd+'"><b>'+esc(name||'—')+'</b>'+factorChips(name)+'</div>';
+}
+function pedigreeTreeHtml(name){
+ const {record,a}=marePedigreeInfo(name);
+ if(!record||a.length!==15)return'<div class="notice">ゲーム内15祖先データを取得できません。</div>';
+ return '<div class="pedigree-meta"><span>系統 <b>'+esc(record.system||'—')+'</b></span><span>面白コード <b>'+esc(record.omoshiro||'—')+'</b></span></div>'+
+  '<div class="pedigree-scroll"><div class="pedigree-tree">'+
+   '<div class="pedigree-col">'+pedigreeCell(a[0],1,9,'focus-sire')+'</div>'+
+   '<div class="pedigree-col">'+pedigreeCell(a[1],1,5,'focus-siresire')+pedigreeCell(a[2],5,9,'focus-damsire')+'</div>'+
+   '<div class="pedigree-col">'+pedigreeCell(a[3],1,3)+pedigreeCell(a[4],3,5)+pedigreeCell(a[5],5,7)+pedigreeCell(a[6],7,9)+'</div>'+
+   '<div class="pedigree-col">'+a.slice(7,15).map((n,i)=>pedigreeCell(n,i+1,i+2)).join('')+'</div>'+
+  '</div></div>'+
+  '<div class="pedigree-systems"><small>面白系統</small><b>'+esc((record.omoshiroSystems||[]).join(' / ')||'—')+'</b><span>ゲーム内マスタの15祖先を1・2・4・8頭の配置で全件表示。因子がある祖先は併記します。</span></div>';
+}
+function ensurePedigreeDialog(){
+ let d=$('#marePedigreeDlg');if(d)return d;
+ d=document.createElement('dialog');d.id='marePedigreeDlg';d.className='mare-purpose-dialog';
+ d.innerHTML='<div class="purpose-dialog-head"><div><small>ゲーム内血統情報</small><h2 id="marePedigreeTitle">血統表</h2></div><button type="button" class="secondary" data-close>閉じる</button></div><div id="marePedigreeBody" class="purpose-dialog-body"></div>';
+ document.body.appendChild(d);d.querySelector('[data-close]').onclick=()=>d.close();return d;
+}
+function openPedigree(name){
+ const d=ensurePedigreeDialog();$('#marePedigreeTitle').textContent=name+'｜血統表';$('#marePedigreeBody').innerHTML=pedigreeTreeHtml(name);d.showModal();
+}
+function simTheory(st){
+ const t=st?.theory||{},xs=[];if(t.perfect)xs.push('完璧');else{if(t.magnificent)xs.push('見事');if(t.interesting)xs.push('面白')}if(st?.elaborate?.effective)xs.push('凝った');return xs.length?xs.join('・'):'追加理論なし';
+}
+function simCrosses(st){
+ const xs=(st?.crosses||[]).slice(0,4).map(x=>x.name).filter(Boolean);
+ if(st?.speedCross?.has&&!xs.some(x=>/速|短/.test(x)))xs.unshift('SP系クロス');
+ if(st?.crossEffects?.longDistance)xs.push('長距離クロス');
+ return [...new Set(xs)].slice(0,4);
+}
+function ensureSimulationDialog(){
+ let d=$('#marePurposeSimulationDlg');if(d)return d;
+ d=document.createElement('dialog');d.id='marePurposeSimulationDlg';d.className='mare-purpose-dialog';
+ d.innerHTML='<div class="purpose-dialog-head"><div><small>AI運用シミュレーション</small><h2 id="mareSimTitle">配合例</h2></div><button type="button" class="secondary" data-close>閉じる</button></div><div id="mareSimBody" class="purpose-dialog-body"></div><div class="purpose-dialog-actions"><button type="button" class="secondary" id="mareSimDeep">2〜4代もAI診断</button><button type="button" class="primary" data-close>閉じる</button></div>';
+ document.body.appendChild(d);d.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>d.close());return d;
+}
+function openSimulation(name,goal,direct){
+ const d=ensureSimulationDialog(),route=direct?.bestByGoal?.[goal]||null,rank=purposeRank(name,goal),label=goalLabels[goal]||goal;
+ $('#mareSimTitle').textContent=name+'｜'+label;
+ if(!route){$('#mareSimBody').innerHTML='<div class="notice">安全な直仔配合例を取得できませんでした。世代診断で条件を広げて確認してください。</div>';d.showModal();return}
+ const x=planner.expandRoute(name,route,goal),st=x?.stages?.[0],facts=advisor.routeFacts(route),decision=advisor.goalMareReason(name,goal,direct);
+ const crosses=simCrosses(st),rankText=rank?rank.rank+'位 / '+rank.total+'頭':'順位計算中';
+ const sire=st?.sire||route?.sires?.[0]||'—',ss=st?.sireStats||{},nitro=st?.nitro||{};
+ const keep=goal==='arc'?'SP/STを維持し、距離側の根拠が付く産駒を優先'
+  :goal==='bc'?'SP印とSP補強経路を優先し、STを極端に落とさない産駒を残す'
+  :goal==='rebuild'?'母の強みを落とさず、次代で使いやすい牝馬を残す'
+  :'競走能力を確認しつつ、種牡馬入り後に使いやすい血統を持つ牡馬を残す';
+ $('#mareSimBody').innerHTML=
+  '<div class="sim-rank"><small>この目的でのAI順位</small><b>'+esc(rankText)+'</b><span>'+esc(decision?.headline||'目的別条件で判断')+'</span></div>'+
+  '<div class="sim-pair"><small>AIがまず試す具体的な配合例</small><div><b>'+esc(name)+'</b><span>×</span><b>'+esc(sire)+'</b></div></div>'+
+  '<div class="sim-grid"><div><small>SPニトロ</small><b>'+Number(nitro.sp||facts.sp||0)+'</b></div><div><small>STニトロ</small><b>'+Number(nitro.st||facts.st||0)+'</b></div><div><small>PWニトロ</small><b>'+Number(nitro.pw||facts.pw||0)+'</b></div></div>'+
+  '<div class="sim-evidence"><b>配合の狙い</b><span>'+esc(decision?.detail||'目的条件を満たす血統根拠を優先します。')+'</span><div class="candidate-chip-row">'+
+    (facts.speedCross?'<span class="candidate-chip cross">SPクロスあり</span>':'')+
+    (facts.longDistanceCross?'<span class="candidate-chip trait">長距離クロス</span>':'')+
+    '<span class="candidate-chip theory">'+esc(simTheory(st))+'</span>'+
+    (crosses.length?crosses.map(n=>'<span class="candidate-chip trait">'+esc(n)+'</span>').join(''):'')+
+  '</div></div>'+
+  '<div class="sim-operate"><b>AIの運用</b><ol><li>上の配合を実行</li><li>'+esc(keep)+'</li><li>実馬能力を確認し、基準に届かなければ2〜4代診断へ進む</li></ol></div>'+
+  '<details class="sim-tech"><summary>父の実績・距離根拠を見る</summary><div>実績 '+esc(ss.record||facts.record||'—')+' / 安定 '+esc(ss.stable||facts.stable||'—')+' / 距離 '+esc((ss.minD||facts.minD||'?')+'–'+(ss.maxD||facts.maxD||'?')+'m')+'</div></details>';
+ const deep=$('#mareSimDeep');deep.onclick=()=>{d.close();$('#saleGenerationAdvisor')?.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('#runGenerationAdvisor')?.click(),250)};
+ d.showModal();
+}
+
 function renderMareAdvice(){
  const box=$('#saleMareRecommendation'),name=$('#saleMareSelect')?.value;
  if(!box||!advisor)return;
