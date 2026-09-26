@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.26-68',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
-if(!db)return;
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.26-68',db=window.db,$=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??'')),lifecycle=window.DABISTA_HORSE_LIFECYCLE;
+if(!db||!lifecycle)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ve=$('#ver');if(ve)ve.textContent=`v${V} / Build ${BUILD}`;
 let engine=null,planner=null,recommendationAdvisor=null,runSeq=0,routeContextSeq=0;const routeContexts=new Map();
@@ -387,10 +387,8 @@ function routeStageRegistered(ctx,generation){
  });
 }
 function routeRegisteredRole(h){
- if(h?.role==='stallion')return'種牡馬';
- if(h?.role==='sire-candidate')return'種牡馬候補';
- if(h?.role==='broodmare'||h?.sex==='牝')return'繁殖牝馬';
- return'登録馬';
+ const current=lifecycle.currentLabel(lifecycle.currentState(h)),future=lifecycle.futureLabel(lifecycle.futureUse(h));
+ return future?current+' / '+future:current;
 }
 function registeredRouteHtml(rows){
  if(!rows?.length)return'';
@@ -399,7 +397,7 @@ function registeredRouteHtml(rows){
 function matchingPreviousMares(ctx,generation){
  if(generation<=1)return[];
  const expected=ctx?.x?.stages?.[generation-2]?.child;if(!expected)return[];
- return (db.horses||[]).filter(h=>h?.role==='broodmare'&&sameRoutePedigree(engine?.resolveHorse?.(h),expected));
+ return (db.horses||[]).filter(h=>h?.sex==='牝'&&h?.routeSource&&lifecycle.futureUse(h)==='broodmare'&&sameRoutePedigree(engine?.resolveHorse?.(h),expected));
 }
 function routeFeatureChip(x){return '<span class="route-evidence-chip '+esc(x?.tone||'neutral')+'">'+esc(x?.label||'')+'</span>'}
 function routeEvidenceGroups(st){
@@ -432,27 +430,28 @@ function routeEvidenceHtml(st){
   routeEvidenceRow('注意',g.cautions,'caution')+
  '</section>';
 }
-function routeUseRows(role,generation,total){
- const rows=[{label:'競走',state:'能力確認待ち',detail:'育成・レース記録でこの馬自身を確認'}];
- if(role==='broodmare'){
-  rows.push({label:'繁殖',state:'血統素材候補',detail:'15祖先と配合根拠を残して再評価'});
-  rows.push({label:'次配合',state:generation<total?'次世代へ':'能力判明後',detail:generation<total?'選抜後にこのルートを継続':'母能力を確認して配合候補を比較'});
- }else if(role==='stallion'){
-  rows.push({label:'種牡馬',state:'登録',detail:'血統15祖先を使って相性牝馬を逆引き'});
-  rows.push({label:'配合',state:'能力確認と併用',detail:'父能力と血統根拠を分けて判断'});
+function routeUseRows(futureUse,generation,total){
+ const rows=[{label:'現在',state:'現役競走馬',detail:'育成・レース記録でこの馬自身を確認'}];
+ if(futureUse==='broodmare'){
+  rows.push({label:'将来',state:'次世代牝馬候補',detail:'15祖先と配合根拠を残し、実際に繁殖入りした時点で通常配合へ'});
+  rows.push({label:'次配合',state:generation<total?'ルート継続候補':'能力判明後',detail:generation<total?'このルートで実際に登録した牝馬として次世代候補に使えます':'母能力を確認して配合候補を比較'});
+ }else if(futureUse==='stallion'){
+  rows.push({label:'将来',state:'種牡馬候補',detail:'種牡馬入り後に実績・安定・距離適性を登録'});
+  rows.push({label:'逆引き',state:'種牡馬入り後',detail:'331牝馬との相性を確認'});
  }else{
-  rows.push({label:'種牡馬',state:'候補として保存',detail:'能力確認後に相性牝馬を逆引き'});
-  rows.push({label:'配合',state:'能力確認後',detail:'血統素材価値を再評価'});
+  rows.push({label:'将来',state:'未設定',detail:'能力が分かってから用途を決められます'});
  }
  return rows;
 }
-function routeUseHtml(role,generation,total){
- return routeUseRows(role,generation,total).map(x=>'<div class="route-use-row"><b>'+esc(x.label)+'</b><span>'+esc(x.state)+'</span><small>'+esc(x.detail)+'</small></div>').join('');
+function routeUseHtml(futureUse,generation,total){
+ return routeUseRows(futureUse,generation,total).map(x=>'<div class="route-use-row"><b>'+esc(x.label)+'</b><span>'+esc(x.state)+'</span><small>'+esc(x.detail)+'</small></div>').join('');
 }
 function updateRouteRegisterUse(){
  const s=routeRegisterState;if(!s)return;
- const role=$('#routeRegisterRole')?.value||'broodmare',box=$('#routeRegisterUse');
- if(box)box.innerHTML=routeUseHtml(role,s.generation,s.ctx?.x?.stages?.length||s.generation);
+ const futureUse=$('#routeRegisterFutureUse')?.value||'none',box=$('#routeRegisterUse'),sex=$('#routeRegisterSex');
+ if(futureUse==='broodmare'&&sex)sex.value='牝';
+ if(futureUse==='stallion'&&sex)sex.value='牡';
+ if(box)box.innerHTML=routeUseHtml(futureUse,s.generation,s.ctx?.x?.stages?.length||s.generation);
 }
 function ensureRouteRegisterDialog(){
  let d=$('#routeRegisterDlg');if(d)return d;
@@ -463,7 +462,8 @@ function ensureRouteRegisterDialog(){
     <section class="route-register-section basic"><small>基本情報</small><div id="routeRegisterSummary" class="route-register-summary"></div></section>
     <div class="route-register-fields">
      <label class="route-register-field"><span>馬名</span><input id="routeRegisterName" required autocomplete="off" placeholder="ゲーム内で付けた馬名"></label>
-     <label class="route-register-field"><span>登録区分</span><select id="routeRegisterRole"><option value="broodmare">繁殖牝馬</option><option value="sire-candidate">種牡馬候補</option><option value="stallion">種牡馬</option></select></label>
+     <label class="route-register-field"><span>性別</span><select id="routeRegisterSex"><option value="">選択</option><option value="牝">牝</option><option value="牡">牡</option></select></label>
+     <label class="route-register-field"><span>将来用途</span><select id="routeRegisterFutureUse"><option value="none">なし</option><option value="broodmare">次世代牝馬候補</option><option value="stallion">種牡馬候補</option></select></label>
      <label id="routeRegisterDamWrap" class="route-register-field" style="display:none"><span>この世代の母馬</span><select id="routeRegisterDam"></select></label>
     </div>
     <div id="routeRegisterParents" class="route-register-parents"></div>
@@ -494,7 +494,7 @@ function ensureRouteRegisterDialog(){
   @media(max-width:520px){#routeRegisterDlg{width:calc(100vw - 12px);max-height:94dvh}.route-register-form{max-height:94dvh}.route-register-head{padding:12px}.route-register-body{padding:10px 12px 14px}.route-register-actions{padding-left:12px;padding-right:12px}.route-register-field{grid-template-columns:1fr;gap:4px}.route-current-row,.route-use-row{grid-template-columns:60px auto 1fr;gap:6px}.route-register-head h2{font-size:19px}}
  `;document.head.appendChild(s)}
  d.querySelectorAll('[data-route-register-cancel]').forEach(b=>b.onclick=()=>d.close());
- $('#routeRegisterRole').onchange=updateRouteRegisterUse;
+ $('#routeRegisterFutureUse').onchange=updateRouteRegisterUse;
  $('#routeRegisterForm').onsubmit=saveRouteRegistration;
  return d;
 }
@@ -502,7 +502,10 @@ function openRouteRegister(ctx,generation){
  const d=ensureRouteRegisterDialog(),stage=ctx?.x?.stages?.[generation-1];if(!stage)return;
  routeRegisterState={ctx,generation,stage};
  $('#routeRegisterForm').reset();$('#routeRegisterName').value='';
- $('#routeRegisterRole').value=(generation<ctx.x.stages.length||ctx.goal!=='stallion')?'broodmare':'sire-candidate';
+ const intermediate=generation<ctx.x.stages.length;
+ $('#routeRegisterFutureUse').value=intermediate?'broodmare':(ctx.goal==='stallion'?'stallion':'none');
+ $('#routeRegisterSex').value=intermediate?'牝':(ctx.goal==='stallion'?'牡':'');
+ $('#routeRegisterSex').disabled=intermediate;
  const prior=routeStageRegistered(ctx,generation);
  const routePath=[ctx.mare,...routeStagePrefix(ctx,generation)].map(esc).join(' → ');
  $('#routeRegisterSummary').innerHTML='<b>'+generation+'代目：'+esc(stage.sire)+'産駒</b><span>'+routePath+'</span>'+(prior.length?'<span>同じ世代を登録済み：'+prior.map(x=>esc(x.name)).join('、')+'</span>':'');
@@ -525,8 +528,8 @@ function openRouteRegister(ctx,generation){
 }
 function saveRouteRegistration(e){
  e.preventDefault();const s=routeRegisterState;if(!s)return;
- const {ctx,generation,stage}=s,name=$('#routeRegisterName').value.trim(),role=$('#routeRegisterRole').value;
- if(!name)return;
+ const {ctx,generation,stage}=s,name=$('#routeRegisterName').value.trim(),sex=$('#routeRegisterSex').value,futureUse=$('#routeRegisterFutureUse').value||'none';
+ if(!name||!sex){$('#routeRegisterWarning').textContent='馬名と性別を選択してください。';return}
  const key=engine?.core?.key||((x)=>String(x||'').normalize('NFKC').trim().toLowerCase());
  if((db.horses||[]).some(h=>key(h.name)===key(name))){$('#routeRegisterWarning').textContent='同名の登録馬があります。別の馬名にしてください。';return}
  const mother=generation===1?ensureSaleMareForBreed(ctx.mare):(db.horses||[]).find(h=>h.id===$('#routeRegisterDam').value);
@@ -536,7 +539,7 @@ function saveRouteRegistration(e){
  const child=x.route.finalChild,a=routePedigree(child);
  if(a.length!==15){$('#routeRegisterWarning').textContent='産駒の15祖先を生成できません。登録を中止しました。';return}
  const h={
-   id:crypto.randomUUID(),name,sex:role==='broodmare'?'牝':'牡',role,roleMemo:'配合ルートから登録',
+   id:crypto.randomUUID(),name,sex,currentState:'race',futureUse,role:'race',roleMemo:futureUse==='broodmare'?'次世代牝馬候補':futureUse==='stallion'?'種牡馬候補':'',
    generation:'配合ルート '+generation+'代目',sire:stage.sire,dam:mother.name||ctx.mare,
    minD:'',maxD:'',record:'-',guts:'-',stable:'-',starts:'',g1:'',
    note:'配合ルート：'+ctx.mare+' / '+routeStagePrefix(ctx,generation).join(' → '),
@@ -621,7 +624,7 @@ function cleanupLegacySaleSync(){
 function ensureSaleMareForBreed(name){
  if(!engine||!name)return null;
  const key=engine.core?.key||((x)=>String(x||'').normalize('NFKC').trim().toLowerCase());
- const saved=(db.horses||[]).find(x=>x.sex==='牝'&&x.masterRef?.type==='default-broodmare'&&key(x.masterRef.name||x.name)===key(name))||null;
+ const saved=(db.horses||[]).find(x=>lifecycle.isBreedingMare(x)&&x.masterRef?.type==='default-broodmare'&&key(x.masterRef.name||x.name)===key(name))||null;
  if(saved){window.DABISTA_TRANSIENT_BREED_MARE=null;return saved}
  const m=engine.master?.(name),stats=engine.mareStats?.(name);
  if(!m||!Array.isArray(m.ancestor)||m.ancestor.length!==15)return null;
