@@ -45,15 +45,20 @@ for(const g of goals){
   assert.ok(ranked[g].every(x=>!Object.prototype.hasOwnProperty.call(x,'score')),'purpose rank must not introduce an overall score');
 }
 const lookup=(goal,name)=>ranked[goal].find(x=>x.name===name)?.rank||null;
-assert.ok(lookup('arc','エイスト')&&lookup('arc','スプリングスイーツ'),'known reference mares must receive Arc ranks');
-assert.strictEqual(lookup('arc','エイスト'),1,'Arc AI rank must place Eist first under the validated purpose logic');
-assert.strictEqual(lookup('arc','スプリングスイーツ'),2,'Arc AI rank must place Spring Sweets second under the validated purpose logic');
+assert.ok(lookup('arc','エイスト')&&lookup('arc','スプリングスイーツ'),'known reference mares must receive Arc fallback ranks');
+for(const g of goals){
+  const order={recommend:4,candidate:3,conditional:2,insufficient:1};
+  for(let i=1;i<ranked[g].length;i++){
+    assert.ok((order[ranked[g][i-1].gradeKey]||0)>=(order[ranked[g][i].gradeKey]||0),
+      g+' fallback rank must not place a lower absolute grade above a higher one');
+  }
+}
 assert.ok(ranked.stallion.every(x=>x.route?.portfolio),'stallion purpose ranking must use portfolio-backed routes');
 const stallionTopFacts=advisor.portfolioFacts(ranked.stallion[0].route.portfolio);
 assert.deepStrictEqual(
-  ranked.stallion[0].vector.slice(0,7),
+  ranked.stallion[0].vector.slice(1,8),
   [stallionTopFacts.sp17,stallionTopFacts.sp15,stallionTopFacts.safe,stallionTopFacts.sp17hi,stallionTopFacts.sp15hi,stallionTopFacts.maxSpSt,stallionTopFacts.maxSp],
-  'stallion purpose rank must begin with future breeding utility, not direct offspring SP/ST'
+  'stallion purpose rank must use grade first, then future breeding utility rather than direct offspring SP/ST'
 );
 
 const pedigreeRows=JSON.parse(fs.readFileSync('data/pedigree-master.json','utf8')).horses;
