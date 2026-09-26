@@ -343,57 +343,37 @@ function renderMareAdvice(){
  const a=advisor.mareAssessment(name);
  if(!a){box.className='mare-advice tier-unknown';box.innerHTML='<div class="muted">牝馬評価を取得できませんでした。</div>';return}
  const direct=directSnapshot(name),strategy=advisor.mareStrategy(name),goal=window.db?.salePlanner?.goal||'arc';
- const tone=mareTierTone(a);
+ const recommendations=advisor.quickGoalRecommendations(name,direct,direct.bestByGoal),grade=recommendations?.goals?.[goal]||{key:'insufficient',symbol:'—',label:'根拠不足'};
+ const decision=mareDecisionText(name,goal,direct),rank=purposeRank(name,goal),tone=mareTierTone(a),s=a.stats||{};
+ const attention=mareAttentionGroups(goal,direct,a,recommendations);
+ const attentionItems=[...(attention.additions||[]),...(attention.subtractions||[]),...(attention.cautions||[])].slice(0,4);
+ const attentionHtml=attentionItems.length?attentionItems.map(x=>'<span class="candidate-chip '+esc(x.tone||'trait')+'">'+esc(x.label)+'</span>').join(''):'<span class="mare-attention-none">注目ポイントなし</span>';
+ const rankText=!a.abilityKnown?'未順位':rank?rank.rank+'位':'計算中';
+ const rankSub=a.abilityKnown?(rank?'/ '+rank.total+'頭':'/ '+advisor.knownAbilityCount+'頭'):'能力未判明';
+ const decisionReasons=(decision.reasons||[]).slice(0,3).map(x=>'<span>'+esc(x)+'</span>').join('');
  box.className='mare-advice tier-'+tone;
- const rankHtml=a.abilityKnown
-  ?`<div class="mare-scoreline"><span>SP ${a.ranks.sp?.value??'—'}</span><span>ST ${a.ranks.st?.value??'—'}</span><span>PW ${a.ranks.pw?.value??'—'}</span><b>SP+ST ${a.ranks.spst?.value??'—'}</b></div>`
-  :'<div class="mare-scoreline"><b>能力未判明</b></div>';
- const decision=mareDecisionText(name,goal,direct),recommendations=advisor.quickGoalRecommendations(name,direct,direct.bestByGoal);
- const decisionReasons=(decision.reasons||[]).slice(0,2).map(x=>'<span>'+esc(x)+'</span>').join('');
- const topGoals=primaryGoalKeys(recommendations);
- const purposeText=topGoals.length?topGoals.map(k=>goalLabels[k]).join(' / '):'推奨保留';
- const purposeGrade=topGoals.length?recommendations.goals[topGoals[0]]:{symbol:'—',label:'保留'};
- const orderedGoals=orderedGoalKeys(recommendations);
- const goalRows=orderedGoals.map(k=>quickGoalRow(k,recommendations)).join('');
- const attentionGoal=topGoals.includes(goal)?goal:(topGoals[0]||goal);
- const attention=mareAttentionGroups(attentionGoal,direct,a,recommendations);
- const strategyAxis=strategy
-  ?(strategy.improve?.length?'補強：'+strategy.improve.join('・')
-    :strategy.relativeAdjust?.length?'相対調整：'+strategy.relativeAdjust.join('・')
-    :'明確な補強対象なし')
-  :'';
- box.innerHTML=`
-   <div class="mare-advice-head">
-    <div><h4>${esc(name)}</h4><small>能力既知 ${advisor.knownAbilityCount}頭で比較</small></div>
-    <span class="mare-tier">${esc(a.tier)}</span>
-   </div>
-   <div class="mare-purpose-summary">
-    <small>推奨用途</small>
-    <div class="mare-purpose-main"><b>${esc(purposeText)}</b><span class="goal-${esc(purposeGrade.key||'insufficient')}">${esc(purposeGrade.symbol)} ${esc(purposeGrade.label)}</span></div>
-    <em>${a.abilityKnown?'母能力を含めて判定':'能力未判明・血統中心'}</em>
-   </div>
-   <div class="mare-use-title">評価</div>
-   <div class="mare-goal-list">${goalRows}</div>
-   <div class="mare-attention">
-    <div class="mare-attention-head"><small>注目ポイント</small><span>${esc(goalLabels[attentionGoal]||attentionGoal)}</span></div>
-    ${attentionGroupHtml('加算',attention.additions,'addition')}
-    ${attentionGroupHtml('減算',attention.subtractions,'subtraction')}
-    ${attentionGroupHtml('注意',attention.cautions,'caution')}
-   </div>
-   <details class="mare-detail">
-    <summary>詳しい順位・根拠を見る</summary>
-    <div class="mare-why"><small>現在の目的｜${esc(goalLabels[goal]||goal)}</small><b>${esc(decision.headline)}</b><span class="mare-why-detail">${esc(decision.detail)}</span>${decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':''}</div>
-    ${rankHtml}
-    ${a.abilityKnown?`<div class="mare-ranks">
-     ${mareRankCell('繁殖SP',a.ranks.sp)}
-     ${mareRankCell('繁殖ST',a.ranks.st)}
-     ${mareRankCell('繁殖PW',a.ranks.pw)}
-     ${mareRankCell('SP+ST',a.ranks.spst)}
-    </div>`:''}
-    ${strategy?`<div class="advisor-note"><b>補強タイプ：${esc(strategy.label)}</b><br>維持：${strategy.preserve.length?esc(strategy.preserve.join('・')):'—'} / ${esc(strategyAxis)}</div>`:''}
-    <div class="mare-direct">直仔安全 ${direct.count}件 / SP15・ST5以上 ${direct.sp15st5}件 / 最大SP ${direct.maxSp} / 最大SP+ST ${direct.maxSpSt}</div>
-    <div class="advisor-note">4目的は別々の成立条件で判定し、第7の総合点は作らずに比較します。自家製種牡馬は世代診断で確認します。</div>
-   </details>`;
+ box.innerHTML=
+  '<div class="mare-advice-head"><div><h4>'+esc(name)+'</h4><small>選択した目的に必要な情報だけを表示</small></div><span class="mare-tier">'+esc(a.tier)+'</span></div>'+
+  '<section class="purpose-focus">'+
+   '<div class="purpose-focus-head"><div><small>現在の目的</small><h3>'+esc(goalLabels[goal]||goal)+'</h3></div><div class="purpose-rank"><small>AI順位</small><b>'+esc(rankText)+'</b><span>'+esc(rankSub)+'</span></div></div>'+
+   '<div class="purpose-grade goal-'+esc(grade.key||'insufficient')+'"><b>'+esc(grade.symbol)+' '+esc(grade.label)+'</b><span>'+esc(quickGoalReason(goal,grade))+'</span></div>'+
+   (a.abilityKnown?'<div class="purpose-stats"><div><small>繁殖SP</small><b>'+Number(s.sp||0)+'</b></div><div><small>繁殖ST</small><b>'+Number(s.st||0)+'</b></div><div><small>繁殖PW</small><b>'+Number(s.pw||0)+'</b></div></div>':'<div class="purpose-unknown">繁殖SP / ST / PW は未判明です。</div>')+
+   '<div class="purpose-nitro"><small>ニトロ</small><div><span>SP <b>'+Number(s.nsp||0)+'</b></span><span>ST <b>'+Number(s.nst||0)+'</b></span><span>PW <b>'+Number(s.npw||0)+'</b></span></div></div>'+
+   focusFactorHtml(name)+
+   '<div class="purpose-attention"><small>注目ポイント</small><div class="candidate-chip-row">'+attentionHtml+'</div></div>'+
+   '<div class="purpose-actions"><button type="button" class="primary" data-purpose-sim>AI配合シミュレーション</button><button type="button" class="secondary" data-purpose-pedigree>血統表</button></div>'+
+  '</section>'+
+  '<details class="mare-detail"><summary>詳しい評価根拠を見る</summary>'+
+   '<div class="mare-why"><small>'+esc(goalLabels[goal]||goal)+'</small><b>'+esc(decision.headline)+'</b><span class="mare-why-detail">'+esc(decision.detail)+'</span>'+(decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':'')+'</div>'+
+   (strategy?'<div class="advisor-note"><b>補強タイプ：'+esc(strategy.label)+'</b><br>維持：'+(strategy.preserve.length?esc(strategy.preserve.join('・')):'—')+' / '+(strategy.improve.length?'補強：'+esc(strategy.improve.join('・')):strategy.relativeAdjust?.length?'相対調整：'+esc(strategy.relativeAdjust.join('・')):'明確な補強対象なし')+'</div>':'')+
+   '<div class="mare-direct">直仔安全 '+direct.count+'件 / SP15・ST5以上 '+direct.sp15st5+'件 / 最大SP '+direct.maxSp+' / 最大ST '+direct.maxSt+'</div>'+
+   '<div class="advisor-note">AI順位は4目的ごとに別々の条件を辞書式に比較します。目的横断の総合点や第7評価軸は作りません。</div>'+
+  '</details>';
+ box.onclick=e=>{
+  if(e.target.closest('[data-purpose-pedigree]')){openPedigree(name);return}
+  if(e.target.closest('[data-purpose-sim]')){openSimulation(name,goal,direct);return}
+ };
+ paintPurposeRanks();
 }
 function invalidateGeneration(message='条件を変更したため、世代診断を更新してください。'){
  diagSeq++;
