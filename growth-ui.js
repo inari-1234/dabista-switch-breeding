@@ -7,6 +7,7 @@ growthDb?.normalizeInPlace(db);
 
 const $=s=>document.querySelector(s);
 const esc=window.esc||((s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+const lifecycle=window.DABISTA_HORSE_LIFECYCLE;
 const marks=['◎','○','▲','△','－'];
 const grades=['G1','G2','G3','OP','その他'];
 const quickDistances=[1200,1600,1800,2000,2400];
@@ -114,6 +115,7 @@ function ensureStyle(){
   '.growth-advice{margin-top:8px;padding:9px 10px;border-radius:10px;background:#fff;border:1px solid #e1e9e5}.growth-advice b{display:block;font-size:13px}.growth-advice.up{background:#edf8f0;border-color:#cbe5d2}.growth-advice.warn{background:#fff4ef;border-color:#efd6ca}',
   '.growth-card-actions{display:grid;grid-template-columns:1fr;gap:7px;margin-top:9px}.growth-card-actions button{min-height:44px;font-size:11px;font-weight:900}',
   '.growth-recent-list{display:grid;gap:5px;margin-top:8px}.growth-recent-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:7px;align-items:center;padding:7px 8px;border-radius:9px;background:#fff;font-size:9px}.growth-recent-row strong{font-size:10px}.growth-empty-line{padding:9px;color:#75847c;text-align:center;font-size:10px}',
+  '.growth-card-details{margin-top:7px}.growth-card-details>summary{cursor:pointer;font-size:10px;font-weight:800;color:#5e7168}.growth-card-details[open]>summary{margin-bottom:4px}',
   '.growth-race-date{display:block;font-size:8px;color:#708078;margin-top:2px}.growth-race-diagnosis{margin:6px 0 8px;padding:8px 9px;border-radius:9px;background:#f4f7f5;font-size:10px;line-height:1.45}',
   '#growthHistoryDlg,#growthQuickRaceDlg{width:min(620px,calc(100vw - 16px));max-height:92dvh;border:0;border-radius:18px;padding:0;overflow:hidden}',
   '.growth-dialog{max-height:92dvh;overflow:auto;padding:14px;padding-bottom:78px}.growth-dialog-head{position:sticky;top:-14px;z-index:5;background:rgba(255,255,255,.98);padding:13px 0 10px;border-bottom:1px solid #e1e8e4;display:flex;justify-content:space-between;align-items:center;gap:8px}.growth-dialog-head h2{font-size:19px;margin:0}',
@@ -129,9 +131,8 @@ function ensureStyle(){
 }
 
 function growthTrackable(h){
-  if(!h)return false;
-  if(h.role==='stallion')return false;
-  if(h.role==='broodmare'&&!h.routeSource)return false;
+  if(!h||!lifecycle)return false;
+  if(!lifecycle.isRacehorse(h))return false;
   if(String(h.generation||'').includes('基準種牡馬'))return false;
   return true;
 }
@@ -146,8 +147,8 @@ function decorateHorseCards(){
     if(!growthTrackable(h)){card.querySelector('.growth-mini')?.remove();return}
     const d=diagnosis(h),a=friendlyAdvice(h,d),stateClass=a.tone==='up'?'up':a.tone==='warn'?'warn':'';
     const html='<div class="growth-mini-head"><div><b>今月の出走判断</b><small>'+esc(ageMonth(h))+' ｜ '+esc(growthTypeText(d))+'</small></div><span class="growth-state '+stateClass+'">'+esc(a.label)+'</span></div>'+
-      '<div class="growth-advice '+stateClass+'"><b>'+esc(a.label)+'</b><small>'+esc(a.reason)+'</small></div>'+
-      '<div class="growth-recent-list">'+recentRaceHtml(h,2)+'</div>'+
+      '<div class="growth-advice '+stateClass+'"><small>'+esc(a.reason)+'</small></div>'+
+      '<details class="growth-card-details"><summary>直近のレースを見る</summary><div class="growth-recent-list">'+recentRaceHtml(h,2)+'</div></details>'+
       '<div class="growth-card-actions"><button type="button" class="primary" data-horse-action="growth-record" data-horse-id="'+esc(h.id)+'">＋ 今月のレースを記録</button><button type="button" class="secondary" data-horse-action="growth-history" data-horse-id="'+esc(h.id)+'">成長履歴を見る</button></div>';
     syncCardLine(card,html);
   });
