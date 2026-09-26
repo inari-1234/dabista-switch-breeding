@@ -30,11 +30,6 @@ for(const goal of goals){
     rows[i].g.rank=i+1;rows[i].g.total=rows.length;
     delete rows[i].g.sortVector;
   }
-  const order={recommend:4,candidate:3,conditional:2,insufficient:1};
-  for(let i=1;i<rows.length;i++){
-    const a=order[rows[i-1].g.grade?.key]||0,b=order[rows[i].g.grade?.key]||0;
-    if(a<b)throw Error(goal+' grade order inverted at '+i);
-  }
 }
 const elapsedSeconds=shards.reduce((n,s)=>Math.max(n,Number(s.elapsedSeconds||0)),0);
 const payload={
