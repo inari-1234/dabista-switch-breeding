@@ -202,7 +202,7 @@ function ensureStyle(){
   if($('#breedIntegrationStyle'))return;
   const s=document.createElement('style');
   s.id='breedIntegrationStyle';
-  s.textContent='.breed-integration-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.breed-card-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.breed-card-head>div{display:grid;gap:2px}.breed-rank-label{font-size:9px;font-weight:900;color:#60736a}.breed-card-head b{font-size:15px}.breed-cue-badge{padding:4px 7px;border-radius:999px;background:#e8eee9;font-size:9px;font-weight:900;white-space:nowrap}.breed-cue-headline{margin:6px 0;font-size:12px;font-weight:900;line-height:1.4}.breed-reason-row{display:flex;flex-wrap:wrap;gap:4px;margin:5px 0 7px}.breed-reason-chip{padding:3px 6px;border-radius:999px;background:#edf2ef;font-size:8px;font-weight:800;color:#52655c}.breed-card-details{margin:7px 0}.breed-card-details>summary{cursor:pointer;font-size:10px;font-weight:800;color:#53675e}.breed-quick-fit{margin:7px 0}.breed-future-overview{margin-top:10px}.breed-future-head,.breed-future-row{display:grid;grid-template-columns:1.15fr 1.25fr 1fr;gap:6px;align-items:start}.breed-future-head{font-size:9px;color:#66736c;padding:4px 0;border-bottom:1px solid #dce2dd}.breed-future-row{font-size:10px;padding:6px 0;border-bottom:1px solid #e5ebe7}.breed-pair-details,.breed-future-detail{margin:7px 0;font-size:10px}.breed-pair-details summary,.breed-future-detail summary{cursor:pointer}.breed-danger-list>summary{cursor:pointer}@media(max-width:520px){.breed-integration-tools{grid-template-columns:1fr}.breed-future-head,.breed-future-row{grid-template-columns:1fr 1.15fr}.breed-future-head span:last-child,.breed-future-row span:last-child{grid-column:2}.breed-future-row b{grid-row:1 / span 2}}';
+  s.textContent='.breed-integration-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.breed-advanced{margin:10px 0;border:1px solid #dfe8e3;border-radius:12px;background:#f9fbfa;overflow:hidden}.breed-advanced>summary{cursor:pointer;padding:11px 12px;font-size:11px;font-weight:900;color:#486357}.breed-advanced-body{padding:0 10px 10px}.breed-advanced-body>.field{margin-top:8px}.breed-advanced-body .breed-search{width:100%;box-sizing:border-box;margin-top:8px}.breed-card-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.breed-card-head>div{display:grid;gap:2px}.breed-rank-label{font-size:9px;font-weight:900;color:#60736a}.breed-card-head b{font-size:15px}.breed-cue-badge{padding:4px 7px;border-radius:999px;background:#e8eee9;font-size:9px;font-weight:900;white-space:nowrap}.breed-cue-headline{margin:6px 0;font-size:12px;font-weight:900;line-height:1.4}.breed-reason-row{display:flex;flex-wrap:wrap;gap:4px;margin:5px 0 7px}.breed-reason-chip{padding:3px 6px;border-radius:999px;background:#edf2ef;font-size:8px;font-weight:800;color:#52655c}.breed-card-details{margin:7px 0}.breed-card-details>summary{cursor:pointer;font-size:10px;font-weight:800;color:#53675e}.breed-quick-fit{margin:7px 0}.breed-future-overview{margin-top:10px}.breed-future-head,.breed-future-row{display:grid;grid-template-columns:1.15fr 1.25fr 1fr;gap:6px;align-items:start}.breed-future-head{font-size:9px;color:#66736c;padding:4px 0;border-bottom:1px solid #dce2dd}.breed-future-row{font-size:10px;padding:6px 0;border-bottom:1px solid #e5ebe7}.breed-pair-details,.breed-future-detail{margin:7px 0;font-size:10px}.breed-pair-details summary,.breed-future-detail summary{cursor:pointer}.breed-danger-list>summary{cursor:pointer}@media(max-width:520px){.breed-integration-tools{grid-template-columns:1fr}.breed-future-head,.breed-future-row{grid-template-columns:1fr 1.15fr}.breed-future-head span:last-child,.breed-future-row span:last-child{grid-column:2}.breed-future-row b{grid-row:1 / span 2}}';
   document.head.appendChild(s);
 }
 function ensureControls(){
@@ -229,6 +229,16 @@ function ensureControls(){
     search.insertAdjacentElement('afterend',tools);
     $('#breedTheoryFilter').onchange=()=>window.renderBreed();
     $('#breedNitroFilter').onchange=()=>window.renderBreed();
+  }
+  if(!$('#breedAdvancedFilters')){
+    const advanced=document.createElement('details');
+    advanced.id='breedAdvancedFilters';advanced.className='breed-advanced';
+    advanced.innerHTML='<summary>詳細な絞り込み（任意）</summary><div class="breed-advanced-body"></div>';
+    controls.insertAdjacentElement('afterend',advanced);
+    const body=advanced.querySelector('.breed-advanced-body'),catField=cat?.closest('.field'),toolBox=$('#breedIntegrationTools');
+    if(catField)body.appendChild(catField);
+    if(search)body.appendChild(search);
+    if(toolBox)body.appendChild(toolBox);
   }
   const notice=$('#breedNotice');
   if(goal){
