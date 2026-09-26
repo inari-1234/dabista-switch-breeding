@@ -128,10 +128,10 @@ assert.ok(!JSON.stringify(springQuick).includes('overallScore')&&!JSON.stringify
 const ui=fs.readFileSync('v27.js','utf8');
 assert.ok(ui.includes("decision.reasons||[]"),'v27 must render mare-specific decision reasons');
 assert.ok(ui.includes('mare-why-reasons'),'v27 must include compact reason UI');
-assert.ok(ui.includes('function orderedGoalKeys')&&ui.includes('mare-goal-list'),'v27 must show purpose evaluations in strength order');
-assert.ok(ui.includes('function mareAttentionGroups'),'v27 must derive grouped attention facts');
-assert.ok(ui.includes("const attentionGoal=topGoals.includes(goal)?goal:(topGoals[0]||goal)"),'v27 attention must follow the recommended purpose rather than an unrelated selected goal');
-assert.ok(ui.indexOf("attentionGroupHtml('加算'")<ui.indexOf("attentionGroupHtml('減算'")&&ui.indexOf("attentionGroupHtml('減算'")<ui.indexOf("attentionGroupHtml('注意'"),'v27 attention must display 加算→減算→注意');
+assert.ok(ui.includes('purpose-focus')&&ui.includes('AI順位'),'v27 must center the selected purpose and its AI rank');
+assert.ok(ui.includes('function mareAttentionGroups'),'v27 must derive structured attention facts');
+assert.ok(ui.includes('const attention=mareAttentionGroups(goal,direct,a,recommendations)'),'v27 attention must follow the purpose the user selected');
+assert.ok(ui.includes('attentionItems=[...(attention.additions||[]),...(attention.subtractions||[]),...(attention.cautions||[])]'),'v27 must compact structured evidence before display to control information density');
 assert.ok(ui.includes('相対調整：'),'v27 must render relative adjustment wording');
 assert.ok(!ui.includes('不足軸'),'v27 must not restore generic deficiency-axis wording');
 
