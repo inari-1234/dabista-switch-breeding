@@ -57,6 +57,7 @@ on:
       - 'tests/breed-portfolio-optimization-regression.test.js'
       - 'tests/production-mare-context-regression.test.js'
       - 'tests/recommendation-visual-hierarchy-contract.test.js'
+      - 'tests/mare-purpose-ai-ranking.test.js'
       - 'tests/magnificent-cross-utility-diagnostic.test.js'
       - 'tests/st-cross-2400-utility-diagnostic.test.js'
       - 'tests/theory-ranking-delta-diagnostic.test.js'
