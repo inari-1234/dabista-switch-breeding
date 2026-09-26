@@ -388,14 +388,16 @@ assert.ok(v27.includes("selectedGeneration===rec.generation?'diagnosis':'manual'
 assert.ok(v27.includes('aria-pressed'),'generation card selection must expose button state');
 assert.ok(v27.includes("'選択中：'+label"),'manual override must remain visible without long explanatory copy');
 assert.ok(v27.includes('この世代で本命配合を見る'),'manual generation must be directly actionable');
-assert.ok(v27.includes('推奨用途'),'mare card must lead with the recommended use');
-assert.ok(v27.includes('<div class="mare-use-title">評価</div>')&&v27.includes('mare-goal-list'),'mare card must provide a compact ordered purpose evaluation list');
-assert.ok(v27.includes('mare-purpose-summary'),'mare card must expose the recommendation conclusion before detailed evidence');
+assert.ok(v27.includes('purpose-focus'),'selected purpose must lead the mare card');
+assert.ok(v27.includes('AI順位'),'purpose card must expose purpose-specific AI rank');
+assert.ok(v27.includes('purpose-stats')&&v27.includes('繁殖SP')&&v27.includes('繁殖ST')&&v27.includes('繁殖PW'),'purpose card must integrate mare ability stats');
+assert.ok(v27.includes('purpose-nitro')&&v27.includes('ニトロ'),'purpose card must integrate nitro');
+assert.ok(v27.includes('focusFactorHtml'),'father/dam-sire/sire-sire factors must be surfaced when present');
 assert.ok(v27.includes('quickGoalRecommendations'),'sale purpose panel must come from the shared recommendation core');
 assert.ok(v27.includes('function mareAttentionGroups'),'mare attention must use structured recommendation evidence');
-assert.ok(v27.includes("attentionGroupHtml('加算'")&&v27.includes("attentionGroupHtml('減算'")&&v27.includes("attentionGroupHtml('注意'"),'mare attention must preserve 加算→減算→注意 groups');
 assert.ok(v27.includes('goalMareReason'),'purpose-specific mare reason must come from the shared recommendation core');
-assert.ok(v27.includes('mare-purpose-summary'),'mare purpose summary must carry the primary visual hierarchy');
+assert.ok(v27.includes('AI配合シミュレーション'),'purpose card must offer a concrete AI breeding simulation');
+assert.ok(v27.includes('pedigreeTreeHtml'),'purpose card must expose the complete 15-ancestor pedigree view');
 assert.ok(v27.includes('.mare-tier{padding:7px 11px;font-size:14px'),'ability tier must remain prominent');
 assert.ok(v27.includes('tier-middle'),'middle-tier mares must retain a distinct whole-card tone');
 assert.ok(v27.includes('tier-unknown'),'unknown ability must retain a neutral whole-card tone');
@@ -417,8 +419,8 @@ assert.ok(v26.includes('331頭中 '),'UI must reveal that the full mare master i
 assert.ok(!v26.includes('もう一度「この条件で設計」を実行してください'),'stale hidden-button instruction must be removed');
 assert.ok(v27.includes("box.className='mare-advice tier-'"),'mare card must carry a whole-card ability-tier tone');
 assert.ok(v27.includes('<h4>${esc(name)}</h4>'),'mare identity must remain the primary card heading');
-assert.ok(v27.includes('詳しい順位・根拠を見る'),'secondary mare data must remain collapsed');
-assert.ok(v27.includes('function orderedGoalKeys')&&v27.includes('function quickGoalRow'),'purpose evaluation must remain explicit and ordered by strength');
+assert.ok(v27.includes('詳しい評価根拠を見る'),'secondary mare data must remain collapsed');
+assert.ok(v27.includes('buildPurposeRankings')&&v27.includes('paintPurposeRanks'),'all four purpose tabs must receive AI ranks');
 assert.ok(v27.includes("if(!name){box.className='mare-advice tier-unknown';box.innerHTML='<div class=\"muted\">検索条件に一致する繁殖牝馬がありません。</div>';return}"),'empty mare search must clear stale mare advice and reset card tone');
 console.log(JSON.stringify({
   passed:true,
