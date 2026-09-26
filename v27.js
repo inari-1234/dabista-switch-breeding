@@ -158,12 +158,21 @@ const directCache=new Map();
 function directSnapshot(name){
  if(directCache.has(name))return directCache.get(name);
  const sum=advisor.emptySummary('direct'),bestByGoal={arc:null,bc:null,rebuild:null,stallion:null};
+ const rankPool=planner.createCollector({topN:2,poolN:4});
  for(const r of planner.iterateDirect(name)){
-  advisor.addRoute(sum,r);
+  advisor.addRoute(sum,r);rankPool.push(r);
   for(const g of ['arc','bc','rebuild','stallion'])bestByGoal[g]=advisor.betterGoalRoute(bestByGoal[g],r,g);
  }
- sum.bestByGoal=bestByGoal;directCache.set(name,sum);
+ sum.bestByGoal=bestByGoal;sum.rankPool=rankPool.finish().pool;directCache.set(name,sum);
  return sum
+}
+function stallionPortfolioRoute(direct){
+ if(!direct)return null;
+ if(Object.prototype.hasOwnProperty.call(direct,'stallionPortfolioRoute'))return direct.stallionPortfolioRoute;
+ const pool=(direct.rankPool||[]).slice(0,24);
+ const ranked=pool.length?planner.portfolioPareto(pool,1):null;
+ direct.stallionPortfolioRoute=ranked?.routes?.[0]||direct.bestByGoal?.stallion||null;
+ return direct.stallionPortfolioRoute;
 }
 function mareTierTone(a){
  if(!a?.abilityKnown)return'unknown';
@@ -211,7 +220,8 @@ async function buildPurposeRankings(){
  for(let i=0;i<names.length;i++){
   const name=names[i],direct=directSnapshot(name);
   for(const goal of goalBaseOrder){
-   const cand=advisor.marePurposeCandidate?.(name,goal,direct,direct.bestByGoal?.[goal]);
+   const route=goal==='stallion'?stallionPortfolioRoute(direct):direct.bestByGoal?.[goal];
+   const cand=advisor.marePurposeCandidate?.(name,goal,direct,route);
    if(cand)buckets[goal].push(cand);
   }
   purposeRankingState.progress=i+1;
@@ -298,14 +308,14 @@ function pedigreeCell(name,rowStart,rowEnd,focus=''){
 function pedigreeTreeHtml(name){
  const {record,a}=marePedigreeInfo(name);
  if(!record||a.length!==15)return'<div class="notice">ゲーム内15祖先データを取得できません。</div>';
- return '<div class="pedigree-meta"><span>系統 <b>'+esc(record.system||'—')+'</b></span><span>面白コード <b>'+esc(record.omoshiro||'—')+'</b></span></div>'+
+ return '<div class="pedigree-meta"><span>系統 <b>'+esc(record.system||'—')+'</b></span><span>面白コード <b>'+esc(record.omoshiro||'—')+'</b></span><span>見事コード <b>'+esc(record.migoto||'—')+'</b></span></div>'+
   '<div class="pedigree-scroll"><div class="pedigree-tree">'+
    '<div class="pedigree-col">'+pedigreeCell(a[0],1,9,'focus-sire')+'</div>'+
    '<div class="pedigree-col">'+pedigreeCell(a[1],1,5,'focus-siresire')+pedigreeCell(a[2],5,9,'focus-damsire')+'</div>'+
    '<div class="pedigree-col">'+pedigreeCell(a[3],1,3)+pedigreeCell(a[4],3,5)+pedigreeCell(a[5],5,7)+pedigreeCell(a[6],7,9)+'</div>'+
    '<div class="pedigree-col">'+a.slice(7,15).map((n,i)=>pedigreeCell(n,i+1,i+2)).join('')+'</div>'+
   '</div></div>'+
-  '<div class="pedigree-systems"><small>面白系統</small><b>'+esc((record.omoshiroSystems||[]).join(' / ')||'—')+'</b><span>ゲーム内マスタの15祖先を1・2・4・8頭の配置で全件表示。因子がある祖先は併記します。</span></div>';
+  '<div class="pedigree-systems"><small>面白系統</small><b>'+esc((record.omoshiroSystems||[]).join(' / ')||'—')+'</b><small>見事系統</small><b>'+esc((record.migotoSystems||[]).join(' / ')||'—')+'</b><span>ゲーム内マスタの15祖先を1・2・4・8頭の配置で全件表示。因子がある祖先は併記します。</span></div>';
 }
 function ensurePedigreeDialog(){
  let d=$('#marePedigreeDlg');if(d)return d;
@@ -332,7 +342,8 @@ function ensureSimulationDialog(){
  document.body.appendChild(d);d.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>d.close());return d;
 }
 function openSimulation(name,goal,direct){
- const d=ensureSimulationDialog(),route=direct?.bestByGoal?.[goal]||null,rank=purposeRank(name,goal),label=goalLabels[goal]||goal;
+ const route=goal==='stallion'?stallionPortfolioRoute(direct):(direct?.bestByGoal?.[goal]||null);
+ const d=ensureSimulationDialog(),rank=purposeRank(name,goal),label=goalLabels[goal]||goal;
  $('#mareSimTitle').textContent=name+'｜'+label;
  if(!route){$('#mareSimBody').innerHTML='<div class="notice">安全な直仔配合例を取得できませんでした。世代診断で条件を広げて確認してください。</div>';d.showModal();return}
  const x=planner.expandRoute(name,route,goal),st=x?.stages?.[0],facts=advisor.routeFacts(route),decision=advisor.goalMareReason(name,goal,direct);
@@ -341,17 +352,22 @@ function openSimulation(name,goal,direct){
  const keep=goal==='arc'?'SP/STを維持し、距離側の根拠が付く産駒を優先'
   :goal==='bc'?'SP印とSP補強経路を優先し、STを極端に落とさない産駒を残す'
   :goal==='rebuild'?'母の強みを落とさず、次代で使いやすい牝馬を残す'
-  :'競走能力を確認しつつ、種牡馬入り後に使いやすい血統を持つ牡馬を残す';
+  :'競走能力を確認しつつ、種牡馬入り後の高能力牝馬群への配合成立数が広い牡馬を残す';
+ const portfolio=goal==='stallion'?advisor.portfolioFacts?.(route?.portfolio):null;
+ const portfolioHtml=portfolio
+  ?'<div class="sim-evidence"><b>種牡馬化した場合の後代適合</b><span>SP17/ST5以上 '+portfolio.sp17+'件 / SP15/ST5以上 '+portfolio.sp15+'件 / 安全 '+portfolio.safe+'件</span></div>'
+  :'';
  $('#mareSimBody').innerHTML=
   '<div class="sim-rank"><small>この目的でのAI順位</small><b>'+esc(rankText)+'</b><span>'+esc(decision?.headline||'目的別条件で判断')+'</span></div>'+
   '<div class="sim-pair"><small>AIがまず試す具体的な配合例</small><div><b>'+esc(name)+'</b><span>×</span><b>'+esc(sire)+'</b></div></div>'+
-  '<div class="sim-grid"><div><small>SPニトロ</small><b>'+Number(nitro.sp||facts.sp||0)+'</b></div><div><small>STニトロ</small><b>'+Number(nitro.st||facts.st||0)+'</b></div><div><small>PWニトロ</small><b>'+Number(nitro.pw||facts.pw||0)+'</b></div></div>'+
+  '<div class="sim-grid"><div><small>SPニトロ</small><b>'+Number(nitro.sp??facts.sp??0)+'</b></div><div><small>STニトロ</small><b>'+Number(nitro.st??facts.st??0)+'</b></div><div><small>PWニトロ</small><b>'+Number(nitro.pw??facts.pw??0)+'</b></div></div>'+
   '<div class="sim-evidence"><b>配合の狙い</b><span>'+esc(decision?.detail||'目的条件を満たす血統根拠を優先します。')+'</span><div class="candidate-chip-row">'+
     (facts.speedCross?'<span class="candidate-chip cross">SPクロスあり</span>':'')+
     (facts.longDistanceCross?'<span class="candidate-chip trait">長距離クロス</span>':'')+
     '<span class="candidate-chip theory">'+esc(simTheory(st))+'</span>'+
     (crosses.length?crosses.map(n=>'<span class="candidate-chip trait">'+esc(n)+'</span>').join(''):'')+
   '</div></div>'+
+  portfolioHtml+
   '<div class="sim-operate"><b>AIの運用</b><ol><li>上の配合を実行</li><li>'+esc(keep)+'</li><li>実馬能力を確認し、基準に届かなければ2〜4代診断へ進む</li></ol></div>'+
   '<details class="sim-tech"><summary>父の実績・距離根拠を見る</summary><div>実績 '+esc(ss.record||facts.record||'—')+' / 安定 '+esc(ss.stable||facts.stable||'—')+' / 距離 '+esc((ss.minD||facts.minD||'?')+'–'+(ss.maxD||facts.maxD||'?')+'m')+'</div></details>';
  const deep=$('#mareSimDeep');deep.onclick=()=>{d.close();$('#saleGenerationAdvisor')?.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('#runGenerationAdvisor')?.click(),250)};
