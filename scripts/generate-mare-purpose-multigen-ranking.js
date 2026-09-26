@@ -84,6 +84,7 @@ function analyzeMare(name){
       portfolio:compactPortfolio(route),
       reasons:(rec.reasons||[]).slice(0,4),
       conditional:!!rec.conditional,
+      sortVector:[...(cand?.vector||[])],
       candidate:cand
     };
   }
@@ -94,10 +95,18 @@ const args=process.argv.slice(2);
 const limitArg=args.find(x=>x.startsWith('--limit='));
 const namesArg=args.find(x=>x.startsWith('--names='));
 const outArg=args.find(x=>x.startsWith('--output='));
+const shardIndexArg=args.find(x=>x.startsWith('--shard-index='));
+const shardCountArg=args.find(x=>x.startsWith('--shard-count='));
 let names=M.filter(x=>advisor.mareAssessment(x.name)?.abilityKnown).map(x=>x.name);
 if(namesArg){
   const wanted=new Set(namesArg.slice(8).split(',').map(x=>x.trim()).filter(Boolean));
   names=names.filter(x=>wanted.has(x));
+}
+if(shardIndexArg||shardCountArg){
+  const shardCount=Math.max(1,Number(shardCountArg?.slice(14))||1);
+  const shardIndex=Math.max(0,Number(shardIndexArg?.slice(14))||0);
+  if(shardIndex>=shardCount)throw Error('invalid shard '+shardIndex+'/'+shardCount);
+  names=names.filter((_,i)=>i%shardCount===shardIndex);
 }
 if(limitArg)names=names.slice(0,Math.max(1,Number(limitArg.slice(8))||1));
 
