@@ -43,10 +43,8 @@ function ensureHome(){
     <div class="ui-horse-mark" aria-hidden="true">♞</div>
   </div>
   <div class="ui-home-actions">
-    <button class="ui-jump" data-go="breed" type="button"><span class="ui-action-icon">⌕</span><strong>配合を考える</strong><small>種牡馬候補・理論・ニトロ</small></button>
-    <button class="ui-jump" data-go="sale" type="button"><span class="ui-action-icon">↗</span><strong>セリ牝馬から設計</strong><small>直仔・2代・3代を探索</small></button>
-    <button class="ui-jump" data-go="rebuild" type="button"><span class="ui-action-icon">◇</span><strong>牧場を再建する</strong><small>凱旋門・BC・能力底上げ</small></button>
-    <button class="ui-jump" data-go="horses" type="button"><span class="ui-action-icon">♘</span><strong>登録馬を見る</strong><small>自家製馬・能力・レース印</small></button>
+    <button class="ui-jump" data-go="breed" type="button"><span class="ui-action-icon">⌕</span><strong>配合を考える</strong><small>登録済み繁殖牝馬から候補を探す</small></button>
+    <button class="ui-jump" data-go="sale" type="button"><span class="ui-action-icon">↗</span><strong>繁殖牝馬から設計</strong><small>331頭から目的別にルートを作る</small></button>
   </div>`;
  const toolbar=sec.querySelector('.toolbar');
  sec.insertBefore(hero,toolbar||sec.firstChild);
@@ -76,7 +74,7 @@ function ensureHome(){
 function ensureHorseListControls(){
  const toolbar=$('#horses .toolbar');if(!toolbar||$('#horseListControls'))return;
  const row=document.createElement('div');row.id='horseListControls';row.className='horse-list-controls';
- row.innerHTML='<span id="horseListSummary" class="horse-list-summary"></span><select id="horseRoleFilter" aria-label="登録区分で絞り込み"><option value="all">すべて</option><option value="broodmare">繁殖牝馬</option><option value="sire-candidate">種牡馬候補</option><option value="stallion">種牡馬</option><option value="race">競走馬</option></select><select id="horseSort" aria-label="並び順"><option value="newest">新しい順</option><option value="name">名前順</option><option value="oldest">登録順</option></select>';
+ row.innerHTML='<span id="horseListSummary" class="horse-list-summary"></span><select id="horseRoleFilter" aria-label="現在の状態で絞り込み"><option value="all">すべて</option><option value="race">現役</option><option value="broodmare">繁殖牝馬</option><option value="stallion">種牡馬</option></select><select id="horseSort" aria-label="並び順"><option value="newest">新しい順</option><option value="name">名前順</option><option value="oldest">登録順</option></select>';
  toolbar.insertAdjacentElement('afterend',row);
  $('#horseRoleFilter').onchange=()=>window.renderHorses?.();
  $('#horseSort').onchange=()=>window.renderHorses?.();
