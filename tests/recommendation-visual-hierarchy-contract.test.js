@@ -28,6 +28,11 @@ need(v27,'AI配合シミュレーション','purpose card must expose the concre
 need(v27,'pedigreeTreeHtml','complete pedigree must be available on demand');
 need(v27,'ゲーム内マスタの15祖先','pedigree dialog must declare full 15-ancestor game-master data');
 need(v27,'詳しい評価根拠を見る','secondary evidence must stay collapsed');
+need(v27,".slice(0,4)",'purpose attention must cap primary evidence density');
+need(v27,'purpose-actions','purpose card must keep only the two primary detail actions');
+need(v27,'marePurposeSimulationDlg','AI simulation must open outside the primary card');
+need(v27,'marePedigreeDlg','full pedigree must open outside the primary card');
+if(/purpose-stats[\s\S]{0,800}SP\+ST/.test(v27))throw Error('SP+ST must not return to the primary purpose stat block');
 need(v27,'目的横断の総合点や第7評価軸は作りません','purpose ranking must not become a seventh overall score');
 if(v26.includes('ニトロ・価格・血統を見る')||v26.includes('価格 ${fmt(s.price)}万円'))throw Error('price must be removed from mare primary/detail UI');
 if(v26.includes("SP+ST '+info.spst"))throw Error('SP+ST summary must be removed from selected mare UI');
