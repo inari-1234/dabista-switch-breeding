@@ -1,5 +1,5 @@
 (()=>{
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.26-69',KEY='dabistaFarmV1';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.27-70',KEY='dabistaFarmV1';
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 const db=window.db;
 const lifecycle=window.DABISTA_HORSE_LIFECYCLE;

@@ -1,5 +1,5 @@
 (()=>{
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.26-69',db=window.db,$=s=>document.querySelector(s);
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.27-70',db=window.db,$=s=>document.querySelector(s);
 if(!db)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ver=$('#ver');if(ver)ver.textContent=`v${V} / Build ${BUILD}`;
