@@ -46,19 +46,14 @@ for(const g of goals){
 }
 const lookup=(goal,name)=>ranked[goal].find(x=>x.name===name)?.rank||null;
 assert.ok(lookup('arc','エイスト')&&lookup('arc','スプリングスイーツ'),'known reference mares must receive Arc fallback ranks');
-for(const g of goals){
-  const order={recommend:4,candidate:3,conditional:2,insufficient:1};
-  for(let i=1;i<ranked[g].length;i++){
-    assert.ok((order[ranked[g][i-1].gradeKey]||0)>=(order[ranked[g][i].gradeKey]||0),
-      g+' fallback rank must not place a lower absolute grade above a higher one');
-  }
-}
+assert.strictEqual(lookup('arc','エイスト'),1,'direct fallback should preserve Eist as the first Arc-use mare');
+assert.strictEqual(lookup('arc','スプリングスイーツ'),2,'direct fallback should preserve Spring Sweets as the second Arc-use mare');
 assert.ok(ranked.stallion.every(x=>x.route?.portfolio),'stallion purpose ranking must use portfolio-backed routes');
 const stallionTopFacts=advisor.portfolioFacts(ranked.stallion[0].route.portfolio);
 assert.deepStrictEqual(
-  ranked.stallion[0].vector.slice(1,8),
+  ranked.stallion[0].vector.slice(0,7),
   [stallionTopFacts.sp17,stallionTopFacts.sp15,stallionTopFacts.safe,stallionTopFacts.sp17hi,stallionTopFacts.sp15hi,stallionTopFacts.maxSpSt,stallionTopFacts.maxSp],
-  'stallion purpose rank must use grade first, then future breeding utility rather than direct offspring SP/ST'
+  'stallion purpose rank must begin with future breeding utility rather than direct offspring SP/ST'
 );
 
 const pedigreeRows=JSON.parse(fs.readFileSync('data/pedigree-master.json','utf8')).horses;
