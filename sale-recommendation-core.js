@@ -1267,25 +1267,25 @@
       if(goal==='arc'){
         // 凱旋門は母STを最初の土台にし、次代へ残せるSTニトロを続けて比較。
         // 同水準なら実際の配合成立条件で差をつけ、SP/PWはその後の同値比較に使う。
-        vector=[gradeRank,val(s.st),val(s.nst),...routeVector,val(s.sp),val(s.pw),val(s.nsp),val(s.npw)];
+        vector=[val(s.st),val(s.nst),...routeVector,val(s.sp),val(s.pw),val(s.nsp),val(s.npw),gradeRank];
       }else if(goal==='bc'){
         // BC長期は母SPと次代へ残せるSPニトロを先に守り、
         // 配合側のSP補強経路・父実績で差をつける。
-        vector=[gradeRank,val(s.sp),val(s.nsp),...routeVector,val(s.st),val(s.pw),val(s.nst),val(s.npw)];
+        vector=[val(s.sp),val(s.nsp),...routeVector,val(s.st),val(s.pw),val(s.nst),val(s.npw),gradeRank];
       }else if(goal==='rebuild'){
         // 再建は「現在の母能力が低めで改善余地がある」ことを先に見て、
         // SP/ST/PWニトロを個別軸のまま比較し、その中で次代の配合根拠を評価する。
-        vector=[gradeRank,val(r.spst?.topPercent),val(s.nsp),val(s.nst),val(s.npw),...routeVector,val(s.st),val(s.sp),val(s.pw)];
+        vector=[val(r.spst?.topPercent),val(s.nsp),val(s.nst),val(s.npw),...routeVector,val(s.st),val(s.sp),val(s.pw),gradeRank];
       }else{
         // 自家製種牡馬は直仔のSP/STではなく、後代で使える血統汎用性を主役にする。
         // portfolio付き候補では高能力母集団に対する成立数・安全数・上限を辞書式に比較し、
         // 母側ニトロと能力は同値比較として個別に残す。
         if(route?.portfolio){
           const p=portfolioFacts(route.portfolio);
-          vector=[gradeRank,p.sp17,p.sp15,p.safe,p.sp17hi,p.sp15hi,p.maxSpSt,p.maxSp,p.magnificent,p.elaborate,
-            val(s.nsp),val(s.nst),val(s.npw),val(s.sp),val(s.st),val(s.pw)];
+          vector=[p.sp17,p.sp15,p.safe,p.sp17hi,p.sp15hi,p.maxSpSt,p.maxSp,p.magnificent,p.elaborate,
+            val(s.nsp),val(s.nst),val(s.npw),val(s.sp),val(s.st),val(s.pw),gradeRank];
         }else{
-          vector=[gradeRank,...routeVector,val(s.nsp),val(s.nst),val(s.npw),val(s.sp),val(s.st),val(s.pw)];
+          vector=[...routeVector,val(s.nsp),val(s.nst),val(s.npw),val(s.sp),val(s.st),val(s.pw),gradeRank];
         }
       }
       return{name,goal,gradeKey,grade:explicitGrade||fallback?.goals?.[goal]||null,generation:val(options.generation,route?.sires?.length||1),route,assessment:a,vector};
