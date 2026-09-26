@@ -2,7 +2,8 @@
 'use strict';
 
 let db=window.db;
-if(!db)return;
+const lifecycle=window.DABISTA_HORSE_LIFECYCLE;
+if(!db||!lifecycle)return;
 
 const $=s=>document.querySelector(s);
 const esc=window.esc||((s)=>String(s??''));
@@ -74,7 +75,7 @@ function farmSirePool(){
   if(!engine)return{stallions:[],stats:[],fingerprint:'none'};
   const byName=new Map(),statsByName=new Map(),identity=[];
   for(const h of db.horses||[]){
-    if(h?.role!=='stallion'&&h?.role!=='sire-candidate')continue;
+    if(!lifecycle.isActiveStallion(h))continue;
     const r=engine.resolveHorse?.(h);
     if(!r||!Array.isArray(r.ancestor)||r.ancestor.length!==15)continue;
     const name=norm(h.name||r.name),k=poolKey(name);
@@ -157,7 +158,7 @@ function transientMare(){
 }
 function mareOptions(){
   syncDb();
-  const saved=(db.horses||[]).filter(h=>h.sex==='牝').map(h=>'<option value="'+esc(h.id)+'">'+esc(h.name)+'</option>').join('');
+  const saved=(db.horses||[]).filter(h=>lifecycle.isBreedingMare(h)).map(h=>'<option value="'+esc(h.id)+'">'+esc(h.name)+'</option>').join('');
   const t=transientMare();
   return (t?'<option value="'+esc(t.id)+'">'+esc(t.name)+'（セリ設計・一時）</option>':'')+saved;
 }
