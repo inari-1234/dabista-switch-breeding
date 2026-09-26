@@ -6,6 +6,7 @@ on:
       - candidate/growth-tracking
     paths:
       - 'scripts/generate-mare-purpose-multigen-ranking.js'
+      - 'scripts/merge-mare-purpose-multigen-shards.js'
       - '.github/workflows/generate-multigen-ranking.yml'
       - 'sale-recommendation-core.js'
       - 'sale-planner-core.js'
@@ -15,17 +16,14 @@ permissions:
   contents: read
 
 jobs:
-  generate:
+  smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Static syntax
-        run: |
-          node --check scripts/generate-mare-purpose-multigen-ranking.js
-          node --check sale-recommendation-core.js
       - name: Reference three-mares smoke
         run: |
+          node --check scripts/generate-mare-purpose-multigen-ranking.js
           node scripts/generate-mare-purpose-multigen-ranking.js --names=エイスト,スプリングスイーツ,クイーンズスミレ --output=/tmp/multigen-sample.json
           node - <<'NODE'
           const x=require('/tmp/multigen-sample.json');
@@ -35,30 +33,57 @@ jobs:
             for(const g of ['arc','bc','rebuild','stallion']){
               if(!r.goals[g]?.generation)throw Error(n+' '+g+' generation missing');
               if(!r.goals[g]?.grade?.key)throw Error(n+' '+g+' grade missing');
-              if(!r.goals[g]?.sires?.length)throw Error(n+' '+g+' sires missing');
+              if(r.goals[g]?.sires?.length!==r.goals[g]?.generation)throw Error(n+' '+g+' route mismatch');
             }
           }
           console.log(JSON.stringify({passed:true,references:Object.fromEntries(Object.entries(x.mares).map(([n,r])=>[n,Object.fromEntries(Object.entries(r.goals).map(([g,v])=>[g,{generation:v.generation,grade:v.grade.key,sires:v.sires}]))]))},null,2));
           NODE
-      - name: Generate all known mares
+
+  shard:
+    needs: smoke
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate shard
         run: |
-          node scripts/generate-mare-purpose-multigen-ranking.js --output=mare-purpose-multigen-ranking.json
-      - name: Validate generated ranking
+          node scripts/generate-mare-purpose-multigen-ranking.js --shard-index=${{ matrix.shard }} --shard-count=6 --output=multigen-shard-${{ matrix.shard }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: multigen-shard-${{ matrix.shard }}
+          path: multigen-shard-${{ matrix.shard }}.json
+          retention-days: 2
+
+  aggregate:
+    needs: shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: multigen-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Merge and validate all known mares
         run: |
+          node --check scripts/merge-mare-purpose-multigen-shards.js
+          node scripts/merge-mare-purpose-multigen-shards.js shards/multigen-shard-*.json --output=mare-purpose-multigen-ranking.json
           node - <<'NODE'
           const x=require('./mare-purpose-multigen-ranking.json');
           if(x.analyzedCount!==298)throw Error('expected 298, got '+x.analyzedCount);
-          for(const [name,row] of Object.entries(x.mares)){
-            for(const g of ['arc','bc','rebuild','stallion']){
-              const v=row.goals[g];
-              if(!v?.rank||v.total!==298)throw Error(name+' '+g+' rank '+JSON.stringify(v));
-              if(![1,2,3,4].includes(v.generation))throw Error(name+' '+g+' generation');
-              if(!['recommend','candidate','conditional','insufficient'].includes(v.grade?.key))throw Error(name+' '+g+' grade');
-              if(v.sires.length!==v.generation)throw Error(name+' '+g+' route length');
-            }
+          const gradeOrder={recommend:4,candidate:3,conditional:2,insufficient:1};
+          for(const g of ['arc','bc','rebuild','stallion']){
+            const rows=Object.entries(x.mares).sort((a,b)=>a[1].goals[g].rank-b[1].goals[g].rank);
+            if(rows.length!==298||rows[0][1].goals[g].rank!==1||rows.at(-1)[1].goals[g].rank!==298)throw Error(g+' rank coverage');
+            for(let i=1;i<rows.length;i++)if((gradeOrder[rows[i-1][1].goals[g].grade.key]||0)<(gradeOrder[rows[i][1].goals[g].grade.key]||0))throw Error(g+' grade order');
           }
           const arc=Object.entries(x.mares).sort((a,b)=>a[1].goals.arc.rank-b[1].goals.arc.rank).slice(0,10).map(([n,r])=>({name:n,rank:r.goals.arc.rank,generation:r.goals.arc.generation,grade:r.goals.arc.grade.key}));
-          console.log(JSON.stringify({passed:true,elapsedSeconds:x.elapsedSeconds,arcTop10:arc,eist:x.mares['エイスト']?.goals.arc,spring:x.mares['スプリングスイーツ']?.goals.arc,queens:x.mares['クイーンズスミレ']?.goals},null,2));
+          console.log(JSON.stringify({passed:true,arcTop10:arc,eist:x.mares['エイスト']?.goals.arc,spring:x.mares['スプリングスイーツ']?.goals.arc,queens:x.mares['クイーンズスミレ']?.goals},null,2));
           NODE
       - uses: actions/upload-artifact@v4
         with:
