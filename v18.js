@@ -1,7 +1,7 @@
 (()=>{
 const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.26-68';
-const $=s=>document.querySelector(s),db=window.db,esc=window.esc||((s)=>String(s??''));
-if(!db)return;
+const $=s=>document.querySelector(s),db=window.db,esc=window.esc||((s)=>String(s??'')),lifecycle=window.DABISTA_HORSE_LIFECYCLE;
+if(!db||!lifecycle)return;
 window.APP_VERSION=V;window.APP_BUILD=BUILD;
 const ver=$('#ver');if(ver)ver.textContent=`v${V} / Build ${BUILD}`;
 
@@ -98,7 +98,7 @@ function installPedigreeGuidance(){
 }
 /* 全デフォルト血統マスタを登録画面へ反映 */
 function fillMasterPedigree(showNote=true){
-  if($('#role')?.value!=='broodmare')return 0;
+  if(($('#currentState')?.value||$('#role')?.value)!=='broodmare')return 0;
   const name=$('#name')?.value;
   const h=mareTheoryByName(name)||window.findPedigreeHorse?.(name);if(!h)return 0;
   const pairs=[['sire',h.sire],['sireSire',h.sireSire],['damSire',h.damSire],['sireDamSire',h.sireDamSire],['damDamSire',h.damDamSire]];
@@ -115,7 +115,7 @@ async function loadTheory(){
     const u=new URL('data/theory-master.json',location.href);u.searchParams.set('_',BUILD);
     const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);
     theory=await r.json();theoryStatus={status:'ok',stallions:theory.stallions?.length||0,broodmares:theory.broodmares?.length||0,syncedAt:theory.syncedAt||null};window.DABISTA_THEORY_MASTER=theory;window.DABISTA_THEORY_STATUS=theoryStatus;decorateBreedCards();
-    if($('#role')?.value==='broodmare'&&$('#name')?.value)fillMasterPedigree(false);
+    if(($('#currentState')?.value||$('#role')?.value)==='broodmare'&&$('#name')?.value)fillMasterPedigree(false);
   }catch(e){theoryStatus={status:'failed',error:String(e),stallions:0,broodmares:0};window.DABISTA_THEORY_STATUS=theoryStatus;window.APP_ERRORS?.push({at:new Date().toISOString(),message:'theory-master: '+String(e)});updateTheoryStatus()}
 }
 
@@ -125,7 +125,7 @@ let remote=null;async function checkUpdate(show=false){try{const u=new URL('vers
 async function forceUpdate(){try{if('serviceWorker'in navigator){for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}if('caches'in window){for(const k of await caches.keys())await caches.delete(k)}}catch{}const u=new URL(location.href);u.searchParams.set('update',Date.now());location.replace(u.href)}
 function installSupport(){
   if($('#refreshBtn'))$('#refreshBtn').onclick=()=>checkUpdate(true);if($('#applyUpdate'))$('#applyUpdate').onclick=forceUpdate;
-  if($('#diagBtn'))$('#diagBtn').onclick=()=>downloadJSON({diagnostic:true,generatedAt:new Date().toISOString(),app:{version:V,build:BUILD,url:location.href,standalone:matchMedia('(display-mode: standalone)').matches||navigator.standalone===true},remoteVersion:remote,masters:window.DABISTA_MASTER_STATUS||null,theory:theoryStatus,device:{userAgent:navigator.userAgent,language:navigator.language,online:navigator.onLine},storage:{horseCount:db.horses.length,broodmareCount:db.horses.filter(h=>h.role==='broodmare').length,defaultMareImportedCount:db.horses.filter(h=>h.masterRef?.type==='default-broodmare').length,raceCount:db.races?.length||0,bytes:new Blob([JSON.stringify(db)]).size},errors:window.APP_ERRORS||[],data:db},`dabista-diagnostic-v${V}.json`);
+  if($('#diagBtn'))$('#diagBtn').onclick=()=>downloadJSON({diagnostic:true,generatedAt:new Date().toISOString(),app:{version:V,build:BUILD,url:location.href,standalone:matchMedia('(display-mode: standalone)').matches||navigator.standalone===true},remoteVersion:remote,masters:window.DABISTA_MASTER_STATUS||null,theory:theoryStatus,device:{userAgent:navigator.userAgent,language:navigator.language,online:navigator.onLine},storage:{horseCount:db.horses.length,broodmareCount:db.horses.filter(h=>lifecycle.isBreedingMare(h)).length,defaultMareImportedCount:db.horses.filter(h=>h.masterRef?.type==='default-broodmare').length,raceCount:db.races?.length||0,bytes:new Blob([JSON.stringify(db)]).size},errors:window.APP_ERRORS||[],data:db},`dabista-diagnostic-v${V}.json`);
   ;
 }
 
