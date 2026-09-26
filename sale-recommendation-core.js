@@ -1229,19 +1229,21 @@
       const s=a.stats||{},r=a.ranks||{},routeVector=goalVector(route,goal),gradeRank=PURPOSE_GRADE_RANK[gradeKey]||0;
       let vector=[];
       if(goal==='arc'){
-        // 凱旋門は母STを最初の土台にし、同水準の牝馬を実際の配合成立条件で並べる。
-        // SP/PWはその後の同値比較に使い、単一総合点には合算しない。
-        vector=[val(s.st),...routeVector,val(s.sp),val(s.pw),gradeRank];
+        // 凱旋門は母STを最初の土台にし、次代へ残せるSTニトロを続けて比較。
+        // 同水準なら実際の配合成立条件で差をつけ、SP/PWはその後の同値比較に使う。
+        vector=[val(s.st),val(s.nst),...routeVector,val(s.sp),val(s.pw),val(s.nsp),val(s.npw),gradeRank];
       }else if(goal==='bc'){
-        // BC長期は母SPを先に守り、配合側のSP補強経路・父実績で差をつける。
-        vector=[val(s.sp),...routeVector,val(s.st),val(s.pw),gradeRank];
+        // BC長期は母SPと次代へ残せるSPニトロを先に守り、
+        // 配合側のSP補強経路・父実績で差をつける。
+        vector=[val(s.sp),val(s.nsp),...routeVector,val(s.st),val(s.pw),val(s.nst),val(s.npw),gradeRank];
       }else if(goal==='rebuild'){
         // 再建は「現在の母能力が低めで改善余地がある」ことを先に見て、
-        // その中で次代に残せる配合根拠を比較する。
-        vector=[val(r.spst?.topPercent),...routeVector,val(s.st),val(s.sp),val(s.pw),gradeRank];
+        // SP/ST/PWニトロを個別軸のまま比較し、その中で次代の配合根拠を評価する。
+        vector=[val(r.spst?.topPercent),val(s.nsp),val(s.nst),val(s.npw),...routeVector,val(s.st),val(s.sp),val(s.pw),gradeRank];
       }else{
-        // 自家製種牡馬は将来の血統汎用性（routeVector）を主役にし、母能力は同値比較。
-        vector=[...routeVector,val(s.sp),val(s.st),val(s.pw),gradeRank];
+        // 自家製種牡馬は将来の血統汎用性（routeVector）を主役にし、
+        // 母側ニトロと能力は同値比較として個別に残す。
+        vector=[...routeVector,val(s.nsp),val(s.nst),val(s.npw),val(s.sp),val(s.st),val(s.pw),gradeRank];
       }
       return{name,goal,gradeKey,route,assessment:a,vector};
     }
