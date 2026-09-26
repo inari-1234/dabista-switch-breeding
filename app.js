@@ -22,25 +22,22 @@ window.esc=esc;window.saveFarm=save;
 save();$('#ver').textContent=`v${APP_VERSION} / Build ${APP_BUILD}`;
 function score(id){const r=db.races.filter(x=>x.horseId===id&&x.distance>=2000&&x.distance<=2400),v={'◎':5,'○':4,'▲':3,'△':2,'－':1,'不明':0};if(!r.length)return null;const a=r.reduce((s,x)=>s+(v[x.mark4]||0),0)/r.length,b=r.reduce((s,x)=>s+(v[x.mark5]||0),0)/r.length;let l=a>=4.5&&b>=4?'ブレイカー有力':a>=4.5&&b>=3?'高SP・ST残存候補':a>=4.5?'SP押し切り型':b>=4?'ST寄り':'要データ';const long=r.filter(x=>x.distance>=2200);if(long.length&&long.every(x=>(v[x.mark4]||0)>=4)&&long.some(x=>(v[x.mark5]||0)>=4))l='ブレイカー有力';return{a,b,l,n:r.length,wins:r.filter(x=>+x.finish===1).length}}
 window.horseScore=score;
-function horseRoleKey(h){
- if(h?.role==='broodmare')return'broodmare';
- if(h?.role==='sire-candidate')return'sire-candidate';
- if(h?.role==='stallion')return'stallion';
- if(h?.role==='race')return'race';
- return h?.sex==='牝'?'broodmare':'race';
-}
+const lifecycle=window.DABISTA_HORSE_LIFECYCLE;
+function horseRoleKey(h){return lifecycle?.currentState?.(h)||'race'}
 function horseRoleLabel(h){
  const k=horseRoleKey(h);
+ if(lifecycle?.currentLabel)return lifecycle.currentLabel(k);
  if(k==='broodmare')return'繁殖牝馬';
- if(k==='sire-candidate')return'種牡馬候補';
  if(k==='stallion')return'種牡馬';
- return '競走馬'+(h?.sex?'・'+h.sex:'');
+ return'現役競走馬';
 }
+function horseFutureUseKey(h){return lifecycle?.futureUse?.(h)||'none'}
+function horseFutureUseLabel(h){return lifecycle?.futureLabel?.(horseFutureUseKey(h))||''}
 function renderH(){
  const q=String($('#search')?.value||'').normalize('NFKC').toLowerCase();
  const role=$('#horseRoleFilter')?.value||'all',sort=$('#horseSort')?.value||'newest';
  let a=db.horses.map((h,i)=>({h,i})).filter(({h})=>{
-   const hay=[h.name,h.sire,h.dam,h.generation,h.note,h.roleMemo,h.routeSource?.startMare,...(h.routeSource?.sires||[])].join(' ').normalize('NFKC').toLowerCase();
+   const hay=[h.name,h.sire,h.dam,h.generation,h.note,h.roleMemo,horseRoleLabel(h),horseFutureUseLabel(h),h.routeSource?.startMare,...(h.routeSource?.sires||[])].join(' ').normalize('NFKC').toLowerCase();
    return (!q||hay.includes(q))&&(role==='all'||horseRoleKey(h)===role);
  });
  if(sort==='name')a.sort((x,y)=>String(x.h.name||'').localeCompare(String(y.h.name||''),'ja'));
@@ -51,7 +48,8 @@ function renderH(){
    const sc=score(h.id),distance=h.minD&&h.maxD?`${h.minD}–${h.maxD}`:'';
    const stats=[['実績',h.record],['底力',h.guts],['安定',h.stable]].filter(([,v])=>v&&v!=='-');
    const statHtml=stats.length?'<div class="grid horse-stat-grid">'+stats.map(([label,v])=>`<div class="stat"><b>${esc(v)}</b><small>${label}</small></div>`).join('')+'</div>':'';
-   return `<article class="card horse" data-id="${h.id}"><div class="row"><div><h2>${esc(h.name)}</h2><span class="badge horse-role-badge">${esc(horseRoleLabel(h))}</span>${h.generation?`<span class="badge gold">${esc(h.generation)}</span>`:''}${sc?`<span class="badge">${sc.l}</span>`:''}</div>${distance?`<div class="score">${distance}</div>`:''}</div><p class="muted horse-parent-line">${esc(h.sire||'?')} × ${esc(h.dam||'?')}</p>${statHtml}${sc?`<p class="muted">2000–2400m ${sc.n}走｜④ ${sc.a.toFixed(1)}｜⑤ ${sc.b.toFixed(1)}｜1着 ${sc.wins}</p>`:''}${h.starts?`<p><b>${esc(h.starts)}</b> ${esc(h.g1||'')}</p>`:''}${h.note?`<p class="muted horse-note">${esc(h.note)}</p>`:''}</article>`;
+   const future=horseFutureUseLabel(h);
+   return `<article class="card horse" data-id="${h.id}"><div class="row"><div><h2>${esc(h.name)}</h2><span class="badge horse-role-badge">${esc(horseRoleLabel(h))}</span>${future?`<span class="badge horse-future-badge">${esc(future)}</span>`:''}${h.generation?`<span class="badge gold">${esc(h.generation)}</span>`:''}${sc?`<span class="badge">${sc.l}</span>`:''}</div>${distance?`<div class="score">${distance}</div>`:''}</div><p class="muted horse-parent-line">${esc(h.sire||'?')} × ${esc(h.dam||'?')}</p>${statHtml}${sc?`<p class="muted">2000–2400m ${sc.n}走｜④ ${sc.a.toFixed(1)}｜⑤ ${sc.b.toFixed(1)}｜1着 ${sc.wins}</p>`:''}${h.starts?`<p><b>${esc(h.starts)}</b> ${esc(h.g1||'')}</p>`:''}${h.note?`<p class="muted horse-note">${esc(h.note)}</p>`:''}</article>`;
  }).join('')||'<div class="empty">条件に合う登録馬はありません</div>';
 }
 function renderR(){const g=db.horses.map(h=>({h,r:db.races.filter(x=>x.horseId===h.id).sort((a,b)=>a.distance-b.distance)})).filter(x=>x.r.length);$('#raceCards').innerHTML=g.map(x=>{const s=score(x.h.id);return`<div class="card ${s?.l==='ブレイカー有力'?'breaker':''}" data-race-horse-id="${x.h.id}"><div class="row"><b>${esc(x.h.name)}</b><span class="score">${s?s.a.toFixed(1)+' / '+s.b.toFixed(1):''}</span></div><div class="muted">${s?.l||''}</div><table><tr><th>レース</th><th>距離</th><th>④</th><th>⑤</th><th>着</th><th></th></tr>${x.r.map(r=>`<tr><td>${esc(r.name)}${r.age&&r.month?`<small class="growth-race-date">${r.age}歳${r.month}月</small>`:''}</td><td>${r.distance}</td><td class="mark">${r.mark4}</td><td class="mark">${r.mark5}</td><td>${r.finish||'-'}</td><td><button class="secondary mini" data-del="${r.id}">削除</button></td></tr>`).join('')}</table></div>`}).join('')||'<div class="empty">レース記録なし</div>'}
