@@ -1222,10 +1222,46 @@
     }
 
     const PURPOSE_GRADE_RANK={recommend:4,candidate:3,conditional:2,insufficient:1};
-    function marePurposeCandidate(name,goal,summary,bestRoute){
+    const PURPOSE_GRADE_META={
+      recommend:{symbol:'◎',label:'推奨'},
+      candidate:{symbol:'○',label:'候補'},
+      conditional:{symbol:'△',label:'条件付き'},
+      insufficient:{symbol:'—',label:'未達'}
+    };
+    function purposeGradeForRoute(name,goal,route,portfolio=null){
+      const a=mareAssessment(name);
+      if(!a)return{key:'insufficient',...PURPOSE_GRADE_META.insufficient,reason:'牝馬評価を取得できません'};
+      const high=!!a.abilityKnown&&val(a.ranks?.spst?.topPercent,100)<=25;
+      const spHigh=!!a.abilityKnown&&val(a.ranks?.sp?.topPercent,100)<=25;
+      if(goal==='stallion'){
+        const p=portfolioFacts(portfolio||route?.portfolio);
+        let key='insufficient',reason='後代で使える安全な配合候補が不足';
+        if(p.safe>0){key='conditional';reason='後代で使える安全配合はあるが、高能力牝馬への広がりは限定的'}
+        if(p.sp17>=1&&p.sp15>=5&&p.safe>=40){key='candidate';reason='高能力牝馬群にSP17/ST5以上を含む実用的な配合幅あり'}
+        if(p.sp17>=5&&p.sp15>=12&&p.sp17hi>=2&&p.safe>=45){key='recommend';reason='高能力牝馬群に繰り返し使える広い配合汎用性あり'}
+        return{key,...PURPOSE_GRADE_META[key],reason};
+      }
+      const fit=goalFit(route,goal);
+      let key='insufficient',reason='目的の絶対基準に未達';
+      if(goal==='arc'){
+        if(fit.key==='strong'&&high){key='recommend';reason='母能力上位＋凱旋門強基準・父実績/距離根拠あり'}
+        else if(fit.key==='strong'||fit.key==='qualified'){key='candidate';reason='凱旋門基準を満たす配合ルートあり'}
+        else if(fit.key==='conditional'){key='conditional';reason='SP/STは候補だが父実績または距離根拠の確認が必要'}
+      }else if(goal==='bc'){
+        if(fit.key==='strong'&&spHigh){key='recommend';reason='母SP上位＋BC強基準・SP補強経路・父実績あり'}
+        else if(fit.key==='strong'||fit.key==='qualified'){key='candidate';reason='BC基準とSP補強経路を満たす配合ルートあり'}
+        else if(fit.key==='conditional'){key='conditional';reason='BC数値/補強条件は候補だが父実績などの確認が必要'}
+      }else if(goal==='rebuild'){
+        if(fit.key==='qualified'&&a.abilityKnown&&val(a.ranks?.spst?.topPercent,0)>60){key='recommend';reason='再建対象の母能力帯からSP15/ST5以上の再建ルートを確保'}
+        else if(fit.key==='qualified'){key='candidate';reason='SP15/ST5以上の再建ルートあり'}
+      }
+      return{key,...PURPOSE_GRADE_META[key],reason};
+    }
+    function marePurposeCandidate(name,goal,summary,bestRoute,options={}){
       const a=mareAssessment(name);if(!a?.abilityKnown)return null;
       const bestByGoal=summary?.bestByGoal||{},route=bestRoute||bestByGoal?.[goal]||summary?.bestRoute||null;
-      const recs=quickGoalRecommendations(name,summary,bestByGoal),gradeKey=recs?.goals?.[goal]?.key||'insufficient';
+      const fallback=quickGoalRecommendations(name,summary,bestByGoal);
+      const explicitGrade=options.grade||null,gradeKey=explicitGrade?.key||fallback?.goals?.[goal]?.key||'insufficient';
       const s=a.stats||{},r=a.ranks||{},routeVector=goalVector(route,goal),gradeRank=PURPOSE_GRADE_RANK[gradeKey]||0;
       let vector=[];
       if(goal==='arc'){
@@ -1252,7 +1288,7 @@
           vector=[...routeVector,val(s.nsp),val(s.nst),val(s.npw),val(s.sp),val(s.st),val(s.pw),gradeRank];
         }
       }
-      return{name,goal,gradeKey,route,assessment:a,vector};
+      return{name,goal,gradeKey,grade:explicitGrade||fallback?.goals?.[goal]||null,generation:val(options.generation,route?.sires?.length||1),route,assessment:a,vector};
     }
     function compareMarePurposeCandidate(a,b){
       const A=a?.vector||[],B=b?.vector||[];
@@ -1341,7 +1377,7 @@
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
       directUseLabels,goalMareReason,quickSaleOutlook,quickGoalRecommendations,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,candidateDisplayFacts,recommendationCue,arcUpgradeGate,bcUpgradeGate,rebuildUpgradeGate,rebuildFreedomGate,rebuildFreedomUpgradeReasons,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
-      profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit,
+      profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit,purposeGradeForRoute,
       marePurposeCandidate,compareMarePurposeCandidate,rankMarePurposeCandidates
     };
   }
