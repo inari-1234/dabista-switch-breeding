@@ -11,14 +11,14 @@ const core=fs.readFileSync('growth-core.js','utf8');
 const ui=fs.readFileSync('growth-ui.js','utf8');
 const lifecycle=fs.readFileSync('horse-lifecycle.js','utf8');
 
-assert.ok(index.includes('growth-db.js?v=1.19.1-b68'),'growth DB script missing');
-assert.ok(index.includes('growth-model.js?v=1.19.1-b68'),'growth model script missing');
-assert.ok(index.includes('growth-core.js?v=1.19.1-b68'),'growth core script missing');
-assert.ok(index.includes('growth-ui.js?v=1.19.1-b68'),'growth UI script missing');
-assert.ok(index.includes('horse-lifecycle.js?v=1.19.1-b68'),'horse lifecycle script missing');
-assert.ok(index.indexOf('growth-db.js?v=1.19.1-b68')<index.indexOf('horse-lifecycle.js?v=1.19.1-b68')&&index.indexOf('horse-lifecycle.js?v=1.19.1-b68')<index.indexOf('app.js?v=1.19.1-b68'),'lifecycle must load before app initialization');
-assert.ok(index.indexOf('growth-model.js?v=1.19.1-b68')<index.indexOf('growth-core.js?v=1.19.1-b68'),'growth model must load before growth core');
-assert.ok(index.indexOf('ui-refresh.js?v=1.19.1-b68')<index.indexOf('growth-ui.js?v=1.19.1-b68'),'growth UI must load after existing UI refresh');
+assert.ok(index.includes('growth-db.js?v=1.19.1-b69'),'growth DB script missing');
+assert.ok(index.includes('growth-model.js?v=1.19.1-b69'),'growth model script missing');
+assert.ok(index.includes('growth-core.js?v=1.19.1-b69'),'growth core script missing');
+assert.ok(index.includes('growth-ui.js?v=1.19.1-b69'),'growth UI script missing');
+assert.ok(index.includes('horse-lifecycle.js?v=1.19.1-b69'),'horse lifecycle script missing');
+assert.ok(index.indexOf('growth-db.js?v=1.19.1-b69')<index.indexOf('horse-lifecycle.js?v=1.19.1-b69')&&index.indexOf('horse-lifecycle.js?v=1.19.1-b69')<index.indexOf('app.js?v=1.19.1-b69'),'lifecycle must load before app initialization');
+assert.ok(index.indexOf('growth-model.js?v=1.19.1-b69')<index.indexOf('growth-core.js?v=1.19.1-b69'),'growth model must load before growth core');
+assert.ok(index.indexOf('ui-refresh.js?v=1.19.1-b69')<index.indexOf('growth-ui.js?v=1.19.1-b69'),'growth UI must load after existing UI refresh');
 
 assert.ok(app.includes('window.DABISTA_GROWTH_DB?.normalizeInPlace(db)'),'startup DB growth normalization missing');
 assert.ok(app.includes('window.DABISTA_GROWTH_DB?.normalizeInPlace(restored)'),'restored backup growth normalization missing');
@@ -77,7 +77,7 @@ assert.ok(db.includes('growthCheckSets')&&db.includes('growthChecks'),'legacy BC
 assert.ok(!/for\s*\([^)]*db\.horses/.test(db),'growth migration must not mass-mutate horse records');
 assert.ok(!/for\s*\([^)]*db\.races/.test(db),'growth migration must not invent historical race dates');
 
-assert.ok(index.indexOf('v16.js?v=1.19.1-b68')<index.indexOf('growth-ui.js?v=1.19.1-b68'),'dialog patch must load before dynamically-created timing dialogs');
+assert.ok(index.indexOf('v16.js?v=1.19.1-b69')<index.indexOf('growth-ui.js?v=1.19.1-b69'),'dialog patch must load before dynamically-created timing dialogs');
 assert.ok(v16.includes("HTMLDialogElement.prototype.showModal=function(){lockBody();if(!this.__dabistaUnlockBound){this.__dabistaUnlockBound=true;this.addEventListener('close',unlockBody)}return nativeShow.call(this)}"),'dynamic dialog showModal must bind unlockBody');
 assert.ok(ui.includes("d.id='growthQuickRaceDlg'"),'quick race dialog missing');
 assert.ok(ui.includes("d.id='growthHistoryDlg'"),'growth history dialog missing');
