@@ -135,6 +135,7 @@ function style(){
  .purpose-rank{text-align:right;flex:0 0 auto}.purpose-rank small{font-size:8px}.purpose-rank b{display:block;font-size:24px;line-height:1;color:#b34a2f}.purpose-rank span{display:block;margin-top:2px;font-size:8px;color:#7b817d}
  .purpose-grade{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:8px;padding:7px 8px;border-radius:9px;background:#f5f7f6}
  .purpose-grade b{font-size:10px}.purpose-grade span{font-size:8px;color:#66766e;text-align:right}.purpose-grade.goal-recommend b{color:#176748}.purpose-grade.goal-candidate b{color:#315f91}.purpose-grade.goal-conditional b{color:#8a6317}.purpose-grade.goal-insufficient b{color:#727b76}
+ .purpose-meaning{display:flex;justify-content:space-between;gap:8px;margin-top:5px;font-size:7px;color:#77827d}.purpose-meaning span:last-child{text-align:right}
  .purpose-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.purpose-stats>div{padding:8px 5px;border-radius:9px;background:#f6f9f7;text-align:center}.purpose-stats small{display:block;font-size:8px;color:#687970;font-weight:900}.purpose-stats b{display:block;margin-top:2px;font-size:18px;color:#1d503a}
  .purpose-unknown{margin-top:8px;padding:9px;border-radius:9px;background:#f3f5f4;color:#687970;font-size:9px}
  .purpose-nitro{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:8px;padding:8px 9px;border-radius:9px;background:#fff;border:1px solid rgba(80,110,95,.10)}.purpose-nitro>small{font-size:9px;font-weight:900;color:#586b62}.purpose-nitro>div{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.purpose-nitro span{padding:4px 7px;border-radius:999px;background:#eef4f0;font-size:9px}.purpose-nitro span:nth-child(1){background:#fdeaf2;color:#9b2e63}.purpose-nitro span:nth-child(2){background:#eaf2fb;color:#315f91}.purpose-nitro span:nth-child(3){background:#fff0e4;color:#9a5a16}
@@ -400,7 +401,7 @@ function openSimulation(name,goal,direct){
  const reasons=(ranked?.reasons||[]).slice(0,3);
  $('#mareSimBody').innerHTML=
   '<div class="sim-rank"><small>AI順位</small><b>'+esc(rankText)+'</b><span>'+(grade?esc(grade.symbol+' '+grade.label+' ｜ AI推奨 '+genText):esc(decision?.headline||'目的別条件で判断'))+'</span></div>'+
-  '<div class="sim-unified-note">順位・○△判定・この配合シミュレーションは、同じ'+esc(genText)+'ルートを基準にしています。</div>'+
+  '<div class="sim-unified-note">順位・○△判定・この配合シミュレーションは、同じ'+esc(genText)+'ルートを基準にしています。高順位の△は「優先して使うが、条件補完が必要」という意味です。</div>'+
   '<div class="sim-route">'+stages.map((st,i)=>simulationStageHtml(name,goal,st,i,stages.length)).join('')+'</div>'+
   '<div class="sim-evidence"><b>このルートを選ぶ理由</b><span>'+esc(grade?.reason||decision?.detail||'目的条件を満たす血統根拠を優先します。')+'</span>'+
    (reasons.length?'<ul class="sim-reasons">'+reasons.map(x=>'<li>'+esc(compactGenerationReason(x))+'</li>').join('')+'</ul>':'')+
@@ -450,6 +451,7 @@ function renderMareAdvice(){
   '<section class="purpose-focus">'+
    '<div class="purpose-focus-head"><div><small>現在の目的</small><h3>'+esc(goalLabels[goal]||goal)+'</h3></div><div class="purpose-rank"><small>AI順位</small><b>'+esc(rankText)+'</b><span>'+esc(rankSub)+'</span></div></div>'+
    '<div class="purpose-grade goal-'+esc(grade.key||'insufficient')+'"><b>'+esc(grade.symbol)+' '+esc(grade.label)+'</b><span>'+esc((generationText?'AI推奨 '+generationText+' ｜ ':'')+(grade.reason||quickGoalReason(goal,grade)))+'</span></div>'+
+   '<div class="purpose-meaning"><span>順位＝AIの使用優先度</span><span>○△＝同じルートの達成条件</span></div>'+
    (a.abilityKnown?'<div class="purpose-stats"><div><small>繁殖SP</small><b>'+Number(s.sp||0)+'</b></div><div><small>繁殖ST</small><b>'+Number(s.st||0)+'</b></div><div><small>繁殖PW</small><b>'+Number(s.pw||0)+'</b></div></div>':'<div class="purpose-unknown">繁殖SP / ST / PW は未判明です。</div>')+
    '<div class="purpose-nitro"><small>ニトロ</small><div><span>SP <b>'+Number(s.nsp||0)+'</b></span><span>ST <b>'+Number(s.nst||0)+'</b></span><span>PW <b>'+Number(s.npw||0)+'</b></span></div></div>'+
    focusFactorHtml(name)+
