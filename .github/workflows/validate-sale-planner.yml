@@ -159,6 +159,7 @@ jobs:
           idx=Path('index.html').read_text(encoding='utf-8')
           app=Path('app.js').read_text(encoding='utf-8')
           v26=Path('v26.js').read_text(encoding='utf-8')
+          v27=Path('v27.js').read_text(encoding='utf-8')
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
           assert (v['version'],v['build'])==('1.19.1','2026.09.26-69')
           assert "const APP_VERSION='1.19.1';" in app and "const APP_BUILD='2026.09.26-69';" in app
@@ -175,13 +176,15 @@ jobs:
           assert idx.index('breeding-engine.js?v=1.19.1-b69') < idx.index('sale-planner-core.js?v=1.19.1-b69') < idx.index('sale-recommendation-core.js?v=1.19.1-b69') < idx.index('breed-integration.js?v=1.19.1-b69') < idx.index('v26.js?v=1.19.1-b69') < idx.index('v27.js?v=1.19.1-b69')
           assert 'v23.js' not in idx
           assert '能力未判明' in v26
-          assert '<summary><b>血統15祖先</b></summary>' in v26
+          assert 'ゲーム内マスタの15祖先' in v27
           assert '全176³の最適解とは表示しません' in v26
-          assert 'SP+ST≥120 / ≥130' in v26
+          assert '2つの高能力母集団' in v26
           sale_core=Path('sale-planner-core.js').read_text(encoding='utf-8')
           assert 'SPクロス補強型' in sale_core
           assert 'speedCross' in sale_core
           assert '総合点には合算しません' in v26
+          assert 'purpose-nitro' in v27 and 'AI順位' in v27 and 'AI配合シミュレーション' in v27
+          assert '価格' not in v26 and '価格' not in v27
           ui_js=Path('ui-refresh.js').read_text(encoding='utf-8')
           ui_css=Path('ui-refresh.css').read_text(encoding='utf-8')
           assert 'addInlineBtn' in ui_js, 'inline mobile add action missing'
