@@ -68,15 +68,15 @@ assert.ok(v16.includes('function installCompactHorseForm()'),'compact horse form
 assert.ok(v16.includes('horse-form-sticky-head'),'sticky save/cancel header missing');
 assert.ok(v16.includes('血統を詳しく入力・自動補完'),'pedigree details must be collapsible');
 assert.ok(v16.includes('距離・実績・戦績・メモ'),'performance details must be collapsible');
-assert.ok(v16.includes("roleMemoWrap=roleMemo?.parentElement"),'usage memo must move out of the top-level form');
 assert.ok(v16.includes("generationWrap=generation?.parentElement"),'generation/classification must move into details');
-assert.ok(v16.includes("if(brood&&sex)sex.value='牝'"),'broodmare role must auto-set female sex');
-assert.ok(v16.includes("if(sireRole&&sex)sex.value='牡'"),'sire roles must auto-set male sex');
-assert.ok(v16.includes("sexRow.hidden=brood||sireRole"),'redundant sex row must be hidden for fixed-sex breeding roles');
+assert.ok(v16.includes("if(brood&&sex)sex.value='牝'"),'broodmare state must auto-set female sex');
+assert.ok(v16.includes("if(stallion&&sex)sex.value='牡'"),'stallion state must auto-set male sex');
+assert.ok(v16.includes("sexRow.hidden=brood||stallion"),'redundant sex row must be hidden for fixed-sex current states');
 assert.ok(v16.includes("form.requestSubmit()"),'top save action must submit without scrolling to form bottom');
 assert.ok(v26.includes('function openRouteRegister(ctx,generation)'),'route offspring registration action missing');
-assert.ok(v26.includes("role==='broodmare'?'牝':'牡'"),'route registration must support broodmare and sire-candidate roles');
-assert.ok(v26.includes('<option value="stallion">種牡馬</option>'),'route registration must also allow an active stallion role');
+assert.ok(v26.includes('id="routeRegisterSex"'),'route registration must select actual horse sex');
+assert.ok(v26.includes('id="routeRegisterFutureUse"'),'route registration must store future use separately');
+assert.ok(v26.includes("currentState:'race',futureUse,role:'race'"),'route offspring must register as active racehorses');
 assert.ok(v26.includes('ancestor15:[...a]'),'route registration must persist exact 15-ancestor pedigree');
 assert.ok(v26.includes("配合由来の根拠で、この馬自身の能力値ではありません"),'route registration must not mislabel pedigree evidence as horse ability');
 assert.ok(v26.includes("pair-pedigree-evidence-not-horse-ability"),'route registration must persist pair evidence with an explicit non-ability boundary');
@@ -87,6 +87,7 @@ assert.ok(!v16.includes("let old=c.querySelector('.default-mare-line');if(old)ol
 assert.ok(v26.includes('matchingPreviousMares(ctx,generation)'),'multi-generation registration must require the actual prior broodmare pedigree');
 assert.ok(v26.includes('この産駒を牧場DBへ登録'),'route bridge registration CTA missing');
 
+assert.ok(idx.includes('horse-lifecycle.js?v=1.19.1-b68'),'horse lifecycle cache key');
 assert.ok(idx.includes('breed-helper.js?v=1.19.1-b68'),'breed-helper.js cache key');
 for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js']){
   assert.ok(idx.includes(p+'?v=1.19.1-b68'),p+' cache key');
