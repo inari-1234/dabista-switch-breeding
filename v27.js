@@ -573,7 +573,8 @@ async function boot(){
  }
  advisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({planner,broodmareStats:engine.mareData.broodmares||[]});
  inject();
- window.DABISTA_MARE_GENERATION_ADVISOR={version:1,advisor,run:runGenerationAdvisor,render:renderMareAdvice};
+ setTimeout(buildPurposeRankings,120);
+ window.DABISTA_MARE_GENERATION_ADVISOR={version:2,advisor,run:runGenerationAdvisor,render:renderMareAdvice,rankings:purposeRankingState,openPedigree,openSimulation};
 }
 boot();
 })();
