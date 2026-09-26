@@ -169,6 +169,8 @@ jobs:
           assert 'v27.js?v=1.19.1-b68' in idx
           assert 'ui-refresh.css?v=1.19.1-b68' in idx
           assert 'ui-refresh.js?v=1.19.1-b68' in idx
+          assert 'horse-lifecycle.js?v=1.19.1-b68' in idx
+          assert idx.index('horse-lifecycle.js?v=1.19.1-b68') < idx.index('app.js?v=1.19.1-b68')
           assert idx.index('breeding-engine.js?v=1.19.1-b68') < idx.index('sale-planner-core.js?v=1.19.1-b68') < idx.index('sale-recommendation-core.js?v=1.19.1-b68') < idx.index('breed-integration.js?v=1.19.1-b68') < idx.index('v26.js?v=1.19.1-b68') < idx.index('v27.js?v=1.19.1-b68')
           assert 'v23.js' not in idx
           assert '能力未判明' in v26
@@ -190,6 +192,7 @@ jobs:
 
       - name: Growth tracking core regression
         run: |
+          node tests/horse-lifecycle-contract.test.js
           node tests/growth-db-migration.test.js
           node tests/growth-core.test.js
           if [ -f tests/growth-ui-contract.test.js ]; then node tests/growth-ui-contract.test.js; fi
