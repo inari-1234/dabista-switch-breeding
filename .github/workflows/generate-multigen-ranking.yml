@@ -13,7 +13,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  actions: read
 
 jobs:
   smoke:
@@ -95,3 +96,16 @@ jobs:
           name: mare-purpose-multigen-ranking
           path: mare-purpose-multigen-ranking.json
           retention-days: 7
+      - name: Publish runtime ranking data to candidate
+        run: |
+          mkdir -p data
+          cp mare-purpose-multigen-ranking.json data/mare-purpose-multigen-ranking.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/mare-purpose-multigen-ranking.json
+          if git diff --cached --quiet; then
+            echo "ranking data unchanged"
+          else
+            git commit -m "data: publish multigeneration mare purpose ranking"
+            git push origin HEAD:candidate/growth-tracking
+          fi
