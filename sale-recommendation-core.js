@@ -1226,13 +1226,24 @@
       const a=mareAssessment(name);if(!a?.abilityKnown)return null;
       const bestByGoal=summary?.bestByGoal||{},route=bestRoute||bestByGoal?.[goal]||summary?.bestRoute||null;
       const recs=quickGoalRecommendations(name,summary,bestByGoal),gradeKey=recs?.goals?.[goal]?.key||'insufficient';
-      const s=a.stats||{},r=a.ranks||{},base=[PURPOSE_GRADE_RANK[gradeKey]||0,...goalVector(route,goal)];
-      let mother=[];
-      if(goal==='arc')mother=[val(s.st),val(s.sp),val(s.pw)];
-      else if(goal==='bc')mother=[val(s.sp),val(s.st),val(s.pw)];
-      else if(goal==='rebuild')mother=[val(r.spst?.topPercent),val(s.st),val(s.sp),val(s.pw)];
-      else mother=[val(s.sp),val(s.st),val(s.pw)];
-      return{name,goal,gradeKey,route,assessment:a,vector:[...base,...mother]};
+      const s=a.stats||{},r=a.ranks||{},routeVector=goalVector(route,goal),gradeRank=PURPOSE_GRADE_RANK[gradeKey]||0;
+      let vector=[];
+      if(goal==='arc'){
+        // 凱旋門は母STを最初の土台にし、同水準の牝馬を実際の配合成立条件で並べる。
+        // SP/PWはその後の同値比較に使い、単一総合点には合算しない。
+        vector=[val(s.st),...routeVector,val(s.sp),val(s.pw),gradeRank];
+      }else if(goal==='bc'){
+        // BC長期は母SPを先に守り、配合側のSP補強経路・父実績で差をつける。
+        vector=[val(s.sp),...routeVector,val(s.st),val(s.pw),gradeRank];
+      }else if(goal==='rebuild'){
+        // 再建は「現在の母能力が低めで改善余地がある」ことを先に見て、
+        // その中で次代に残せる配合根拠を比較する。
+        vector=[val(r.spst?.topPercent),...routeVector,val(s.st),val(s.sp),val(s.pw),gradeRank];
+      }else{
+        // 自家製種牡馬は将来の血統汎用性（routeVector）を主役にし、母能力は同値比較。
+        vector=[...routeVector,val(s.sp),val(s.st),val(s.pw),gradeRank];
+      }
+      return{name,goal,gradeKey,route,assessment:a,vector};
     }
     function compareMarePurposeCandidate(a,b){
       const A=a?.vector||[],B=b?.vector||[];
