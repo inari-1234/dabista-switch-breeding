@@ -15,6 +15,7 @@ const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: 
 for(const token of ['tier-elite','tier-high','tier-upper','tier-middle','tier-rebuild','tier-unknown'])need(v27,token,'mare tier tone');
 need(v27,'.mare-tier{padding:7px 11px;font-size:14px','mare tier prominence');
 need(v27,'purpose-focus','selected purpose must lead the mare card');
+need(v27,"if(summary)summary.hidden=true",'legacy selected-mare summary must be hidden when purpose-first UI is active');
 need(v27,'AI順位','purpose-specific AI rank');
 need(v27,'purpose-stats','mare ability must live inside the selected purpose');
 need(v27,'purpose-nitro','nitro must live inside the selected purpose');
