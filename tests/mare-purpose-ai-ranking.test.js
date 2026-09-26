@@ -41,6 +41,8 @@ for(const g of goals){
 }
 const lookup=(goal,name)=>ranked[goal].find(x=>x.name===name)?.rank||null;
 assert.ok(lookup('arc','エイスト')&&lookup('arc','スプリングスイーツ'),'known reference mares must receive Arc ranks');
+assert.strictEqual(lookup('arc','エイスト'),1,'Arc AI rank must place Eist first under the validated purpose logic');
+assert.strictEqual(lookup('arc','スプリングスイーツ'),2,'Arc AI rank must place Spring Sweets second under the validated purpose logic');
 
 const ped=JSON.parse(fs.readFileSync('data/pedigree-master.json','utf8')).horses.find(x=>x.name==='クイーンズスミレ');
 assert.strictEqual(ped.ancestor.length,15,'Queens Sumire must retain the full 15-ancestor game pedigree');
