@@ -31,9 +31,9 @@ need(v27,'ゲーム内マスタの15祖先','pedigree dialog must declare full 1
 need(v27,'見事コード','pedigree dialog must expose migoto code');
 need(v27,'見事系統','pedigree dialog must expose migoto systems');
 need(v27,'stallionPortfolioRoute','stallion purpose must use future breeding portfolio');
-need(v27,'nitro.sp??facts.sp??0','simulation must preserve a true zero SP nitro');
-need(v27,'nitro.st??facts.st??0','simulation must preserve a true zero ST nitro');
-need(v27,'nitro.pw??facts.pw??0','simulation must preserve a true zero PW nitro');
+need(v27,'nitro.sp??0','simulation must preserve a true zero SP nitro');
+need(v27,'nitro.st??0','simulation must preserve a true zero ST nitro');
+need(v27,'nitro.pw??0','simulation must preserve a true zero PW nitro');
 if(v27.includes('nitro.sp||facts.sp||0')||v27.includes('nitro.st||facts.st||0')||v27.includes('nitro.pw||facts.pw||0'))throw Error('simulation must not replace zero nitro with fallback values');
 need(v27,'詳しい評価根拠を見る','secondary evidence must stay collapsed');
 need(v27,".slice(0,4)",'purpose attention must cap primary evidence density');
