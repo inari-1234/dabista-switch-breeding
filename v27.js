@@ -562,7 +562,7 @@ async function runGenerationAdvisor(){
 function inject(){
  if($('#saleMareRecommendation')||!$('#salePlanner'))return;
  style();
- const summary=$('#saleMareSummary');
+ const summary=$('#saleMareSummary');if(summary)summary.hidden=true;
  const mareBox=document.createElement('div');mareBox.id='saleMareRecommendation';mareBox.className='mare-advice';
  const goalSection=$('#saleGoalSection');
  if(goalSection)goalSection.insertAdjacentElement('afterend',mareBox);else summary?.insertAdjacentElement('afterend',mareBox);
