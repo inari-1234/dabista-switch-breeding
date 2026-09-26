@@ -9,12 +9,14 @@ const db=fs.readFileSync('growth-db.js','utf8');
 const model=fs.readFileSync('growth-model.js','utf8');
 const core=fs.readFileSync('growth-core.js','utf8');
 const ui=fs.readFileSync('growth-ui.js','utf8');
+const lifecycle=fs.readFileSync('horse-lifecycle.js','utf8');
 
 assert.ok(index.includes('growth-db.js?v=1.19.1-b68'),'growth DB script missing');
 assert.ok(index.includes('growth-model.js?v=1.19.1-b68'),'growth model script missing');
 assert.ok(index.includes('growth-core.js?v=1.19.1-b68'),'growth core script missing');
 assert.ok(index.includes('growth-ui.js?v=1.19.1-b68'),'growth UI script missing');
-assert.ok(index.indexOf('growth-db.js?v=1.19.1-b68')<index.indexOf('app.js?v=1.19.1-b68'),'growth DB must load before app initialization');
+assert.ok(index.includes('horse-lifecycle.js?v=1.19.1-b68'),'horse lifecycle script missing');
+assert.ok(index.indexOf('growth-db.js?v=1.19.1-b68')<index.indexOf('horse-lifecycle.js?v=1.19.1-b68')&&index.indexOf('horse-lifecycle.js?v=1.19.1-b68')<index.indexOf('app.js?v=1.19.1-b68'),'lifecycle must load before app initialization');
 assert.ok(index.indexOf('growth-model.js?v=1.19.1-b68')<index.indexOf('growth-core.js?v=1.19.1-b68'),'growth model must load before growth core');
 assert.ok(index.indexOf('ui-refresh.js?v=1.19.1-b68')<index.indexOf('growth-ui.js?v=1.19.1-b68'),'growth UI must load after existing UI refresh');
 
@@ -35,7 +37,9 @@ assert.ok(ui.includes('data-horse-action="growth-history"'),'history action miss
 assert.ok(ui.includes('今月の出走判断'),'timing decision headline missing');
 assert.ok(ui.includes('＋ 今月のレースを記録'),'quick race CTA missing');
 assert.ok(ui.includes('成長履歴を見る'),'history CTA missing');
-assert.ok(ui.includes("if(h.role==='broodmare'&&!h.routeSource)return false"),'route-source mares must stay growth-trackable while ordinary broodmares remain hidden');
+assert.ok(ui.includes('if(!lifecycle.isRacehorse(h))return false'),'timing diagnosis must follow current state rather than future use');
+assert.ok(lifecycle.includes("if(h?.routeSource&&(h?.role==='broodmare'||h?.role==='sire-candidate'))return'race'"),'legacy route offspring must remain active racers until promoted');
+assert.ok(ui.includes('growth-card-details'),'recent race rows must stay collapsed on horse cards');
 assert.ok(ui.includes("String(h.generation||'').includes('基準種牡馬')"),'baseline stallion must not show timing diagnosis');
 
 assert.ok(ui.includes("growthChecks:[]"),'legacy BC observations must not drive user-facing timing diagnosis');
