@@ -662,6 +662,7 @@ body.ui-refresh .horse-parent-line{margin:6px 0 8px}
 body.ui-refresh .horse-note{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 body.ui-refresh .horse-stat-grid{margin-top:6px}
 body.ui-refresh .horse-role-badge{background:#e3f1ea;color:#2d654d}
+body.ui-refresh .horse-future-badge{background:#fff0dc;color:#8a5315}
 body.ui-refresh dialog{
   width:min(94vw,560px);
   max-height:90vh;
@@ -732,6 +733,6 @@ body.ui-refresh .form h2{font-size:19px;letter-spacing:-.03em}
 }
 @media(min-width:760px){
   body.ui-refresh .wrap{max-width:960px}
-  body.ui-refresh .ui-home-actions{grid-template-columns:repeat(4,1fr)}
+  body.ui-refresh .ui-home-actions{grid-template-columns:repeat(2,1fr)}
   body.ui-refresh .ui-jump{min-height:102px}
 }
