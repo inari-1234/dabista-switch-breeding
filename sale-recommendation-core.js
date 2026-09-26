@@ -1241,9 +1241,16 @@
         // SP/ST/PWニトロを個別軸のまま比較し、その中で次代の配合根拠を評価する。
         vector=[val(r.spst?.topPercent),val(s.nsp),val(s.nst),val(s.npw),...routeVector,val(s.st),val(s.sp),val(s.pw),gradeRank];
       }else{
-        // 自家製種牡馬は将来の血統汎用性（routeVector）を主役にし、
+        // 自家製種牡馬は直仔のSP/STではなく、後代で使える血統汎用性を主役にする。
+        // portfolio付き候補では高能力母集団に対する成立数・安全数・上限を辞書式に比較し、
         // 母側ニトロと能力は同値比較として個別に残す。
-        vector=[...routeVector,val(s.nsp),val(s.nst),val(s.npw),val(s.sp),val(s.st),val(s.pw),gradeRank];
+        if(route?.portfolio){
+          const p=portfolioFacts(route.portfolio);
+          vector=[p.sp17,p.sp15,p.safe,p.sp17hi,p.sp15hi,p.maxSpSt,p.maxSp,p.magnificent,p.elaborate,
+            val(s.nsp),val(s.nst),val(s.npw),val(s.sp),val(s.st),val(s.pw)];
+        }else{
+          vector=[...routeVector,val(s.nsp),val(s.nst),val(s.npw),val(s.sp),val(s.st),val(s.pw),gradeRank];
+        }
       }
       return{name,goal,gradeKey,route,assessment:a,vector};
     }
