@@ -35,6 +35,6 @@ assert.ok(v27.includes("simulationStageHtml"),'simulation must render every gene
 assert.ok(v27.includes("次の世代へ進む条件"),'multigeneration simulation must show selection gates');
 assert.ok(v27.includes("3代・4代は条件付き探索"),'conditional exploration caveat must remain visible');
 assert.ok(v27.includes("rank?.grade||recommendations"),'purpose grade must prefer multigeneration verdict');
-assert.ok(v27.includes("rank?.sires?.length"),'simulation must replay the ranked multigeneration route');
+assert.ok(v27.includes("ranked?.sires?.length"),'simulation must replay the ranked multigeneration route');
 
 console.log(JSON.stringify({passed:true,arcGrade:arc.key,stallionGrade:'recommend'},null,2));
