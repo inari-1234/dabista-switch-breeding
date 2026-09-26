@@ -2,16 +2,17 @@
 'use strict';
 const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.26-68';
 let db=window.db;
-if(!db)return;
+const lifecycle=window.DABISTA_HORSE_LIFECYCLE;
+if(!db||!lifecycle)return;
 const $=s=>document.querySelector(s),esc=window.esc||((s)=>String(s??''));
 let activeHorse=null,activeRows=[],activeUnsafe=0,activePlanner=null,activeAdvisor=null;
 const nextStepCache=new Map();
 
 function norm(v){return String(v??'').normalize('NFKC').trim()}
 function keyOf(engine,v){return engine?.core?.key?.(v)||norm(v).replace(/[\s・･]/g,'').toLowerCase()}
-function roleLabel(h){return h?.role==='stallion'?'種牡馬':h?.role==='sire-candidate'?'種牡馬候補':h?.sex==='牝'?'繁殖牝馬':'登録馬'}
-function isMare(h){return h?.sex==='牝'||h?.role==='broodmare'}
-function isSire(h){return h?.role==='stallion'||h?.role==='sire-candidate'}
+function roleLabel(h){return lifecycle.currentLabel(lifecycle.currentState(h))}
+function isMare(h){return lifecycle.isBreedingMare(h)}
+function isSire(h){return lifecycle.isActiveStallion(h)}
 
 function ensureStyle(){
  if($('#v28style'))return;
