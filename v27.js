@@ -201,8 +201,26 @@ function quickGoalReason(key,g){
 const goalLabels={arc:'凱旋門賞',bc:'BC長期',rebuild:'繁殖再建',stallion:'自家製種牡馬'};
 const goalBaseOrder=['arc','bc','rebuild','stallion'];
 const goalGradeRank={recommend:4,candidate:3,conditional:2,insufficient:1};
-const purposeRankingState={status:'idle',byGoal:{arc:new Map(),bc:new Map(),rebuild:new Map(),stallion:new Map()},total:0,progress:0};
+const purposeRankingState={status:'idle',source:'none',byGoal:{arc:new Map(),bc:new Map(),rebuild:new Map(),stallion:new Map()},total:0,progress:0};
+let multigenRankingData=null;
 function purposeRank(name,goal){return purposeRankingState.byGoal?.[goal]?.get(name)||null}
+async function loadMultigenRankings(){
+ try{
+  const r=await fetch('data/mare-purpose-multigen-ranking.json?v=1.19.1-b71',{cache:'no-store'});
+  if(!r.ok)throw Error('HTTP '+r.status);
+  const data=await r.json();
+  if(data?.schema!==1||data?.analyzedCount!==298||!data?.mares)throw Error('invalid multigen ranking payload');
+  for(const goal of goalBaseOrder){
+   purposeRankingState.byGoal[goal]=new Map(Object.entries(data.mares).map(([name,row])=>[name,row?.goals?.[goal]]).filter(([,v])=>v?.rank));
+  }
+  multigenRankingData=data;purposeRankingState.status='ready';purposeRankingState.source='multigen-static';purposeRankingState.total=298;purposeRankingState.progress=298;
+  return true;
+ }catch(e){
+  window.APP_ERRORS?.push({at:new Date().toISOString(),message:'multigen-ranking-load: '+String(e)});
+  purposeRankingState.status='idle';purposeRankingState.source='direct-fallback';
+  return false;
+ }
+}
 function paintPurposeRanks(){
  const name=$('#saleMareSelect')?.value;
  document.querySelectorAll('#saleGoalButtons [data-sale-goal]').forEach(b=>{
@@ -212,7 +230,7 @@ function paintPurposeRanks(){
  });
 }
 async function buildPurposeRankings(){
- if(!advisor||!engine?.mareData||purposeRankingState.status==='running'||purposeRankingState.status==='ready')return;
+ if(!advisor||!engine?.mareData||purposeRankingState.status==='running'||(purposeRankingState.status==='ready'&&purposeRankingState.source==='multigen-static'))return;
  purposeRankingState.status='running';
  const names=(engine.mareData.broodmares||[]).map(x=>x.name).filter(name=>advisor.mareAssessment(name)?.abilityKnown);
  const buckets={arc:[],bc:[],rebuild:[],stallion:[]};
@@ -231,7 +249,7 @@ async function buildPurposeRankings(){
   const ranked=advisor.rankMarePurposeCandidates?.(buckets[goal])||[];
   purposeRankingState.byGoal[goal]=new Map(ranked.map(x=>[x.name,x]));
  }
- purposeRankingState.status='ready';paintPurposeRanks();renderMareAdvice();
+ purposeRankingState.status='ready';purposeRankingState.source='direct-fallback';paintPurposeRanks();renderMareAdvice();
 }
 
 function orderedGoalKeys(recommendations){
@@ -338,38 +356,56 @@ function simCrosses(st){
 function ensureSimulationDialog(){
  let d=$('#marePurposeSimulationDlg');if(d)return d;
  d=document.createElement('dialog');d.id='marePurposeSimulationDlg';d.className='mare-purpose-dialog';
- d.innerHTML='<div class="purpose-dialog-head"><div><small>AI運用シミュレーション</small><h2 id="mareSimTitle">配合例</h2></div><button type="button" class="secondary" data-close>閉じる</button></div><div id="mareSimBody" class="purpose-dialog-body"></div><div class="purpose-dialog-actions"><button type="button" class="secondary" id="mareSimDeep">2〜4代もAI診断</button><button type="button" class="primary" data-close>閉じる</button></div>';
+ d.innerHTML='<div class="purpose-dialog-head"><div><small>AI運用シミュレーション</small><h2 id="mareSimTitle">配合例</h2></div><button type="button" class="secondary" data-close>閉じる</button></div><div id="mareSimBody" class="purpose-dialog-body"></div><div class="purpose-dialog-actions"><button type="button" class="secondary" id="mareSimDeep">世代診断を再計算</button><button type="button" class="primary" data-close>閉じる</button></div>';
  document.body.appendChild(d);d.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>d.close());return d;
 }
+function simulationStageHtml(name,goal,stage,index,total){
+ const n=index+1,parent=index===0?name:(index+'代目の選抜牝馬'),nitro=stage?.nitro||{},crosses=simCrosses(stage),ss=stage?.sireStats||{};
+ const theory=simTheory(stage),next=stage?.selection||'';
+ return '<section class="sim-stage">'+
+  '<div class="sim-stage-head"><span>'+n+'代目</span><b>'+esc(parent)+' × '+esc(stage?.sire||'—')+'</b></div>'+
+  '<div class="sim-grid"><div><small>SPニトロ</small><b>'+Number(nitro.sp??0)+'</b></div><div><small>STニトロ</small><b>'+Number(nitro.st??0)+'</b></div><div><small>PWニトロ</small><b>'+Number(nitro.pw??0)+'</b></div></div>'+
+  '<div class="candidate-chip-row sim-stage-chips">'+
+   '<span class="candidate-chip theory">'+esc(theory)+'</span>'+
+   (stage?.speedCross?.has?'<span class="candidate-chip cross">SPクロス</span>':'')+
+   (stage?.crossEffects?.longDistance?'<span class="candidate-chip trait">長距離クロス</span>':'')+
+   crosses.slice(0,3).map(x=>'<span class="candidate-chip trait">'+esc(x)+'</span>').join('')+
+  '</div>'+
+  '<div class="sim-stage-sire">父：実績 '+esc(ss.record||'—')+' / 安定 '+esc(ss.stable||'—')+' / 距離 '+esc((ss.minD||'?')+'–'+(ss.maxD||'?')+'m')+'</div>'+
+  (index<total-1?'<div class="sim-selection"><small>次の世代へ進む条件</small><b>'+esc(next||'実馬能力を確認し、能力上位牝馬だけを残す')+'</b></div>':'<div class="sim-finish"><small>締め</small><b>'+esc(goalLabels[goal]||goal)+'を狙う最終候補</b></div>')+
+ '</section>';
+}
 function openSimulation(name,goal,direct){
- const route=goal==='stallion'?stallionPortfolioRoute(direct):(direct?.bestByGoal?.[goal]||null);
- const d=ensureSimulationDialog(),rank=purposeRank(name,goal),label=goalLabels[goal]||goal;
+ const ranked=purposeRank(name,goal),fallbackRoute=goal==='stallion'?stallionPortfolioRoute(direct):(direct?.bestByGoal?.[goal]||null);
+ const route=ranked?.sires?.length?{sires:[...ranked.sires],generation:ranked.generation}:fallbackRoute;
+ const d=ensureSimulationDialog(),label=goalLabels[goal]||goal;
  $('#mareSimTitle').textContent=name+'｜'+label;
- if(!route){$('#mareSimBody').innerHTML='<div class="notice">安全な直仔配合例を取得できませんでした。世代診断で条件を広げて確認してください。</div>';d.showModal();return}
- const x=planner.expandRoute(name,route,goal),st=x?.stages?.[0],facts=advisor.routeFacts(route),decision=advisor.goalMareReason(name,goal,direct);
- const crosses=simCrosses(st),rankText=rank?rank.rank+'位 / '+rank.total+'頭':'順位計算中';
- const sire=st?.sire||route?.sires?.[0]||'—',ss=st?.sireStats||{},nitro=st?.nitro||{};
- const keep=goal==='arc'?'SP/STを維持し、距離側の根拠が付く産駒を優先'
-  :goal==='bc'?'SP印とSP補強経路を優先し、STを極端に落とさない産駒を残す'
-  :goal==='rebuild'?'母の強みを落とさず、次代で使いやすい牝馬を残す'
-  :'競走能力を確認しつつ、種牡馬入り後の高能力牝馬群への配合成立数が広い牡馬を残す';
- const portfolio=goal==='stallion'?advisor.portfolioFacts?.(route?.portfolio):null;
- const portfolioHtml=portfolio
-  ?'<div class="sim-evidence"><b>種牡馬化した場合の後代適合</b><span>SP17/ST5以上 '+portfolio.sp17+'件 / SP15/ST5以上 '+portfolio.sp15+'件 / 安全 '+portfolio.safe+'件</span></div>'
+ if(!route?.sires?.length){$('#mareSimBody').innerHTML='<div class="notice">安全な配合ルートを取得できませんでした。</div>';d.showModal();return}
+ const x=planner.expandRoute(name,route,goal),stages=x?.stages||[],facts=ranked?.facts||advisor.routeFacts(fallbackRoute),decision=advisor.goalMareReason(name,goal,direct);
+ if(!stages.length){$('#mareSimBody').innerHTML='<div class="notice">配合ルートを再生できませんでした。</div>';d.showModal();return}
+ const rankText=ranked?.rank?ranked.rank+'位 / '+ranked.total+'頭':'順位計算中';
+ const genText=ranked?.generation?(ranked.generation===1?'直仔':ranked.generation+'代'):(stages.length===1?'直仔':stages.length+'代');
+ const grade=ranked?.grade||null;
+ const portfolio=ranked?.portfolio||null;
+ const portfolioHtml=goal==='stallion'&&portfolio
+  ?'<div class="sim-evidence"><b>種牡馬化した場合の後代適合</b><span>SP17/ST5以上 '+Number(portfolio.sp17||0)+'件 / SP15/ST5以上 '+Number(portfolio.sp15||0)+'件 / 安全 '+Number(portfolio.safe||0)+'件</span></div>'
   :'';
+ const reasons=(ranked?.reasons||[]).slice(0,3);
  $('#mareSimBody').innerHTML=
-  '<div class="sim-rank"><small>この目的でのAI順位</small><b>'+esc(rankText)+'</b><span>'+esc(decision?.headline||'目的別条件で判断')+'</span></div>'+
-  '<div class="sim-pair"><small>AIがまず試す具体的な配合例</small><div><b>'+esc(name)+'</b><span>×</span><b>'+esc(sire)+'</b></div></div>'+
-  '<div class="sim-grid"><div><small>SPニトロ</small><b>'+Number(nitro.sp??facts.sp??0)+'</b></div><div><small>STニトロ</small><b>'+Number(nitro.st??facts.st??0)+'</b></div><div><small>PWニトロ</small><b>'+Number(nitro.pw??facts.pw??0)+'</b></div></div>'+
-  '<div class="sim-evidence"><b>配合の狙い</b><span>'+esc(decision?.detail||'目的条件を満たす血統根拠を優先します。')+'</span><div class="candidate-chip-row">'+
-    (facts.speedCross?'<span class="candidate-chip cross">SPクロスあり</span>':'')+
-    (facts.longDistanceCross?'<span class="candidate-chip trait">長距離クロス</span>':'')+
-    '<span class="candidate-chip theory">'+esc(simTheory(st))+'</span>'+
-    (crosses.length?crosses.map(n=>'<span class="candidate-chip trait">'+esc(n)+'</span>').join(''):'')+
-  '</div></div>'+
+  '<div class="sim-rank"><small>AI順位</small><b>'+esc(rankText)+'</b><span>'+(grade?esc(grade.symbol+' '+grade.label+' ｜ AI推奨 '+genText):esc(decision?.headline||'目的別条件で判断'))+'</span></div>'+
+  '<div class="sim-unified-note">順位・○△判定・この配合シミュレーションは、同じ'+esc(genText)+'ルートを基準にしています。</div>'+
+  '<div class="sim-route">'+stages.map((st,i)=>simulationStageHtml(name,goal,st,i,stages.length)).join('')+'</div>'+
+  '<div class="sim-evidence"><b>このルートを選ぶ理由</b><span>'+esc(grade?.reason||decision?.detail||'目的条件を満たす血統根拠を優先します。')+'</span>'+
+   (reasons.length?'<ul class="sim-reasons">'+reasons.map(x=>'<li>'+esc(compactGenerationReason(x))+'</li>').join('')+'</ul>':'')+
+   '<div class="candidate-chip-row">'+
+    (facts?.speedCross?'<span class="candidate-chip cross">最終SPクロスあり</span>':'')+
+    (facts?.materialSpeedCross?'<span class="candidate-chip cross">途中SP補強あり</span>':'')+
+    (facts?.longDistanceCross||facts?.materialLongCross?'<span class="candidate-chip trait">ST補強経路あり</span>':'')+
+    (facts?.magnificent?'<span class="candidate-chip theory">見事</span>':'')+
+    (facts?.elaborate?'<span class="candidate-chip theory">凝った</span>':'')+
+   '</div></div>'+
   portfolioHtml+
-  '<div class="sim-operate"><b>AIの運用</b><ol><li>上の配合を実行</li><li>'+esc(keep)+'</li><li>実馬能力を確認し、基準に届かなければ2〜4代診断へ進む</li></ol></div>'+
-  '<details class="sim-tech"><summary>父の実績・距離根拠を見る</summary><div>実績 '+esc(ss.record||facts.record||'—')+' / 安定 '+esc(ss.stable||facts.stable||'—')+' / 距離 '+esc((ss.minD||facts.minD||'?')+'–'+(ss.maxD||facts.maxD||'?')+'m')+'</div></details>';
+  (ranked?.method?.startsWith('conditional')?'<div class="notice sim-caveat">3代・4代は条件付き探索です。中間牝馬のSP/ST/PWを出生前に仮定せず、実際に能力上位牝馬を得られた場合だけ次へ進みます。</div>':'');
  const deep=$('#mareSimDeep');deep.onclick=()=>{d.close();$('#saleGenerationAdvisor')?.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('#runGenerationAdvisor')?.click(),250)};
  d.showModal();
 }
@@ -381,20 +417,32 @@ function renderMareAdvice(){
  const a=advisor.mareAssessment(name);
  if(!a){box.className='mare-advice tier-unknown';box.innerHTML='<div class="muted">牝馬評価を取得できませんでした。</div>';return}
  const direct=directSnapshot(name),strategy=advisor.mareStrategy(name),goal=window.db?.salePlanner?.goal||'arc';
- const recommendations=advisor.quickGoalRecommendations(name,direct,direct.bestByGoal),grade=recommendations?.goals?.[goal]||{key:'insufficient',symbol:'—',label:'根拠不足'};
- const decision=mareDecisionText(name,goal,direct),rank=purposeRank(name,goal),tone=mareTierTone(a),s=a.stats||{};
+ const recommendations=advisor.quickGoalRecommendations(name,direct,direct.bestByGoal),rank=purposeRank(name,goal);
+ const grade=rank?.grade||recommendations?.goals?.[goal]||{key:'insufficient',symbol:'—',label:'根拠不足'};
+ const decision=mareDecisionText(name,goal,direct),tone=mareTierTone(a),s=a.stats||{};
  const attention=mareAttentionGroups(goal,direct,a,recommendations);
- const attentionItems=[...(attention.additions||[]),...(attention.subtractions||[]),...(attention.cautions||[])].slice(0,4);
+ let attentionItems=[...(attention.additions||[]),...(attention.subtractions||[]),...(attention.cautions||[])].slice(0,4);
+ if(rank?.facts){
+  const f=rank.facts,items=[];
+  if(f.speedCross)items.push({label:'最終SPクロス',tone:'cross'});
+  else if(f.materialSpeedCross)items.push({label:'途中SP補強',tone:'cross'});
+  if(f.longDistanceCross||f.materialLongCross)items.push({label:'ST補強経路',tone:'trait'});
+  if(f.magnificent)items.push({label:'見事',tone:'theory'});
+  if(f.elaborate)items.push({label:'凝った',tone:'theory'});
+  if(f.record&&f.record!=='?')items.push({label:'最終父 実績'+f.record,tone:'positive'});
+  attentionItems=items.slice(0,4);
+ }
  const attentionHtml=attentionItems.length?attentionItems.map(x=>'<span class="candidate-chip '+esc(x.tone||'trait')+'">'+esc(x.label)+'</span>').join(''):'<span class="mare-attention-none">注目ポイントなし</span>';
  const rankText=!a.abilityKnown?'未順位':rank?rank.rank+'位':'計算中';
  const rankSub=a.abilityKnown?(rank?'/ '+rank.total+'頭':'/ '+advisor.knownAbilityCount+'頭'):'能力未判明';
- const decisionReasons=(decision.reasons||[]).slice(0,3).map(x=>'<span>'+esc(x)+'</span>').join('');
+ const generationText=rank?.generation?(rank.generation===1?'直仔':rank.generation+'代'):'';
+ const decisionReasons=(rank?.reasons||decision.reasons||[]).slice(0,3).map(x=>'<span>'+esc(compactGenerationReason(x))+'</span>').join('');
  box.className='mare-advice tier-'+tone;
  box.innerHTML=
   '<div class="mare-advice-head"><div><h4>'+esc(name)+'</h4><small>選択した目的に必要な情報だけを表示</small></div><span class="mare-tier">'+esc(a.tier)+'</span></div>'+
   '<section class="purpose-focus">'+
    '<div class="purpose-focus-head"><div><small>現在の目的</small><h3>'+esc(goalLabels[goal]||goal)+'</h3></div><div class="purpose-rank"><small>AI順位</small><b>'+esc(rankText)+'</b><span>'+esc(rankSub)+'</span></div></div>'+
-   '<div class="purpose-grade goal-'+esc(grade.key||'insufficient')+'"><b>'+esc(grade.symbol)+' '+esc(grade.label)+'</b><span>'+esc(quickGoalReason(goal,grade))+'</span></div>'+
+   '<div class="purpose-grade goal-'+esc(grade.key||'insufficient')+'"><b>'+esc(grade.symbol)+' '+esc(grade.label)+'</b><span>'+esc((generationText?'AI推奨 '+generationText+' ｜ ':'')+(grade.reason||quickGoalReason(goal,grade)))+'</span></div>'+
    (a.abilityKnown?'<div class="purpose-stats"><div><small>繁殖SP</small><b>'+Number(s.sp||0)+'</b></div><div><small>繁殖ST</small><b>'+Number(s.st||0)+'</b></div><div><small>繁殖PW</small><b>'+Number(s.pw||0)+'</b></div></div>':'<div class="purpose-unknown">繁殖SP / ST / PW は未判明です。</div>')+
    '<div class="purpose-nitro"><small>ニトロ</small><div><span>SP <b>'+Number(s.nsp||0)+'</b></span><span>ST <b>'+Number(s.nst||0)+'</b></span><span>PW <b>'+Number(s.npw||0)+'</b></span></div></div>'+
    focusFactorHtml(name)+
@@ -402,10 +450,10 @@ function renderMareAdvice(){
    '<div class="purpose-actions"><button type="button" class="primary" data-purpose-sim>AI配合シミュレーション</button><button type="button" class="secondary" data-purpose-pedigree>血統表</button></div>'+
   '</section>'+
   '<details class="mare-detail"><summary>詳しい評価根拠を見る</summary>'+
-   '<div class="mare-why"><small>'+esc(goalLabels[goal]||goal)+'</small><b>'+esc(decision.headline)+'</b><span class="mare-why-detail">'+esc(decision.detail)+'</span>'+(decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':'')+'</div>'+
+   '<div class="mare-why"><small>'+esc(goalLabels[goal]||goal)+'</small><b>'+esc(rank?.grade?.reason||decision.headline)+'</b><span class="mare-why-detail">'+esc(rank?.generation?'順位と基準判定は同じ'+generationText+'ルートから算出しています。':decision.detail)+'</span>'+(decisionReasons?'<div class="mare-why-reasons">'+decisionReasons+'</div>':'')+'</div>'+
    (strategy?'<div class="advisor-note"><b>補強タイプ：'+esc(strategy.label)+'</b><br>維持：'+(strategy.preserve.length?esc(strategy.preserve.join('・')):'—')+' / '+(strategy.improve.length?'補強：'+esc(strategy.improve.join('・')):strategy.relativeAdjust?.length?'相対調整：'+esc(strategy.relativeAdjust.join('・')):'明確な補強対象なし')+'</div>':'')+
    '<div class="mare-direct">直仔安全 '+direct.count+'件 / SP15・ST5以上 '+direct.sp15st5+'件 / 最大SP '+direct.maxSp+' / 最大ST '+direct.maxSt+'</div>'+
-   '<div class="advisor-note">AI順位は4目的ごとに別々の条件を辞書式に比較します。目的横断の総合点や第7評価軸は作りません。</div>'+
+   '<div class="advisor-note">AI順位と○△判定は、目的ごとにAIが選んだ1〜4代の同一ルートを基準にします。順位は相対評価、○△は目的の絶対基準です。目的横断の総合点や第7評価軸は作りません。</div>'+
   '</details>';
  box.onclick=e=>{
   if(e.target.closest('[data-purpose-pedigree]')){openPedigree(name);return}
@@ -589,8 +637,9 @@ async function boot(){
  }
  advisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({planner,broodmareStats:engine.mareData.broodmares||[]});
  inject();
- setTimeout(buildPurposeRankings,120);
- window.DABISTA_MARE_GENERATION_ADVISOR={version:2,advisor,run:runGenerationAdvisor,render:renderMareAdvice,rankings:purposeRankingState,openPedigree,openSimulation};
+ const loaded=await loadMultigenRankings();
+ if(loaded){paintPurposeRanks();renderMareAdvice()}else setTimeout(buildPurposeRankings,120);
+ window.DABISTA_MARE_GENERATION_ADVISOR={version:3,advisor,run:runGenerationAdvisor,render:renderMareAdvice,rankings:purposeRankingState,multigen:()=>multigenRankingData,openPedigree,openSimulation};
 }
 boot();
 })();
