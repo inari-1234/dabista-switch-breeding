@@ -170,6 +170,38 @@ function quickGoalReason(key,g){
 const goalLabels={arc:'凱旋門賞',bc:'BC長期',rebuild:'繁殖再建',stallion:'自家製種牡馬'};
 const goalBaseOrder=['arc','bc','rebuild','stallion'];
 const goalGradeRank={recommend:4,candidate:3,conditional:2,insufficient:1};
+const purposeRankingState={status:'idle',byGoal:{arc:new Map(),bc:new Map(),rebuild:new Map(),stallion:new Map()},total:0,progress:0};
+function purposeRank(name,goal){return purposeRankingState.byGoal?.[goal]?.get(name)||null}
+function paintPurposeRanks(){
+ const name=$('#saleMareSelect')?.value;
+ document.querySelectorAll('#saleGoalButtons [data-sale-goal]').forEach(b=>{
+  const g=b.dataset.saleGoal,label=goalLabels[g]||g,r=purposeRank(name,g);
+  const suffix=r?'<small>'+r.rank+'位</small>':(purposeRankingState.status==='running'?'<small>…</small>':'');
+  b.innerHTML='<span>'+esc(label)+'</span>'+suffix;
+ });
+}
+async function buildPurposeRankings(){
+ if(!advisor||!engine?.mareData||purposeRankingState.status==='running'||purposeRankingState.status==='ready')return;
+ purposeRankingState.status='running';
+ const names=(engine.mareData.broodmares||[]).map(x=>x.name).filter(name=>advisor.mareAssessment(name)?.abilityKnown);
+ const buckets={arc:[],bc:[],rebuild:[],stallion:[]};
+ purposeRankingState.total=names.length;
+ for(let i=0;i<names.length;i++){
+  const name=names[i],direct=directSnapshot(name);
+  for(const goal of goalBaseOrder){
+   const cand=advisor.marePurposeCandidate?.(name,goal,direct,direct.bestByGoal?.[goal]);
+   if(cand)buckets[goal].push(cand);
+  }
+  purposeRankingState.progress=i+1;
+  if(i%10===9){paintPurposeRanks();await new Promise(r=>setTimeout(r,0))}
+ }
+ for(const goal of goalBaseOrder){
+  const ranked=advisor.rankMarePurposeCandidates?.(buckets[goal])||[];
+  purposeRankingState.byGoal[goal]=new Map(ranked.map(x=>[x.name,x]));
+ }
+ purposeRankingState.status='ready';paintPurposeRanks();renderMareAdvice();
+}
+
 function orderedGoalKeys(recommendations){
  return goalBaseOrder.slice().sort((a,b)=>{
   const d=(goalGradeRank[recommendations?.goals?.[b]?.key]||0)-(goalGradeRank[recommendations?.goals?.[a]?.key]||0);
