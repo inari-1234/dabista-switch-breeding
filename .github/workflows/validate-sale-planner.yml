@@ -58,6 +58,7 @@ on:
       - 'tests/production-mare-context-regression.test.js'
       - 'tests/recommendation-visual-hierarchy-contract.test.js'
       - 'tests/mare-purpose-ai-ranking.test.js'
+      - 'tests/mare-purpose-multigen-contract.test.js'
       - 'tests/magnificent-cross-utility-diagnostic.test.js'
       - 'tests/st-cross-2400-utility-diagnostic.test.js'
       - 'tests/theory-ranking-delta-diagnostic.test.js'
@@ -263,6 +264,10 @@ jobs:
       - name: Mare purpose AI ranking regression
         run: |
           node tests/mare-purpose-ai-ranking.test.js
+
+      - name: Mare purpose multigeneration contract
+        run: |
+          node tests/mare-purpose-multigen-contract.test.js
 
       - name: Four-generation and theory-evidence regression
         run: |
