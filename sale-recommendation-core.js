@@ -1216,9 +1216,34 @@
       if(conditionalGoals.length)sub.push('条件付き：'+conditionalGoals.map(k=>labels[k]).join(' / '));
       return{
         goals,headline,subline:sub.join(' ｜ '),recommendedGoals,candidateGoals,
-        note:'4目的を別々の成立条件で判定し、総合点による順位付けはしません。',
+        note:'4目的を別々の成立条件で判定し、目的横断の総合点は作りません。',
         abilityKnown:a.abilityKnown,goalLabels:directUseLabels(a,s)
       };
+    }
+
+    const PURPOSE_GRADE_RANK={recommend:4,candidate:3,conditional:2,insufficient:1};
+    function marePurposeCandidate(name,goal,summary,bestRoute){
+      const a=mareAssessment(name);if(!a?.abilityKnown)return null;
+      const bestByGoal=summary?.bestByGoal||{},route=bestRoute||bestByGoal?.[goal]||summary?.bestRoute||null;
+      const recs=quickGoalRecommendations(name,summary,bestByGoal),gradeKey=recs?.goals?.[goal]?.key||'insufficient';
+      const s=a.stats||{},r=a.ranks||{},base=[PURPOSE_GRADE_RANK[gradeKey]||0,...goalVector(route,goal)];
+      let mother=[];
+      if(goal==='arc')mother=[val(s.st),val(s.sp),val(s.pw)];
+      else if(goal==='bc')mother=[val(s.sp),val(s.st),val(s.pw)];
+      else if(goal==='rebuild')mother=[val(r.spst?.topPercent),val(s.st),val(s.sp),val(s.pw)];
+      else mother=[val(s.sp),val(s.st),val(s.pw)];
+      return{name,goal,gradeKey,route,assessment:a,vector:[...base,...mother]};
+    }
+    function compareMarePurposeCandidate(a,b){
+      const A=a?.vector||[],B=b?.vector||[];
+      for(let i=0;i<Math.max(A.length,B.length);i++){
+        const x=val(A[i]),y=val(B[i]);if(x!==y)return y-x;
+      }
+      return String(a?.name||'').localeCompare(String(b?.name||''),'ja');
+    }
+    function rankMarePurposeCandidates(candidates){
+      const xs=(candidates||[]).filter(Boolean).slice().sort(compareMarePurposeCandidate),total=xs.length;
+      return xs.map((x,i)=>({...x,rank:i+1,total}));
     }
 
     function recommendGeneration({goal='arc',assessment,generations,portfolios}={}){
@@ -1296,7 +1321,8 @@
       version:1,knownAbilityCount:knownMares.length,totalMareCount:broodmareStats.length,
       mareAssessment,mareStrategy,selectionAdvice,crossInsights,rankMetric,abilityTier,goalVector,betterGoalRoute,emptySummary,addRoute,summarize,
       directUseLabels,goalMareReason,quickSaleOutlook,quickGoalRecommendations,routeForGoal,routeFacts,productionQuality,mareBand,productionContext,compareProductionForMare,rankProductionRoutes,selectProductionRecommendations,productionCandidateCue,candidateDisplayFacts,recommendationCue,arcUpgradeGate,bcUpgradeGate,rebuildUpgradeGate,rebuildFreedomGate,rebuildFreedomUpgradeReasons,materialUpgradeReasons,recommendGeneration,portfolioFacts,portfolioUpgradeReasons,portfolioUpgrade,
-      profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit
+      profileUpgradeReasons,profileTransition,profileFutureStatus,goalFit,
+      marePurposeCandidate,compareMarePurposeCandidate,rankMarePurposeCandidates
     };
   }
   return{version:1,create,known};
