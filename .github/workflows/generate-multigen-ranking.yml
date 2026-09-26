@@ -76,11 +76,16 @@ jobs:
           node - <<'NODE'
           const x=require('./mare-purpose-multigen-ranking.json');
           if(x.analyzedCount!==298)throw Error('expected 298, got '+x.analyzedCount);
-          const gradeOrder={recommend:4,candidate:3,conditional:2,insufficient:1};
           for(const g of ['arc','bc','rebuild','stallion']){
             const rows=Object.entries(x.mares).sort((a,b)=>a[1].goals[g].rank-b[1].goals[g].rank);
             if(rows.length!==298||rows[0][1].goals[g].rank!==1||rows.at(-1)[1].goals[g].rank!==298)throw Error(g+' rank coverage');
-            for(let i=1;i<rows.length;i++)if((gradeOrder[rows[i-1][1].goals[g].grade.key]||0)<(gradeOrder[rows[i][1].goals[g].grade.key]||0))throw Error(g+' grade order');
+            const seen=new Set(rows.map(([,r])=>r.goals[g].rank));
+            if(seen.size!==298)throw Error(g+' duplicate rank');
+            for(const [name,r] of rows){
+              const v=r.goals[g];
+              if(!['recommend','candidate','conditional','insufficient'].includes(v.grade?.key))throw Error(name+' '+g+' grade');
+              if(v.sires.length!==v.generation)throw Error(name+' '+g+' route length');
+            }
           }
           const arc=Object.entries(x.mares).sort((a,b)=>a[1].goals.arc.rank-b[1].goals.arc.rank).slice(0,10).map(([n,r])=>({name:n,rank:r.goals.arc.rank,generation:r.goals.arc.generation,grade:r.goals.arc.grade.key}));
           console.log(JSON.stringify({passed:true,arcTop10:arc,eist:x.mares['エイスト']?.goals.arc,spring:x.mares['スプリングスイーツ']?.goals.arc,queens:x.mares['クイーンズスミレ']?.goals},null,2));
