@@ -219,11 +219,7 @@ function renderMare(){
  if(!planner||!$('#saleMareSummary'))return;
  const name=$('#saleMareSelect')?.value||db.salePlanner.mare,info=planner.mareInfo(name),s=info?.stats;
  if(!info?.record||!s){$('#saleMareSummary').textContent='繁殖牝馬情報を取得できませんでした。';return}
- const ability=info.abilityKnown
-  ?`<div class="sale-ability-grid"><div><b>${fmt(s.sp)}</b><small>繁殖SP</small></div><div><b>${fmt(s.st)}</b><small>繁殖ST</small></div><div><b>${fmt(s.pw)}</b><small>繁殖PW</small></div></div>`
-  :'<div class="sale-ability-grid"><div><b>—</b><small>繁殖SP</small></div><div><b>—</b><small>繁殖ST</small></div><div><b>—</b><small>繁殖PW</small></div></div>';
- const detail=`<details class="sale-profile-detail"><summary>ニトロ・価格・血統を見る</summary><div class="sale-ability-grid"><div><b>${fmt(s.nsp)}</b><small>NSP</small></div><div><b>${fmt(s.nst)}</b><small>NST</small></div><div><b>${fmt(s.npw)}</b><small>NPW</small></div></div><div class="sale-method" style="margin-top:6px">価格 ${fmt(s.price)}万円。${info.abilityKnown?'母能力とニトロは別軸で評価します。':'能力値0は低能力ではなく未判明として扱います。'}</div>${pedigreeDetails(info)}</details>`;
- $('#saleMareSummary').innerHTML=`<div class="row"><b>${esc(name)}</b><span>${info.abilityKnown?'SP+ST '+info.spst:'能力未判明'}</span></div>${ability}${detail}`;
+ $('#saleMareSummary').innerHTML=`<div class="row"><b>${esc(name)}</b><span class="badge ${info.abilityKnown?'gold':''}">${info.abilityKnown?'能力既知':'能力未判明'}</span></div><div class="sale-method">ステータス・ニトロ・因子・目的別AI順位は、選択した目的の中にまとめて表示します。</div>`;
 }
 
 function renderNotice(){
