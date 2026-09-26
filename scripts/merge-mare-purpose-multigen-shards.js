@@ -31,6 +31,15 @@ for(const goal of goals){
     delete rows[i].g.sortVector;
   }
 }
+const runtimeFactKeys=['speedCross','materialSpeedCross','longDistanceCross','materialLongCross','magnificent','elaborate','record'];
+for(const row of Object.values(mares)){
+  delete row.diagnostic;
+  for(const v of Object.values(row.goals||{})){
+    const facts=v.facts||{};
+    v.facts=Object.fromEntries(runtimeFactKeys.map(k=>[k,facts[k]]));
+    delete v.sortVector;
+  }
+}
 const elapsedSeconds=shards.reduce((n,s)=>Math.max(n,Number(s.elapsedSeconds||0)),0);
 const payload={
   schema:1,
@@ -42,6 +51,6 @@ const payload={
   caveat:'3代・4代は条件付き探索。中間牝馬の能力は出生前に仮定しない。',
   mares
 };
-const json=JSON.stringify(payload,null,2)+'\n';
+const json=JSON.stringify(payload)+'\n';
 if(outArg)fs.writeFileSync(outArg.slice(9),json);
 else process.stdout.write(json);
