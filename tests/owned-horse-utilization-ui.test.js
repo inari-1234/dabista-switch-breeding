@@ -7,6 +7,7 @@ const horses=fs.readFileSync('v16.js','utf8');
 const idx=fs.readFileSync('index.html','utf8');
 const app=fs.readFileSync('app.js','utf8');
 const refresh=fs.readFileSync('ui-refresh.js','utf8');
+const lifecycle=fs.readFileSync('horse-lifecycle.js','utf8');
 
 const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: '+token)};
 need(ui,'data-use-horse','horse-card utilization action');
@@ -19,6 +20,15 @@ need(ui,'function decorate(){\n ensureStyle();','horse action style must be inst
 need(ui,'ensureStyle();\nconst list=$(\'#horseList\')','horse action style must be installed at startup before first render');
 need(ui,'配合を考える','shared breeding action label');
 need(ui,'secondary ui-wide-cta horse-breed-cta','horse breeding action must use shared wide CTA');
+need(lifecycle,'currentState','horse current-state resolver');
+need(lifecycle,'futureUse','horse future-use resolver');
+need(app,'horse-future-badge','future use badge on horse cards');
+need(ui,'lifecycle.isBreedingMare(h)','mare breeding action must require current broodmare state');
+need(ui,'lifecycle.isActiveStallion(h)','sire reverse lookup must require active stallion state');
+need(breed,'breedAdvancedFilters','advanced breeding filters must be collapsed behind details');
+need(route,'id="routeRegisterFutureUse"','route offspring future-use selector');
+need(route,"currentState:'race',futureUse,role:'race'",'route offspring must remain active racers until status changes');
+if(refresh.includes('data-go="rebuild"'))throw Error('duplicate rebuild home tile must stay removed');
 if(ui.includes('この牝馬を配合に活かす')||ui.includes('相性牝馬を探す'))throw Error('legacy horse utilization labels must be removed');
 need(ui,'planner.evaluateDirectPair(m.record,h.name)','fixed-sire reverse pair evaluation');
 need(ui,"if(goal==='arc')",'Arc reverse gate');
