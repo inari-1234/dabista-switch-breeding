@@ -55,7 +55,7 @@ if(expanded.stages.some(s=>!s.child||!Array.isArray(s.child.ancestor)||s.child.a
 const ui=fs.readFileSync('breed-integration.js','utf8');
 for(const token of [
   'function farmSirePool()',
-  "h?.role!=='stallion'&&h?.role!=='sire-candidate'",
+  'lifecycle.isActiveStallion(h)',
   'function ensurePlannerFresh()',
   'ownedSireCount',
   'function compareSirePortfolio(',
