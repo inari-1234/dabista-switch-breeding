@@ -97,7 +97,6 @@ $('#diagBtn').onclick=()=>{
    pendingCount:Array.isArray(futureState?.pending)?futureState.pending.length:0,
    cachedCount:Array.isArray(futureState?.cached)?futureState.cached.length:0
   }:null,
-  nitroApi:window.DABISTA_NITRO_ENGINE?{version:window.DABISTA_NITRO_ENGINE.version,source:window.DABISTA_NITRO_ENGINE.source}:null,
   lifecycle:window.DABISTA_HORSE_LIFECYCLE?{available:true}:null,
   modal:{bodyLocked:document.body.classList.contains('dabista-modal-lock'),openDialogs:document.querySelectorAll('dialog[open]').length},
   device:{userAgent:navigator.userAgent,language:navigator.language,online:navigator.onLine},
