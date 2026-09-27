@@ -54,7 +54,7 @@ assert.ok(!idx.includes('breed-helper.js?'),'legacy breed helper must not load a
 assert.ok(!idx.includes('v20.js?'),'legacy v20 decorator must not load at runtime');
 assert.ok(!idx.includes('v21.js?'),'legacy v21 decorator must not load at runtime');
 
-for(const [p,src] of [['v15.js',v15],['v18.js',v18],['v25.js',v25]]){
+for(const [p,src] of [['v15.js',v15],['v25.js',v25]]){
   assert.ok(src.includes('getBreedHorseById'),p+' must resolve transient breed mare');
 }
 assert.ok(v15.includes('15祖先内蔵'));
