@@ -61,7 +61,7 @@ console.log(JSON.stringify({
   passed:true,
   runtimeScripts:scripts.length,
   removedLegacy:['breed-helper.js','v19.js','v20.js','v21.js','legacy race dialog','legacy rebuild research UI'],
-  physicallyRemoved:['v20.js','v21.js','v19.js','breed-helper.js'],
+  physicallyRemoved:['v20.js','v21.js','v19.js','breed-helper.js','data/rebuild-research.json'],
   centralized:['master data loading','update check','diagnostic export'],
   fallback:'selected mare only; no 298-mare device scan'
 },null,2));
