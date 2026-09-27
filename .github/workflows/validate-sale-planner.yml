@@ -17,7 +17,6 @@ on:
       - 'v16.js'
       - 'v18.js'
       - 'v22.js'
-      - 'v24.js'
       - 'v25.js'
       - 'sale-recommendation-core.js'
       - 'scripts/generate-mare-purpose-multigen-ranking.js'
@@ -110,7 +109,6 @@ jobs:
           node --check v16.js
           node --check v18.js
           node --check v22.js
-          node --check v24.js
           node --check v25.js
           node --check breeding-core.js
           node --check sale-planner-core.js
