@@ -150,6 +150,15 @@ function resetGenerationSelection(){
 function signalMareContext(reason,name=db.salePlanner.mare){
  window.dispatchEvent(new CustomEvent('dabista:sale-mare-context',{detail:{name,reason}}));
 }
+function resetAfterRestore(){
+ routeContexts.clear();
+ window.DABISTA_SELECTED_SALE_ROUTE=null;
+ window.DABISTA_TRANSIENT_BREED_MARE=null;
+ $('#saleRouteBreedBridge')?.remove();
+ invalidateResults('バックアップ復元後の配合設計を更新しました。');
+ fillMares();paintButtons();renderNotice();
+ signalMareContext('restore',db.salePlanner.mare||'');
+}
 function setPlannerMare(name,reason='select'){
  if(!name)return false;
  const changed=db.salePlanner.mare!==name;
@@ -764,7 +773,7 @@ async function load(){
    recommendationAdvisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({planner,broodmareStats:engine.mareData.broodmares||[]});
   }
   cleanupLegacySaleSync();inject();fillMares();paintButtons();renderNotice();
-  window.DABISTA_SALE_PLANNER={version:1,planner,run:runDesign,openRouteInBreed,routeContexts,setGeneration,resetGenerationSelection,refreshSelectedRoute:()=>{const ctx=window.DABISTA_SELECTED_SALE_ROUTE;if(ctx)renderRouteBreedBridge(ctx,ensureSaleMareForBreed(ctx.mare))}};
+  window.DABISTA_SALE_PLANNER={version:1,planner,run:runDesign,openRouteInBreed,routeContexts,setGeneration,resetGenerationSelection,resetAfterRestore,refreshSelectedRoute:()=>{const ctx=window.DABISTA_SELECTED_SALE_ROUTE;if(ctx)renderRouteBreedBridge(ctx,ensureSaleMareForBreed(ctx.mare))}};
  }catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'sale-planner-load: '+String(e)})}
 }
 load();})();
