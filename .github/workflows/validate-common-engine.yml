@@ -153,7 +153,7 @@ jobs:
           from pathlib import Path
           idx=Path('index.html').read_text(encoding='utf-8')
           app=Path('app.js').read_text(encoding='utf-8')
-          versioned={p:Path(p).read_text(encoding='utf-8') for p in ['v15.js','v16.js','v18.js','v22.js','v24.js','v25.js','v26.js']}
+          versioned={p:Path(p).read_text(encoding='utf-8') for p in ['v15.js','v16.js','v18.js','v22.js','v25.js','v26.js']}
           v25=versioned['v25.js']
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
           direct=json.loads(Path('data/elaborate-direct-exceptions.json').read_text(encoding='utf-8'))
