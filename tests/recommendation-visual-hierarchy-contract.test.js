@@ -7,8 +7,8 @@ const breed=fs.readFileSync('breed-integration.js','utf8');
 const advisor=fs.readFileSync('sale-recommendation-core.js','utf8');
 const planner=fs.readFileSync('sale-planner-core.js','utf8');
 const css=fs.readFileSync('ui-refresh.css','utf8');
-const v24=fs.readFileSync('v24.js','utf8');
-const v25=fs.readFileSync('v25.js','utf8');
+const index=fs.readFileSync('index.html','utf8');
+const breedingEngine=fs.readFileSync('breeding-engine.js','utf8');
 const rankingGenerator=fs.readFileSync('scripts/generate-mare-purpose-multigen-ranking.js','utf8');
 
 const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: '+token)};
@@ -120,10 +120,11 @@ need(v26,'route-stage-action-row .route-register-btn{position:static!important;f
 need(v26,'.route-stage-action-row .route-register-btn{width:100%;min-height:46px','route CTA must become full-width on narrow screens');
 need(v26,'.sale-route-details.route-stage-details{clear:both;margin-top:16px;padding-top:12px','route details need protected vertical separation from CTA');
 need(v26,'連携・最終父の操作','route bridge actions must be secondary');
-need(v24,'<div id="rebuildBody" hidden aria-hidden="true"></div>','legacy four-mare research body must stay hidden');
-need(v24,'<div hidden aria-hidden="true"><select id="rebuildGoal"','legacy four-mare starter controls must stay hidden');
-need(v25,'DABISTA_NITRO_ENGINE','shared nitro helper API must remain available');
-if(v25.includes('nitroSimulator')||v25.includes('installSimulator'))throw Error('hidden legacy nitro simulator must be removed rather than merely hidden');
+need(index,'data-tab="rebuild">再建</button>','rebuild tab must remain available');
+need(index,'<section id="rebuild" class="hidden">','rebuild shell must stay static');
+if(index.includes('id="rebuildBody"')||index.includes('id="rebuildGoal"')||index.includes('id="rebuildStarter"'))throw Error('dead legacy rebuild controls must remain removed');
+need(breedingEngine,'calcNitro:engine.calcNitro','shared nitro calculation must be owned by common breeding engine');
+if(fs.existsSync('v24.js')||fs.existsSync('v25.js'))throw Error('removed legacy runtime source returned');
 
 need(breed,"advisor?.compareProductionForMare","breed production must use the same mare-aware comparator");
 need(breed,'candidateDisplayFacts','breed cards must inherit the same display-priority facts used by sale cards');
