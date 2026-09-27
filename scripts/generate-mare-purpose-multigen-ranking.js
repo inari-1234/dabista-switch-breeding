@@ -1,5 +1,6 @@
 'use strict';
 const fs=require('fs');
+const crypto=require('crypto');
 const core=require('../breeding-core.js');
 const sale=require('../sale-planner-core.js');
 const reco=require('../sale-recommendation-core.js');
@@ -17,6 +18,18 @@ const engine=core.create({effects:E,elaboratePairs:K,directElaboratePairs:D,elab
 const planner=sale.create({engine,stallions:T.stallions,stallionStats:S,broodmares:T.broodmares,broodmareStats:M});
 const advisor=reco.create({planner,broodmareStats:M});
 const goals=['arc','bc','rebuild','stallion'];
+const SOURCE_FILES=[
+  'breeding-core.js','sale-planner-core.js','sale-recommendation-core.js',
+  'data/theory-master.json','data/stallions.json','data/default-broodmares.json',
+  'data/nitro-effects.json','data/kotta-pairs.json','data/elaborate-direct-exceptions.json',
+  'data/planner-inheritance-validation.json',
+  'scripts/generate-mare-purpose-multigen-ranking.js','scripts/merge-mare-purpose-multigen-shards.js'
+];
+function gitBlobSha(path){
+  const b=fs.readFileSync(path),h=crypto.createHash('sha1');
+  h.update('blob '+b.length+'\0');h.update(b);return h.digest('hex');
+}
+function sourceFingerprint(){return SOURCE_FILES.slice().sort().map(p=>p+'@'+gitBlobSha(p)).join('|')}
 
 function previewBases(shortlists,maxEach=12){
   const out=[],seen=new Set(),keys=['sp','speedCross','production','st','balance','theory'];
@@ -130,6 +143,7 @@ for(const goal of goals){
 }
 const payload={
   schema:1,
+  sourceFingerprint:sourceFingerprint(),
   generatedAt:new Date().toISOString(),
   method:'direct+exact-two+conditional-three+conditional-four',
   knownAbilityCount:advisor.knownAbilityCount,
