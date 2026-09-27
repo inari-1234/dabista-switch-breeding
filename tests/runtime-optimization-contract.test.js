@@ -34,6 +34,7 @@ assert.ok(v16.includes('DABISTA_BREEDING_ENGINE.ready'),'v16 must reuse shared e
 assert.ok(v18.includes('DABISTA_BREEDING_ENGINE.ready'),'v18 must reuse shared theory master');
 assert.ok(!v24.includes('rebuild-research.json'),'legacy research dataset must not load in primary runtime');
 assert.ok(!v24.includes('SP+ST'),'legacy SP+ST research summary must be removed from primary runtime');
+assert.ok(v24.includes("b.textContent='再建'"),'rebuild tab rename requires explicit user approval');
 assert.ok(!v25.includes('fetch(')&&!v25.includes('MutationObserver'),'v25 compatibility API must stay DOM/network free');
 assert.ok(v25.includes('DABISTA_NITRO_ENGINE'),'nitro compatibility API must remain');
 
