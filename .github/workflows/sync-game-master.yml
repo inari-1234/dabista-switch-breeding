@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: sync-game-master
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -249,6 +253,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -298,9 +303,11 @@ jobs:
           PY
 
       - name: Commit validated data
+        id: commit
         run: |
           if git diff --quiet -- data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json data/elaborate-direct-exceptions.json; then
             echo 'No substantive changes'
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git diff --check
@@ -309,3 +316,10 @@ jobs:
           git add data/stallions.json data/default-broodmares.json data/pedigree-master.json data/theory-master.json data/elaborate-direct-exceptions.json
           git commit -m 'Sync default Dabista pedigree and theory masters'
           git push origin HEAD:main
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+
+      - name: Refresh multigeneration ranking
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run generate-multigen-ranking.yml --ref main
