@@ -24,6 +24,9 @@ on:
       - 'v24.js'
       - 'v25.js'
       - 'sale-recommendation-core.js'
+      - 'scripts/generate-mare-purpose-multigen-ranking.js'
+      - 'scripts/merge-mare-purpose-multigen-shards.js'
+      - '.github/workflows/generate-multigen-ranking.yml'
       - 'breed-integration.js'
       - 'v26.js'
       - 'v27.js'
@@ -90,6 +93,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: sale-planner-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
