@@ -217,7 +217,7 @@ async function loadMultigenRankings(){
   const r=await fetch('data/mare-purpose-multigen-ranking.json?v=1.19.1-b71',{cache:'no-store'});
   if(!r.ok)throw Error('HTTP '+r.status);
   const data=await r.json();
-  if(data?.schema!==1||data?.analyzedCount!==298||!data?.mares)throw Error('invalid multigen ranking payload');
+  if(data?.schema!==1||data?.analyzedCount!==298||!data?.mares||!data?.sourceFingerprint)throw Error('invalid multigen ranking payload');
   for(const goal of goalBaseOrder){
    purposeRankingState.byGoal[goal]=new Map(Object.entries(data.mares).map(([name,row])=>[name,row?.goals?.[goal]]).filter(([,v])=>v?.rank));
   }
@@ -225,7 +225,7 @@ async function loadMultigenRankings(){
   return true;
  }catch(e){
   window.APP_ERRORS?.push({at:new Date().toISOString(),message:'multigen-ranking-load: '+String(e)});
-  purposeRankingState.status='idle';purposeRankingState.source='direct-fallback';
+  purposeRankingState.status='unavailable';purposeRankingState.source='multigen-unavailable';
   return false;
  }
 }
@@ -233,7 +233,7 @@ function paintPurposeRanks(){
  const name=$('#saleMareSelect')?.value;
  document.querySelectorAll('#saleGoalButtons [data-sale-goal]').forEach(b=>{
   const g=b.dataset.saleGoal,label=goalLabels[g]||g,r=purposeRank(name,g);
-  const suffix=r?'<small>'+r.rank+'位</small>':(purposeRankingState.status==='running'?'<small>…</small>':'');
+  const suffix=r?'<small>'+r.rank+'位</small>':(purposeRankingState.status==='unavailable'?'<small>未取得</small>':purposeRankingState.status==='running'?'<small>…</small>':'');
   b.innerHTML='<span>'+esc(label)+'</span>'+suffix;
  });
 }
@@ -391,7 +391,7 @@ function openSimulation(name,goal,direct){
  if(!route?.sires?.length){$('#mareSimBody').innerHTML='<div class="notice">安全な配合ルートを取得できませんでした。</div>';d.showModal();return}
  const x=planner.expandRoute(name,route,goal),stages=x?.stages||[],facts=ranked?.facts||advisor.routeFacts(fallbackRoute),decision=advisor.goalMareReason(name,goal,direct);
  if(!stages.length){$('#mareSimBody').innerHTML='<div class="notice">配合ルートを再生できませんでした。</div>';d.showModal();return}
- const rankText=ranked?.rank?ranked.rank+'位 / '+ranked.total+'頭':'順位計算中';
+ const rankText=ranked?.rank?ranked.rank+'位 / '+ranked.total+'頭':purposeRankingState.status==='unavailable'?'順位未取得':'順位計算中';
  const genText=ranked?.generation?(ranked.generation===1?'直仔':ranked.generation+'代'):(stages.length===1?'直仔':stages.length+'代');
  const grade=ranked?.grade||null;
  const portfolio=ranked?.portfolio||null;
@@ -441,8 +441,8 @@ function renderMareAdvice(){
   attentionItems=items.slice(0,4);
  }
  const attentionHtml=attentionItems.length?attentionItems.map(x=>'<span class="candidate-chip '+esc(x.tone||'trait')+'">'+esc(x.label)+'</span>').join(''):'<span class="mare-attention-none">注目ポイントなし</span>';
- const rankText=!a.abilityKnown?'未順位':rank?rank.rank+'位':'計算中';
- const rankSub=a.abilityKnown?(rank?'/ '+rank.total+'頭':'/ '+advisor.knownAbilityCount+'頭'):'能力未判明';
+ const rankText=!a.abilityKnown?'未順位':rank?rank.rank+'位':purposeRankingState.status==='unavailable'?'順位未取得':'計算中';
+ const rankSub=a.abilityKnown?(rank?'/ '+rank.total+'頭':purposeRankingState.status==='unavailable'?'1〜4代データ':'/ '+advisor.knownAbilityCount+'頭'):'能力未判明';
  const generationText=rank?.generation?(rank.generation===1?'直仔':rank.generation+'代'):'';
  const decisionReasons=(rank?.reasons||decision.reasons||[]).slice(0,3).map(x=>'<span>'+esc(compactGenerationReason(x))+'</span>').join('');
  box.className='mare-advice tier-'+tone;
@@ -451,7 +451,7 @@ function renderMareAdvice(){
   '<section class="purpose-focus">'+
    '<div class="purpose-focus-head"><div><small>現在の目的</small><h3>'+esc(goalLabels[goal]||goal)+'</h3></div><div class="purpose-rank"><small>AI順位</small><b>'+esc(rankText)+'</b><span>'+esc(rankSub)+'</span></div></div>'+
    '<div class="purpose-grade goal-'+esc(grade.key||'insufficient')+'"><b>'+esc(grade.symbol)+' '+esc(grade.label)+'</b><span>'+esc((generationText?'AI推奨 '+generationText+' ｜ ':'')+(grade.reason||quickGoalReason(goal,grade)))+'</span></div>'+
-   '<div class="purpose-meaning"><span>順位＝AIの使用優先度</span><span>○△＝同じルートの達成条件</span></div>'+
+   '<div class="purpose-meaning"><span>順位＝AIの使用優先度</span><span>○△＝同じルートの達成条件</span></div>'+   (purposeRankingState.status==='unavailable'?'<div class="notice mare-rank-unavailable">1〜4代AI順位データを取得できません。○△は選択馬の直仔診断です。必要なら「診断する」で直仔〜4代を再計算できます。</div>':'')+
    (a.abilityKnown?'<div class="purpose-stats"><div><small>繁殖SP</small><b>'+Number(s.sp||0)+'</b></div><div><small>繁殖ST</small><b>'+Number(s.st||0)+'</b></div><div><small>繁殖PW</small><b>'+Number(s.pw||0)+'</b></div></div>':'<div class="purpose-unknown">繁殖SP / ST / PW は未判明です。</div>')+
    '<div class="purpose-nitro"><small>ニトロ</small><div><span>SP <b>'+Number(s.nsp||0)+'</b></span><span>ST <b>'+Number(s.nst||0)+'</b></span><span>PW <b>'+Number(s.npw||0)+'</b></span></div></div>'+
    focusFactorHtml(name)+
@@ -647,7 +647,7 @@ async function boot(){
  advisor=window.DABISTA_SALE_RECOMMENDATION_CORE.create({planner,broodmareStats:engine.mareData.broodmares||[]});
  inject();
  const loaded=await loadMultigenRankings();
- if(loaded){paintPurposeRanks();renderMareAdvice()}else setTimeout(buildPurposeRankings,120);
+ paintPurposeRanks();renderMareAdvice();
  window.DABISTA_MARE_GENERATION_ADVISOR={version:3,advisor,run:runGenerationAdvisor,render:renderMareAdvice,rankings:purposeRankingState,multigen:()=>multigenRankingData,openPedigree,openSimulation};
 }
 boot();
