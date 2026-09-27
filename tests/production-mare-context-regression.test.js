@@ -123,10 +123,13 @@ assert.ok(stableCDisplay&&stableCDisplay.label==='安定C'&&stableCDisplay.tone=
 const theoryIndex=display.facts.findIndex(x=>x.key==='magnificent');
 const distanceIndex=display.facts.findIndex(x=>x.key==='distance-range');
 assert.ok(theoryIndex>=0&&distanceIndex>=0&&theoryIndex<distanceIndex,'pairing theory must be displayed before Arc distance evidence');
-assert.ok(display.comparison.some(x=>x.label==='SP -2')&&display.comparison.some(x=>x.label==='ST +1'),'nitro comparison deltas are mandatory card information');
+assert.ok(display.comparison.some(x=>x.label==='SPニトロ -2')&&display.comparison.some(x=>x.label==='STニトロ +1'),'nitro comparison deltas must explicitly name the metric');
 assert.ok(display.facts.some(x=>x.key==='distance-range'&&x.label.includes('2600m')),'distance aptitude range must remain visible because it contributes to SP-side interpretation');
 assert.ok(display.groups.additions.length<=3&&display.groups.subtractions.length<=3&&display.groups.cautions.length<=3,'primary candidate display groups must stay compact');
 assert.ok(display.groups.subtractions.some(x=>x.label.startsWith('SPクロス消失')),'SP-cross loss must remain in the subtraction group');
+assert.strictEqual(display.reference?.finalSire,'表示基準','candidate display must expose the visible peer comparison target');
+assert.ok(display.groups.additions.every(x=>display.comparison.some(c=>c.key===x.key&&c.label===x.label)),'with a reference, advantage chips must be peer differences rather than standalone facts');
+assert.ok(display.groups.subtractions.every(x=>display.comparison.some(c=>c.key===x.key&&c.label===x.label)),'with a reference, disadvantage chips must be peer differences rather than standalone facts');
 assert.ok(display.groups.cautions.some(x=>x.label==='実績B')&&display.groups.cautions.some(x=>x.label==='安定C'),'record/stability must remain visible as caution facts');
 
 // High mare: stable A remains preferable to stable C at equal facts.
