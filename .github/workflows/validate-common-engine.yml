@@ -1,6 +1,6 @@
 name: Validate common breeding engine
 # Release-candidate verification: v1.19.1 / Build 2026.09.28-74
-# Post-ranking exact-SHA validation trigger: Build74
+# Final post-ranking exact-SHA validation trigger: Build74
 
 on:
   push:
