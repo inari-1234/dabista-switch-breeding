@@ -22,6 +22,9 @@ for(const [name,src] of Object.entries(runtime)){
 }
 assert.strictEqual((app.match(/version\.json/g)||[]).length,1,'only one update service may fetch version.json');
 assert.ok(app.includes('window.DABISTA_UPDATE_SERVICE'),'central update service missing');
+assert.ok(!app.includes("$('#photo').onchange"),'app must not own obsolete photo input placeholder');
+assert.ok(v22.includes("p.onchange=e=>openMerge(e.target.files)"),'v22 must own photo merge input');
+assert.ok(!v22.includes("setTimeout(()=>{migrate();installPhoto()"),'photo merge ownership must not wait for startup timer');
 assert.ok(app.includes('multigenRanking'),'central diagnostic must report multigeneration state');
 assert.ok(app.includes('breedingEngine'),'central diagnostic must report breeding-engine state');
 for(const token of ['sourceFingerprint','generatedAt','fallbackOccurred','fallbackMode','freshnessBasis','pendingCount','cachedCount','planner:{generationAdvisor']){
