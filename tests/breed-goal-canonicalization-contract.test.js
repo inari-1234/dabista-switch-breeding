@@ -3,7 +3,6 @@ const fs=require('fs');
 
 const html=fs.readFileSync('index.html','utf8');
 const v26=fs.readFileSync('v26.js','utf8');
-const helper=fs.readFileSync('breed-helper.js','utf8');
 const integration=fs.readFileSync('breed-integration.js','utf8');
 
 const options=[...html.matchAll(/<select id="breedGoal">([\s\S]*?)<\/select>/g)]
@@ -15,7 +14,7 @@ if(JSON.stringify(values)!==JSON.stringify(expected))throw Error('canonical bree
 if(/bc:'breaker'/.test(v26))throw Error('BC still collapses to breaker');
 if(!/const goalMap=\{arc:'arc',bc:'bc',rebuild:'rebuild',stallion:'stallion'\}/.test(v26))throw Error('sale handoff canonical goal map missing');
 if(!/const GOAL_ALIAS=\{breaker:'arc',successor:'stallion',arc:'arc',bc:'bc',rebuild:'rebuild',stallion:'stallion'\}/.test(integration))throw Error('integration compatibility aliases missing');
-if(!/legacyGoal=g=>g==='arc'\?'breaker':g==='stallion'\?'successor':g/.test(helper))throw Error('helper legacy fallback mapping missing');
+if(fs.existsSync('breed-helper.js'))throw Error('obsolete breed helper source must stay removed');
 if(values.includes('breaker')||values.includes('successor'))throw Error('legacy goals leaked into canonical UI');
 
 console.log(JSON.stringify({
@@ -23,6 +22,6 @@ console.log(JSON.stringify({
   method:'breed goal canonicalization contract',
   canonicalValues:values,
   labels:Object.fromEntries(options.map(x=>[x.value,x.label])),
-  legacyCompatibility:'fallback only',
+  legacyCompatibility:'integration aliases only',
   bcHandoff:'preserved'
 },null,2));
