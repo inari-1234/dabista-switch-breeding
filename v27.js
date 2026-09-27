@@ -237,29 +237,6 @@ function paintPurposeRanks(){
   b.innerHTML='<span>'+esc(label)+'</span>'+suffix;
  });
 }
-async function buildPurposeRankings(){
- if(!advisor||!engine?.mareData||purposeRankingState.status==='running'||(purposeRankingState.status==='ready'&&purposeRankingState.source==='multigen-static'))return;
- purposeRankingState.status='running';
- const names=(engine.mareData.broodmares||[]).map(x=>x.name).filter(name=>advisor.mareAssessment(name)?.abilityKnown);
- const buckets={arc:[],bc:[],rebuild:[],stallion:[]};
- purposeRankingState.total=names.length;
- for(let i=0;i<names.length;i++){
-  const name=names[i],direct=directSnapshot(name);
-  for(const goal of goalBaseOrder){
-   const route=goal==='stallion'?stallionPortfolioRoute(direct):direct.bestByGoal?.[goal];
-   const cand=advisor.marePurposeCandidate?.(name,goal,direct,route);
-   if(cand)buckets[goal].push(cand);
-  }
-  purposeRankingState.progress=i+1;
-  if(i%10===9){paintPurposeRanks();await new Promise(r=>setTimeout(r,0))}
- }
- for(const goal of goalBaseOrder){
-  const ranked=advisor.rankMarePurposeCandidates?.(buckets[goal])||[];
-  purposeRankingState.byGoal[goal]=new Map(ranked.map(x=>[x.name,x]));
- }
- purposeRankingState.status='ready';purposeRankingState.source='direct-fallback';paintPurposeRanks();renderMareAdvice();
-}
-
 function orderedGoalKeys(recommendations){
  return goalBaseOrder.slice().sort((a,b)=>{
   const d=(goalGradeRank[recommendations?.goals?.[b]?.key]||0)-(goalGradeRank[recommendations?.goals?.[a]?.key]||0);
