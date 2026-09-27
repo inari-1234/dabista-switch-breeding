@@ -6,6 +6,7 @@ const idx=read('index.html'),app=read('app.js'),v15=read('v15.js'),v16=read('v16
 const scripts=[...idx.matchAll(/<script src="([^"?]+)/g)].map(m=>m[1]);
 
 for(const x of ['breed-helper.js','v19.js','v20.js','v21.js'])assert.ok(!scripts.includes(x),'inactive legacy layer loaded: '+x);
+assert.ok(!fs.existsSync('v20.js'),'obsolete v20 source must be physically removed');
 for(const x of ['breeding-core.js','breeding-engine.js','v15.js','v16.js','v18.js','sale-planner-core.js','sale-recommendation-core.js','breed-integration.js','v25.js','v26.js','v27.js','v28.js'])assert.ok(scripts.includes(x),'runtime script missing '+x);
 assert.ok(scripts.indexOf('breeding-engine.js')<scripts.indexOf('v15.js'));
 assert.ok(scripts.indexOf('breeding-engine.js')<scripts.indexOf('v16.js'));
