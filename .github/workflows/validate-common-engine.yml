@@ -45,6 +45,7 @@ on:
       - 'tests/breed-integration-load-order-contract.test.js'
       - 'tests/breed-legacy-migration-contract.test.js'
       - 'tests/breed-integration-runtime-contract.test.js'
+      - 'tests/runtime-optimization-contract.test.js'
       - 'tests/breed-async-continuation-state-contract.test.js'
       - 'tests/breed-current-ranking-mare-dependence.test.js'
       - 'tests/breed-resolve-horse-name-collision.test.js'
@@ -227,6 +228,7 @@ jobs:
           node tests/breed-integration-load-order-contract.test.js
           node tests/breed-legacy-migration-contract.test.js
           node tests/breed-integration-runtime-contract.test.js
+          node tests/runtime-optimization-contract.test.js
           node tests/breed-async-continuation-state-contract.test.js
           node tests/breed-current-ranking-mare-dependence.test.js
           node tests/breed-resolve-horse-name-collision.test.js
