@@ -26,6 +26,12 @@ assert.ok(!app.includes("$('#photo').onchange"),'app must not own obsolete photo
 for(const token of ["$('#addBtn').onclick","$('#horseForm').onsubmit","$('#horseList').onclick"])assert.ok(!app.includes(token),'app retains duplicate horse CRUD event owner: '+token);
 for(const token of ["$('#addBtn').onclick","$('#horseForm').onsubmit","$('#horseList').onclick"])assert.ok(v15.includes(token),'v15 missing horse CRUD owner: '+token);
 assert.ok(v15.includes("if(e.target.closest('[data-horse-action]'))return"),'horse edit handler must ignore growth action buttons');
+assert.ok(app.includes("dabista:horses-rendered")&&app.includes("dabista:races-rendered"),'central render completion events missing');
+assert.ok(!v16.includes('MutationObserver'),'v16 horse metadata must not observe DOM mutations');
+assert.ok(!v28.includes('MutationObserver'),'v28 horse actions must not observe DOM mutations');
+assert.ok(!read('growth-ui.js').includes('MutationObserver'),'growth UI must use central render events');
+assert.ok((v15.match(/MutationObserver/g)||[]).length===1,'v15 may retain only breed-mare option observer');
+assert.ok(!v22.includes('oldRender=window.renderHorses'),'v22 must not wrap global horse renderer');
 assert.ok(v22.includes("p.onchange=e=>openMerge(e.target.files)"),'v22 must own photo merge input');
 assert.ok(!v22.includes("setTimeout(()=>{migrate();installPhoto()"),'photo merge ownership must not wait for startup timer');
 assert.ok(app.includes('multigenRanking'),'central diagnostic must report multigeneration state');
