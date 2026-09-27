@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.28-74';
+const V=window.APP_VERSION||'1.19.1',BUILD=window.APP_BUILD||'2026.09.28-75';
 let db=window.db;
 const lifecycle=window.DABISTA_HORSE_LIFECYCLE;
 if(!db||!lifecycle)return;
