@@ -36,6 +36,10 @@ for(const token of ['data/theory-master.json','data/pedigree-master.json','data/
 }
 assert.ok(v16.includes('DABISTA_BREEDING_ENGINE.ready'),'v16 must reuse shared engine masters');
 assert.ok(v18.includes('DABISTA_BREEDING_ENGINE.ready'),'v18 must reuse shared theory master');
+assert.ok(v18.includes('fillMasterPedigree')&&v18.includes('installPedigreeGuidance'),'v18 pedigree guidance must remain');
+assert.ok(!v18.includes('MutationObserver')&&!v18.includes('installTheoryControls')&&!v18.includes('decorateBreedCards'),'v18 must not install legacy candidate UI');
+assert.ok(!v18.includes('DABISTA_BREED_LEGACY_CLEANUPS'),'v18 legacy cleanup registry must be gone');
+assert.ok(!read('breed-integration.js').includes('releaseLegacyBreedUi'),'integration cleanup shim must be gone');
 assert.ok(!v24.includes('rebuild-research.json'),'legacy research dataset must not load in primary runtime');
 assert.ok(!v24.includes('SP+ST'),'legacy SP+ST research summary must be removed from primary runtime');
 assert.ok(v24.includes("b.textContent='再建'"),'rebuild tab rename requires explicit user approval');
