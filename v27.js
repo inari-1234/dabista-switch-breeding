@@ -214,7 +214,7 @@ let multigenRankingData=null;
 function purposeRank(name,goal){return purposeRankingState.byGoal?.[goal]?.get(name)||null}
 async function loadMultigenRankings(){
  try{
-  const r=await fetch('data/mare-purpose-multigen-ranking.json?v=1.19.1-b71',{cache:'no-store'});
+  const r=await fetch('data/mare-purpose-multigen-ranking.json?v=1.19.1-b72',{cache:'no-store'});
   if(!r.ok)throw Error('HTTP '+r.status);
   const data=await r.json();
   if(data?.schema!==1||data?.analyzedCount!==298||!data?.mares||!data?.sourceFingerprint)throw Error('invalid multigen ranking payload');
