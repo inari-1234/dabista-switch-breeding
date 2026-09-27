@@ -229,6 +229,6 @@ document.addEventListener('click',e=>{
  if(isMare(h))openMareInBreed(h);else if(isSire(h))buildReverse(h);
 },true);
 ensureStyle();
-const list=$('#horseList');if(list)new MutationObserver(()=>decorate()).observe(list,{childList:true,subtree:true});
+const list=$('#horseList');if(list)document.addEventListener('dabista:horses-rendered',decorate);
 setTimeout(decorate,700);
 })();
