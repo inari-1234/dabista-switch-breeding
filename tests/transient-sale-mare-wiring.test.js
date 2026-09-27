@@ -85,9 +85,10 @@ assert.ok(v26.includes('matchingPreviousMares(ctx,generation)'),'multi-generatio
 assert.ok(v26.includes('この産駒を牧場DBへ登録'),'route bridge registration CTA missing');
 
 assert.ok(idx.includes('horse-lifecycle.js?v=1.19.1-b71'),'horse lifecycle cache key');
-for(const p of ['v15.js','v16.js','v18.js','v19.js','v22.js','v24.js','v25.js']){
+for(const p of ['v15.js','v16.js','v18.js','v22.js','v24.js','v25.js']){
   assert.ok(idx.includes(p+'?v=1.19.1-b71'),p+' cache key');
 }
+assert.ok(!idx.includes('v19.js?'),'obsolete v19 runtime layer must stay unloaded');
 assert.ok(idx.includes('app.js?v=1.19.1-b71'),'app cache key');
 assert.ok(idx.includes('sale-planner-core.js?v=1.19.1-b71'),'sale planner core cache key');
 assert.ok(idx.includes('sale-recommendation-core.js?v=1.19.1-b71'),'sale recommendation core cache key');
