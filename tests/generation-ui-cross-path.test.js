@@ -413,14 +413,14 @@ assert.ok(v27.includes('generation-key-reason'),'selected generation must includ
 assert.ok(v26.includes("signalMareContext('search-empty','')"),'empty search must invalidate mare/generation context');
 assert.ok(v26.includes("setPlannerMare(sel.value,'search-auto')"),'search-driven mare replacement must reset generation state');
 assert.ok(v26.includes("signalMareContext('search-restore',keep)"),'mare advice must refresh when a previously empty search is cleared');
-assert.ok(v26.includes("setPlannerMare(n,'rebuild-sync')"),'rebuild starter sync must reset generation state');
-assert.ok(v26.includes("q.value=''"),'rebuild starter sync must clear a conflicting mare search filter');
+assert.ok(!v26.includes("setPlannerMare(n,'rebuild-sync')"),'hidden legacy rebuild starter must not drive active mare/generation state');
+assert.ok(!v26.includes("q.value=''"),'hidden legacy rebuild starter must not mutate active mare search state');
 assert.ok(v26.includes('331頭中 '),'UI must reveal that the full mare master is available');
 assert.ok(!v26.includes('もう一度「この条件で設計」を実行してください'),'stale hidden-button instruction must be removed');
 assert.ok(v27.includes("box.className='mare-advice tier-'"),'mare card must carry a whole-card ability-tier tone');
 assert.ok(v27.includes("esc(name)+'</h4>"),'mare identity must remain the primary card heading');
 assert.ok(v27.includes('詳しい評価根拠を見る'),'secondary mare data must remain collapsed');
-assert.ok(v27.includes('buildPurposeRankings')&&v27.includes('paintPurposeRanks'),'all four purpose tabs must receive AI ranks');
+assert.ok(v27.includes('loadMultigenRankings')&&v27.includes('paintPurposeRanks'),'all four purpose tabs must receive validated 1-4 generation AI ranks');
 assert.ok(v27.includes("if(!name){box.className='mare-advice tier-unknown';box.innerHTML='<div class=\"muted\">検索条件に一致する繁殖牝馬がありません。</div>';return}"),'empty mare search must clear stale mare advice and reset card tone');
 console.log(JSON.stringify({
   passed:true,
