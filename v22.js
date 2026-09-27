@@ -11,6 +11,6 @@ function ensureDialog(){if($('#imageMergeDlg'))return;const d=document.createEle
 function openMerge(files){ensureDialog();$('#imageHorse').innerHTML=db.horses.map(h=>`<option value="${h.id}" ${norm(h.name)===norm('イナリシャトル')?'selected':''}>${window.esc?window.esc(h.name):h.name}</option>`).join('');$('#imageMergeInfo').textContent=`${files?.length||0}枚を選択。既存馬を選び、確定済みの画像情報を追記できます。`;$('#imageMergeDlg').showModal()}
 function installPhoto(){const p=$('#photo'),b=$('#photoBtn');if(!p||!b)return;b.textContent='画像情報を追記';p.onchange=e=>openMerge(e.target.files)}
 function decorate(){document.querySelectorAll('#horseList .horse').forEach(c=>{const id=c.dataset.id,h=db.horses.find(x=>x.id===id);if(!h?.confirmedCrosses?.length||c.querySelector('.v22-evidence'))return;const x=document.createElement('p');x.className='muted v22-evidence';x.innerHTML=`画像確認クロス：<b>${h.confirmedCrosses.map(z=>`${z.name} ${z.sireGen}×${z.mareGen}`).join(' / ')}</b>`;c.appendChild(x)})}
-const oldRender=window.renderHorses;if(oldRender)window.renderHorses=()=>{oldRender();decorate()};
+document.addEventListener('dabista:horses-rendered',decorate);
 migrate();installPhoto();window.renderHorses?.();decorate();
 })();
