@@ -30,6 +30,9 @@ assert.strictEqual(advisor.purposeGradeForRoute('エイスト','stallion',stalli
 
 const v27=fs.readFileSync('v27.js','utf8');
 assert.ok(v27.includes("mare-purpose-multigen-ranking.json"),'runtime must load precomputed multigeneration ranking');
+assert.ok(v27.includes("sourceFingerprint"),'runtime ranking payload must require source fingerprint');
+assert.ok(v27.includes("multigen-unavailable"),'runtime must expose unavailable state when ranking data cannot load');
+assert.ok(!v27.includes("setTimeout(buildPurposeRankings,120)"),'runtime must not start a 298-mare direct fallback scan on iPhone');
 assert.ok(v27.includes("順位・○△判定・この配合シミュレーション"),'rank grade and simulation must declare one shared route');
 assert.ok(v27.includes("simulationStageHtml"),'simulation must render every generation stage');
 assert.ok(v27.includes("次の世代へ進む条件"),'multigeneration simulation must show selection gates');
