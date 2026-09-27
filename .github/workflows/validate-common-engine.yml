@@ -62,7 +62,6 @@ on:
       - 'tests/theory-ranking-delta-diagnostic.test.js'
       - 'tests/four-generation-width-sensitivity-diagnostic.test.js'
       - 'tests/three-generation-width-sensitivity-diagnostic.test.js'
-      - 'v20.js'
       - 'v21.js'
       - 'v25.js'
       - 'index.html'
@@ -148,7 +147,6 @@ jobs:
           node --check tests/theory-ranking-delta-diagnostic.test.js
           node --check tests/four-generation-width-sensitivity-diagnostic.test.js
           node --check tests/three-generation-width-sensitivity-diagnostic.test.js
-          node --check v20.js
           node --check v21.js
           node --check v25.js
           python -m json.tool version.json >/dev/null
@@ -163,8 +161,7 @@ jobs:
           from pathlib import Path
           idx=Path('index.html').read_text(encoding='utf-8')
           app=Path('app.js').read_text(encoding='utf-8')
-          versioned={p:Path(p).read_text(encoding='utf-8') for p in ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js']}
-          v20=versioned['v20.js']
+          versioned={p:Path(p).read_text(encoding='utf-8') for p in ['v15.js','v16.js','v18.js','v19.js','v21.js','v22.js','v24.js','v25.js','v26.js']}
           v21=versioned['v21.js']
           v25=versioned['v25.js']
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
