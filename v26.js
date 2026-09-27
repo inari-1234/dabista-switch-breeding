@@ -353,12 +353,13 @@ function routeHtml(route,index,goal,profile,baseline=null){
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
  const detail=productionHtml(route)+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'');
- const additions=displayFacts?candidateBlock('加算',displayFacts.groups?.additions||[],'addition'):'';
- const subtractions=displayFacts?candidateBlock('減算',displayFacts.groups?.subtractions||[],'subtraction'):'';
- const cautions=displayFacts?candidateBlock('注意',displayFacts.groups?.cautions||[],'caution'):'';
+ const comparisonNote=displayFacts?.hasReference?'<div class="candidate-compare-note"><b>比較対象：</b>'+esc(index===0?'次点候補 ':'本命候補 ')+esc(displayFacts.reference?.finalSire||'他候補')+'</div>':'';
+ const additions=displayFacts?candidateBlock('他候補より強い点',displayFacts.groups?.additions||[],'addition'):'';
+ const subtractions=displayFacts?candidateBlock('他候補より弱い点',displayFacts.groups?.subtractions||[],'subtraction'):'';
+ const cautions=displayFacts?candidateBlock('この候補の条件',displayFacts.groups?.cautions||[],'caution'):'';
  const ability=displayFacts?candidateBlock('能力上限',displayFacts.ability.map(x=>({...x,tone:'metric'})),'ability'):'';
  return '<div class="sale-route tone-'+esc(tone)+'"><div class="sale-route-cue"><span class="sale-rank-label">'+esc(rankLabel)+'</span><span class="sale-cue-badge">'+esc(displayLabel)+'</span></div>'+
-  (displayFacts?additions+subtractions+cautions:'<div class="sale-cue-headline">'+esc(displayHeadline)+'</div><div class="sale-reason-row">'+reasons+'</div>')+
+  (displayFacts?comparisonNote+additions+subtractions+cautions:'<div class="sale-cue-headline">'+esc(displayHeadline)+'</div><div class="sale-reason-row">'+reasons+'</div>')+
   '<div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div>'+
   (displayFacts?ability:'<div class="row"><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span><span class="sale-axis-note">'+esc(method)+'</span></div>')+
   '<div class="candidate-scope">'+esc(method)+'</div>'+
@@ -657,7 +658,7 @@ function openRouteInBreed(id){
  },80);
 }
 
-function profileHtml(profile,routes,goal,scope,recordAReference=null){
+function profileHtml(profile,routes,goal,scope){
  const label=planner.profileLabels[profile],criteria=profile==='production'
   ?'父実績はA>B>Cを強い基礎差として評価。SP/STニトロ・速力/短距離クロス・距離下限（1000/1200m側）・配合理論・安定を加味し、他要素の上積みが明確な場合だけB/CがAを逆転します。'
   :planner.profileCriteria[profile];
@@ -678,7 +679,7 @@ function profileHtml(profile,routes,goal,scope,recordAReference=null){
  const baseline=routes[0]||null;
  return `<div class="card sale-profile"><div class="sale-profile-head"><h3>${esc(label)}</h3><span class="sale-axis-note">${esc(axisNotes[profile]||'別軸評価')}</span></div>${routes.map((r,i)=>{
   const reference=profile==='production'
-   ?(i===0?(r?.final?.sireStats?.record!=='A'&&recordAReference?recordAReference:(routes[1]||r)):baseline)
+   ?(i===0?(routes[1]||r):baseline)
    :baseline;
   return routeHtml(r,i,goal,profile,reference);
  }).join('')}<details class="sale-profile-detail"><summary>この軸の並び順・評価範囲</summary><div class="sale-method" style="margin-top:5px">${esc(criteria)}</div>${profile==='sire'?`<div class="sale-method">${esc(scope)}</div>`:''}</details></div>`
@@ -696,9 +697,8 @@ function renderResults(result){
  const productionSource=result.productionRoutes?.length?result.productionRoutes:(result.base.shortlists?.production||result.base.profiles?.production||[]);
  const production=recommendationAdvisor?.selectProductionRecommendations?.(productionSource,assessment,3)||recommendationAdvisor?.rankProductionRoutes?.(productionSource,assessment,3)||result.base.profiles?.production||[];
  const profiles={...result.base.profiles,production,sire:result.portfolio.routes};
- const recordAReference=productionSource.find(r=>r?.final?.sireStats?.record==='A')||null;
  const otherOrder=order.filter(p=>p!=='production');
- const mainHtml=profileHtml('production',profiles.production,goal,result.portfolioScope,recordAReference);
+ const mainHtml=profileHtml('production',profiles.production,goal,result.portfolioScope);
  const otherHtml=otherOrder.map(p=>profileHtml(p,profiles[p],goal,result.portfolioScope)).join('');
  $('#salePlannerResults').innerHTML=`<div class="card sale-decision-head"><div class="row"><h3 class="section-title">${esc(db.salePlanner.mare)}｜本命配合</h3><span class="badge gold">${gen===1?'直仔':gen+'代'}</span></div>${caution}<div class="sale-color-legend"><b>色＝候補の役割</b><span>緑：本命</span><span>青：実績</span><span>紫：SP補強</span><span>青緑：ニトロ</span><span>黄：上振れ</span><span>白：参考軸</span></div><details class="sale-profile-detail"><summary>探索条件を見る</summary><div class="sale-method">${esc(method)}</div></details></div>`+
  mainHtml+

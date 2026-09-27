@@ -453,9 +453,10 @@ function renderCard(entry,rank,profile,goal,baselineRoute=null){
   const displayHeadline=!isMain&&cc?cue.headline+'。父実績C・安定Cのため本命外':cue.headline;
   const extra=cc?['実績C','安定C']:[];
   const reasons=[...(cue.reasons||[]).slice(0,3),...extra].map(x=>'<span class="breed-reason-chip">'+esc(x)+'</span>').join('');
-  const additions=displayFacts?breedCandidateBlock('加算',displayFacts.groups?.additions||[],'addition'):'';
-  const subtractions=displayFacts?breedCandidateBlock('減算',displayFacts.groups?.subtractions||[],'subtraction'):'';
-  const cautions=displayFacts?breedCandidateBlock('注意',displayFacts.groups?.cautions||[],'caution'):'';
+  const comparisonNote=displayFacts?.hasReference?'<div class="candidate-compare-note"><b>比較対象：</b>'+esc(rank===1?'次点候補 ':'本命候補 ')+esc(displayFacts.reference?.finalSire||'他候補')+'</div>':'';
+  const additions=displayFacts?breedCandidateBlock('他候補より強い点',displayFacts.groups?.additions||[],'addition'):'';
+  const subtractions=displayFacts?breedCandidateBlock('他候補より弱い点',displayFacts.groups?.subtractions||[],'subtraction'):'';
+  const cautions=displayFacts?breedCandidateBlock('この候補の条件',displayFacts.groups?.cautions||[],'caution'):'';
   const ability=displayFacts?breedCandidateBlock('能力上限',displayFacts.ability.map(x=>({...x,tone:'metric'})),'ability'):'';
   const portfolio=profile==='sire'?directSirePortfolio(entry):null;
   const p120=portfolio?.spst120||{};
@@ -466,7 +467,7 @@ function renderCard(entry,rank,profile,goal,baselineRoute=null){
   const fitHtml='<div class="notice breed-quick-fit"><b>将来性：</b><span data-card-future="'+esc(entry.sire)+'">'+esc(future)+'</span><br><b>'+esc(GOAL_LABELS[goal])+'：</b>'+esc(fitLabel)+'</div>';
   return '<div class="card breed-integrated-card tone-'+esc(tone)+'" data-sire-name="'+esc(entry.sire)+'">'+
     '<div class="breed-card-head"><div><span class="breed-rank-label">'+esc(shownRank)+'</span><b>'+esc(entry.sire)+'</b></div><span class="breed-cue-badge">'+esc(displayLabel)+'</span></div>'+
-    (displayFacts?additions+subtractions+cautions:'<div class="breed-cue-headline">'+esc(displayHeadline)+'</div>'+(reasons?'<div class="breed-reason-row">'+reasons+'</div>':''))+
+    (displayFacts?comparisonNote+additions+subtractions+cautions:'<div class="breed-cue-headline">'+esc(displayHeadline)+'</div>'+(reasons?'<div class="breed-reason-row">'+reasons+'</div>':''))+
     (displayFacts?ability:'<div class="grid"><div class="stat"><b>'+Number(n.sp||0)+'</b><small>SPニトロ</small></div><div class="stat"><b>'+Number(n.st||0)+'</b><small>STニトロ</small></div><div class="stat"><b>'+Number(n.pw||0)+'</b><small>PWニトロ</small></div></div>')+
     portfolioNote+
     (displayFacts?'':fitHtml)+
@@ -535,11 +536,9 @@ function renderBreed(){
   }
   renderNotice(resolved,currentPairIndex);
   const top=lists.ranked[0]||null;
-  const recordA=profile==='production'&&top?.currentRoute?.final?.sireStats?.record!=='A'
-    ?lists.ranked.find(e=>e?.currentRoute?.final?.sireStats?.record==='A')||null:null;
   const safeHtml=lists.ranked.map((e,i)=>{
     const reference=profile==='production'
-      ?(i===0?(recordA?.currentRoute||lists.ranked[1]?.currentRoute||e.currentRoute):top?.currentRoute||e.currentRoute)
+      ?(i===0?(lists.ranked[1]?.currentRoute||e.currentRoute):top?.currentRoute||e.currentRoute)
       :null;
     return renderCard(e,i+1,profile,goal,reference);
   }).join('');

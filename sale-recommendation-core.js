@@ -621,7 +621,7 @@
         }else if(f.speedCrossCount!==bf.speedCrossCount){
           push(comparison,'speed-cross-count','SPクロス '+(f.speedCrossCount>bf.speedCrossCount?'+':'')+(f.speedCrossCount-bf.speedCrossCount),f.speedCrossCount>bf.speedCrossCount?'cross':'warning',96);
         }
-        const spd=delta('SP',f.sp,bf.sp),std=delta('ST',f.st,bf.st),pwd=delta('PW',f.pw,bf.pw);
+        const spd=delta('SPニトロ',f.sp,bf.sp),std=delta('STニトロ',f.st,bf.st),pwd=delta('PWニトロ',f.pw,bf.pw);
         if(spd)push(comparison,'sp-delta',spd,f.sp>bf.sp?'positive':'warning',94);
         if(std)push(comparison,'st-delta',std,f.st>bf.st?'positive':'warning',92);
         if(pwd)push(comparison,'pw-delta',pwd,f.pw>bf.pw?'positive':'warning',90);
@@ -665,14 +665,18 @@
         ...facts.filter(x=>['record','stable','distance-range'].includes(x.key)),
         ...comparison.filter(x=>x.key==='stable-delta')
       ];
-      const additions=unique([...positiveComparison,...bonusFacts]).slice(0,3);
-      const subtractions=unique([...negativeComparison,...lossFacts]).slice(0,3);
+      const additions=unique(hasReference?positiveComparison:bonusFacts).slice(0,3);
+      const subtractions=unique(hasReference?negativeComparison:lossFacts).slice(0,3);
       const cautions=unique(cautionFacts).slice(0,3);
+      const reference=hasReference?{
+        path:[...(baseline?.sires||[])],
+        finalSire:(baseline?.sires||[]).slice(-1)[0]||'比較候補'
+      }:null;
       return{
         comparison,facts,
         groups:{additions,subtractions,cautions},
         ability:[{key:'sp',label:'SP '+f.sp},{key:'st',label:'ST '+f.st},{key:'pw',label:'PW '+f.pw}],
-        hasReference,
+        hasReference,reference,
         stableRole:f.stable==='C'?'upside':f.stable==='A'?'reproducible':'middle'
       };
     }
