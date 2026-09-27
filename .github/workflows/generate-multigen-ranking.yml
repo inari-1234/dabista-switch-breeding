@@ -109,10 +109,21 @@ jobs:
           name: mare-purpose-multigen-ranking
           path: mare-purpose-multigen-ranking.json
           retention-days: 7
-      - name: Publish runtime ranking data to candidate
+      - name: Publish runtime ranking data
         run: |
-          mkdir -p data
-          cp mare-purpose-multigen-ranking.json data/mare-purpose-multigen-ranking.json
+          cp mare-purpose-multigen-ranking.json /tmp/mare-purpose-multigen-ranking.json
+          git fetch origin "$GITHUB_REF_NAME"
+          git checkout -B ranking-publish "origin/$GITHUB_REF_NAME"
+          cp /tmp/mare-purpose-multigen-ranking.json data/mare-purpose-multigen-ranking.json
+
+          # Do not publish an older result on top of a branch whose ranking inputs changed
+          # while this run was calculating. The newer push will have its own ranking run.
+          if ! node tests/mare-purpose-multigen-data.test.js >/tmp/ranking-freshness.log 2>&1; then
+            cat /tmp/ranking-freshness.log
+            echo "Branch ranking inputs moved; skip stale publish."
+            exit 0
+          fi
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/mare-purpose-multigen-ranking.json
