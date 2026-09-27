@@ -41,7 +41,7 @@ assert.ok(v27.includes('1〜4代AI順位データを取得できません'),'ran
 assert.ok(!idx.includes('id="raceDlg"'),'legacy race dialog must be removed');
 assert.ok(!app.includes("$('#raceForm').onsubmit"),'legacy race submit handler must be removed');
 assert.ok(refresh.includes('4代先まで考える。'),'home copy must match Build71 generation scope');
-assert.ok(refresh.includes("rebuild:'設計'"),'navigation label must describe current design function');
+assert.ok(refresh.includes("rebuild:'再建'"),'navigation label rename requires explicit user approval');
 assert.ok(idx.indexOf('id="diagBtn"')>idx.indexOf('id="backup"'),'diagnostic export must live in save/support area, not primary header');
 
 console.log(JSON.stringify({
