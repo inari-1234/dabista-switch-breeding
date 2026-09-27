@@ -191,10 +191,10 @@ jobs:
           assert idx.index('horse-lifecycle.js?v=1.19.1-b71') < idx.index('app.js?v=1.19.1-b71')
           assert "json('data/pedigree-master.json')" in Path('breeding-engine.js').read_text(encoding='utf-8')
           assert 'allPedigreeStallions' in Path('breeding-engine.js').read_text(encoding='utf-8')
-          assert idx.index('breeding-core.js?v=1.19.1-b71') < idx.index('breeding-engine.js?v=1.19.1-b71') < idx.index('sale-planner-core.js?v=1.19.1-b71') < idx.index('sale-recommendation-core.js?v=1.19.1-b71') < idx.index('breed-integration.js?v=1.19.1-b71') < idx.index('v20.js?v=1.19.1-b71') < idx.index('v26.js?v=1.19.1-b71') < idx.index('v27.js?v=1.19.1-b71')
+          assert idx.index('app.js?v=1.19.1-b71') < idx.index('breeding-core.js?v=1.19.1-b71') < idx.index('breeding-engine.js?v=1.19.1-b71') < idx.index('v15.js?v=1.19.1-b71') < idx.index('v16.js?v=1.19.1-b71')
+          assert idx.index('breeding-engine.js?v=1.19.1-b71') < idx.index('sale-planner-core.js?v=1.19.1-b71') < idx.index('sale-recommendation-core.js?v=1.19.1-b71') < idx.index('breed-integration.js?v=1.19.1-b71') < idx.index('v25.js?v=1.19.1-b71') < idx.index('v26.js?v=1.19.1-b71') < idx.index('v27.js?v=1.19.1-b71')
+          assert 'breed-helper.js?v=' not in idx and 'v20.js?v=' not in idx and 'v21.js?v=' not in idx
           assert 'v23.js' not in idx
-          assert 'buildSystemMap' not in v20 and 'deriveMare(' not in v20
-          assert 'sevenCandidate' not in v21
           assert "source:'common-breeding-engine'" in v25
           sale_core=Path('sale-planner-core.js').read_text(encoding='utf-8')
           assert 'SPクロス補強型' in sale_core
