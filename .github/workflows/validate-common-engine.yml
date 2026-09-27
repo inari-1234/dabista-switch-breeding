@@ -16,7 +16,6 @@ on:
       - 'v16.js'
       - 'v18.js'
       - 'v22.js'
-      - 'v24.js'
       - 'breeding-core.js'
       - 'breeding-engine.js'
       - 'sale-planner-core.js'
@@ -105,7 +104,6 @@ jobs:
           node --check v16.js
           node --check v18.js
           node --check v22.js
-          node --check v24.js
           node --check breeding-core.js
           node --check breeding-engine.js
           node --check sale-planner-core.js
