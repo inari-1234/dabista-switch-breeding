@@ -9,6 +9,7 @@ const planner=fs.readFileSync('sale-planner-core.js','utf8');
 const css=fs.readFileSync('ui-refresh.css','utf8');
 const v24=fs.readFileSync('v24.js','utf8');
 const v25=fs.readFileSync('v25.js','utf8');
+const rankingGenerator=fs.readFileSync('scripts/generate-mare-purpose-multigen-ranking.js','utf8');
 
 const need=(src,token,msg)=>{if(!src.includes(token))throw Error(msg+' missing: '+token)};
 
@@ -23,7 +24,8 @@ need(v27,'focusFactorHtml','key ancestor factors must be compactly visible');
 need(v27,'quickGoalRecommendations','purpose recommendation must use core criteria');
 need(v27,'loadMultigenRankings','purpose rankings must load the validated 1-4 generation dataset');
 need(v27,'paintPurposeRanks','purpose tabs must show their own ranks');
-need(v27,'marePurposeCandidate','ranking must use the shared recommendation core');
+need(advisor,'function marePurposeCandidate','shared recommendation core must define purpose ranking candidates');
+need(rankingGenerator,'advisor.marePurposeCandidate','published multigeneration ranking must use the shared recommendation core');
 need(v27,'function mareAttentionGroups','attention facts must stay structured');
 need(v27,'AI配合シミュレーション','purpose card must expose the concrete AI breeding example');
 need(v27,'pedigreeTreeHtml','complete pedigree must be available on demand');
