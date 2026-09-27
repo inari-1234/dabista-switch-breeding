@@ -3,6 +3,7 @@ name: Generate multigeneration mare purpose ranking
 on:
   push:
     branches:
+      - main
       - candidate/growth-tracking
     paths:
       - 'scripts/generate-mare-purpose-multigen-ranking.js'
@@ -10,11 +11,23 @@ on:
       - '.github/workflows/generate-multigen-ranking.yml'
       - 'sale-recommendation-core.js'
       - 'sale-planner-core.js'
+      - 'breeding-core.js'
+      - 'data/theory-master.json'
+      - 'data/stallions.json'
+      - 'data/default-broodmares.json'
+      - 'data/nitro-effects.json'
+      - 'data/kotta-pairs.json'
+      - 'data/elaborate-direct-exceptions.json'
+      - 'data/planner-inheritance-validation.json'
   workflow_dispatch:
 
 permissions:
   contents: write
   actions: read
+
+concurrency:
+  group: multigen-ranking-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   smoke:
@@ -107,5 +120,5 @@ jobs:
             echo "ranking data unchanged"
           else
             git commit -m "data: publish multigeneration mare purpose ranking"
-            git push origin HEAD:candidate/growth-tracking
+            git push origin HEAD:"$GITHUB_REF_NAME"
           fi
