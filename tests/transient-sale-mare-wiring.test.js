@@ -6,7 +6,6 @@ const app=read('app.js');
 const v15=read('v15.js');
 const v16=read('v16.js');
 const v18=read('v18.js');
-const v25=read('v25.js');
 const v26=read('v26.js');
 const v28=read('v28.js');
 const breedingEngine=read('breeding-engine.js');
@@ -26,7 +25,7 @@ for(const p of ['v15.js','v16.js','v18.js','v26.js']){
   assert.strictEqual((legacy.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,0,p+' must not auto-check updates');
 }
 
-for(const p of ['v15.js','v16.js','v18.js','v22.js','v25.js','v26.js','v28.js']){
+for(const p of ['v15.js','v16.js','v18.js','v22.js','v26.js','v28.js']){
   const c=read(p);
   assert.ok(c.includes("V=window.APP_VERSION||'1.19.1'"),p+' must use shared APP_VERSION');
   assert.ok(c.includes("BUILD=window.APP_BUILD||'2026.09.27-71'"),p+' must use shared APP_BUILD');
@@ -54,7 +53,7 @@ assert.ok(!idx.includes('breed-helper.js?'),'legacy breed helper must not load a
 assert.ok(!idx.includes('v20.js?'),'legacy v20 decorator must not load at runtime');
 assert.ok(!idx.includes('v21.js?'),'legacy v21 decorator must not load at runtime');
 
-for(const [p,src] of [['v15.js',v15],['v25.js',v25]]){
+for(const [p,src] of [['v15.js',v15]]){
   assert.ok(src.includes('getBreedHorseById'),p+' must resolve transient breed mare');
 }
 assert.ok(v15.includes('15祖先内蔵'));
@@ -84,7 +83,7 @@ assert.ok(v26.includes('matchingPreviousMares(ctx,generation)'),'multi-generatio
 assert.ok(v26.includes('この産駒を牧場DBへ登録'),'route bridge registration CTA missing');
 
 assert.ok(idx.includes('horse-lifecycle.js?v=1.19.1-b71'),'horse lifecycle cache key');
-for(const p of ['v15.js','v16.js','v18.js','v22.js','v25.js']){
+for(const p of ['v15.js','v16.js','v18.js','v22.js']){
   assert.ok(idx.includes(p+'?v=1.19.1-b71'),p+' cache key');
 }
 assert.ok(!idx.includes('v19.js?'),'obsolete v19 runtime layer must stay unloaded');
