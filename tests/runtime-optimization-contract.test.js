@@ -5,7 +5,7 @@ const read=p=>fs.readFileSync(p,'utf8');
 const idx=read('index.html'),app=read('app.js'),v15=read('v15.js'),v16=read('v16.js'),v18=read('v18.js'),v19=read('v19.js'),v22=read('v22.js'),v24=read('v24.js'),v25=read('v25.js'),v26=read('v26.js'),v27=read('v27.js'),v28=read('v28.js'),refresh=read('ui-refresh.js'),engine=read('breeding-engine.js');
 const scripts=[...idx.matchAll(/<script src="([^"?]+)/g)].map(m=>m[1]);
 
-for(const x of ['breed-helper.js','v20.js','v21.js'])assert.ok(!scripts.includes(x),'inactive legacy layer loaded: '+x);
+for(const x of ['breed-helper.js','v19.js','v20.js','v21.js'])assert.ok(!scripts.includes(x),'inactive legacy layer loaded: '+x);
 for(const x of ['breeding-core.js','breeding-engine.js','v15.js','v16.js','v18.js','sale-planner-core.js','sale-recommendation-core.js','breed-integration.js','v25.js','v26.js','v27.js','v28.js'])assert.ok(scripts.includes(x),'runtime script missing '+x);
 assert.ok(scripts.indexOf('breeding-engine.js')<scripts.indexOf('v15.js'));
 assert.ok(scripts.indexOf('breeding-engine.js')<scripts.indexOf('v16.js'));
@@ -51,7 +51,7 @@ assert.ok(idx.indexOf('id="diagBtn"')>idx.indexOf('id="backup"'),'diagnostic exp
 console.log(JSON.stringify({
   passed:true,
   runtimeScripts:scripts.length,
-  removedLegacy:['breed-helper.js','v20.js','v21.js','legacy race dialog','legacy rebuild research UI'],
+  removedLegacy:['breed-helper.js','v19.js','v20.js','v21.js','legacy race dialog','legacy rebuild research UI'],
   centralized:['master data loading','update check','diagnostic export'],
   fallback:'selected mare only; no 298-mare device scan'
 },null,2));
