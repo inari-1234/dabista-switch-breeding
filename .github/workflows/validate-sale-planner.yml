@@ -17,7 +17,6 @@ on:
       - 'v15.js'
       - 'v16.js'
       - 'v18.js'
-      - 'v19.js'
       - 'v22.js'
       - 'v24.js'
       - 'v25.js'
@@ -112,7 +111,6 @@ jobs:
           node --check v15.js
           node --check v16.js
           node --check v18.js
-          node --check v19.js
           node --check v22.js
           node --check v24.js
           node --check v25.js
