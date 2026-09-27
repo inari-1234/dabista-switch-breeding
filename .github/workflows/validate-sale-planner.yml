@@ -1,5 +1,5 @@
 name: Validate sale mare planner
-# Release-candidate verification: v1.19.1 / Build 2026.09.27-72
+# Release-candidate verification: v1.19.1 / Build 2026.09.28-73
 
 on:
   push:
@@ -160,19 +160,19 @@ jobs:
           v26=Path('v26.js').read_text(encoding='utf-8')
           v27=Path('v27.js').read_text(encoding='utf-8')
           v=json.loads(Path('version.json').read_text(encoding='utf-8'))
-          assert (v['version'],v['build'])==('1.19.1','2026.09.27-72')
-          assert "const APP_VERSION='1.19.1';" in app and "const APP_BUILD='2026.09.27-72';" in app
-          assert "BUILD=window.APP_BUILD||'2026.09.27-72'" in v26
-          assert 'sale-planner-core.js?v=1.19.1-b72' in idx
-          assert 'sale-recommendation-core.js?v=1.19.1-b72' in idx
-          assert 'breed-integration.js?v=1.19.1-b72' in idx
-          assert 'v26.js?v=1.19.1-b72' in idx
-          assert 'v27.js?v=1.19.1-b72' in idx
-          assert 'ui-refresh.css?v=1.19.1-b72' in idx
-          assert 'ui-refresh.js?v=1.19.1-b72' in idx
-          assert 'horse-lifecycle.js?v=1.19.1-b72' in idx
-          assert idx.index('horse-lifecycle.js?v=1.19.1-b72') < idx.index('app.js?v=1.19.1-b72')
-          assert idx.index('breeding-engine.js?v=1.19.1-b72') < idx.index('sale-planner-core.js?v=1.19.1-b72') < idx.index('sale-recommendation-core.js?v=1.19.1-b72') < idx.index('breed-integration.js?v=1.19.1-b72') < idx.index('v26.js?v=1.19.1-b72') < idx.index('v27.js?v=1.19.1-b72')
+          assert (v['version'],v['build'])==('1.19.1','2026.09.28-73')
+          assert "const APP_VERSION='1.19.1';" in app and "const APP_BUILD='2026.09.28-73';" in app
+          assert "BUILD=window.APP_BUILD||'2026.09.28-73'" in v26
+          assert 'sale-planner-core.js?v=1.19.1-b73' in idx
+          assert 'sale-recommendation-core.js?v=1.19.1-b73' in idx
+          assert 'breed-integration.js?v=1.19.1-b73' in idx
+          assert 'v26.js?v=1.19.1-b73' in idx
+          assert 'v27.js?v=1.19.1-b73' in idx
+          assert 'ui-refresh.css?v=1.19.1-b73' in idx
+          assert 'ui-refresh.js?v=1.19.1-b73' in idx
+          assert 'horse-lifecycle.js?v=1.19.1-b73' in idx
+          assert idx.index('horse-lifecycle.js?v=1.19.1-b73') < idx.index('app.js?v=1.19.1-b73')
+          assert idx.index('breeding-engine.js?v=1.19.1-b73') < idx.index('sale-planner-core.js?v=1.19.1-b73') < idx.index('sale-recommendation-core.js?v=1.19.1-b73') < idx.index('breed-integration.js?v=1.19.1-b73') < idx.index('v26.js?v=1.19.1-b73') < idx.index('v27.js?v=1.19.1-b73')
           assert 'v23.js' not in idx
           assert '能力未判明' in v26
           assert 'ゲーム内マスタの15祖先' in v27
