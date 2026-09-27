@@ -166,18 +166,26 @@ function installCardObserver(){const list=$('#horseList');if(!list)return;new Mu
 function installMasterSummary(){const sec=$('#breed');if(!sec||$('#defaultMasterSummary'))return;const first=sec.querySelector('.card');const card=document.createElement('div');card.className='card';card.id='defaultMasterSummary';card.innerHTML=`<h3 class="section-title">ゲーム内デフォルトマスタ</h3><div class="master-summary"><div><b id="stallionCount">…</b><small>国内種牡馬</small></div><div><b id="mareCount">…</b><small>繁殖牝馬</small></div></div><p class="muted">マスタは牧場所有馬とは別管理です。必要な繁殖牝馬だけを読み込むため、馬DBが大量の既存馬で埋まりません。</p>`;sec.insertBefore(card,first)}
 function updateSummary(){if($('#stallionCount'))$('#stallionCount').textContent=stallionMaster.length||'…';if($('#mareCount'))$('#mareCount').textContent=defaultMares.length||'…';updateMasterCount()}
 
-async function loadJSON(path){const u=new URL(path,location.href);u.searchParams.set('_',BUILD);const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error(`${path} HTTP ${r.status}`);return r.json()}
-async function loadMasters(){const jobs=[
-  loadJSON('data/pedigree-master.json').then(d=>{pedigreeMaster=(d.horses||[]).map(x=>({...x,source:'血統マスタ'}));masterStatus.pedigree={status:'ok',count:pedigreeMaster.length}}).catch(e=>{masterStatus.pedigree={status:'failed',error:String(e),count:0}}),
-  loadJSON('data/default-broodmares.json').then(d=>{defaultMares=d.broodmares||[];masterStatus.broodmares={status:'ok',count:defaultMares.length,syncedAt:d.syncedAt||null}}).catch(e=>{masterStatus.broodmares={status:'failed',error:String(e),count:0}}),
-  loadJSON('data/stallions.json').then(d=>{stallionMaster=d.stallions||[];masterStatus.stallions={status:'ok',count:stallionMaster.length,syncedAt:d.syncedAt||null}}).catch(e=>{masterStatus.stallions={status:'failed',error:String(e),count:0}})
-];await Promise.all(jobs);window.DABISTA_MASTER_STATUS=masterStatus;window.DEFAULT_BROODMARES=defaultMares;window.DEFAULT_STALLIONS=stallionMaster;refreshDatalist();updateAutoStatus();updateSireStatus();updateSummary();if(selectedDefaultMare){const fresh=findDefaultMare(selectedDefaultMare.name);if(fresh)selectedDefaultMare=fresh;updateSelectedMareBox()}const bad=Object.entries(masterStatus).filter(([,v])=>v.status==='failed');if(bad.length)window.APP_ERRORS?.push({at:new Date().toISOString(),message:'master-load: '+bad.map(([k,v])=>`${k}:${v.error}`).join(' | ')})}
+async function loadMasters(){
+ try{
+  const e=await window.DABISTA_BREEDING_ENGINE.ready;
+  pedigreeMaster=(e.pedigree?.horses||[]).map(x=>({...x,source:'血統マスタ'}));
+  defaultMares=e.mareData?.broodmares||[];
+  stallionMaster=e.stallionData?.stallions||[];
+  masterStatus.pedigree={status:'ok',count:pedigreeMaster.length};
+  masterStatus.broodmares={status:'ok',count:defaultMares.length,syncedAt:e.mareData?.syncedAt||null};
+  masterStatus.stallions={status:'ok',count:stallionMaster.length,syncedAt:e.stallionData?.syncedAt||null};
+ }catch(e){
+  masterStatus.pedigree={status:'failed',error:String(e),count:0};
+  masterStatus.broodmares={status:'failed',error:String(e),count:0};
+  masterStatus.stallions={status:'failed',error:String(e),count:0};
+ }
+ window.DABISTA_MASTER_STATUS=masterStatus;window.DEFAULT_BROODMARES=defaultMares;window.DEFAULT_STALLIONS=stallionMaster;
+ refreshDatalist();updateAutoStatus();updateSireStatus();updateSummary();
+ if(selectedDefaultMare){const fresh=findDefaultMare(selectedDefaultMare.name);if(fresh)selectedDefaultMare=fresh;updateSelectedMareBox()}
+ const bad=Object.entries(masterStatus).filter(([,v])=>v.status==='failed');
+ if(bad.length)window.APP_ERRORS?.push({at:new Date().toISOString(),message:'master-load: '+bad.map(([k,v])=>`${k}:${v.error}`).join(' | ')})
+}
 
-function downloadJSON(obj,name){const b=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function newer(a,b){const A=String(a).split('.').map(Number),B=String(b).split('.').map(Number);for(let i=0;i<3;i++){if((A[i]||0)!==(B[i]||0))return(A[i]||0)>(B[i]||0)}return false}
-let remote=null;async function checkUpdate(show=false){try{const u=new URL('version.json',location.href);u.searchParams.set('_',Date.now());const r=await fetch(u,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});if(!r.ok)throw Error('HTTP '+r.status);remote=await r.json();if(newer(remote.version,V)||remote.build!==BUILD){$('#updateText').textContent=`最新版 v${remote.version} / ${remote.build} があります`;$('#updatebar').classList.add('show')}else{$('#updatebar').classList.remove('show');if(show)alert(`最新版です\nv${V} / ${BUILD}`)}}catch(e){if(show)alert('更新確認に失敗しました。通信状態を確認してください。')}}
-async function forceUpdate(){try{if('serviceWorker'in navigator){for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}if('caches'in window){for(const k of await caches.keys())await caches.delete(k)}}catch{}const u=new URL(location.href);u.searchParams.set('update',Date.now());location.replace(u.href)}
-function installSupport(){if($('#refreshBtn'))$('#refreshBtn').onclick=()=>checkUpdate(true);if($('#applyUpdate'))$('#applyUpdate').onclick=forceUpdate;if($('#diagBtn'))$('#diagBtn').onclick=()=>downloadJSON({diagnostic:true,generatedAt:new Date().toISOString(),app:{version:V,build:BUILD,url:location.href,standalone:matchMedia('(display-mode: standalone)').matches||navigator.standalone===true},remoteVersion:remote,masters:masterStatus,modal:{bodyLocked:document.body.classList.contains('dabista-modal-lock'),openDialogs:document.querySelectorAll('dialog[open]').length},device:{userAgent:navigator.userAgent,language:navigator.language,online:navigator.onLine},storage:{horseCount:db.horses.length,broodmareCount:db.horses.filter(h=>lifecycle.isBreedingMare(h)).length,defaultMareImportedCount:db.horses.filter(h=>h.masterRef?.type==='default-broodmare').length,raceCount:db.races?.length||0,bytes:new Blob([JSON.stringify(db)]).size},errors:window.APP_ERRORS||[],data:db},`dabista-diagnostic-v${V}.json`)}
-
-installAutoUI();installCompactHorseForm();overrideEditing();installCardObserver();installMasterSummary();installSupport();loadMasters();
+installAutoUI();installCompactHorseForm();overrideEditing();installCardObserver();installMasterSummary();loadMasters();
 })();
