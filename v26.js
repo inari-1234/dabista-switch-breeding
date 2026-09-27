@@ -767,4 +767,4 @@ async function load(){
   window.DABISTA_SALE_PLANNER={version:1,planner,run:runDesign,openRouteInBreed,routeContexts,setGeneration,resetGenerationSelection,refreshSelectedRoute:()=>{const ctx=window.DABISTA_SELECTED_SALE_ROUTE;if(ctx)renderRouteBreedBridge(ctx,ensureSaleMareForBreed(ctx.mare))}};
  }catch(e){window.APP_ERRORS?.push({at:new Date().toISOString(),message:'sale-planner-load: '+String(e)})}
 }
-setTimeout(load,2200);})();
+load();})();
