@@ -44,6 +44,7 @@ assert.ok(!fs.existsSync('data/rebuild-research.json'),'unused rebuild research 
 assert.ok(!fs.existsSync('v24.js'),'dynamic rebuild shell source must be physically removed');
 assert.ok(idx.includes('data-tab="rebuild">再建</button>'),'rebuild tab rename requires explicit user approval');
 assert.ok(idx.includes('<section id="rebuild" class="hidden">'),'rebuild shell must be static');
+for(const id of ['rebuildGoal','rebuildStarter','rebuildStatus','rebuildBody'])assert.ok(!idx.includes('id="'+id+'"'),'dead rebuild placeholder remains: '+id);
 assert.ok(app.includes("['horses','races','breed','rebuild','backup']"),'central tab switcher must own rebuild');
 assert.ok(!v25.includes('fetch(')&&!v25.includes('MutationObserver'),'v25 compatibility API must stay DOM/network free');
 assert.ok(v25.includes('DABISTA_NITRO_ENGINE'),'nitro compatibility API must remain');
