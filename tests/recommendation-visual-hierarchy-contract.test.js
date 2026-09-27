@@ -160,7 +160,7 @@ need(css,'font-size:11px;font-weight:900;line-height:1.3','candidate chips must 
 need(css,'font-size:11px;line-height:1.45','comparison target must be readable on iPhone');
 need(advisor,'const additions=unique(hasReference?positiveComparison:bonusFacts).slice(0,2);','primary candidate advantages must be capped at two');
 need(advisor,'const subtractions=unique(hasReference?negativeComparison:lossFacts).slice(0,2);','primary candidate disadvantages must be capped at two');
-need(advisor,'const cautions=unique(cautionFacts).slice(0,2);','primary candidate conditions must be capped at two');
+need(advisor,'const cautions=unique(cautionFacts).slice(0,3);','primary candidate conditions may retain record/stability/distance while strengths and weaknesses stay capped');
 
 console.log(JSON.stringify({
   passed:true,

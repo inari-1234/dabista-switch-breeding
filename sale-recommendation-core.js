@@ -667,7 +667,7 @@
       ];
       const additions=unique(hasReference?positiveComparison:bonusFacts).slice(0,2);
       const subtractions=unique(hasReference?negativeComparison:lossFacts).slice(0,2);
-      const cautions=unique(cautionFacts).slice(0,2);
+      const cautions=unique(cautionFacts).slice(0,3);
       const reference=hasReference?{
         path:[...(baseline?.sires||[])],
         finalSire:(baseline?.sires||[]).slice(-1)[0]||'比較候補'
