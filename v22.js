@@ -12,5 +12,5 @@ function openMerge(files){ensureDialog();$('#imageHorse').innerHTML=db.horses.ma
 function installPhoto(){const p=$('#photo'),b=$('#photoBtn');if(!p||!b)return;b.textContent='画像情報を追記';p.onchange=e=>openMerge(e.target.files)}
 function decorate(){document.querySelectorAll('#horseList .horse').forEach(c=>{const id=c.dataset.id,h=db.horses.find(x=>x.id===id);if(!h?.confirmedCrosses?.length||c.querySelector('.v22-evidence'))return;const x=document.createElement('p');x.className='muted v22-evidence';x.innerHTML=`画像確認クロス：<b>${h.confirmedCrosses.map(z=>`${z.name} ${z.sireGen}×${z.mareGen}`).join(' / ')}</b>`;c.appendChild(x)})}
 const oldRender=window.renderHorses;if(oldRender)window.renderHorses=()=>{oldRender();decorate()};
-setTimeout(()=>{migrate();installPhoto();window.renderHorses?.();decorate()},800);
+migrate();installPhoto();window.renderHorses?.();decorate();
 })();
