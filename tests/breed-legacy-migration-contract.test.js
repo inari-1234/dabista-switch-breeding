@@ -27,8 +27,8 @@ must('integration',[
   /pairDetailsHtml/,
   /DABISTA_BREED_FUTURE/
 ],'integration ownership');
-if(!files.v18.includes('DABISTA_BREED_LEGACY_CLEANUPS'))throw Error('v18 missing takeover cleanup registry');
-if(!files.integration.includes('releaseLegacyBreedUi'))throw Error('integration must release the remaining v18 legacy listeners');
+if(/MutationObserver|installTheoryControls|decorateBreedCards|DABISTA_BREED_LEGACY_CLEANUPS/.test(files.v18))throw Error('v18 must not install legacy candidate UI/listeners');
+if(/releaseLegacyBreedUi|DABISTA_BREED_LEGACY_CLEANUPS/.test(files.integration))throw Error('integration legacy cleanup shim must be removed');
 
 console.log(JSON.stringify({
   passed:true,
