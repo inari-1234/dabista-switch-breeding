@@ -32,6 +32,8 @@ assert.ok(!v28.includes('MutationObserver'),'v28 horse actions must not observe 
 assert.ok(!read('growth-ui.js').includes('MutationObserver'),'growth UI must use central render events');
 assert.ok((v15.match(/MutationObserver/g)||[]).length===1,'v15 may retain only breed-mare option observer');
 assert.ok(!v22.includes('oldRender=window.renderHorses'),'v22 must not wrap global horse renderer');
+assert.ok(!v26.includes('setTimeout(load,2200)')&&v26.includes('load();})()'),'sale planner must not wait 2.2s to initialize');
+assert.ok(!v28.includes('setTimeout(decorate,700)')&&v28.includes('decorate();'),'horse-use actions must not wait 700ms to initialize');
 assert.ok(v22.includes("p.onchange=e=>openMerge(e.target.files)"),'v22 must own photo merge input');
 assert.ok(!v22.includes("setTimeout(()=>{migrate();installPhoto()"),'photo merge ownership must not wait for startup timer');
 assert.ok(app.includes('multigenRanking'),'central diagnostic must report multigeneration state');
