@@ -70,8 +70,12 @@ async function forceUpdate(){try{if('serviceWorker'in navigator){const regs=awai
 window.DABISTA_UPDATE_SERVICE={check:checkUpdate,apply:forceUpdate,state:updateState};
 $('#refreshBtn').onclick=()=>checkUpdate(true);$('#applyUpdate').onclick=forceUpdate;setTimeout(()=>checkUpdate(false),1200);
 $('#diagBtn').onclick=()=>{
- const ranking=window.DABISTA_MARE_GENERATION_ADVISOR?.rankings;
+ const generationAdvisor=window.DABISTA_MARE_GENERATION_ADVISOR;
+ const ranking=generationAdvisor?.rankings;
+ const rankingData=generationAdvisor?.multigen?.()||null;
  const breed=window.DABISTA_BREED_FUTURE;
+ const futureState=breed?.state?.()||null;
+ const rankingReady=ranking?.status==='ready'&&!!rankingData?.sourceFingerprint;
  downloadJSON({
   diagnostic:true,generatedAt:new Date().toISOString(),
   app:{version:APP_VERSION,build:APP_BUILD,url:location.href,standalone:matchMedia('(display-mode: standalone)').matches||navigator.standalone===true},
@@ -79,8 +83,22 @@ $('#diagBtn').onclick=()=>{
   masters:window.DABISTA_MASTER_STATUS||null,
   theory:window.DABISTA_THEORY_STATUS||null,
   breedingEngine:window.DABISTA_BREEDING_ENGINE_STATUS||null,
-  multigenRanking:ranking?{status:ranking.status,source:ranking.source,total:ranking.total,progress:ranking.progress}:null,
-  breedFuture:breed?{ownedSireCount:breed.ownedSireCount||0,ready:!!breed.planner}:null,
+  multigenRanking:ranking?{
+   status:ranking.status,source:ranking.source,total:ranking.total,progress:ranking.progress,
+   schema:rankingData?.schema??null,generatedAt:rankingData?.generatedAt||null,
+   sourceFingerprint:rankingData?.sourceFingerprint||null,
+   stale:rankingReady?false:null,
+   freshnessBasis:rankingReady?'CI sourceFingerprint validated':'not available',
+   fallbackOccurred:ranking?.status==='unavailable',
+   fallbackMode:ranking?.status==='unavailable'?'selected-mare-direct-only':'none'
+  }:null,
+  planner:{generationAdvisor:!!generationAdvisor?.advisor,breedFuture:!!breed?.planner},
+  breedFuture:breed?{
+   ownedSireCount:breed.ownedSireCount||0,ready:!!breed.planner,
+   fingerprint:futureState?.fingerprint||null,epoch:futureState?.epoch??null,
+   pendingCount:Array.isArray(futureState?.pending)?futureState.pending.length:0,
+   cachedCount:Array.isArray(futureState?.cached)?futureState.cached.length:0
+  }:null,
   nitroApi:window.DABISTA_NITRO_ENGINE?{version:window.DABISTA_NITRO_ENGINE.version,source:window.DABISTA_NITRO_ENGINE.source}:null,
   lifecycle:window.DABISTA_HORSE_LIFECYCLE?{available:true}:null,
   modal:{bodyLocked:document.body.classList.contains('dabista-modal-lock'),openDialogs:document.querySelectorAll('dialog[open]').length},
