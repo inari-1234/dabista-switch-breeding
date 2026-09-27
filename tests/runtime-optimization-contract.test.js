@@ -41,6 +41,7 @@ assert.ok(!v18.includes('MutationObserver')&&!v18.includes('installTheoryControl
 assert.ok(!v18.includes('DABISTA_BREED_LEGACY_CLEANUPS'),'v18 legacy cleanup registry must be gone');
 assert.ok(!read('breed-integration.js').includes('releaseLegacyBreedUi'),'integration cleanup shim must be gone');
 assert.ok(!v24.includes('rebuild-research.json'),'legacy research dataset must not load in primary runtime');
+assert.ok(!fs.existsSync('data/rebuild-research.json'),'unused rebuild research dataset must be physically removed');
 assert.ok(!v24.includes('SP+ST'),'legacy SP+ST research summary must be removed from primary runtime');
 assert.ok(v24.includes("b.textContent='再建'"),'rebuild tab rename requires explicit user approval');
 assert.ok(!v25.includes('fetch(')&&!v25.includes('MutationObserver'),'v25 compatibility API must stay DOM/network free');
