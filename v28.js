@@ -230,5 +230,5 @@ document.addEventListener('click',e=>{
 },true);
 ensureStyle();
 const list=$('#horseList');if(list)document.addEventListener('dabista:horses-rendered',decorate);
-setTimeout(decorate,700);
+decorate();
 })();
