@@ -63,6 +63,13 @@ need(v27,'generationSection.hidden=true','legacy generation selector must stay h
 need(v27,'if(notice)notice.hidden=true','technical generation notice must not be primary');
 need(v27,'if(run)run.hidden=true','duplicate old design button must stay hidden');
 need(v27,'generation-key-reason','selected generation must show a concise reason');
+need(v27,'grid-template-columns:max-content minmax(0,1fr)','conditional grade row must preserve label width on iPhone');
+need(v27,'white-space:nowrap','conditional grade label must not split across lines');
+need(v27,'.factor-chips i.factor-guts{background:#fff0d7','guts factor must use game-like orange');
+need(v27,'.factor-chips i.factor-power{background:#fde3f0','power factor must use game-like magenta');
+need(v27,"'底力':'factor-guts'","guts factor class mapping missing");
+need(v27,"'パワー':'factor-power'","power factor class mapping missing");
+if(v27.includes(".factor-chips i{font-style:normal;padding:2px 4px;border-radius:999px;background:#fbe7ef;color:#9b2e63"))throw Error('factor chips must not share the old SP-like pink default');
 if(v27.includes('父実績Aを強く評価し'))throw Error('generic record-A mare sentence must not return; the visible reason must change by goal');
 if(v27.includes('世代推奨は勝率・産駒能力の確率予測ではありません。安全配合'))throw Error('long generation disclaimer must not return to primary result');
 if(/\.mare-tier\{[^}]*font-size:(?:8|9)px/.test(v27))throw Error('mare tier regressed to tiny text');
