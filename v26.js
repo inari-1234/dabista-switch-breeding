@@ -143,14 +143,6 @@ function inject(){
  $('#saleGoalButtons').onclick=e=>{const b=e.target.closest('[data-sale-goal]');if(!b)return;db.salePlanner.goal=b.dataset.saleGoal;resetGenerationSelection();save();paintButtons();renderNotice();invalidateResults()};
  $('#saleGenButtons').onclick=e=>{const b=e.target.closest('[data-sale-gen]');if(!b)return;setGeneration(+b.dataset.saleGen,'manual');invalidateResults('選択世代を変更しました。')};
  $('#runSalePlanner').onclick=runDesign;
- $('#rebuildStarter')?.addEventListener('change',()=>{
-  const n=$('#rebuildStarter').value;if(!planner?.mare(n))return;
-  const q=$('#saleMareSearch');if(q)q.value='';
-  fillMares();
-  const sel=$('#saleMareSelect');if(sel)sel.value=n;
-  setPlannerMare(n,'rebuild-sync');
-  invalidateResults('起点牝馬を同期しました。');
- });
 }
 function resetGenerationSelection(){
  db.salePlanner.generation=0;db.salePlanner.generationSource='unset';paintButtons();renderNotice();
