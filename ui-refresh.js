@@ -11,7 +11,7 @@ if(title)title.textContent='ダビスタSwitch 配合支援';
 const sub=$('header .sub');
 if(sub)sub.textContent='配合理論・血統・ニトロ・繁殖能力を分けて考える';
 
-const labels={horses:'ホーム',races:'実績',breed:'配合',rebuild:'設計',backup:'保存'};
+const labels={horses:'ホーム',races:'実績',breed:'配合',rebuild:'再建',backup:'保存'};
 $$('.tab').forEach(b=>{if(labels[b.dataset.tab])b.textContent=labels[b.dataset.tab]});
 
 function clickTab(name){
