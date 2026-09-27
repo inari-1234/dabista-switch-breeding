@@ -6,6 +6,8 @@ const outArg=args.find(x=>x.startsWith('--output='));
 const files=args.filter(x=>!x.startsWith('--')).sort();
 if(!files.length)throw Error('usage: node merge-mare-purpose-multigen-shards.js shard1.json ... --output=...');
 const shards=files.map(f=>JSON.parse(fs.readFileSync(f,'utf8')));
+const fingerprints=[...new Set(shards.map(s=>s.sourceFingerprint).filter(Boolean))];
+if(fingerprints.length!==1||shards.some(s=>s.sourceFingerprint!==fingerprints[0]))throw Error('source fingerprint mismatch across shards');
 const goals=['arc','bc','rebuild','stallion'];
 const mares={};
 for(const s of shards){
@@ -43,6 +45,7 @@ for(const row of Object.values(mares)){
 const elapsedSeconds=shards.reduce((n,s)=>Math.max(n,Number(s.elapsedSeconds||0)),0);
 const payload={
   schema:1,
+  sourceFingerprint:fingerprints[0],
   generatedAt:new Date().toISOString(),
   method:'direct+exact-two+conditional-three+conditional-four;6-shard-parallel',
   knownAbilityCount:298,
