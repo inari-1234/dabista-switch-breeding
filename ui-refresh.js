@@ -11,7 +11,7 @@ if(title)title.textContent='ダビスタSwitch 配合支援';
 const sub=$('header .sub');
 if(sub)sub.textContent='配合理論・血統・ニトロ・繁殖能力を分けて考える';
 
-const labels={horses:'ホーム',races:'実績',breed:'配合',rebuild:'再建',backup:'保存'};
+const labels={horses:'ホーム',races:'実績',breed:'配合',rebuild:'設計',backup:'保存'};
 $$('.tab').forEach(b=>{if(labels[b.dataset.tab])b.textContent=labels[b.dataset.tab]});
 
 function clickTab(name){
@@ -36,9 +36,9 @@ function ensureHome(){
  hero.innerHTML=`
   <div class="ui-home-hero">
     <div>
-      <span class="ui-eyebrow">DABISTA SWITCH BREEDING LAB</span>
-      <h2>次の1手と、<br>3代先まで考える。</h2>
-      <p>自家製馬の記録、配合候補、牧場再建、セリ牝馬からの自動設計を一つの流れで確認します。</p>
+      <span class="ui-eyebrow">DABISTA SWITCH BREEDING</span>
+      <h2>次の1手と、<br>4代先まで考える。</h2>
+      <p>自家製馬の記録、配合候補、目的別の直仔〜4代設計を一つの流れで確認します。</p>
     </div>
     <div class="ui-horse-mark" aria-hidden="true">♞</div>
   </div>
