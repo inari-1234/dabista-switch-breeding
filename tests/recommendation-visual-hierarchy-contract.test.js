@@ -21,7 +21,7 @@ need(v27,'purpose-stats','mare ability must live inside the selected purpose');
 need(v27,'purpose-nitro','nitro must live inside the selected purpose');
 need(v27,'focusFactorHtml','key ancestor factors must be compactly visible');
 need(v27,'quickGoalRecommendations','purpose recommendation must use core criteria');
-need(v27,'buildPurposeRankings','purpose rankings must be computed for all known mares');
+need(v27,'loadMultigenRankings','purpose rankings must load the validated 1-4 generation dataset');
 need(v27,'paintPurposeRanks','purpose tabs must show their own ranks');
 need(v27,'marePurposeCandidate','ranking must use the shared recommendation core');
 need(v27,'function mareAttentionGroups','attention facts must stay structured');
@@ -120,7 +120,8 @@ need(v26,'.sale-route-details.route-stage-details{clear:both;margin-top:16px;pad
 need(v26,'連携・最終父の操作','route bridge actions must be secondary');
 need(v24,'<div id="rebuildBody" hidden aria-hidden="true"></div>','legacy four-mare research body must stay hidden');
 need(v24,'<div hidden aria-hidden="true"><select id="rebuildGoal"','legacy four-mare starter controls must stay hidden');
-need(v25,"card.hidden=true;card.setAttribute('aria-hidden','true')",'legacy manual nitro simulator must stay hidden');
+need(v25,'DABISTA_NITRO_ENGINE','shared nitro helper API must remain available');
+if(v25.includes('nitroSimulator')||v25.includes('installSimulator'))throw Error('hidden legacy nitro simulator must be removed rather than merely hidden');
 
 need(breed,"advisor?.compareProductionForMare","breed production must use the same mare-aware comparator");
 need(breed,'candidateDisplayFacts','breed cards must inherit the same display-priority facts used by sale cards');
