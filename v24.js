@@ -10,7 +10,7 @@ function activate(){
 function inject(){
  if($('#rebuild'))return;
  const tabs=$('.tabs'),backup=$('.tab[data-tab="backup"]'),b=document.createElement('button');
- b.className='tab';b.dataset.tab='rebuild';b.textContent='設計';tabs.insertBefore(b,backup);
+ b.className='tab';b.dataset.tab='rebuild';b.textContent='再建';tabs.insertBefore(b,backup);
  const sec=document.createElement('section');sec.id='rebuild';sec.className='hidden';
  sec.innerHTML=`<div class="card"><h3 class="section-title">配合設計</h3><p class="muted">繁殖牝馬を選び、凱旋門賞・BC長期・繁殖再建・自家製種牡馬の目的別に直仔〜4代を診断します。</p><div hidden aria-hidden="true"><select id="rebuildGoal"></select><select id="rebuildStarter"></select><div id="rebuildStatus"></div></div></div><div id="rebuildBody" hidden aria-hidden="true"></div>`;
  $('#backup').insertAdjacentElement('beforebegin',sec);
