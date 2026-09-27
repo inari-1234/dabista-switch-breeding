@@ -89,6 +89,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: common-engine-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
