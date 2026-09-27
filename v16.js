@@ -162,7 +162,7 @@ function decorateHorseCards(){document.querySelectorAll('#horseList [data-id]').
  const routeHtml=storedRouteEvidenceHtml(ev,h.routeSource?.goal);
  syncHorseMetaLine(c,grid,'route-source-line',routeHtml)
 })}
-function installCardObserver(){const list=$('#horseList');if(!list)return;new MutationObserver(decorateHorseCards).observe(list,{childList:true,subtree:true});decorateHorseCards()}
+function installCardObserver(){const list=$('#horseList');if(!list)return;document.addEventListener('dabista:horses-rendered',decorateHorseCards);decorateHorseCards()}
 function installMasterSummary(){const sec=$('#breed');if(!sec||$('#defaultMasterSummary'))return;const first=sec.querySelector('.card');const card=document.createElement('div');card.className='card';card.id='defaultMasterSummary';card.innerHTML=`<h3 class="section-title">ゲーム内デフォルトマスタ</h3><div class="master-summary"><div><b id="stallionCount">…</b><small>国内種牡馬</small></div><div><b id="mareCount">…</b><small>繁殖牝馬</small></div></div><p class="muted">マスタは牧場所有馬とは別管理です。必要な繁殖牝馬だけを読み込むため、馬DBが大量の既存馬で埋まりません。</p>`;sec.insertBefore(card,first)}
 function updateSummary(){if($('#stallionCount'))$('#stallionCount').textContent=stallionMaster.length||'…';if($('#mareCount'))$('#mareCount').textContent=defaultMares.length||'…';updateMasterCount()}
 
