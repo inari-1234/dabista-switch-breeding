@@ -428,7 +428,8 @@ function breedCandidateChip(x){return '<span class="candidate-chip '+esc(x?.tone
 function breedCandidateBlock(label,items,cls=''){
  if(!Array.isArray(items))return'';
  const xs=items.filter(Boolean);
- const body=xs.length?xs.map(breedCandidateChip).join(''):'<span class="candidate-none">なし</span>';
+ if(!xs.length)return'';
+ const body=xs.map(breedCandidateChip).join('');
  return '<div class="candidate-block '+esc(cls)+'"><small>'+esc(label)+'</small><div class="candidate-chip-row">'+body+'</div></div>';
 }
 function renderCard(entry,rank,profile,goal,baselineRoute=null){

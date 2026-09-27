@@ -324,7 +324,8 @@ function candidateChip(x){return '<span class="candidate-chip '+esc(x?.tone||'tr
 function candidateBlock(label,items,cls=''){
  if(!Array.isArray(items))return'';
  const xs=items.filter(Boolean);
- const body=xs.length?xs.map(candidateChip).join(''):'<span class="candidate-none">なし</span>';
+ if(!xs.length)return'';
+ const body=xs.map(candidateChip).join('');
  return '<div class="candidate-block '+esc(cls)+'"><small>'+esc(label)+'</small><div class="candidate-chip-row">'+body+'</div></div>';
 }
 function routeHtml(route,index,goal,profile,baseline=null){
@@ -353,17 +354,19 @@ function routeHtml(route,index,goal,profile,baseline=null){
  const ctxId='route-'+(++routeContextSeq);
  routeContexts.set(ctxId,{mare:db.salePlanner.mare,route,x,goal,profile});
  const detail=productionHtml(route)+x.stages.map(st=>stageHtml(st,x.stages.length,goal)).join('')+(profile==='sire'?portfolioHtml(route):'');
+ const finalSire=(route.sires||[]).slice(-1)[0]||'候補';
+ const routePath=(route.sires||[]).length>1?'<div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div>':'';
  const comparisonNote=displayFacts?.hasReference?'<div class="candidate-compare-note"><b>比較対象：</b>'+esc(index===0?'次点候補 ':'本命候補 ')+esc(displayFacts.reference?.finalSire||'他候補')+'</div>':'';
  const additions=displayFacts?candidateBlock('他候補より強い点',displayFacts.groups?.additions||[],'addition'):'';
  const subtractions=displayFacts?candidateBlock('他候補より弱い点',displayFacts.groups?.subtractions||[],'subtraction'):'';
  const cautions=displayFacts?candidateBlock('この候補の条件',displayFacts.groups?.cautions||[],'caution'):'';
  const ability=displayFacts?candidateBlock('能力上限',displayFacts.ability.map(x=>({...x,tone:'metric'})),'ability'):'';
  return '<div class="sale-route tone-'+esc(tone)+'"><div class="sale-route-cue"><span class="sale-rank-label">'+esc(rankLabel)+'</span><span class="sale-cue-badge">'+esc(displayLabel)+'</span></div>'+
+  '<div class="candidate-primary-sire"><small>最終父</small><b>'+esc(finalSire)+'</b></div>'+
   (displayFacts?comparisonNote+additions+subtractions+cautions:'<div class="sale-cue-headline">'+esc(displayHeadline)+'</div><div class="sale-reason-row">'+reasons+'</div>')+
-  '<div class="sale-path">'+route.sires.map(esc).join(' → ')+'</div>'+
   (displayFacts?ability:'<div class="row"><span class="badge">SP '+f.sp+' / ST '+f.st+' / PW '+f.pw+'</span><span class="sale-axis-note">'+esc(method)+'</span></div>')+
-  '<div class="candidate-scope">'+esc(method)+'</div>'+
-  '<details class="sale-route-details"><summary>詳しい根拠・世代別データを見る</summary><div class="sale-method" style="margin-top:6px">途中世代の繁殖SP/ST/PWは仮定していません。</div>'+detail+'</details>'+
+  routePath+
+  '<details class="sale-route-details"><summary>詳しい根拠・世代別データを見る</summary><div class="sale-method" style="margin-top:6px"><b>探索範囲：</b>'+esc(method)+'</div><div class="sale-method" style="margin-top:6px">途中世代の繁殖SP/ST/PWは仮定していません。</div>'+detail+'</details>'+
   '<button type="button" class="secondary route-breed-link" data-route-breed="'+ctxId+'">このルートを「配合」で詳しく見る</button></div>';
 }
 let routeRegisterState=null;

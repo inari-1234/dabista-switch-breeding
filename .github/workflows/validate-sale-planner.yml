@@ -1,6 +1,6 @@
 name: Validate sale mare planner
-# Release-candidate verification: v1.19.1 / Build 2026.09.28-74
-# Final post-ranking exact-SHA validation trigger: Build74
+# Release-candidate verification: v1.19.1 / Build 2026.09.28-75
+# Candidate readability and density validation trigger: Build75
 
 on:
   push:

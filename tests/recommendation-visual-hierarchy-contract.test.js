@@ -66,6 +66,8 @@ need(v27,'generation-key-reason','selected generation must show a concise reason
 need(v27,'purpose-grade-top','purpose status must separate judgment/generation from the explanation');
 need(v27,'purpose-grade>span{display:block;margin-top:6px','purpose explanation must live on its own readable row');
 need(v27,'white-space:nowrap','purpose judgment label must not split across lines');
+need(v27,'.purpose-grade-top b{font-size:12px','purpose judgment must be readable on iPhone');
+need(v27,'.purpose-grade-top small{font-size:10px','purpose generation label must be readable on iPhone');
 need(v27,'.factor-chips i.factor-guts{background:#fff0d7','guts factor must use game-like orange');
 need(v27,'.factor-chips i.factor-power{background:#fde3f0','power factor must use game-like magenta');
 need(v27,"'底力':'factor-guts'","guts factor class mapping missing");
@@ -115,6 +117,9 @@ need(v26,"candidateBlock('この候補の条件'",'sale candidate cards must sep
 need(v26,'selectProductionRecommendations','candidate list must select meaningful alternatives');
 need(v26,"i===0?(routes[1]||r):baseline",'top candidate must compare only with another visible candidate card');
 need(v26,'candidate-compare-note','sale candidate card must name its visible comparison target');
+need(v26,"if(!xs.length)return'';",'sale candidate card must omit empty comparison groups');
+need(v26,'candidate-primary-sire','sale candidate card must surface the final sire before comparison details');
+if(v26.includes('<div class="candidate-scope">'))throw Error('technical scan scope must not remain in the primary sale candidate view');
 need(advisor,"'実績'+p.record+'だが、'+lead+'で実績'+b.record+'候補を逆転'","lower-record main card must explain its compensated reversal");
 need(v26,'距離下限（1000/1200m側）','sale UI must disclose lower-distance evidence');
 need(v26,'本命配合を表示','hidden compatibility button must no longer say この条件で設計');
@@ -141,6 +146,7 @@ need(breed,"breedCandidateBlock('他候補より強い点'",'breed cards must ex
 need(breed,"breedCandidateBlock('他候補より弱い点'",'breed cards must expose peer-relative disadvantages');
 need(breed,"breedCandidateBlock('この候補の条件'",'breed cards must separate absolute conditions');
 need(breed,'candidate-compare-note','breed candidate card must name its comparison target');
+need(breed,"if(!xs.length)return'';",'breed candidate card must omit empty comparison groups');
 need(breed,'function createFutureProductionCollector(','breed future production must remain full-scan');
 need(breed,'function renderFutureOverview(result){}','separate six-axis future overview must stay removed');
 need(breed,"profile=selectedCategory()","future result must focus on the selected category");
@@ -149,7 +155,12 @@ if(breed.includes("overview.className='card breed-future-overview'"))throw Error
 for(const token of ['.sale-route.tone-main','.sale-route.tone-record','.sale-route.tone-speed','.sale-route.tone-nitro','.sale-route.tone-upside','.sale-route.tone-neutral'])need(css,token,'candidate role color');
 need(css,'.sale-other-axes','secondary axes container');
 for(const token of ['.candidate-chip.cross','.candidate-chip.theory','.candidate-chip.warning','.candidate-chip.record','.candidate-chip.trait','.candidate-chip.metric'])need(css,token,'shared candidate fact colors');
-for(const token of ['.candidate-compare-note','.candidate-block.addition','.candidate-block.subtraction','.candidate-block.caution','.candidate-none'])need(css,token,'compact grouped candidate layout');
+for(const token of ['.candidate-compare-note','.candidate-block.addition','.candidate-block.subtraction','.candidate-block.caution','.candidate-none','.candidate-primary-sire'])need(css,token,'compact grouped candidate layout');
+need(css,'font-size:11px;font-weight:900;line-height:1.3','candidate chips must be readable on iPhone');
+need(css,'font-size:11px;line-height:1.45','comparison target must be readable on iPhone');
+need(advisor,'const additions=unique(hasReference?positiveComparison:bonusFacts).slice(0,2);','primary candidate advantages must be capped at two');
+need(advisor,'const subtractions=unique(hasReference?negativeComparison:lossFacts).slice(0,2);','primary candidate disadvantages must be capped at two');
+need(advisor,'const cautions=unique(cautionFacts).slice(0,2);','primary candidate conditions must be capped at two');
 
 console.log(JSON.stringify({
   passed:true,

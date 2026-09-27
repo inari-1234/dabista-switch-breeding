@@ -374,12 +374,15 @@ body.ui-refresh .breed-rank-label{font-size:10px!important}
 body.ui-refresh .breed-cue-badge{font-size:10px!important}
 body.ui-refresh .breed-cue-headline{font-size:13px!important}
 body.ui-refresh .breed-reason-chip{font-size:9px!important;padding:4px 7px!important}
-body.ui-refresh .candidate-compare-note{margin-top:8px;padding:6px 8px;border-radius:9px;background:#edf3f0;color:#617169;font-size:9px;line-height:1.4}
+body.ui-refresh .candidate-primary-sire{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:8px;padding:8px 9px;border-radius:9px;background:#f7faf8;border:1px solid #e2ebe6}
+body.ui-refresh .candidate-primary-sire small{font-size:10px;font-weight:900;color:#6a7a72}
+body.ui-refresh .candidate-primary-sire b{font-size:15px;line-height:1.3;color:#214c38;text-align:right}
+body.ui-refresh .candidate-compare-note{margin-top:9px;padding:7px 9px;border-radius:9px;background:#edf3f0;color:#617169;font-size:11px;line-height:1.45}
 body.ui-refresh .candidate-compare-note b{color:#31584a}
-body.ui-refresh .candidate-block{margin-top:8px}
-body.ui-refresh .candidate-block>small{display:block;margin-bottom:4px;color:#6a7a72;font-size:8px;font-weight:900;letter-spacing:.02em}
+body.ui-refresh .candidate-block{margin-top:9px}
+body.ui-refresh .candidate-block>small{display:block;margin-bottom:5px;color:#6a7a72;font-size:10px;font-weight:900;letter-spacing:.02em}
 body.ui-refresh .candidate-chip-row{display:flex;flex-wrap:wrap;gap:5px}
-body.ui-refresh .candidate-chip{display:inline-flex;align-items:center;min-height:25px;padding:4px 8px;border-radius:999px;font-size:9px;font-weight:900;line-height:1.25;border:1px solid transparent}
+body.ui-refresh .candidate-chip{display:inline-flex;align-items:center;min-height:29px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:900;line-height:1.3;border:1px solid transparent}
 body.ui-refresh .candidate-chip.cross{background:#eee8fb;color:#6a46a5;border-color:#ddcff5}
 body.ui-refresh .candidate-chip.theory{background:#e5f3eb;color:#236443;border-color:#cce6d7}
 body.ui-refresh .candidate-chip.positive{background:#e8f6ef;color:#176c4b;border-color:#cfe9dc}
@@ -394,9 +397,10 @@ body.ui-refresh .candidate-block.caution{padding:8px 9px;border-radius:10px;back
 body.ui-refresh .candidate-block.addition>small{color:#1d714f}
 body.ui-refresh .candidate-block.subtraction>small{color:#9a5a16}
 body.ui-refresh .candidate-block.caution>small{color:#7a641e}
-body.ui-refresh .candidate-none{font-size:9px;font-weight:800;color:#8a9690}
-body.ui-refresh .candidate-block.ability{margin-top:7px}
-body.ui-refresh .candidate-scope{margin-top:7px;color:#728079;font-size:8px;text-align:right}
+body.ui-refresh .candidate-none{font-size:10px;font-weight:800;color:#8a9690}
+body.ui-refresh .candidate-block.ability{margin-top:9px}
+body.ui-refresh .candidate-scope{margin-top:7px;color:#728079;font-size:10px;text-align:right}
+body.ui-refresh .sale-path{font-size:10px!important;line-height:1.45}
 body.ui-refresh .candidate-head{gap:10px}
 body.ui-refresh .theory-tools{
   border-radius:13px!important;
