@@ -155,7 +155,7 @@ function decorateHorseCards(){
 }
 function installHorseObserver(){
   const list=$('#horseList');if(!list)return;
-  new MutationObserver(()=>decorateHorseCards()).observe(list,{childList:true,subtree:false});
+  document.addEventListener('dabista:horses-rendered',decorateHorseCards);
   list.addEventListener('click',e=>{
     const b=e.target.closest('[data-horse-action]');if(!b)return;
     e.preventDefault();e.stopPropagation();
@@ -178,7 +178,7 @@ function decorateRaceCards(){
 }
 function installRaceObserver(){
   const list=$('#raceCards');if(!list)return;
-  new MutationObserver(()=>decorateRaceCards()).observe(list,{childList:true,subtree:false});
+  document.addEventListener('dabista:races-rendered',decorateRaceCards);
   decorateRaceCards();
 }
 
