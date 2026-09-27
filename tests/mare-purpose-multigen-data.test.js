@@ -1,10 +1,20 @@
 'use strict';
-const fs=require('fs'),assert=require('assert');
+const fs=require('fs'),assert=require('assert'),crypto=require('crypto');
 const path='data/mare-purpose-multigen-ranking.json';
 const raw=fs.readFileSync(path,'utf8'),x=JSON.parse(raw);
 const goals=['arc','bc','rebuild','stallion'];
+const SOURCE_FILES=[
+  'breeding-core.js','sale-planner-core.js','sale-recommendation-core.js',
+  'data/theory-master.json','data/stallions.json','data/default-broodmares.json',
+  'data/nitro-effects.json','data/kotta-pairs.json','data/elaborate-direct-exceptions.json',
+  'data/planner-inheritance-validation.json',
+  'scripts/generate-mare-purpose-multigen-ranking.js','scripts/merge-mare-purpose-multigen-shards.js'
+];
+function gitBlobSha(p){const b=fs.readFileSync(p),h=crypto.createHash('sha1');h.update('blob '+b.length+'\0');h.update(b);return h.digest('hex')}
+const expectedFingerprint=SOURCE_FILES.slice().sort().map(p=>p+'@'+gitBlobSha(p)).join('|');
 
 assert.strictEqual(x.schema,1);
+assert.strictEqual(x.sourceFingerprint,expectedFingerprint,'published multigeneration ranking is stale for current source files');
 assert.strictEqual(x.knownAbilityCount,298);
 assert.strictEqual(x.analyzedCount,298);
 assert.strictEqual(Object.keys(x.mares||{}).length,298);
