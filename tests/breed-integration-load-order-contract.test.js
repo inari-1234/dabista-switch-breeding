@@ -6,7 +6,7 @@ const integration=fs.readFileSync('breed-integration.js','utf8');
 const scripts=[...html.matchAll(/<script src="([^"?]+)[^"]*"><\/script>/g)].map(m=>m[1]);
 function pos(x){const i=scripts.indexOf(x);if(i<0)throw Error('script missing '+x);return i}
 
-for(const removed of ['breed-helper.js','v20.js','v21.js']){
+for(const removed of ['breed-helper.js','v19.js','v20.js','v21.js']){
   if(scripts.includes(removed))throw Error('inactive legacy runtime layer must not load: '+removed);
 }
 const p={
