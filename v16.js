@@ -187,5 +187,5 @@ async function loadMasters(){
  if(bad.length)window.APP_ERRORS?.push({at:new Date().toISOString(),message:'master-load: '+bad.map(([k,v])=>`${k}:${v.error}`).join(' | ')})
 }
 
-installAutoUI();installCompactHorseForm();overrideEditing();installCardObserver();installMasterSummary();loadMasters();
+installAutoUI();installCompactHorseForm();overrideEditing();installCardObserver();loadMasters();
 })();
