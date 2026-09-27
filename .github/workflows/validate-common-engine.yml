@@ -1,6 +1,6 @@
 name: Validate common breeding engine
 # Release-candidate verification: v1.19.1 / Build 2026.09.28-75
-# Final Build75 exact-SHA validation after ranking publish
+# Final Build75 exact-SHA validation after published ranking refresh
 
 on:
   push:
