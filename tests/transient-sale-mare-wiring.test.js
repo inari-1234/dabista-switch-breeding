@@ -3,13 +3,10 @@ const fs=require('fs'),assert=require('assert');
 const read=p=>fs.readFileSync(p,'utf8');
 
 const app=read('app.js');
-const helper=read('breed-helper.js');
 const v15=read('v15.js');
 const v16=read('v16.js');
 const v18=read('v18.js');
 const v19=read('v19.js');
-const v20=read('v20.js');
-const v21=read('v21.js');
 const v25=read('v25.js');
 const v26=read('v26.js');
 const v28=read('v28.js');
@@ -30,7 +27,7 @@ for(const p of ['v15.js','v16.js','v18.js','v26.js']){
   assert.strictEqual((legacy.match(/setTimeout\(\(\)=>checkUpdate\(false\)/g)||[]).length,0,p+' must not auto-check updates');
 }
 
-for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js','v26.js','v28.js']){
+for(const p of ['v15.js','v16.js','v18.js','v19.js','v22.js','v24.js','v25.js','v26.js','v28.js']){
   const c=read(p);
   assert.ok(c.includes("V=window.APP_VERSION||'1.19.1'"),p+' must use shared APP_VERSION');
   assert.ok(c.includes("BUILD=window.APP_BUILD||'2026.09.27-71'"),p+' must use shared APP_BUILD');
@@ -54,12 +51,12 @@ assert.ok(v26.includes('function cleanupLegacySaleSync()'));
 assert.ok(v26.includes("h?.salePlannerSync===true"));
 assert.ok(v26.includes("!races.some(r=>r.horseId===h.id)"));
 
-assert.ok(helper.includes('window.DABISTA_TRANSIENT_BREED_MARE'));
-assert.ok(helper.includes('window.getBreedHorseById?.(id)'));
-assert.ok(helper.includes('（セリ設計・一時）'));
+assert.ok(!idx.includes('breed-helper.js?'),'legacy breed helper must not load at runtime');
+assert.ok(!idx.includes('v20.js?'),'legacy v20 decorator must not load at runtime');
+assert.ok(!idx.includes('v21.js?'),'legacy v21 decorator must not load at runtime');
 
-for(const [p,c] of [['v15.js',v15],['v18.js',v18],['v19.js',v19],['v20.js',v20],['v21.js',v21],['v25.js',v25]]){
-  assert.ok(c.includes('getBreedHorseById'),p+' must resolve transient breed mare');
+for(const [p,src] of [['v15.js',v15],['v18.js',v18],['v19.js',v19],['v25.js',v25]]){
+  assert.ok(src.includes('getBreedHorseById'),p+' must resolve transient breed mare');
 }
 assert.ok(v15.includes('15祖先内蔵'));
 assert.ok(v15.includes('馬DB・バックアップJSONには保存されません'));
@@ -88,8 +85,7 @@ assert.ok(v26.includes('matchingPreviousMares(ctx,generation)'),'multi-generatio
 assert.ok(v26.includes('この産駒を牧場DBへ登録'),'route bridge registration CTA missing');
 
 assert.ok(idx.includes('horse-lifecycle.js?v=1.19.1-b71'),'horse lifecycle cache key');
-assert.ok(idx.includes('breed-helper.js?v=1.19.1-b71'),'breed-helper.js cache key');
-for(const p of ['v15.js','v16.js','v18.js','v19.js','v20.js','v21.js','v22.js','v24.js','v25.js']){
+for(const p of ['v15.js','v16.js','v18.js','v19.js','v22.js','v24.js','v25.js']){
   assert.ok(idx.includes(p+'?v=1.19.1-b71'),p+' cache key');
 }
 assert.ok(idx.includes('app.js?v=1.19.1-b71'),'app cache key');
@@ -105,5 +101,5 @@ console.log(JSON.stringify({
   transientResolver:true,
   persistentRouteSync:false,
   legacyCleanup:true,
-  integrationFiles:6
+  integrationFiles:4
 },null,2));
