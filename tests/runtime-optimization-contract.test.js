@@ -20,6 +20,9 @@ assert.strictEqual((app.match(/version\.json/g)||[]).length,1,'only one update s
 assert.ok(app.includes('window.DABISTA_UPDATE_SERVICE'),'central update service missing');
 assert.ok(app.includes('multigenRanking'),'central diagnostic must report multigeneration state');
 assert.ok(app.includes('breedingEngine'),'central diagnostic must report breeding-engine state');
+for(const token of ['sourceFingerprint','generatedAt','fallbackOccurred','fallbackMode','freshnessBasis','pendingCount','cachedCount','planner:{generationAdvisor']){
+  assert.ok(app.includes(token),'central diagnostic missing '+token);
+}
 
 for(const token of ['data/theory-master.json','data/pedigree-master.json','data/default-broodmares.json','data/stallions.json']){
   assert.ok(engine.includes(token),'shared engine missing '+token);
