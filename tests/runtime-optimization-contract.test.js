@@ -23,6 +23,9 @@ for(const [name,src] of Object.entries(runtime)){
 assert.strictEqual((app.match(/version\.json/g)||[]).length,1,'only one update service may fetch version.json');
 assert.ok(app.includes('window.DABISTA_UPDATE_SERVICE'),'central update service missing');
 assert.ok(!app.includes("$('#photo').onchange"),'app must not own obsolete photo input placeholder');
+for(const token of ["$('#addBtn').onclick","$('#horseForm').onsubmit","$('#horseList').onclick"])assert.ok(!app.includes(token),'app retains duplicate horse CRUD event owner: '+token);
+for(const token of ["$('#addBtn').onclick","$('#horseForm').onsubmit","$('#horseList').onclick"])assert.ok(v15.includes(token),'v15 missing horse CRUD owner: '+token);
+assert.ok(v15.includes("if(e.target.closest('[data-horse-action]'))return"),'horse edit handler must ignore growth action buttons');
 assert.ok(v22.includes("p.onchange=e=>openMerge(e.target.files)"),'v22 must own photo merge input');
 assert.ok(!v22.includes("setTimeout(()=>{migrate();installPhoto()"),'photo merge ownership must not wait for startup timer');
 assert.ok(app.includes('multigenRanking'),'central diagnostic must report multigeneration state');
