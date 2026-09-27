@@ -19,14 +19,13 @@ const p={
   planner:pos('sale-planner-core.js'),
   advisor:pos('sale-recommendation-core.js'),
   integration:pos('breed-integration.js'),
-  v25:pos('v25.js'),
   v26:pos('v26.js'),
   v27:pos('v27.js'),
   v28:pos('v28.js')
 };
 if(!(p.app<p.core&&p.core<p.engine&&p.engine<p.v15&&p.engine<p.v16&&p.engine<p.v18))throw Error('shared engine must load before master-consuming UI layers');
 if(!(p.engine<p.planner&&p.planner<p.advisor&&p.advisor<p.integration))throw Error('core/integration dependency order broken');
-for(const x of ['v25','v26','v27','v28'])if(!(p.integration<p[x]))throw Error('integration must precede '+x);
+for(const x of ['v26','v27','v28'])if(!(p.integration<p[x]))throw Error('integration must precede '+x);
 for(const s of ['window.renderBreed=renderBreed','window.DABISTA_BREED_PAIR_INDEX','window.DABISTA_BREED_FUTURE'])if(!integration.includes(s))throw Error('integration export missing '+s);
 
 console.log(JSON.stringify({
